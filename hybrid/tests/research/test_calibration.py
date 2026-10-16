@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from hybrid.math import profile
 from hybrid.math.runner import MathRunner
 from hybrid.research import calibration as cal
 from hybrid.research.__main__ import build_parser, main
@@ -40,10 +41,22 @@ def test_the_expected_table_covers_every_card_and_scored_cell():
         assert set(want["cells"]) == set(cal.CELLS)
         assert want["profile"] in ("pass", "fail") and want["target"] in ("pass", "fail")
     assert expected["cards"]["k1"]["target"] == "fail"
-    assert [k for k, w in expected["cards"].items() if w["profile"] == "pass"] == ["k1", "k2"]
+    # Decision P4K: K1 fails the profile on P4 learnability of composition (a measured correction), so K2 alone passes.
+    assert [k for k, w in expected["cards"].items() if w["profile"] == "pass"] == ["k2"]
+    assert expected["cards"]["k1"]["kill_codes_include"] == ["obligation_failed:P4.composition"]
+    assert expected["cards"]["k1"]["profile_note"].strip()
     for key in ("k3", "k4"):
         assert {"obligation_failed:P2.nesting", "obligation_failed:P2.composition"} <= set(
             expected["cards"][key]["kill_codes_include"])
+    allowed = {"model", "cells", "profile", "kill_codes_include", "profile_note", "target", "expected_cost",
+               "expected_limit", "notes"}
+    for key, want in expected["cards"].items():
+        assert set(want) <= allowed, (key, sorted(set(want) - allowed))
+        # A card that fails the profile names the slot kill codes it must show; a card that passes names none.
+        assert bool(want.get("kill_codes_include")) == (want["profile"] == "fail"), key
+        for code in want.get("kill_codes_include", []):
+            assert code.startswith("obligation_failed:"), code
+            assert code.removeprefix("obligation_failed:") in profile.SLOTS, code
 
 
 @pytest.mark.parametrize("where,text,finding", [
@@ -108,14 +121,19 @@ def test_load_cards_refuses_a_card_that_is_not_anonymous(tmp_path):
 
 # ----- the driver -----------------------------------------------------------------------------------------------------
 
-def factory(cards, *, p2_by_run=None):
+def factory(cards, *, p2_by_run=None, composition_by_run=None):
     """Deps per run directory: scripted roles for the run's card; ``p2_by_run`` maps (card, run) to whether the
-    prover's constructions pass P2 (a run-to-run disagreement)."""
+    prover's constructions pass P2 (a run-to-run disagreement), ``composition_by_run`` to whether its composition
+    learner reaches the P4 threshold. By default a card's learner does so unless the answer key expects the card to
+    miss P4.composition (K1, decision P4K)."""
+    expected = cal.load_expected()["cards"]
     def build(ledger):
         key, run = cf.card_key(ledger)
         executor = cf.FastExecutor(ledger.run_dir / "exec")
         passes = (p2_by_run or {}).get((key, run))
-        llm = FakeLLM(ledger.run_dir, ledger, cf.script(key, cards[key], passes_p2=passes))
+        key_learns = "obligation_failed:P4.composition" not in expected[key].get("kill_codes_include", [])
+        learns = (composition_by_run or {}).get((key, run), key_learns)
+        llm = FakeLLM(ledger.run_dir, ledger, cf.script(key, cards[key], passes_p2=passes, learns_composition=learns))
         return cal.Deps(llm, executor, "image", MathRunner(executor, mf.IMAGE, ledger.run_dir))
     return build
 
@@ -135,7 +153,12 @@ def test_three_runs_of_the_four_cards_reproduce_the_expected_table(tmp_path):
     for key in cal.CARD_KEYS:
         assert report["cards"][key]["agree"] and report["cards"][key]["reproduced_every_run"]
     k1 = [o for o in result["outcomes"] if o["card"] == "k1"]
-    assert all(o["profile_passed"] and o["target"]["status"] == "fail" for o in k1)
+    # Decision P4K: K1's seven cells pass, but its P4.composition slot fails, so the profile fails.
+    assert all(not o["profile_passed"] and o["target"]["status"] == "fail" for o in k1)
+    assert all(all(status == "pass" for status in o["cells"].values()) for o in k1)
+    assert all("obligation_failed:P4.composition" in o["m_kill_codes"] for o in k1)
+    k2 = [o for o in result["outcomes"] if o["card"] == "k2"]
+    assert all(o["profile_passed"] and "obligation_failed:P4.composition" not in o["m_kill_codes"] for o in k2)
     assert all(o["target"]["cost_exponent"] == pytest.approx(2.0) for o in k1)
     k3 = [o for o in result["outcomes"] if o["card"] == "k3"]
     assert all(o["stages"]["M"]["verdict"] == "fail" for o in k3)
@@ -150,6 +173,19 @@ def test_three_runs_of_the_four_cards_reproduce_the_expected_table(tmp_path):
     text = (out / "report.md").read_text()
     assert "Accepted (plan section 12): yes" in text and "| k4 | 3 |" in text
     assert "Run-to-run agreement: 100% of scored items" in text and "- k1 (100%): all cells agree" in text
+
+
+def test_a_k1_run_whose_composition_learner_succeeds_is_reported_as_a_mismatch(tmp_path):
+    # Decision P4K: the key says K1 fails P4.composition; a run in which it passes disagrees with the key.
+    result = run_calibration(tmp_path, keys=("k1",), runs=1, composition_by_run={("k1", 1): True})
+    outcome = result["outcomes"][0]
+    assert outcome["profile_passed"] and "obligation_failed:P4.composition" not in outcome["m_kill_codes"]
+    report = result["report"]
+    assert not report["accepted"]
+    run = report["cards"]["k1"]["runs"][0]
+    assert not run["reproduced"] and not report["cards"]["k1"]["reproduced_every_run"]
+    assert "profile: expected fail, got pass" in run["mismatches"]
+    assert "stage M kill codes lack ['obligation_failed:P4.composition']" in run["mismatches"]
 
 
 def test_every_run_is_an_override_with_the_profile_on_and_the_target_off_in_m(tmp_path):

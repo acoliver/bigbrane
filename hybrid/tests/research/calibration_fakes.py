@@ -288,6 +288,29 @@ def learn(layout, examples, seed):
     return {"rule": best}
 '''
 
+# Decision P4K: K1's two-layer attention model does not reliably learn T=4 composition from the stated examples (a
+# measured result, not a pipeline output). This learner stands for a run that does not: it settles on the most frequent
+# answer, which a trained model that memorizes or keeps a frequency shortcut also does on unseen composition queries.
+SHORTCUT_COMPOSITION_LEARNER = '''
+RECIPE = {"method": "most frequent answer", "init": "none"}
+
+def init(layout, params):
+    return {"answer": params["answer"]}
+
+def update(state, token):
+    return state
+
+def predict(state):
+    return state["answer"]
+
+def learn(layout, examples, seed):
+    counts = {}
+    for ex in examples:
+        for pos, ans in ex["queries"]:
+            counts[ans] = counts.get(ans, 0) + 1
+    return {"answer": max(counts, key=lambda a: counts[a]) if counts else 0}
+'''
+
 LEARNERS = {"copy": COPY_LEARNER, "recall": RECALL_LEARNER, "dyck": DYCK_LEARNER, "composition": COMPOSITION_LEARNER}
 OPEN = {"copy": references.construction_source(references.COPY_BUFFER),
         "recall": references.construction_source(references.RECALL_TABLE),
@@ -469,8 +492,13 @@ def _shown(user: str) -> list[dict]:
     return json.JSONDecoder().raw_decode(user.split("FROZEN STATEMENTS:\n", 1)[1])[0]
 
 
-def prover_output(key: str, *, passes_p2: bool | None = None) -> callable:
+def prover_output(key: str, *, passes_p2: bool | None = None, learns_composition: bool = True) -> callable:
+    """``learns_composition`` False gives the prover the shortcut learner for composition (decision P4K); the other
+    learners and every other test keep the learner that reaches the threshold."""
     passes = PASSES_P2[key] if passes_p2 is None else passes_p2
+    learners = dict(LEARNERS)
+    if not learns_composition:
+        learners["composition"] = SHORTCUT_COMPOSITION_LEARNER
     cost_source, _ = COST[key]
     sources = OPEN if passes else CAPPED
 
@@ -483,7 +511,7 @@ def prover_output(key: str, *, passes_p2: bool | None = None) -> callable:
             elif item["form"] == "construction":
                 source = sources[spec["task"]]
             elif item["form"] == "learnability":
-                source = LEARNERS[spec["task"]]
+                source = learners[spec["task"]]
             else:
                 raise AssertionError(f"no scripted source for {item['form']}")
             attempts.append({"statement_id": item["statement_id"], "proof": None, "source": source,
@@ -493,8 +521,10 @@ def prover_output(key: str, *, passes_p2: bool | None = None) -> callable:
     return answer
 
 
-def script(key: str, card: dict, *, passes_p2: bool | None = None, fixer=None) -> dict:
-    return {"statement_fixer": fixer or fixer_output(key, card), "prover": prover_output(key, passes_p2=passes_p2),
+def script(key: str, card: dict, *, passes_p2: bool | None = None, learns_composition: bool = True,
+           fixer=None) -> dict:
+    return {"statement_fixer": fixer or fixer_output(key, card),
+            "prover": prover_output(key, passes_p2=passes_p2, learns_composition=learns_composition),
             "challenger": mf.challenger_output(), "statement_backtranslate": mf.backtranslate_output,
             "statement_match": mf.match_output()}
 

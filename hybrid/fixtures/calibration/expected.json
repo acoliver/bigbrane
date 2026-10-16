@@ -6,7 +6,9 @@
     "k1": {
       "model": "two-layer softmax-attention model, written as two rounds of weighted retrieval over stored pairs",
       "cells": {"P1": "pass", "P2.copy": "pass", "P2.recall": "pass", "P2.nesting": "pass", "P2.composition": "pass", "P3": "pass", "P5": "pass"},
-      "profile": "pass",
+      "profile": "fail",
+      "kill_codes_include": ["obligation_failed:P4.composition"],
+      "profile_note": "Corrected 2026-10-16 (DECISIONS.md row P4K). The two-layer attention model does not reliably learn T=4 composition within the learnability budget: the fixed protocol passes 1 of 12 seeds at m=4000, 2 of 6 at m=8000 and 4 of 6 at m=16000 with 400 epochs (results/p4-k1-bimodal-20261016, results/p4-k1-m2-20261016). The P2 construction still passes; only P4 learnability of composition fails. Every other cell is unchanged.",
       "target": "fail",
       "expected_cost": {"exponent_in_n": 2, "state_growth": "linear in n (2 L d n words)"},
       "expected_limit": "fixed depth: no robust Dyck-2 or parity as n grows (plan section 21.1, Hahn 2020; TC0 bound)",
