@@ -196,6 +196,16 @@ def defaults() -> dict:
     }
 
 
+def analyst_supports_every_claim(index: int, user: str) -> dict:
+    """An analyst that marks every claim id S6 shows it supported: the line where S6 passes and the card finishes
+    (s6_verdict.ledger_verdict passes only a ledger whose every claim is supported). The default analyst comments on
+    capability.1 alone, so its cards end S6 undetermined."""
+    listed = user.split("CLAIM IDS (write one ledger entry per id):\n", 1)[1].split("\n\n", 1)[0]
+    ids = [line[2:].split(": ", 1)[0] for line in listed.splitlines() if line.startswith("- ")]
+    return {"claims": [{"claim_id": claim_id, "claim": claim_id, "status": "supported", "evidence": "hmm n32 kl 0.1",
+                        "falsifier_tasks": []} for claim_id in ids]}
+
+
 def tiebreak_unavailable(index: int, user: str) -> dict:
     from hybrid.llm.errors import TransportError
 

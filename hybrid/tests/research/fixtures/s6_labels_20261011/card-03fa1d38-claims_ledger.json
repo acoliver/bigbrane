@@ -1,0 +1,226 @@
+{
+  "card_id": "card-03fa1d38",
+  "claims": [
+    {
+      "analyst_status": "untested",
+      "claim": "complexity time_per_token: O((K_max + V) M)",
+      "claim_id": "complexity.time_per_token",
+      "decided_by": "analyst",
+      "evidence": "The candidate scaling block (entrants.candidate.scaling, bench_result.json) measures wall time against sequence length n only, at fixed hyperparameters (F=3, K_max=8, M=9, V=12 for the hmm task at train_size 32). It does not vary K_max, V, or M, so the (K_max + V) M per-event dependence is not measured. The n-scaling is consistent with per-event cost being constant in n (see complexity.total_sequence), but that does not test the claimed size dependence. Baselines for the same n-scaling: gru time_slope_tail 0.964, linear_attention 0.961, ssm 0.957, transformer 1.416 (mismatch, claimed 2.0).",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "complexity memory: O((K_max + V) M)",
+      "claim_id": "complexity.memory",
+      "decided_by": "analyst",
+      "evidence": "candidate.scaling.memory_growth = 'flat' (memory_fit_tail slope 1.5e-15, peak_rss_delta_mb_at_max_n 2.5) across lengths 64 to 1024. This shows no growth in n, but the bench did not vary V, M, or K_max, so the (K_max + V) M size dependence is not measured. The candidate's own describe.compose state_floats_per_sequence (253) and params (108 for V=12, M=9) are self-reports and are not used as evidence.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "supported",
+      "claim": "complexity total_sequence: O(n (K_max + V) M)",
+      "claim_id": "complexity.total_sequence",
+      "decided_by": "analyst",
+      "evidence": "candidate.scaling (hmm task, train_size 32, batch 2, lengths 64,128,256,512,1024): claimed_exponent 1.0, time_slope_tail 0.9966 (r2 0.9985, 3 tail points), time_slope_all 1.026 (r2 0.999), verdict 'match' with tolerance 0.5. Median times run 0.0019 s at n=64 to 0.0309 s at n=1024. Linear in n, consistent with the claim. Baselines on the same scaling test: gru 0.964, ssm 0.957, linear_attention 0.961 (match); transformer 1.416 (mismatch against claimed 2.0). Caveat: the (K_max + V) M factor is not varied, so only the linear-in-n part is supported.",
+      "rules": [],
+      "status": "supported"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "sample efficiency mechanism: One image-sheet location remaps every stamped token whose code-sheet image contains the residual units. So if m members are each shown once with a shared value, one remap demonstration of any single member moves all m members.\n\nThe comparisons fail on this test:\n- A single-sheet residual memory (parent A) writes a full-code exception for the remapped member only.\n- A last-seen-successor table also changes only that member.",
+      "claim_id": "sample_efficiency.mechanism",
+      "decided_by": "analyst",
+      "evidence": "No bench task in bench_result.json runs the class-remap protocol or a comparison with parent A or a last-seen-successor table. The bench tasks are compose, fewshot, hmm, recall, vom (standard tasks, candidate and baselines), plus the falsifier tasks exceptions_and_revision and three_atom_composition. None measures class co-motion. The candidate's standard-task accuracies do not address this mechanism.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "sample efficiency prediction: Protocol:\n1. Draw a target y and m = 4 members x_1..x_4 uniformly among tuples where the members differ pairwise in every attribute and differ from y in every attribute.\n2. Show DEMO(x_i, y) for i = 1..4.\n3. Show DEMO(x_k, y'), with k uniform in 1..4 and y' uniform among tokens != y.\n4. Query the 3 members other than x_k.\n\nPrediction: accuracy is exactly 1.0 and K_fin = 5 on every draw. Parent A's single-sheet core and a last-seen table both score exactly 0.0. (metric: Exact-token accuracy on the un-remapped class members. Codes are hand-factorized (F = 3 attributes, 5 values each, V = 125, M = 15, N = 3, K_max = 8). Results are averaged over 1000 random draws.; value: 1.0)",
+      "claim_id": "sample_efficiency.prediction",
+      "decided_by": "analyst",
+      "evidence": "The class-remap protocol with m=4 was not run by the bench. No entrant has a metric for un-remapped class member accuracy, and K_fin is not observable (falsifier_eval deviations: 'Internal sheet selection and K_fin are not observable'). No parent A or last-seen comparison was run.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "capability 1: task: One-shot transfer and composition of substitution atoms (code sheet) prediction: Setup: hand-factorized codes, F = 3, 5 values per attribute, V = 125. Draw a rule with one atom p_i -> q_i (p_i != q_i) per attribute. Show three demonstrations. Each is on a token that carries exactly one source value, with its rule image as the target.\n\nPrediction:\n- K_fin = 3.\n- Accuracy is 1.0 on all 13 never-shown tokens that carry at least two source values.\n- Accuracy is 1.0 on all 64 tokens that carry no source value; these map to themselves.\n\nResults are over 1000 random rules.",
+      "claim_id": "capability.1",
+      "decided_by": "rule",
+      "decision_note": "no rule reached a decision (three_atom_composition rule 0: inconclusive)",
+      "evidence": "Falsifier task three_atom_composition ran this protocol with deviations (128 sampled episodes per category, not 1000 rules). Evaluator decision: inconclusive (candidate did not train; it is below the best reference by more than the 0.05 margin, rule_met false), so the ledger status is untested. Measured by the bench: candidate overall acc 0.0039; 'at least two source values' (composed) acc 0.0078 (n=128), 'no source value' (identity) acc 0.0 (n=128). Baselines on the same groups: ngram acc 0.023 composed and 0.742 identity; gru 0.016 and 0.273; uniform 0.008. The composed claim (1.0) is not met by any entrant, and the candidate is at chance level. K_fin is not observable.",
+      "rules": [
+        {
+          "conditions": [
+            {
+              "entrant": "candidate",
+              "group": null,
+              "holds": false,
+              "lhs": 0.00390625,
+              "metric": "acc",
+              "minus": null,
+              "op": ">=",
+              "value": 1.0
+            }
+          ],
+          "if_met": "supported",
+          "outcome": "inconclusive",
+          "quote": "Setup: hand-factorized codes, F = 3, 5 values per attribute, V = 125. Draw a rule with one atom p_i -> q_i (p_i != q_i) per attribute. Show three demonstrations. Each is on a token that carries exactly one source value, with its rule image as the target.\n\nPrediction:\n- K_fin = 3.\n- Accuracy is 1.0 on all 13 never-shown tokens that carry at least two source values.\n- Accuracy is 1.0 on all 64 tokens that carry no source value; these map to themselves.\n\nResults are over 1000 random rules.",
+          "reason": "the candidate did not train on this task: it does not beat the better of the uniform and unigram references by 0.05 nats of KL or 0.05 accuracy",
+          "rule_index": 0,
+          "task_id": "three_atom_composition"
+        }
+      ],
+      "status": "inconclusive"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "capability 2: task: Exceptions by specificity blocking prediction: Setup: show a one-atom rule p -> q in attribute 0 once, on token x0. Then show DEMO(x1, x1) for a never-demonstrated x1 != x0 with attribute 0 = p.\n\nPrediction:\n- The second demonstration writes a code-sheet full-pair row, so K_fin = 2.\n- QUERY(x1) returns x1.\n- The other 24 tokens with attribute 0 = p follow the rule with accuracy 1.0.\n\nResults are over all 20 ordered (p, q) pairs and uniformly random x0, x1.",
+      "claim_id": "capability.2",
+      "decided_by": "rule",
+      "decision_note": "no rule reached a decision (exceptions_and_revision rule 0: inconclusive)",
+      "evidence": "Falsifier task exceptions_and_revision ran the exception episode with deviations (160 sampled episodes per protocol, sampled queries, not all 20 ordered pairs). Evaluator decision for rule 0: inconclusive (candidate did not train), so ledger status is untested. Measured: candidate group 'p -> q' acc 0.0 (n=160), kl 18.67. Baselines on the same group: ngram acc 0.194, gru 0.156, ssm 0.063, transformer 0.063, linear_attention 0.019, uniform 0.008. The candidate scores 0.0 accuracy, which misses the claim of 1.0. K_fin is not observable.",
+      "rules": [
+        {
+          "conditions": [
+            {
+              "entrant": "candidate",
+              "group": "p -> q",
+              "holds": false,
+              "lhs": 0.0,
+              "metric": "acc",
+              "minus": null,
+              "op": ">=",
+              "value": 1.0
+            }
+          ],
+          "if_met": "supported",
+          "outcome": "inconclusive",
+          "quote": "Setup: show a one-atom rule p -> q in attribute 0 once, on token x0. Then show DEMO(x1, x1) for a never-demonstrated x1 != x0 with attribute 0 = p.\n\nPrediction:\n- The second demonstration writes a code-sheet full-pair row, so K_fin = 2.\n- QUERY(x1) returns x1.\n- The other 24 tokens with attribute 0 = p follow the rule with accuracy 1.0.\n\nResults are over all 20 ordered (p, q) pairs and uniformly random x0, x1.",
+          "reason": "the candidate did not train on this task: it does not beat the better of the uniform and unigram references by 0.05 nats of KL or 0.05 accuracy",
+          "rule_index": 0,
+          "task_id": "exceptions_and_revision"
+        }
+      ],
+      "status": "inconclusive"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "capability 3: task: Class remap with a time-local class prediction: Use the sample-efficiency setup with m = 3 members, then run three tests:\n- All 3 members decode y' (accuracy 1.0).\n- A newcomer x' differs from y and from all members in every attribute and is shown -> y after the remap. QUERY(x') returns y (accuracy 1.0).\n- QUERY(y), with y never demonstrated, returns y (accuracy 1.0).\n\nThe result is identical whichever member is remapped.",
+      "claim_id": "capability.3",
+      "decided_by": "analyst",
+      "evidence": "The sample-efficiency class-remap setup with m=3 and its three tests were not run by the bench. No task in bench_result.json measures class remap, newcomer decoding, or the time-local stamp rule.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "capability 4: task: Stickiness signature (defection probe) prediction: Stream: DEMO(a, v); DEMO(b, v); DEMO(a, w); QUERY(b). Use hand-factorized codes, F = 3, 5 values, V = 125.\n\nEach draw: (a, b, v) is uniform over ordered triples of tokens that differ pairwise in every attribute, and w is uniform over the 124 tokens != v.\n\nPrediction: the core answers w on 100% of 1000 draws. Its accuracy at answering v, the correct value because only a changed, is therefore exactly 0.0. This is the inherited co-motion bias.\n\nTrace: rows 1 and 2 are code-sheet rows (E_a -> E_v, E_b -> E_v). Row 3 is the image-sheet row (E_v minus E_w -> E_w minus E_v). b has tau_b = 2 <= 3, so row 3 acts on b.",
+      "claim_id": "capability.4",
+      "decided_by": "analyst",
+      "evidence": "The stickiness probe stream was not run by the bench. No bench task contains this DEMO/QUERY sequence or reports the answer-w rate for QUERY(b).",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "capability 5: task: Rule revision moves only witnessed tokens prediction: Setup: show DEMO(x, rule(x)) for the atom p -> q in attribute 0. Then show DEMO(x, x'). Here x' has value q2 in attribute 0, with q2 != q and q2 != p, and keeps the other attributes of x.\n\nPrediction:\n- The second write is an image-sheet row, so K_fin = 2.\n- QUERY(x) returns x' (accuracy 1.0).\n- The 24 other tokens with attribute 0 = p still decode with q. The fraction of them that follow the revised value q2 is exactly 0.0.",
+      "claim_id": "capability.5",
+      "decided_by": "rule",
+      "decision_note": "no rule reached a decision (exceptions_and_revision rule 1: inconclusive)",
+      "evidence": "Falsifier task exceptions_and_revision ran the revision episode with deviations (160 sampled episodes, sampled queries across all 25 source-bearing tokens). Evaluator decision for rule 1: inconclusive (candidate did not train), so ledger status is untested. Measured: candidate group 'q2' acc 0.0 (n=160), kl 18.67. Baselines on this group: ngram acc 0.238, gru 0.231, ssm 0.106, transformer 0.025, linear_attention 0.019, uniform 0.008. The witnessed-revision accuracy of 0.0 misses the claim of 1.0. The 'other tokens follow q2' fraction and K_fin are not reported and not observable.",
+      "rules": [
+        {
+          "conditions": [
+            {
+              "entrant": "candidate",
+              "group": "q2",
+              "holds": false,
+              "lhs": 0.0,
+              "metric": "acc",
+              "minus": null,
+              "op": ">=",
+              "value": 1.0
+            }
+          ],
+          "if_met": "supported",
+          "outcome": "inconclusive",
+          "quote": "Setup: show DEMO(x, rule(x)) for the atom p -> q in attribute 0. Then show DEMO(x, x'). Here x' has value q2 in attribute 0, with q2 != q and q2 != p, and keeps the other attributes of x.\n\nPrediction:\n- The second write is an image-sheet row, so K_fin = 2.\n- QUERY(x) returns x' (accuracy 1.0).\n- The 24 other tokens with attribute 0 = p still decode with q. The fraction of them that follow the revised value q2 is exactly 0.0.",
+          "reason": "the candidate did not train on this task: it does not beat the better of the uniform and unigram references by 0.05 nats of KL or 0.05 accuracy",
+          "rule_index": 1,
+          "task_id": "exceptions_and_revision"
+        }
+      ],
+      "status": "inconclusive"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "falsifier 1: On the class-remap protocol (m = 4, hand-factorized codes), some un-remapped member decodes a token other than y', or K_fin != 5 on some draw.",
+      "claim_id": "falsifier.1",
+      "decided_by": "analyst",
+      "evidence": "The class-remap protocol with m=4 was not run by the bench, and K_fin is not observable (falsifier deviations). No falsifier condition can be evaluated from bench_result.json.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "falsifier 2: Ablation: route witnessed residuals to the code sheet, which recovers parent A. If class-transfer accuracy then stays at or above 0.9, the image sheet does no work and the card reduces to parent A.",
+      "claim_id": "falsifier.2",
+      "decided_by": "analyst",
+      "evidence": "No ablation with witnessed residuals routed to the code sheet was run, and no class-transfer accuracy was measured. The bench has no parent-A entrant.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "falsifier 3: A newcomer shown -> y after a remap decodes y', or a never-demonstrated y decodes y'. Either result refutes the stamp rule, which keeps classes local in time.",
+      "claim_id": "falsifier.3",
+      "decided_by": "analyst",
+      "evidence": "The newcomer and never-demonstrated-y tests of the time-local stamp rule were not run. No bench task reports decoding of such tokens after a remap.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "refuted",
+      "claim": "falsifier 4: With hand-factorized codes, the three-atom composition protocol gives any error on the 13 composed tokens, or K_fin != 3.",
+      "claim_id": "falsifier.4",
+      "decided_by": "analyst",
+      "evidence": "Falsifier task three_atom_composition ran this protocol (128 sampled episodes per category, deviation noted). The candidate's composed-token group ('at least two source values', n=128) has acc 0.0078125 and kl 18.52, so the error condition is observed. Only 1 of 128 composed queries was right, so errors occurred across the composed tokens. Baselines on the same group: ngram 0.023, gru 0.016, linear_attention 0.008, transformer 0.0, ssm 0.0, uniform 0.008. K_fin is not observable, but the error condition alone is met. Note: the evaluator decision for this task is only defined for capability.1, which was inconclusive.",
+      "rules": [],
+      "status": "refuted"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "falsifier 5: Immediately after a demonstration DEMO(x, y) that recruits a row (with K < K_max before it and hand-factorized codes), QUERY(x) does not return y.",
+      "claim_id": "falsifier.5",
+      "decided_by": "analyst",
+      "evidence": "No bench task reports an immediate DEMO-then-QUERY on the same token for the recruited-row case with K < K_max. The exceptions_and_revision and three_atom_composition tasks query tokens only after several demonstrations, and K is not observable.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "falsifier 6: With hand-factorized codes, some o1 or o computed during any claimed protocol is not a valid one-unit-per-attribute binary code. This would refute closure lemma (0).",
+      "claim_id": "falsifier.6",
+      "decided_by": "analyst",
+      "evidence": "The intermediate packed images o1 and o are internal to the candidate and not observable (falsifier deviations: 'the interface cannot install or inspect the candidate's internal E'). Only final decoded predictions (pred.npy) are reported, so the validity of o1 and o cannot be checked.",
+      "rules": [],
+      "status": "untested"
+    }
+  ],
+  "counts": {
+    "inconclusive": 3,
+    "refuted": 1,
+    "supported": 1,
+    "untested": 11
+  },
+  "falsified_by": [],
+  "falsifier_tasks": [
+    "exceptions_and_revision",
+    "three_atom_composition"
+  ]
+}

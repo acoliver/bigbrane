@@ -10,7 +10,8 @@ from hybrid.research.outcomes import OutcomeStore, check_kill_code
 from hybrid.research.stages import difference
 from hybrid.tests.research.builders import make_card
 from hybrid.tests.research.outcome_fixtures import build_run
-from hybrid.tests.research.test_orchestrator_fakes import declaring, defaults, draft, make_orchestrator, orch_config
+from hybrid.tests.research.test_orchestrator_fakes import (analyst_supports_every_claim, declaring, defaults, draft,
+                                                           make_orchestrator, orch_config)
 
 EARLIER_RUN = "run-20260901T000000Z"
 DEAD_CRITIC = {"reduces_to": "other_known", "mapping": "S = sum v exp(i theta)", "confidence": 0.9,
@@ -413,7 +414,9 @@ def test_a_full_phase7_line_from_s0_through_r_and_s2_to_s6_and_resume(run_dir, s
 
     cfg = config(store)
     cfg["refine"]["enabled"] = True
-    s = script(statement(), checker(), refine_challenger=asks([question()], []), refine_proposer=proposer())
+    # every claim supported, so S6 passes and the record is finished (s6_verdict.ledger_verdict)
+    s = script(statement(), checker(), refine_challenger=asks([question()], []), refine_proposer=proposer(),
+               analyst=analyst_supports_every_claim)
     first = dict(cfg, budgets=dict(cfg["budgets"], max_calls=7))   # explorer, critic, 3 R calls, prior art, critic
     orch, llm = make_orchestrator(run_dir, cfg=first, script=s)
     run(orch)

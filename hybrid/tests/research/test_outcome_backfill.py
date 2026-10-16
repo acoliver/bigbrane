@@ -19,7 +19,11 @@ S3_GATE = {"rule": "check_violation", "verdict": "infeasible_proved"}
 MATH_C = {"stage": "C", "verdict": "fail", "kill_codes": ["circular:C13", "statement_mismatch"]}
 LEDGER_C = {"card_id": "card-0000c009", "stage": "C", "definitions": [{"id": "D1", "kind": "notation", "text": "t"}],
             "premises": [{"id": "A1", "status": "open", "text": "p"}]}
-CLAIMS = {"falsified_by": [{"claim_id": "falsifier.1", "task_id": "copy_task", "rule_index": 0}]}
+# The S6 label follows from the ledger's claims (s6_verdict.ledger_verdict), so the ledger holds the fired falsifier.
+CLAIMS = {"card_id": "card-0000c008",
+          "claims": [{"claim_id": "falsifier.1", "claim": "falsifier 1: copy fails", "status": "refuted",
+                      "decided_by": "rule", "evidence": "copy accuracy 0.1"}],
+          "falsified_by": [{"claim_id": "falsifier.1", "task_id": "copy_task", "rule_index": 0}]}
 
 
 def cards():

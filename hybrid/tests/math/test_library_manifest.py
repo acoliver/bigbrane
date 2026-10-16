@@ -17,7 +17,7 @@ from hybrid.math.runner import LIBRARY_CAPS, LIBRARY_FILES, MathRunner
 
 IMAGE = "localhost/bigbrane/tools@sha256:" + "b" * 64
 STDLIB_OK = {"__future__", "argparse", "ast", "builtins", "collections", "dataclasses", "fractions", "hashlib",
-             "itertools", "json", "math", "random", "re", "sys", "time", "types", "pathlib"}
+             "itertools", "json", "math", "operator", "random", "re", "sys", "time", "types", "pathlib"}
 # z3-solver is in the tools image; only the frozen-statement checks use it, imported where it is used.
 Z3_USERS = {"spec_checks.py"}
 

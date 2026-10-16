@@ -32,7 +32,8 @@ from hybrid.research.stages.common import ESCAPE_FIELD
 from hybrid.research.store import Store
 from hybrid.tests.research.builders import make_card
 from hybrid.tests.research.test_escape import ARGUMENT, NOT_REDUCED, REDUCED
-from hybrid.tests.research.test_orchestrator_fakes import declaring, draft, make_orchestrator, orch_config
+from hybrid.tests.research.test_orchestrator_fakes import (analyst_supports_every_claim, declaring, draft,
+                                                           make_orchestrator, orch_config)
 
 FIRST_LIVE_RUN = ROOT / "runs" / "run-20261010T000322Z"
 
@@ -381,7 +382,8 @@ def test_escapes_that_keep_changing_family_end_at_the_lineage_cap(run_dir):
 def test_a_mutation_without_room_in_the_lineage_is_skipped(run_dir):
     cfg = config()
     cfg["budgets"]["lineage"]["ideas"] = 1
-    orch, _ = make_orchestrator(run_dir, cfg=cfg)
+    # every claim supported, so the card finishes at S6 (s6_verdict.ledger_verdict)
+    orch, _ = make_orchestrator(run_dir, cfg=cfg, script={"analyst": analyst_supports_every_claim})
     run(orch)
     card_id = orch.store.list_cards()[0]
     assert events(orch, "mutation_requested") == []

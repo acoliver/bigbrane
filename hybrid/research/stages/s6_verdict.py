@@ -16,6 +16,11 @@ the candidate, or no training: `task_gate`) gates every claim whose entry uses i
 refuted on such a claim becomes inconclusive, decided by the rule, with the task's reason. Whenever a rule or a
 gate overrides an analyst decision, the analyst's reading is kept as `analyst_override`, a note and not a
 decision. The analyst decides only claims with no rule and no gated task.
+
+The stage verdict follows from the ledger (``ledger_verdict``, review fix 2026-10-16; before it S6 always recorded
+pass, so card-779795a5 of run-20261011T042400Z passed with 0 of 11 claims supported): fail when any claim is refuted
+(a falsifier that fired counts, whoever decided it), undetermined when none is refuted but a claim is inconclusive or
+untested, or the ledger has no claims, and pass only when every claim is supported. Nothing passes by default.
 """
 from __future__ import annotations
 
@@ -28,6 +33,7 @@ from hybrid.research.stages.falsify import claim_items
 
 STATUSES = ("supported", "refuted", "inconclusive", "untested")
 DECISIONS = ("supported", "refuted")
+UNSHOWN = ("inconclusive", "untested")
 
 SOURCES_NOTE = (
     "FALSIFIER TASK SOURCES: in every entry, falsifier_tasks lists the ids of the falsifier tasks whose numbers the "
@@ -122,6 +128,27 @@ def falsified_by(ledger: list[dict]) -> list[dict]:
             and c["decided_by"] == "rule" for r in c["rules"] if r["outcome"] == "refuted"]
 
 
+def ledger_verdict(ledger: dict) -> tuple[str, str]:
+    """(S6 verdict, the line that states why) from a claims ledger. A refuted claim fails the card; an inconclusive
+    or untested claim, or an empty ledger, leaves it undetermined; only a ledger whose every claim is supported
+    passes. A status outside STATUSES raises."""
+    claims = ledger["claims"]
+    unknown = sorted({c["status"] for c in claims} - set(STATUSES))
+    if unknown:
+        raise ValueError(f"{ledger['card_id']}: claim statuses {unknown} are not in {STATUSES}")
+    refuted = [c["claim_id"] for c in claims if c["status"] == "refuted"]
+    unshown = [c["claim_id"] for c in claims if c["status"] in UNSHOWN]
+    rest = f"; {len(unshown)} not shown ({', '.join(unshown)})" if unshown else ""
+    if refuted:
+        return "fail", f"S6 fail: {len(refuted)} of {len(claims)} claims refuted ({', '.join(refuted)}){rest}"
+    if not claims:
+        return "undetermined", "S6 undetermined: the claims ledger has no claims"
+    if unshown:
+        return "undetermined", (f"S6 undetermined: no claim refuted, but {len(unshown)} of {len(claims)} claims "
+                                f"not shown ({', '.join(unshown)})")
+    return "pass", f"S6 pass: all {len(claims)} claims supported"
+
+
 def falsifier_section(falsifiers: dict) -> str:
     if not falsifiers:
         return "No falsifier task ran for this card."
@@ -202,13 +229,14 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
     ledger = merge(card_id, claims, result.parsed, falsifiers)
     ctx.put_json_artifact("claims_ledger", ctx.artifact_name(card_id), ledger, card_id)
     counts = ledger["counts"]
+    verdict, verdict_line = ledger_verdict(ledger)
     reasons = [f"card falsified by {f['claim_id']} (task {f['task_id']} rule {f['rule_index']})"
                for f in ledger["falsified_by"]]
     reasons += [f"claims ledger: {counts['supported']} supported, {counts['refuted']} refuted, "
                f"{counts['inconclusive']} inconclusive, {counts['untested']} untested; "
                f"{sum(1 for c in ledger['claims'] if c['decided_by'] == 'rule')} decided by falsifier rules"]
-    reasons += [claim_line(c) for c in ledger["claims"]]
-    ctx.verdict(card_id, "S6", "pass", reasons, [result.call_id])
+    reasons += [verdict_line] + [claim_line(c) for c in ledger["claims"]]
+    ctx.verdict(card_id, "S6", verdict, reasons, [result.call_id])
     mutable = sum(1 for c in ledger["claims"] if c["status"] == "supported" and not c["claim_id"].startswith("falsifier."))
     if mutable > 0 and ctx.on_mutation is not None:
         ctx.on_mutation(card_id)

@@ -63,6 +63,7 @@ from __future__ import annotations
 import ast
 import builtins
 import itertools
+import operator
 import random
 import sys
 import time
@@ -112,8 +113,8 @@ FORBIDDEN_NAMES = frozenset({"eval", "exec", "compile", "open", "__import__", "g
 
 
 # Order in which failed checks are reported; the first becomes the counterexample.
-CHECK_ORDER = ("claimed_exponent", "exponent_n", "lines_exponent_n", "ops_exact", "state_exact", "params_grew",
-               "architecture")
+CHECK_ORDER = ("claimed_exponent", "exponent_n", "lines_exponent_n", "touched_exponent_n", "ops_exact", "state_exact",
+               "params_grew", "architecture")
 
 
 class CandidateError(ValueError):
@@ -185,16 +186,28 @@ class Counted(NDArrayOperatorsMixin):
     def __iter__(self):
         return (Counted(row, self._ops) for row in self._a)
 
+    # Inside a costed call a copy charges the elements it writes to the touched tally (COSTED_WORK); a view is free.
     def __getitem__(self, key):
-        return Counted(self._a[self._ops._unwrap_key(key)], self._ops)
+        raw = self._a[self._ops._unwrap_key(key)]
+        if _costed() and not np.may_share_memory(raw, self._a):
+            _touch(np.size(raw))
+        return Counted(raw, self._ops)
 
     def __setitem__(self, key, value):
-        self._a[self._ops._unwrap_key(key)] = self._ops._unwrap(value)
+        key = self._ops._unwrap_key(key)
+        if _costed():
+            _touch(np.size(self._a[key]))
+        self._a[key] = self._ops._unwrap(value)
 
     def reshape(self, *shape):
-        return Counted(self._a.reshape(*shape), self._ops)
+        raw = self._a.reshape(*shape)
+        if _costed() and not np.may_share_memory(raw, self._a):
+            _touch(raw.size)
+        return Counted(raw, self._ops)
 
     def copy(self):
+        if _costed():
+            _touch(self._a.size)
         return Counted(self._a.copy(), self._ops)
 
     def item(self):
@@ -368,8 +381,14 @@ class OpCounter:
         return Counted(self._policy_operands([raw])[0], self)
 
     def _namespace(self) -> SimpleNamespace:
+        def written(raw):
+            """An array the namespace creates or copies: inside a costed call its elements are touched words."""
+            if _costed():
+                _touch(np.size(raw))
+            return Counted(raw, self)
+
         def alloc(maker):
-            return lambda *args, **kwargs: Counted(self._float(maker, args, kwargs), self)
+            return lambda *args, **kwargs: written(self._float(maker, args, kwargs))
 
         def ufunc_entry(ufunc):
             return lambda *args: self._ufunc(ufunc, "__call__", tuple(self._as_counted(a) for a in args), {})
@@ -385,16 +404,16 @@ class OpCounter:
             return self._wrap(result)
 
         def join(function):
-            return lambda arrays, axis=0: Counted(self._policy_result(
-                function(self._policy_operands([self._unwrap(a) for a in arrays]), axis=axis)), self)
+            return lambda arrays, axis=0: written(self._policy_result(
+                function(self._policy_operands([self._unwrap(a) for a in arrays]), axis=axis)))
 
         def normal(shape, seed, scale=1.0):
             # Drawn as before and rounded to the policy, so a seed gives the same draws under every precision.
             value = np.random.default_rng(seed).normal(0.0, scale, size=shape)
-            return Counted(value if self.dtype is None else value.astype(self.dtype), self)
+            return written(value if self.dtype is None else value.astype(self.dtype))
 
         def array(data):
-            return Counted(np.array(self._unwrap(data), dtype=self.dtype or float), self)
+            return written(np.array(self._unwrap(data), dtype=self.dtype or float))
 
         def sigmoid(a):
             # One unit per element, as tanh: a card whose accounting charges the logistic one operation can execute it
@@ -509,6 +528,466 @@ def packed_bits(fields) -> int:
     one a sign bit more. The joint accounting of every carried field, not each field against the budget alone."""
     return sum(v.bit_length() if v >= 0 else (-v).bit_length() + 1 for v in fields)
 
+# ----- uncounted work in costed calls (review fix 2026-10-16) ------------------------------------------------------
+#
+# The op counter charges ops.np arithmetic, and the line tracer sees every executed source line. Work done inside a
+# builtin, an operator on a Python container or an array copy was invisible to both: ``sum(history)``,
+# ``state + [x]``, ``h[:]``, ``sorted(h)`` or ``ops.np.concatenate([cache, row])`` once per token costs O(t) at step
+# t, and six such quadratic candidates verified as linear (results/review-fixes-20261016/probe_cost_before.json).
+#
+# A costed call is any call made under a LineTracer (update and predict in ``measure``, the assumption's x in
+# magic_x). Inside one, every operation that does size-proportional work outside ops.np arithmetic charges the words
+# it touches, exactly, to the tracer's ``touched`` tally (COSTED_WORK below lists them), and the operations whose
+# work cannot be counted exactly are refused with CandidateError. Candidate source is rewritten at load time so that
+# membership tests, comparisons, slicing, binary operators, augmented assignment, deletion, formatting and method
+# calls go through the guards; builtins are replaced by guarded versions. Outside a costed call (init, conformance
+# runs) the guards charge nothing and refuse nothing. The tally is kept apart from the op total, so no formula
+# changes; verify_cost holds its growth to the formula's order (checks touched_exponent_<size>).
+
+COSTED_WORK = (
+    "In costed code (update and predict of a cost candidate, x of a magic-X assumption) the op counter charges ops.np "
+    "arithmetic and the line tracer counts every executed line, so Python loops and comprehensions are seen. Work "
+    "inside builtins, container operators and array copies is charged to a separate tally of touched words, one per "
+    "element touched: sum, max, min, any, all, list, tuple and dict over k items (k); `in` on a list, tuple or string "
+    "(the elements scanned; dict, set and range membership 1); slicing a list, tuple or string (the result length); "
+    "+, * and | that build a list, tuple, string or dict (the result length); a result integer wider than one word "
+    "(its words); list.copy, count, reverse, clear (the length), index and remove (the elements scanned and moved), "
+    "insert, pop(i) and del (the elements moved), extend and += (the items added); dict.copy, update, clear; "
+    "array creation (ops.np.zeros, ones, full, eye, arange, array, normal), ops.np.concatenate and stack, .copy(), a "
+    "reshape or index that copies, and array item assignment (the elements written); array views (basic slices, "
+    ".T, a reshape that does not copy) are free. Refused in costed code, because their work cannot be counted "
+    "exactly: sorted and list.sort, ==, !=, <, <=, >, >= between lists, tuples or dicts, `in` on an array or an "
+    "iterator, set algebra (|, &, -, ^ and their methods), string methods, formatting a container in an f-string, "
+    "and *-unpacking or **-unpacking (refused in the source). The touched tally does not enter the op total or any "
+    "formula, but its growth in n and in every other size may not exceed the order of the claimed op formula "
+    "(checks touched_exponent_<size>), so a design whose data movement outgrows its counted work fails.")
+
+
+class _Tally:
+    """The innermost active LineTracer, which owns the touched-word tally of the current costed call."""
+    stack: list = []
+
+
+def _costed() -> bool:
+    return bool(_Tally.stack)
+
+
+def _touch(amount) -> None:
+    if _Tally.stack:
+        _Tally.stack[-1].touched += int(amount)
+
+
+def _refuse(what: str) -> None:
+    if _Tally.stack:
+        raise CandidateError(f"{what} is not allowed in costed code: its work cannot be counted exactly. "
+                             + COSTED_WORK)
+
+
+CONTAINERS = (list, tuple, dict, str)
+_HASHED = (dict, set, frozenset, range, type({}.keys()), type({}.items()))
+
+
+def _int_words(value) -> int:
+    """Words of a Python integer result wider than one word (as ``words`` measures it), else 0."""
+    if isinstance(value, int) and not isinstance(value, bool) and value.bit_length() >= WORD_BITS:
+        return words(value)
+    return 0
+
+
+def _counted_items(iterable):
+    """The iterable with one touched word charged per item consumed: exact for short-circuiting consumers."""
+    for item in iterable:
+        _touch(1)
+        yield item
+
+
+def _consumed(iterable):
+    """What a builtin may consume: a sized container is charged its length up front (the builtin reads every item);
+    anything else is charged per item as it is drawn."""
+    if not _costed():
+        return iterable
+    if isinstance(iterable, (list, tuple, dict, str, range, set, frozenset, Counted)):
+        _touch(len(iterable))
+        return iterable
+    return _counted_items(iterable)
+
+
+def _guard_reducer(builtin):
+    def guarded(*args, **kwargs):
+        if len(args) == 1:
+            return builtin(_consumed(args[0]), **kwargs)
+        _touch(len(args) if _costed() else 0)
+        return builtin(*args, **kwargs)
+    guarded.__name__ = builtin.__name__
+    return guarded
+
+
+def _guard_start(builtin):
+    """sum(iterable, start): the iterable is consumed."""
+    def guarded(iterable, *rest, **kwargs):
+        return builtin(_consumed(iterable), *rest, **kwargs)
+    guarded.__name__ = builtin.__name__
+    return guarded
+
+
+def _guard_short(builtin):
+    """any and all stop at the deciding item, so items are charged as they are drawn."""
+    def guarded(iterable):
+        return builtin(_counted_items(iterable) if _costed() else iterable)
+    guarded.__name__ = builtin.__name__
+    return guarded
+
+
+def _guard_constructor(builtin):
+    def guarded(*args, **kwargs):
+        if args:
+            args = (_consumed(args[0]),) + args[1:]
+        return builtin(*args, **kwargs)
+    guarded.__name__ = builtin.__name__
+    return guarded
+
+
+def _guarded_sorted(*args, **kwargs):
+    _refuse("sorted")
+    return sorted(*args, **kwargs)
+
+
+# Keyed by the builtin object itself, so a candidate name that shadows a builtin is called unguarded, as it should
+# be, and isinstance(x, list) still sees the real types.
+_GUARDED_CALLS = {sum: _guard_start(sum), max: _guard_reducer(max), min: _guard_reducer(min), any: _guard_short(any),
+                  all: _guard_short(all), list: _guard_constructor(list), tuple: _guard_constructor(tuple),
+                  dict: _guard_constructor(dict), sorted: _guarded_sorted}
+GUARDED_CALL_NAMES = frozenset(function.__name__ for function in _GUARDED_CALLS)
+
+
+def _g_call(function, *args, **kwargs):
+    try:
+        guard = _GUARDED_CALLS.get(function)
+    except TypeError:                     # an unhashable callable is not a builtin
+        guard = None
+    return (guard or function)(*args, **kwargs)
+
+_BINOPS = {"Add": operator.add, "Sub": operator.sub, "Mult": operator.mul, "MatMult": operator.matmul,
+           "Div": operator.truediv, "FloorDiv": operator.floordiv, "Mod": operator.mod, "Pow": operator.pow,
+           "LShift": operator.lshift, "RShift": operator.rshift, "BitOr": operator.or_, "BitXor": operator.xor,
+           "BitAnd": operator.and_}
+_IOPS = {"Add": operator.iadd, "Sub": operator.isub, "Mult": operator.imul, "MatMult": operator.imatmul,
+         "Div": operator.itruediv, "FloorDiv": operator.ifloordiv, "Mod": operator.imod, "Pow": operator.ipow,
+         "LShift": operator.ilshift, "RShift": operator.irshift, "BitOr": operator.ior, "BitXor": operator.ixor,
+         "BitAnd": operator.iand}
+_UNARY = {"USub": operator.neg, "UAdd": operator.pos, "Invert": operator.invert}
+_ORDER = {"Eq": operator.eq, "NotEq": operator.ne, "Lt": operator.lt, "LtE": operator.le, "Gt": operator.gt,
+          "GtE": operator.ge}
+_SETS = (set, frozenset, type({}.keys()), type({}.items()))
+
+
+def _charge_result(result) -> None:
+    if isinstance(result, CONTAINERS):
+        _touch(len(result))
+    else:
+        _touch(_int_words(result))
+
+
+def _g_binop(name, left, right):
+    if _costed() and (isinstance(left, _SETS) or isinstance(right, _SETS)) and name in ("BitOr", "BitAnd", "Sub",
+                                                                                         "BitXor"):
+        _refuse("set algebra")
+    result = _BINOPS[name](left, right)
+    if _costed():
+        _charge_result(result)
+    return result
+
+
+def _g_unary(name, operand):
+    result = _UNARY[name](operand)
+    if _costed():
+        _touch(_int_words(result))
+    return result
+
+
+def _g_iop(name, target, value):
+    """``target op= value``: the result to bind back. A list extended by += charges the items added."""
+    if _costed() and isinstance(target, _SETS) and name in ("BitOr", "BitAnd", "Sub", "BitXor"):
+        _refuse("set algebra")
+    before = len(target) if isinstance(target, CONTAINERS) else 0
+    result = _IOPS[name](target, value)
+    if _costed():
+        if isinstance(result, list) and result is target:
+            _touch(len(result) - before)
+        else:
+            _charge_result(result)
+    return result
+
+
+def _g_iop_item(name, container, key, value):
+    container[key] = _g_iop(name, container[key], value)
+
+
+def _scan_contains(container, item) -> bool:
+    """``item in container`` for a list, tuple or iterator, charging the elements compared (the interpreter compares
+    by identity, then equality, in order, and stops at the first match)."""
+    for element in container:
+        _touch(1)
+        if element is item or element == item:
+            return True
+    return False
+
+
+def _g_compare(name, left, right):
+    if name in ("In", "NotIn"):
+        found = _contains(left, right)
+        return found if name == "In" else not found
+    if _costed() and any(isinstance(x, (list, tuple, dict)) for x in (left, right)):
+        _refuse(f"comparing {type(left).__name__} with {type(right).__name__}")
+    return _ORDER[name](left, right)
+
+
+def _contains(item, container) -> bool:
+    if not _costed() or isinstance(container, _HASHED):
+        _touch(1 if _costed() else 0)
+        return item in container
+    if isinstance(container, str):
+        _touch(len(container))
+        return item in container
+    if isinstance(container, (list, tuple)):
+        return _scan_contains(container, item)
+    _refuse(f"`in` on {type(container).__name__}")
+    return item in container
+
+
+def _g_getslice(value, lower, upper, step):
+    result = value[slice(lower, upper, step)]
+    if _costed() and isinstance(value, (list, tuple, str)):
+        _touch(len(result))
+    return result
+
+
+def _g_setslice(container, lower, upper, step, value):
+    if _costed() and isinstance(container, list):
+        span = range(*slice(lower, upper, step).indices(len(container)))
+        before = len(container)
+        container[slice(lower, upper, step)] = value
+        # an equal-length assignment writes the span; any other moves every element from the slice start on
+        _touch(len(span) if len(container) == before else len(container) - span.start)
+        return
+    container[slice(lower, upper, step)] = value
+
+
+def _g_delitem(container, key):
+    if _costed() and isinstance(container, list):
+        before = len(container)
+        start = (key.indices(before)[0] if isinstance(key, slice) else (key % before if before else 0))
+        del container[key]
+        _touch(before - start)
+        return
+    _touch(1 if _costed() else 0)
+    del container[key]
+
+
+def _g_slice(lower, upper, step):
+    return slice(lower, upper, step)
+
+
+def _g_format(value):
+    if _costed() and isinstance(value, (list, tuple, dict, set, frozenset, Counted)):
+        _refuse("formatting a container")
+    return value
+
+
+_LIST_LENGTH = frozenset({"copy", "count", "reverse", "clear"})
+_DICT_LENGTH = frozenset({"copy", "clear"})
+_SET_ALGEBRA = frozenset({"union", "intersection", "difference", "symmetric_difference", "issubset", "issuperset",
+                          "isdisjoint", "update", "intersection_update", "difference_update",
+                          "symmetric_difference_update"})
+
+
+def _g_method(obj, name, *args, **kwargs):
+    method = getattr(obj, name)
+    if _costed() and obj is dict and name == "fromkeys" and args:
+        return method(_consumed(args[0]), *args[1:], **kwargs)
+    if not _costed() or not isinstance(obj, (list, tuple, dict, str, set, frozenset)):
+        return method(*args, **kwargs)
+    if isinstance(obj, str):
+        _refuse(f"the string method str.{name}")
+    if isinstance(obj, (set, frozenset)):
+        if name in _SET_ALGEBRA:
+            _refuse(f"set.{name}")
+        _touch(len(obj) if name in ("copy", "clear") else 1)
+        return method(*args, **kwargs)
+    if isinstance(obj, dict):
+        if name in _DICT_LENGTH:
+            _touch(len(obj))
+        elif name in ("update", "fromkeys"):
+            args = (_consumed(args[0]),) + args[1:] if args else args
+            _touch(len(kwargs))
+        else:
+            _touch(1)
+        return method(*args, **kwargs)
+    if name == "sort":
+        _refuse("list.sort")
+    length = len(obj)
+    if name in _LIST_LENGTH:
+        _touch(length)
+    elif name in ("index", "remove"):
+        bounds = slice(args[1] if len(args) > 1 else None, args[2] if len(args) > 2 else None)
+        window = range(*bounds.indices(length)) if name == "index" else range(length)
+        start = window.start
+        try:
+            result = method(*args, **kwargs)
+        except ValueError:
+            _touch(len(window))
+            raise
+        # index scans to the match; remove also moves every element after it
+        _touch((result - start + 1) if name == "index" else length)
+        return result
+    elif name == "pop":
+        index = args[0] if args else -1
+        _touch(length - (index % length) if length else 0)
+    elif name == "insert":
+        index = min(max(args[0] + length if args[0] < 0 else args[0], 0), length)
+        _touch(length - index + 1)
+    elif name == "extend":
+        args = (_consumed(args[0]),) + args[1:]
+    else:
+        _touch(1)
+    return method(*args, **kwargs)
+
+
+GUARD_NAMES = {"__bb_binop__": _g_binop, "__bb_unary__": _g_unary, "__bb_iop__": _g_iop,
+               "__bb_iop_item__": _g_iop_item, "__bb_compare__": _g_compare, "__bb_getslice__": _g_getslice,
+               "__bb_setslice__": _g_setslice, "__bb_delitem__": _g_delitem, "__bb_slice__": _g_slice,
+               "__bb_format__": _g_format, "__bb_method__": _g_method, "__bb_call__": _g_call}
+
+
+def _call(name: str, args: list, node: ast.AST, keywords=None) -> ast.Call:
+    call = ast.Call(func=ast.Name(id=name, ctx=ast.Load()), args=args, keywords=keywords or [])
+    return ast.copy_location(call, node)
+
+
+def _none_or(node):
+    return node if node is not None else ast.Constant(value=None)
+
+
+class _CostedRewriter(ast.NodeTransformer):
+    """Routes container work in candidate source through the guards (GUARD_NAMES). Every new node takes the location
+    of the node it replaces, so the line tracer sees the same lines."""
+
+    def visit_BinOp(self, node):
+        self.generic_visit(node)
+        return _call("__bb_binop__", [ast.Constant(type(node.op).__name__), node.left, node.right], node)
+
+    def visit_UnaryOp(self, node):
+        self.generic_visit(node)
+        if isinstance(node.op, ast.Not):
+            return node
+        return _call("__bb_unary__", [ast.Constant(type(node.op).__name__), node.operand], node)
+
+    def visit_Compare(self, node):
+        self.generic_visit(node)
+        ops = [type(op).__name__ for op in node.ops]
+        if any(op in ("Is", "IsNot") for op in ops):
+            return node                   # identity touches nothing
+        if len(ops) == 1:
+            return _call("__bb_compare__", [ast.Constant(ops[0]), node.left, node.comparators[0]], node)
+        # a < b < c becomes (a < b) and (b < c): the same short-circuit; costed_source_problems admits a chain only
+        # when its middle operands are names or constants, so evaluating them twice changes nothing.
+        operands = [node.left, *node.comparators]
+        pairs = [_call("__bb_compare__", [ast.Constant(op), operands[i], operands[i + 1]], node)
+                 for i, op in enumerate(ops)]
+        return ast.copy_location(ast.BoolOp(op=ast.And(), values=pairs), node)
+
+    def visit_Subscript(self, node):
+        self.generic_visit(node)
+        if isinstance(node.slice, ast.Slice) and isinstance(node.ctx, ast.Load):
+            s = node.slice
+            return _call("__bb_getslice__", [node.value, _none_or(s.lower), _none_or(s.upper), _none_or(s.step)],
+                         node)
+        return node
+
+    def visit_Assign(self, node):
+        self.generic_visit(node)
+        target = node.targets[0]
+        if len(node.targets) == 1 and isinstance(target, ast.Subscript) and isinstance(target.slice, ast.Slice):
+            s = target.slice
+            call = _call("__bb_setslice__", [target.value, _none_or(s.lower), _none_or(s.upper), _none_or(s.step),
+                                             node.value], node)
+            return ast.copy_location(ast.Expr(value=call), node)
+        return node
+
+    def visit_AugAssign(self, node):
+        self.generic_visit(node)
+        op = ast.Constant(type(node.op).__name__)
+        target = node.target
+        if isinstance(target, ast.Name):
+            call = _call("__bb_iop__", [op, ast.Name(id=target.id, ctx=ast.Load()), node.value], node)
+            return ast.copy_location(ast.Assign(targets=[target], value=call), node)
+        if isinstance(target, ast.Subscript) and not isinstance(target.slice, ast.Slice):
+            call = _call("__bb_iop_item__", [op, target.value, target.slice, node.value], node)
+            return ast.copy_location(ast.Expr(value=call), node)
+        return node
+
+    def visit_Delete(self, node):
+        self.generic_visit(node)
+        statements = []
+        for target in node.targets:
+            if not isinstance(target, ast.Subscript):
+                statements.append(ast.copy_location(ast.Delete(targets=[target]), node))
+                continue
+            key = target.slice
+            if isinstance(key, ast.Slice):
+                key = _call("__bb_slice__", [_none_or(key.lower), _none_or(key.upper), _none_or(key.step)], node)
+            statements.append(ast.copy_location(ast.Expr(value=_call("__bb_delitem__", [target.value, key], node)),
+                                                node))
+        return statements
+
+    def visit_FormattedValue(self, node):
+        self.generic_visit(node)
+        node.value = _call("__bb_format__", [node.value], node.value)
+        return node
+
+    def visit_Call(self, node):
+        self.generic_visit(node)
+        if isinstance(node.func, ast.Attribute):
+            return _call("__bb_method__", [node.func.value, ast.Constant(node.func.attr), *node.args], node,
+                         node.keywords)
+        if isinstance(node.func, ast.Name) and node.func.id in GUARDED_CALL_NAMES:
+            return _call("__bb_call__", [node.func, *node.args], node, node.keywords)
+        return node
+
+
+def costed_source_problems(tree: ast.AST) -> list[str]:
+    """Constructs refused in costed source because the work they do cannot be counted: *-unpacking and **-unpacking
+    (a hidden copy of the unpacked container), a chained comparison holding `in`, a slice inside augmented or multiple
+    assignment, and names that would shadow the guards."""
+    problems = []
+    for node in ast.walk(tree):
+        line = getattr(node, "lineno", "?")
+        if isinstance(node, (ast.Starred, ast.MatchStar)):
+            problems.append(f"line {line}: *-unpacking copies a container the counter cannot see")
+        elif isinstance(node, ast.Dict) and any(key is None for key in node.keys):
+            problems.append(f"line {line}: **-unpacking copies a dict the counter cannot see")
+        elif isinstance(node, ast.keyword) and node.arg is None:
+            problems.append(f"line {line}: **-unpacking copies a dict the counter cannot see")
+        elif isinstance(node, ast.MatchMapping) and node.rest is not None:
+            problems.append(f"line {line}: **rest in a mapping pattern copies a dict the counter cannot see")
+        elif isinstance(node, ast.Compare) and len(node.ops) > 1 and not all(
+                isinstance(middle, (ast.Name, ast.Constant)) for middle in node.comparators[:-1]):
+            problems.append(f"line {line}: a chained comparison whose middle operand is an expression; bind it to a "
+                            "name first or split the comparison")
+        elif isinstance(node, ast.AugAssign) and isinstance(node.target, ast.Subscript) and isinstance(
+                node.target.slice, ast.Slice):
+            problems.append(f"line {line}: augmented assignment to a slice; assign the slice instead")
+        elif isinstance(node, ast.Assign) and (len(node.targets) > 1 or not isinstance(node.targets[0], (
+                ast.Name, ast.Subscript, ast.Attribute))) and any(
+                isinstance(t, ast.Subscript) and isinstance(t.slice, ast.Slice)
+                for target in node.targets for t in ast.walk(target)):
+            problems.append(f"line {line}: a slice inside multiple or unpacking assignment; assign it on its own")
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name.startswith("__"):
+            problems.append(f"line {line}: name {node.name!r} is not allowed")
+        elif isinstance(node, ast.arg) and node.arg.startswith("__"):
+            problems.append(f"line {line}: name {node.arg!r} is not allowed")
+    return problems
+
 # ----- loading candidate code -------------------------------------------------------------------------------------
 
 def audit_source(source: str) -> list[str]:
@@ -533,12 +1012,16 @@ def audit_source(source: str) -> list[str]:
 
 def load_functions(source: str, names: tuple) -> SimpleNamespace:
     """Audit and execute counted code; return the named functions. Executed lines are attributed to
-    CANDIDATE_FILE, which the line tracer follows."""
+    CANDIDATE_FILE, which the line tracer follows. The source is rewritten so that container work goes through the
+    guards (review fix 2026-10-16, COSTED_WORK); the guards are builtins whose names candidate code cannot spell."""
     problems = audit_source(source)
+    if not problems:
+        problems = costed_source_problems(ast.parse(source))
     if problems:
         raise CandidateError("; ".join(problems))
-    namespace = {"__builtins__": dict(SAFE_BUILTINS)}
-    exec(compile(source, CANDIDATE_FILE, "exec"), namespace)
+    tree = ast.fix_missing_locations(_CostedRewriter().visit(ast.parse(source)))
+    namespace = {"__builtins__": dict(SAFE_BUILTINS, **GUARD_NAMES)}
+    exec(compile(tree, CANDIDATE_FILE, "exec"), namespace)
     missing = [name for name in names if not callable(namespace.get(name))]
     if missing:
         raise CandidateError(f"code does not define {missing}")
@@ -550,16 +1033,22 @@ def load_candidate(source: str) -> SimpleNamespace:
 
 
 class LineTracer:
+    """Counts executed candidate lines, and marks the calls made inside it as costed: their uncounted container and
+    array work is charged to ``touched`` (COSTED_WORK)."""
+
     def __init__(self):
         self.lines = 0
+        self.touched = 0
 
     def __enter__(self):
         self._previous = sys.gettrace()
+        _Tally.stack.append(self)
         sys.settrace(self._global)
         return self
 
     def __exit__(self, *exc):
         sys.settrace(self._previous)
+        _Tally.stack.remove(self)
         return False
 
     def _global(self, frame, event, arg):
@@ -586,6 +1075,7 @@ class Measurement:
     param_words_start: int
     param_words_end: int
     seconds: float
+    touched: int = 0           # words touched by uncounted container and array work (COSTED_WORK)
 
 
 def token_stream(n: int, vocab: int, seed: int) -> list[int]:
@@ -612,7 +1102,7 @@ def measure(candidate: SimpleNamespace, point: dict, *, vocab: int = DEFAULT_VOC
             peak = max(peak, words(state))
             candidate.predict(params, state, counter)
     return Measurement(dict(point), counter.total, dict(counter.counts), tracer.lines, peak, init_ops,
-                       params_start, words(params), round(time.perf_counter() - started, 4))
+                       params_start, words(params), round(time.perf_counter() - started, 4), tracer.touched)
 
 
 # ----- the claim and the verdict ----------------------------------------------------------------------------------
@@ -814,6 +1304,17 @@ def verify_cost(source: str, claim: CostClaim, *, ns=DEFAULT_NS, tolerance: floa
             failure["formula_band"] = [round(low, 4), round(high, 4)]
         return failure
 
+    def touched_check(name: str, fixed: dict, touched: float, high: float) -> dict | None:
+        """Review fix 2026-10-16: uncounted container and array work (Measurement.touched) may not grow faster in
+        ``name`` than the op formula's order there, the larger of its fitted slope on these points and its asymptotic
+        exponent, so admitted lower-order coefficients on a finite grid do not fail it (the KV cache copy of
+        softmax attention grows as n^2, like its counted work)."""
+        order = max(high, exponent_in(ops_expr, symbols, name, dict(fixed, n=fixed.get("n", min(ns)))))
+        if touched <= order + tolerance:
+            return None
+        return {"check": f"touched_exponent_{name}", "sizes": fixed, "touched_slope": round(touched, 4),
+                "formula_order": round(order, 4), "tolerance": tolerance}
+
     slopes = []
     for setting in settings:
         row = [m for m in measurements if all(m.point[k] == v for k, v in setting.items())]
@@ -821,13 +1322,17 @@ def verify_cost(source: str, claim: CostClaim, *, ns=DEFAULT_NS, tolerance: floa
         formula_slope, low, high = band(row, xs)
         measured = loglog_slope(xs, [m.ops for m in row])
         lines = loglog_slope(xs, [m.lines for m in row])
+        touched = loglog_slope(xs, [m.touched for m in row])
         slopes.append(slope_entry({"sizes": setting, "parameter": "n", "measured": round(measured, 4),
-                                   "lines": round(lines, 4)}, formula_slope, low, high))
+                                   "lines": round(lines, 4), "touched": round(touched, 4)}, formula_slope, low, high))
         if measured < low - tolerance or measured > high + tolerance:
             failures.append(slope_failure("exponent_n", setting, measured, formula_slope, low, high))
         if lines > high + tolerance:
             failures.append({"check": "lines_exponent_n", "sizes": setting, "lines_slope": round(lines, 4),
                              "formula_slope": round(high, 4), "tolerance": tolerance})
+        touched_failure = touched_check("n", setting, touched, high)
+        if touched_failure:
+            failures.append(touched_failure)
     n_max = max(ns)
     for name in names:
         values = sorted(claim.sizes[name])
@@ -841,10 +1346,14 @@ def verify_cost(source: str, claim: CostClaim, *, ns=DEFAULT_NS, tolerance: floa
             xs = [m.point[name] for m in row]
             formula_slope, low, high = band(row, xs)
             measured = loglog_slope(xs, [m.ops for m in row])
-            slopes.append(slope_entry({"sizes": fixed, "parameter": name, "measured": round(measured, 4)},
-                                      formula_slope, low, high))
+            touched = loglog_slope(xs, [m.touched for m in row])
+            slopes.append(slope_entry({"sizes": fixed, "parameter": name, "measured": round(measured, 4),
+                                       "touched": round(touched, 4)}, formula_slope, low, high))
             if measured < low - tolerance or measured > high + tolerance:
                 failures.append(slope_failure(f"exponent_{name}", fixed, measured, formula_slope, low, high))
+            touched_failure = touched_check(name, fixed, touched, high)
+            if touched_failure:
+                failures.append(touched_failure)
 
     arch_points = []
     if architecture is not None:
@@ -944,6 +1453,7 @@ def sandbox_problems(source: str, form: str) -> list[str]:
                             "raise NameError when that line runs")
     if form == "cost":
         problems += _counted_namespace_problems(tree, guarded)
+        problems += costed_source_problems(tree)
     return problems
 
 
@@ -1094,4 +1604,4 @@ def counting_text() -> str:
             "negative, not below its formula at some grid point, or not of lower order in a declared size, and the "
             "finite-grid slope checks then allow the slopes that counts within the remainder can have. A remainder "
             "never covers a difference in the leading term, such as dots counted as k mac units against a formula "
-            "that counts 2k-1.")
+            "that counts 2k-1. " + COSTED_WORK)

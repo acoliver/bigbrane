@@ -172,7 +172,7 @@ Known numbers in the tests: 1000 bits for 100 facts of 10 bits, and 999 bits fai
 
 The candidate is Python source without imports that defines `init(sizes, ops) -> (params, state)`, `update(params, state, token, ops) -> state` and `predict(params, state, ops)`. Its only array functions are in `ops.np`, and every array they return is a `Counted` wrapper whose arithmetic is charged to the counter. The raw array is out of reach: the source audit refuses imports, attributes starting with an underscore, and builtins such as `eval`, `getattr` and `open`. Mixing a plain NumPy array into counted arithmetic raises.
 
-Counting rules, one unit each: a matrix product counts k multiply-adds per output element; an elementwise ufunc counts one per output element, as `arith`, `compare` or `transcendental`; `ops.np.sigmoid`, the logistic sigma(x) = 1/(1+exp(-x)), counts one `transcendental` per element like `tanh` (FIX-3: card k2 froze a unit-cost sigmoid the counter could not run); a reduction over k elements counts k − 1. Creating, indexing, slicing and concatenating count nothing and show up in the state size instead. Python scalar arithmetic is not counted. Every executed line of candidate code is counted with `sys.settrace`, so a Python loop doing uncounted work still shows its growth.
+Counting rules, one unit each: a matrix product counts k multiply-adds per output element; an elementwise ufunc counts one per output element, as `arith`, `compare` or `transcendental`; `ops.np.sigmoid`, the logistic sigma(x) = 1/(1+exp(-x)), counts one `transcendental` per element like `tanh` (FIX-3: card k2 froze a unit-cost sigmoid the counter could not run); a reduction over k elements counts k − 1. Creating, indexing, slicing and concatenating add nothing to the op total and show up in the state size instead; the touched-word tally below charges the elements they write. Python scalar arithmetic is not counted. Every executed line of candidate code is counted with `sys.settrace`, so a Python loop doing uncounted work still shows its growth.
 
 `verify_cost(source, CostClaim(ops, state, sizes, exponent), ns=..., tolerance=0.05)` runs the candidate at every n (the plan's 64 to 4096 by default) crossed with every listed value of the other sizes, each of which needs two values. It requires:
 
@@ -181,7 +181,30 @@ Counting rules, one unit each: a matrix product counts k multiply-adds per outpu
 3. the formula's asymptotic exponent, lim log f / log n, equal to the claimed exponent;
 4. the slope of executed lines in n at most the formula's slope plus 0.05;
 5. peak state words equal to the state formula at every point;
-6. parameters that do not grow during the sequence.
+6. parameters that do not grow during the sequence;
+7. the growth of the touched-word tally (next section) in n and in every other size at most the order of the claimed op formula (checks `touched_exponent_<size>`).
+
+#### Costed work (`cost.COSTED_WORK`)
+
+The op counter sees `ops.np` arithmetic and the line tracer sees executed lines. Before the 2026-10-16 review fix, work done inside a builtin, a container operator or an array copy was visible to neither: `state['h'] + [token]` per token with `sum(state['h'])` per prediction is quadratic and verified as linear. Of seven hidden-quadratic probes claimed linear, six were discharged (`results/review-fixes-20261016/probe_cost_before.json`); only the list comprehension was caught, by the line slope.
+
+Inside a costed call (update and predict of a cost candidate, x of a magic-X assumption) the candidate source is rewritten at load time so that these operations go through guards. A guard charges the elements it touches, exactly, to a separate tally that is kept apart from the op total, so no cost formula changes:
+
+| Work | Touched words |
+| --- | --- |
+| `sum`, `max`, `min`, `any`, `all`, `list`, `tuple`, `dict` over k items | k |
+| `in` on a list, tuple or string | elements scanned (dict, set and range membership: 1) |
+| slicing a list, tuple or string; `+`, `*`, `\|` that build one | result length |
+| `list.copy`, `count`, `reverse`, `clear` | length |
+| `list.index`, `remove`; `insert`, `pop(i)`, `del` | elements scanned and moved |
+| `extend`, `+=` | items added |
+| array creation, `ops.np.concatenate` and `stack`, `.copy()`, a reshape or index that copies, array item assignment | elements written |
+
+Array views (basic slices, `.T`, a reshape that does not copy) are free. Outside a costed call (init, conformance runs) the guards charge nothing and refuse nothing.
+
+Some work cannot be counted exactly, so it is refused with `CandidateError`: `sorted` and `list.sort`; `==`, `!=`, `<`, `<=`, `>`, `>=` between lists, tuples or dicts; `in` on an array or an iterator; set algebra; string methods; formatting a container in an f-string. `*`-unpacking and `**`-unpacking, and a chained comparison whose middle operand is an expression, are refused in the source audit, before anything runs.
+
+`touched_exponent_<size>` requires the touched slope to be at most max(the formula's fitted slope, its asymptotic exponent) plus the tolerance. A design whose data movement outgrows its counted work fails; one that appends and reads the last item touches O(1) per token and passes. The calibration cards' own cost sources (K1 to K4) give the same verdicts as before the change (`results/review-fixes-20261016/known-cards-cost.json`).
 
 A remainder (`ops_remainder`, `state_remainder`) must come with the sizes in which it is of strictly lower order than its formula (`ops_remainder_lower_in`, `state_remainder_lower_in`); `remainder_problems` refuses, before freezing and again in `verify_cost`, a remainder without that list, one that is negative or not below its formula at a grid point, and one whose asymptotic exponent in a listed size is not below the formula's. The first failed check in that order becomes the counterexample. Wall time is recorded and never decides.
 
@@ -216,6 +239,7 @@ The example in the tests is the plan's T3 case of a perfect retrieval index with
 ### Tests
 
 - `hybrid/tests/math/test_conservation.py`: every law against the known numbers above, the planted storage and recall overruns, card claims, fail-fast on unreadable claims, the collision witness.
+- `test_cost_hidden_work.py`: the seven hidden-quadratic probes (six discharged before the fix), the refusals, the exact touched tally, honest candidates that still pass and the references.
 - `test_cost.py`: counting rules, the audit, the four references against their formulas and a by-hand count at one point, the planted exponent error, an n log n claim on a nested loop, the uncounted loop, state and parameter checks, remainders, exponent claims.
 - `test_constructions.py`: determinism, oracle self-score 1.0, task formats, every hand-set construction, failure exactly above capacity.
 - `test_magic_x.py`: the oracle that alone gives the advantage, the uninformative assumption, the exemption rule, unrunnable code, prefix-only access, the n-gram backoff.
