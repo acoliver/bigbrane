@@ -1,0 +1,17 @@
+{
+  "model": "gpt-6.1-sol",
+  "store": false,
+  "stream": true,
+  "instructions": "You are terse.",
+  "input": [
+    {"type": "additional_tools", "role": "developer", "tools": [
+      {"type": "function", "name": "get_weather", "description": "Look up weather",
+       "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}, "strict": null}
+    ]},
+    {"role": "user", "content": "Weather in Paris?"},
+    {"type": "function_call", "call_id": "call_abc123", "name": "get_weather", "arguments": "{\"city\":\"Paris\"}"},
+    {"type": "function_call_output", "call_id": "call_abc123", "output": "18C, sunny"},
+    {"role": "user", "content": "Thanks. Now Rome?"}
+  ],
+  "parallel_tool_calls": true
+}

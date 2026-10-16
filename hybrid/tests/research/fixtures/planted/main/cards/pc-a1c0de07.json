@@ -1,0 +1,86 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Merging classes of interchangeable symbols",
+  "summary": "Symbols that appear in the same frame are merged into one class; a probe returns the class representative, so a new member is placed after a single shared frame.",
+  "core_idea": "Merge symbols seen in one frame into a class and answer with its representative.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "corvane",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Class map from each symbol to its representative after every merge so far."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "corvane_t = union(corvane_(t-1), x_t, frame_t)",
+        "plain": "corvane_t = union(corvane_(t-1), x_t, frame_t)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = find(corvane_t, q_t)",
+        "plain": "y_t = find(corvane_t, q_t)"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is trained; classes form by merging.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(V)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "A new member joins its class after one shared frame."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "class membership",
+        "prediction": "Places a new symbol in its class after one shared frame."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Class merging is used in many symbolic systems.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Two symbols never seen together share a class.",
+    "A merge is undone."
+  ],
+  "toy_example": {
+    "description": "Two merges over four symbols.",
+    "python": "import json\nparent = {a: a for a in 'abcd'}\ndef root(x):\n    while parent[x] != x:\n        x = parent[x]\n    return x\nparent['b'] = 'a'\nparent['d'] = 'c'\nprint(json.dumps({'same_ab': root('b') == root('a'), 'classes': len({root(x) for x in 'abcd'})}))\n",
+    "expected": {
+      "same_ab": true,
+      "classes": 2
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

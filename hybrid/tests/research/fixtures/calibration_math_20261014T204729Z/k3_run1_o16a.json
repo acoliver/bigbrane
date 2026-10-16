@@ -1,0 +1,166 @@
+{
+ "claim_ids": [
+  "complexity.time_per_token",
+  "complexity.memory",
+  "complexity.total_sequence",
+  "sample_efficiency.prediction",
+  "capability.1",
+  "capability.2",
+  "capability.3",
+  "capability.4",
+  "P1",
+  "P2.copy",
+  "P2.recall",
+  "P2.nesting",
+  "P2.composition",
+  "P3",
+  "P4.copy",
+  "P4.recall",
+  "P4.nesting",
+  "P4.composition",
+  "P5"
+ ],
+ "note": "Obligation O16 (slot P5) as frozen by the statement fixer in k3-run1 of the 2026-10-14T20:47:29Z calibration, and the record's claim ids. Copied unchanged from the source artifact.",
+ "obligation": {
+  "claim_id": "P5",
+  "claim_quote": "information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws, with an entry at every size P2 covers (each copy L, recall K and dyck depth)",
+  "definitions": [
+   "D1",
+   "D4",
+   "D5",
+   "D7"
+  ],
+  "discharges": [],
+  "id": "O16",
+  "premises": [],
+  "statements": [
+   {
+    "bound": null,
+    "form": "conservation",
+    "id": "O16.a",
+    "sha256": "aaece5b8c423f05537213fb654806168df3c3a74952a45a6f99a673ef6b6bfd0",
+    "spec": {
+     "copy": [
+      {
+       "D": 4,
+       "L": 8,
+       "accuracy": 0.000244140625,
+       "state_bits": 4
+      },
+      {
+       "D": 4,
+       "L": 32,
+       "accuracy": 8.673617379884035e-19,
+       "state_bits": 4
+      },
+      {
+       "D": 4,
+       "L": 64,
+       "accuracy": 4.70197740328915e-38,
+       "state_bits": 4
+      }
+     ],
+     "dyck": [
+      {
+       "accuracy": 1,
+       "depth": 2,
+       "state_bits": 4
+      },
+      {
+       "accuracy": 1,
+       "depth": 4,
+       "state_bits": 4
+      },
+      {
+       "accuracy": 0.0625,
+       "depth": 8,
+       "state_bits": 4
+      },
+      {
+       "accuracy": 0.000244140625,
+       "depth": 16,
+       "state_bits": 4
+      }
+     ],
+     "recall": [
+      {
+       "K": 8,
+       "V": 16,
+       "accuracy": 0.99,
+       "state_bits": 4
+      },
+      {
+       "K": 32,
+       "V": 16,
+       "accuracy": 0.99,
+       "state_bits": 4
+      },
+      {
+       "K": 64,
+       "V": 16,
+       "accuracy": 0.0625,
+       "state_bits": 4
+      }
+     ],
+     "sample": [
+      {
+       "L": 2,
+       "bits_per_example": 4,
+       "examples": 400,
+       "hypothesis_class": {
+        "definition": "All selectors s:{0,1}->{0,1}; output index i receives source symbol s(i). The target is the identity selector. The target is drawn uniformly from this class.",
+        "log2_size": 2,
+        "size_justification": "Each of two output indices has two choices, giving four rules. Different selectors are distinguished by a source string with different symbols at their differing selected positions. Protocol encoding and restriction to this class are supplied; no member is hand-set."
+       },
+       "log2_H": 2,
+       "prior_bits": 0,
+       "task": "copy"
+      },
+      {
+       "K": 2,
+       "bits_per_example": 8,
+       "examples": 400,
+       "hypothesis_class": {
+        "definition": "Name the two stored pairs by sorted key rank k_0<k_1 with values v_0,v_1, without sorting the input. All selectors s:{0,1}->{0,1} answer query k_i by v_s(i). The target is the identity selector and is drawn uniformly from the class.",
+        "log2_size": 2,
+        "size_justification": "Two choices for each of two ranks give four rules. Different selectors are distinguished by pairs with distinct values at the differing selected ranks. Protocol encoding and the class restriction are supplied; no member is hand-set."
+       },
+       "log2_H": 2,
+       "prior_bits": 0,
+       "task": "recall"
+      },
+      {
+       "bits_per_example": 7,
+       "depth": 2,
+       "examples": 300,
+       "hypothesis_class": {
+        "definition": "All maps from the six nonempty bottom-to-top stack contexts (0),(1),(0,0),(0,1),(1,0),(1,1) to the two closing tokens, evaluated after each scored prefix. The target returns the closer of the top bracket and is drawn uniformly from this class.",
+        "log2_size": 6,
+        "size_justification": "There are two choices at each of six contexts, giving 64 rules. Every context occurs in a valid depth-2 prefix, so distinct maps yield distinct answers. Protocol encoding and the class restriction are supplied; no member is hand-set."
+       },
+       "log2_H": 6,
+       "prior_bits": 0,
+       "task": "dyck"
+      },
+      {
+       "T": 2,
+       "bits_per_example": 2,
+       "examples": 400,
+       "hypothesis_class": {
+        "definition": "All selectors s:{0,1}->{0,1}; with contextual tables g and f and request x, answer f(g(s(x))). The target is the identity selector and is drawn uniformly from this class.",
+        "log2_size": 2,
+        "size_justification": "Each of two requests has two choices, giving four rules. Distinct selectors are distinguished by tables that map their differing selected arguments to different outputs. Protocol encoding and the class restriction are supplied; no member is hand-set."
+       },
+       "log2_H": 2,
+       "prior_bits": 0,
+       "task": "composition"
+      }
+     ],
+     "state_bits": 4
+    }
+   }
+  ]
+ },
+ "source": "runs/calibration-math-20261014T204729Z/k3-run1/artifacts/math_statements/card-ca11b003-v1-c6a34a.json",
+ "source_sha256": "9506375d5534b2e22dfb1f1dd6cc2a0cce421e46ca87419a1be551624e1a2a00"
+}

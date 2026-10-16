@@ -1,0 +1,265 @@
+\input{preamble}
+\begin{document}
+\emergencystretch=3em
+\Urlmuskip=0mu plus 2mu
+
+\title{From language models to learned abstractions\\\large A research brief on pre-transformer lineages and alternatives}
+\author{Prepared for Andrew Oliver}
+\date{11 October 2026}
+\maketitle
+
+\tldr{\textbf{Verdict.} The approaches before transformers each captured part of language but ran into coverage, search, memory, or training bottlenecks. Efficient sequence architectures since 2017 reduce context-time compute and memory, while evidence for lower language-data requirements remains weak. Data-efficient systems succeed when structure is supplied or generated; none has shown open-ended English competence from child-scale text. LeCun's JEPA program has produced vision, video, and planning systems, alongside a small paired-view language objective, but no general language model. \textbf{Opinion:} the strongest opening is to learn a compositional representation and its operations from varied generated tasks, retain exact recall for prompt examples, and evaluate on genuinely new language combinations at matched compute and exposure. Each component has a known failure mode: a narrow task generator, a representation that averages meanings, or memory that simply relocates cost.}
+
+\section{The problem in numbers}
+Children's spoken-word exposure is estimated in tens of millions by early childhood, with large sampling and population qualifications. GPT-3 used 300 billion tokens; Chinchilla used 1.4 trillion. These units are not interchangeable: tokenization, repeated exposures, child interaction and learning after age four differ. The ratios show scale, not a direct measure of sample efficiency [1,2,3].
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{p{3.25cm}p{3cm}p{6.2cm}}
+\toprule
+Evidence & Reported scale & What it supports and does not support \\
+\midrule
+Child exposure estimates & 13--45 million words by age four; another recording-based calculation gives about 18.6 million & Extrapolations from sampled speech. The latter assumes a constant rate; neither is a complete lifetime transcript [1]. \\
+GPT-3 & 300 billion training tokens & About 6,700--23,000 times the reported child word range by raw division; unlike units and experience [1,2]. \\
+Chinchilla & 70 billion parameters; 1.4 trillion tokens & Beat 280-billion-parameter Gopher at the same reported training compute. Compute-optimal training in this family used roughly 20 tokens per parameter [2]. \\
+Scaling laws & More than 400 models in Chinchilla study & Loss improved with more model and data resources in measured regimes. These fits do not prove that all learners require trillions of tokens [2,4]. \\
+\bottomrule
+\end{tabular}
+\caption{Exposure and training counts differ in what they measure.}
+\label{tab:scale}
+\end{table}
+Table~\ref{tab:scale} frames the practical target: reduce training exposure and total compute together, while counting prior data and external stores.
+
+\section{What the transformer got right, and what it costs}
+Self-attention computes content-addressed interactions: a query selects relevant keys and returns their values. That provides direct access across a context, parallel computation over training positions, and a prompt-conditioned inner learner. Induction heads implement a simple copy rule, while regression studies show attention can implement gradient updates on examples in a prompt [5,6]. These mechanisms support in-context learning, though the gradient-descent account is not established for natural language models.
+
+Full attention forms quadratic pair interactions in sequence length. The key-value cache grows with context during generation. Training parallelism therefore coexists with increasing long-context cost. A successor needs parallel or chunked training, exact recall when required, prompt learning, and a way to allocate extra inference work selectively [5,6,7].
+
+\section{Before 2017: what each lineage solved}
+The earlier work did not converge on one failed theory. It produced distinct tools. The repeated limitation was that a representation or algorithm solved a bounded part of language while leaving acquisition, scale, or open-ended coverage unresolved.
+
+\subsection{Symbolic grammar and formal semantics}
+Rules made recursion, constituents, quantifier scope, and truth-conditional interpretation explicit. Montague-style semantics maps grammatical combination into operations on meanings [8,9]. Parsers and systems such as SHRDLU executed language against a supplied blocks-world model [10]. The limitation was the cost of ambiguity, lexical coverage, pragmatics, and hand-maintained knowledge. Parsing and typed composition survived in semantic interpretation, constrained decoding, and program-like representations. Formal grammar remains useful as a specification; it does not by itself explain how a learner acquires primitives.
+
+\subsection{Statistical n-grams, HMMs, and translation}
+N-grams estimated likely continuations from counts; hidden Markov models (HMMs) represented sequences through latent states, and statistical machine translation (SMT) learned alignments from parallel corpora. Kneser-Ney smoothing improved unseen-context prediction, while CRFs enabled richer sequence labeling [11,12]. Sparse counts, fixed context, state assumptions, feature work, and bilingual-data dependence limited transfer. Likelihood, perplexity, beam search, latent alignment, and dynamic programming survived.
+
+\subsection{Distributional semantics}
+Latent semantic analysis, word2vec, and GloVe learned vectors from co-occurrence [13,14]. These methods exposed useful relational structure, but proximity is not a full account of negation, roles, or context-sensitive meaning. Static vectors mix senses; analogies depend on evaluation design. Embeddings, similarity search, and latent geometry survived as components.
+
+\subsection{Neural LMs and recurrent networks}
+Neural language models shared features across contexts; RNNs updated a state token by token, and LSTMs used gates to preserve information over longer spans. Encoder-decoder models and Bahdanau attention eased the fixed-vector translation bottleneck [15,16]. Recurrence supported streaming and strong speech or translation results, but sequential training limited parallelism and a fixed state could not preserve arbitrary context. Embeddings, gates, autoregressive prediction, and attention survived.
+
+\subsection{Recursive and tree models}
+Tree-LSTMs combined child representations along a parse tree and improved sentiment and semantic-relatedness results on particular benchmarks [17]. The supplied parser could be wrong, tree computation complicated batching, and phrase supervision added task-specific information. Structured composition and phrase-level testing survived, while attention offered flexible token interactions without an external tree.
+
+\subsection{DisCoCat}
+Compositional distributional semantics uses grammar types to determine tensor contractions, mapping word vectors and operators into sentence meanings [18]. It gave a precise composition rule and small sentence-task results. High-order tensors, parser dependence, lexical sparsity, and uncertain learned types blocked broad language scaling. Typed composition and diagrammatic reasoning remain candidates for a mathematical account of meaning.
+
+\subsection{Vector-symbolic and hyperdimensional methods}
+Vector-symbolic architectures (VSA) bind role and filler vectors, superpose structures, and approximately unbind them. Tensor products are exact but grow with structure; fixed-width holographic representations accept interference and require cleanup memory [19,20]. The algebra handles structured records, but does not explain how semantic codes are learned from text. Role-filler separation and associative retrieval survived.
+
+\subsection{Memory-augmented networks}
+Neural Turing Machines and differentiable memory networks separated a controller from addressable storage [21]. They learned copying and selected algorithmic tasks. Soft reads, writes, allocation, training stability, and memory access cost limited deployment; temporal linkage could require quadratic storage in exact forms. Retrieval, multiple hops, and controller-memory separation survived in modern retrieval systems.
+
+\subsection{Bayesian program induction and language of thought}
+Bayesian program learning explains examples with compact procedures and reuses abstractions. On one-shot handwritten-character classification, a program model achieved 3.3\% error against 13.5\% for a comparison convolutional network, with domain-appropriate stroke priors [22]. Search is combinatorial and the hypothesis language sets what is easy to learn. Program synthesis, reusable libraries, and explicit priors survived; the result does not establish few-shot open-language learning.
+
+\subsection{Systematicity and other cognitive architectures}
+The systematicity debate asked whether representing one relation should support role-swapped and novel combinations [23]. Soar, ACT-R, and SHRDLU coordinated memory, rules, goals, or action in bounded settings [10,24]. They showed that grounded behavior can be organized, while their supplied world models and rules constrain transfer. Variable binding, compositional tests, and grounded evaluation survived.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{p{3.1cm}p{4.2cm}p{3.2cm}p{2.1cm}}
+\toprule Lineage & Best demonstrated contribution & Main drawback & Fate \\
+\midrule
+Symbolic/formal & Explicit recursive and typed meaning & Coverage and ambiguity & Components \\
+Statistical NLP & Efficient estimation and structured prediction & Sparse context and task dependence & Components \\
+Distributional & Useful lexical geometry & Similarity lacks full composition & Components \\
+RNN/LSTM & Shared sequence features and streaming & Sequential training, finite state & Niche and hybrid \\
+Tree models/DisCoCat & Explicit composition & Structure acquisition and tensor cost & Research line \\
+VSA/memory & Binding and addressable recall & Interference or access cost & Niche, modern retrieval \\
+Program induction & Few-shot reusable procedures & Search and domain priors & Active in formal tasks \\
+\bottomrule
+\end{tabular}
+\caption{Pre-transformer lineages solved different subproblems.}
+\label{tab:pre}
+\end{table}
+Table~\ref{tab:pre} summarizes the outcomes. Parallel convolution and attention-based encoder-decoder work before the transformer also showed that training parallelism was available without recurrence [25,26]. The transformer combined direct cross-position access with parallel training and a simple predictive objective.
+
+\section{After 2017: alternatives and continuations}
+
+\subsection{Efficient sequence models and hybrids}
+State-space models, linear attention, and delta-rule memories replace all-pairs interaction with recurrent state or structured matrix computation. Mamba, Mamba-2, RetNet, RWKV, and DeltaNet report faster inference or lower memory on long contexts [27--32]. The cost is recall: fixed state can lose exact copying, retrieval, and multi-hop behavior. In a controlled study, hybrids retaining a small share of attention performed better across standard tasks than pure SSMs [33]. MiniMax-01 used linear attention with periodic softmax layers, then MiniMax-M2 returned to full attention after reported deficits in complex multi-hop reasoning [34]. This line attacks compute, not the volume of training text.
+
+\subsection{Retrieval and memory}
+kNN-LM improved perplexity without extra training, and a model trained on 100 million tokens plus search over 3 billion tokens beat the same model trained on all 3 billion [35]. RETRO matched larger models on the Pile with a 2-trillion-token retrieval store [36]. Retrieval benefits facts and rare strings, while storage and search remain costs and reasoning gains are limited. Learned memory layers and test-time memories extend the family [37,38]. They trade weight learning for explicit lookup, with no general proof that language acquisition becomes cheaper.
+
+\subsection{LeCun, JEPA, and AMI Labs}
+Joint-Embedding Predictive Architecture (JEPA) predicts a target representation from a context representation. It aims to discard unpredictable detail and preserve predictable structure. I-JEPA and V-JEPA results concern images and video; V-JEPA 2 adds action-conditioned planning [39--41]. LeJEPA addresses representation collapse with a regularizer [42]. LLM-JEPA adds a language objective using paired views such as text and code, while retaining next-token training [43]. The supplied research finds no general AMI language model. AMI's published work described here remains in vision, robotics, and planning [44,45]. The gap is how to define language views and learn broad linguistic competence without inheriting it from a large text-trained model. Video results also use large data exposure.
+
+\subsection{Energy-based learning and local update rules}
+Predictive coding, equilibrium propagation, and forward-forward learning replace or approximate backpropagation with local errors, settling, or two forward passes [46--48]. They offer possible hardware advantages. Tests remain small; settling and negative-example requirements can cost more on GPUs, and none demonstrates a large language model trained with less data.
+
+\subsection{Active inference}
+Active inference combines perception and action through beliefs, goals, and information-seeking. AXIOM learned simple pixel games within 10,000 interactions using object-centric priors [49]. The task construction supplied structure, and the paper does not establish performance on complex control or language. The useful research question is whether an agent can select text or interactions that reduce uncertainty efficiently.
+
+\subsection{Neurosymbolic methods, ARC, and synthesis}
+Program synthesis combines a proposer with a symbolic checker. DreamCoder learns reusable primitives; AlphaGeometry and AlphaProof use formal domains where proof checking is available [50--52]. The Tiny Recursive Model reports strong ARC results with 7 million parameters, but ARC is a narrow abstraction benchmark [53]. Frontier language models can also solve formal competition tasks, and symbolic verification does not transfer directly to unconstrained English. The successful ingredient is iterative search with feedback; its failure mode is a task language that excludes the problem of interest.
+
+\subsection{Compositional generalization}
+SCAN and COGS expose gaps on held-out combinations even when in-distribution scores are high. Meta-Learning for Compositionality (MLC) improved systematic generalization by training a transformer across generated grammars and few-shot episodes [54--56]. This is evidence for learning a learning procedure, though the generated grammar distribution may not cover English.
+
+\subsection{Category theory, QNLP, and HDC/VSA}
+DisCoCat and quantum NLP make composition explicit through typed tensor structure. Small handcrafted tasks have shown compositional behavior, including larger toy stories where transformer and GPT-4 baselines were near chance [57--59]. The evidence does not extend to open text, and current quantum hardware and grammar requirements constrain the claim. HDC/VSA supports compact binding and noise-tolerant hardware, with classification and Raven-matrix results, but standard classifiers often match or outperform it [20,60,61].
+
+\subsection{Data-efficient language learning: BabyLM and TinyStories}
+BabyLM evaluates training under 10-million- and 100-million-word budgets. Transformer design and objectives improved grammar scores; the 2023 Strict aggregate reached 0.74 against 0.60 for OPT-125M, while models remained weaker on broader knowledge and reasoning. Curriculum learning did not win in 2023 or 2025 [62--64]. TinyStories shows small models can write coherent stories from a teacher-generated narrow corpus, but the teacher carries prior knowledge [65]. This supports narrow language learning from less text, not general competence.
+
+\subsection{Other alternatives}
+KANs performed well on formula fitting, while matched comparisons favored MLPs on NLP and other general tasks [66,67]. Liquid AI's shipped LFM2 emphasizes short convolutions plus some attention; liquid differential-equation blocks did not improve aggregate quality under its reported budgets [68]. Spiking language models target energy and hardware, with some conversion results inheriting a pretrained checkpoint [69,70]. Diffusion LMs permit parallel denoising and report speed or benchmark gains, though LLaDA used 2.3 trillion tokens and lacks a KV cache [71,72]. Large Concept Models predict sentence embeddings and show multilingual transfer, while their 7-billion-parameter run still used trillions of tokens and regression averaged incompatible possible continuations [73].
+
+\begin{table}[ht]
+\centering\scriptsize
+\begin{tabular}{p{2.7cm}p{3.4cm}p{2.4cm}p{2.4cm}p{2.1cm}}
+\toprule Direction & Evidence & Main limitation & Attacks & Evidence level \\
+\midrule Efficient sequence/hybrids & Faster long-context inference & Recall; data unchanged & Compute & Production hybrids \\
+Retrieval/memory & Fewer trained tokens for factual lookup & Storage and search & Data partly, compute partly & Language results \\
+JEPA & Vision/video representation and planning & No general LM & Compute; data unclear & Strong vision, early language \\
+Local learning & Small vision benchmarks & No LM scale & Hardware compute & Early research \\
+Active inference & Simple games with priors & Narrow task design & Both in toy setting & Limited \\
+Synthesis/ARC & Few-shot formal tasks & Domain checker and search & Both in domain & Benchmark evidence \\
+MLC & Systematic generated-language tasks & Generator transfer & Data in synthetic domain & Academic evidence \\
+QNLP/category & Composition on toy texts & Grammar, scale, hardware & Data in toy domain & Early \\
+HDC/VSA & Low-cost structured operations & Capacity and learned codes & Compute & Niche \\
+BabyLM/TinyStories & Grammar and controlled stories at small budgets & Knowledge and teacher dependence & Data, narrow scope & Challenge results \\
+Diffusion/LCM & Parallel generation or concept-space transfer & Token exactness, data scale & Compute; data uncertain & Research/product demo \\
+\bottomrule
+\end{tabular}
+\caption{Alternatives target different resources and have different evidence scopes.}
+\label{tab:post}
+\end{table}
+Table~\ref{tab:post} distinguishes measured language evidence from vision, toy tasks, and hardware claims. Figure~\ref{fig:map} positions these directions qualitatively.
+
+\section{A map of compute and data evidence}
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\draw[->] (0,0) -- (12,0) node[right]{Evidence for lower training compute};
+\draw[->] (0,0) -- (0,7) node[above]{Evidence for lower data requirement};
+\draw[dashed,gray] (6,0)--(6,6.5); \draw[dashed,gray] (0,3.25)--(11.5,3.25);
+\node[align=left] at (3,5.5) {BabyLM, MLC, program synthesis};
+\node[align=left] at (2.7,4.5) {Retrieval, AXIOM};
+\node[align=left] at (8.7,5.5) {ARC, formal proofs, HDC tasks};
+\node[align=left] at (8.8,4.3) {JEPA (vision labels)};
+\node[align=left] at (8.7,2.6) {SSM hybrids, spiking, liquid};
+\node[align=left] at (3.0,2.1) {LCM, diffusion};
+\node[align=left] at (2.6,0.8) {Local learning rules};
+\node[align=left] at (8.3,0.8) {Full attention};
+\end{tikzpicture}
+\caption{Qualitative placement based on the supplied research. Points to the left reduce compute; points upward have evidence of reducing data. Most upper placements apply to constrained tasks, with no general open-English demonstration.}
+\label{fig:map}
+\end{figure}
+The map is an evidence classification, not a measured score. Retrieval moves data into a store; it does not remove the store's cost. JEPA's label efficiency follows large-scale pretraining. No point in the upper-right represents a demonstrated general language learner that beats a transformer on both resources.
+
+\section{Lessons and openings for new mathematics}
+The earlier lines usually stalled at one of four boundaries: representing ambiguity, acquiring useful primitives, preserving arbitrary context, or paying for search and external memory. A successor must keep parallel training, exact prompt recall, in-context adaptation, scalable objectives, and hardware-efficient operations. The replacement must report training data, compute, inference state, search, and every prior or teacher used.
+
+\textbf{Opinion, candidate directions.} First, learn a compositional algebra instead of fixing its grammar. Category theory and DreamCoder suggest formal structure and abstraction learning; failure would come from a narrow algebra or combinatorial discovery. Second, meta-train across a distribution of generated languages so the model learns how to infer rules. This could fail if English falls outside that distribution. Third, represent a concept as a set or region of valid expressions, using energy or distributional objectives. It could fail through representation collapse or unusable decoding. Fourth, combine compressed recurrent state with exact retrieval. It could fail when the exact store grows into the dominant cost. Fifth, learn from paired views of meaning, such as paraphrase or text and perception. It could fail if alignment imports the knowledge supposedly learned from fewer words.
+
+A useful experiment should compare loss and novel-combination transfer against a transformer at matched compute and exposure, then extend beyond 100 million words. Count synthetic examples, pretrained components, retrieval corpora, search expansions, and interaction data. Test role reversal, negation, quantification, paraphrase, and new combinations. Report failure cases, not only aggregate scores.
+
+\section{Questions for the project}
+The existing research notes leave four decisions open. Should the learner receive text only, or also images, speech, actions, and interaction? Which structures may be built in, and which must be learned? What observable behavior defines an \emph{idea}: a stable equivalence class of expressions, an executable procedure, a causal model, or something else? What result would convince Andrew: a held-out compositional benchmark, a data-versus-compute curve, transfer from a small corpus, or a working system on open-ended tasks? These choices determine which mathematical proposal can be tested and what counts as a win.
+
+\section{Glossary}
+\begin{description}[style=nextline]
+\item[Attention] Content-dependent weighting of stored representations, commonly computed from queries, keys, and values.
+\item[Content-addressable recall] Retrieving information by matching its content to a query.
+\item[Induction head] A pair of attention heads that copies a continuation associated with a repeated pattern.
+\item[In-context learning] Adapting behavior from examples in a prompt without updating model parameters.
+\item[State-space model] A sequence model that updates a compact internal state as inputs arrive.
+\item[JEPA] Joint-Embedding Predictive Architecture, which predicts a target representation from context.
+\item[Compositional generalization] Applying learned parts and rules to combinations missing from training.
+\item[VSA/HDC] Vector-symbolic architecture or hyperdimensional computing, using high-dimensional vectors for binding and retrieval.
+\item[ARC] Abstraction and Reasoning Corpus, a set of visual grid tasks designed to test few-example generalization.
+\item[Compute-optimal] A model/data allocation that minimizes loss for a fixed compute budget in a measured training family.
+\end{description}
+
+\section*{References}
+This brief cites the supplied research notes only. The reference numbers below refer to their numbered entries. \textbf{UNVERIFIED items remain marked in the source notes}: ARC-AGI-3 leaderboard snapshots and the link between Symbolica's reported ARC result and categorical methods; attribution of one active-inference criticism; and vendor speed and cost claims without independent replication. Quantitative exposure ratios and projections retain the assumptions stated in the source notes [1,2,27--73].
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item Hart and Risley (2003); Gilkerson et al. (2017); Sperry et al. (2018/2019). Child language exposure and limitations. \url{https://www.aft.org/ae/spring2003/hart_risley}
+\item Brown et al. (2020); Hoffmann et al. (2022). GPT-3 and Chinchilla training data. \url{https://arxiv.org/abs/2005.14165v4} \url{https://arxiv.org/abs/2203.15556}
+\item Warstadt et al. (2023). Findings of the BabyLM Challenge. \url{https://aclanthology.org/2023.conll-babylm.1.pdf}
+\item Kaplan et al. (2020). Scaling Laws for Neural Language Models. \url{https://arxiv.org/abs/2001.08361}
+\item Olsson et al. (2022). In-context Learning and Induction Heads. \url{https://arxiv.org/abs/2209.11895}
+\item von Oswald et al. (2023); Shen et al. (2024). In-context learning and gradient descent. \url{https://proceedings.mlr.press/v202/von-oswald23a.html}
+\item Vaswani et al. (2017). Attention Is All You Need. \url{https://arxiv.org/abs/1706.03762}
+\item Chomsky (1957); Montague (1970); Pullum and Scholz (2002). Formal grammar and learnability. \url{https://babel.ucsc.edu/~hank/synstruct.pdf}
+\item Coecke, Sadrzadeh, and Clark (2010). Mathematical Foundations for a Compositional Distributional Model of Meaning. \url{https://arxiv.org/abs/1003.4394}
+\item Winograd (1971). SHRDLU. \url{https://dspace.mit.edu/entities/publication/3406b826-5a41-4b72-9430-7876c0d5405e}
+\item Kneser and Ney (1995); Rabiner (1989); Brown et al. (1993). Statistical language models and sequence methods. \url{https://www-i6.informatik.rwth-aachen.de/publications/download/951/KneserReinhardNeyHermann--ImprovedBacking-offforM-gramLanguageModeling--1995.pdf}
+\item Lafferty, McCallum, and Pereira (2001). Conditional Random Fields. \url{https://courses.ischool.berkeley.edu/i290-dm/s11/SECURE/crf.pdf}
+\item Deerwester et al. (1990); Mikolov et al. (2013); Pennington et al. (2014). Distributional representations. \url{https://aclanthology.org/D14-1162/}
+\item Linzen (2016). Issues in Evaluating Semantic Spaces Using Word Analogies. \url{https://aclanthology.org/W16-2503/}
+\item Bengio et al. (2003); Hochreiter and Schmidhuber (1997); Mikolov et al. (2010). Neural language models and LSTM. \url{https://jmlr.org/papers/v3/bengio03a.html}
+\item Sutskever et al. (2014); Bahdanau et al. (2014/2015). Seq2seq and learned alignment. \url{https://arxiv.org/abs/1409.0473}
+\item Socher et al. (2013); Tai et al. (2015). Recursive neural models. \url{https://aclanthology.org/P15-1150/}
+\item Grefenstette and Sadrzadeh (2011). Experimental Support for a Categorical Compositional Distributional Model. \url{https://aclanthology.org/D11-1129/}
+\item Smolensky (1990); Plate (1995). Tensor-product and holographic representations. \url{https://doi.org/10.1109/72.377968}
+\item Kleyko et al. (2022); Hersche et al. (2023). Hyperdimensional computing and vector-symbolic architectures. \url{https://dl.acm.org/doi/10.1145/3538531}
+\item Graves et al. (2014); Weston et al. (2014/2015); Sukhbaatar et al. (2015). Neural external memory. \url{https://arxiv.org/html/1410.5401v2}
+\item Lake, Salakhutdinov, and Tenenbaum (2015). Human-level Concept Learning through Probabilistic Program Induction. \url{https://www.science.org/doi/10.1126/science.aab3050}
+\item Fodor and Pylyshyn (1988). Connectionism and Cognitive Architecture. \url{https://www.sciencedirect.com/science/article/pii/0010027788900315}
+\item Laird, Newell, and Rosenbloom (1987); Anderson et al. (2004). Soar and ACT-R. \url{https://www.cs.utexas.edu/~dana/ACT-R.pdf}
+\item Gehring et al. (2017). Convolutional Sequence to Sequence Learning. \url{https://proceedings.mlr.press/v70/gehring17a.html}
+\item Vaswani et al. (2017). Attention Is All You Need. \url{https://arxiv.org/abs/1706.03762}
+\item Gu, Goel, and Ré (2021); Gu and Dao (2023); Dao and Gu (2024). S4, Mamba, and Mamba-2. \url{https://arxiv.org/abs/2405.21060}
+\item Katharopoulos et al. (2020). Transformers are RNNs. \url{https://proceedings.mlr.press/v119/katharopoulos20a.html}
+\item Sun et al. (2023). Retentive Network. \url{https://arxiv.org/abs/2307.08621}
+\item Peng et al. (2023). RWKV. \url{https://arxiv.org/abs/2305.13048}
+\item Yang et al. (2024). Delta rule and gated delta networks. \url{https://arxiv.org/abs/2412.06464}
+\item Arora et al. (2024); Jelassi et al. (2024). Recall limits in efficient language models. \url{https://proceedings.mlr.press/v235/jelassi24a.html}
+\item Waleffe et al. (2024). Empirical Study of Mamba-based Language Models. \url{https://research.nvidia.com/publication/2024-06_empirical-study-mamba-based-language-models}
+\item MiniMax (2025). MiniMax-01 and M2 architecture discussion. \url{https://arxiv.org/abs/2501.08313}
+\item MiniMax (2025). Why Did M2 End Up as a Full Attention Model? \url{https://www.minimax.io/news/why-did-m2-end-up-as-a-full-attention-model}
+\item Khandelwal et al. (2020). Nearest Neighbor Language Models. \url{https://arxiv.org/abs/1911.00172}
+\item Borgeaud et al. (2022). RETRO. \url{https://proceedings.mlr.press/v162/borgeaud22a.html}
+\item Berges et al. (2024). Memory Layers at Scale. \url{https://ai.meta.com/research/publications/memory-layers-at-scale/}
+\item Behrouz et al. (2025). Titans. \url{https://arxiv.org/abs/2501.00663}
+\item LeCun (2022); Assran et al. (2023). JEPA and I-JEPA. \url{https://openreview.net/pdf?id=BZ5a1r-kVsf}
+\item Bardes et al. (2024); Assran et al. (2025). V-JEPA and V-JEPA 2. \url{https://arxiv.org/abs/2506.09985}
+\item Balestriero and LeCun (2025). LeJEPA. \url{https://arxiv.org/abs/2511.08544}
+\item Huang, LeCun, and Balestriero (2026). LLM-JEPA. \url{https://proceedings.iclr.cc/paper_files/paper/2026/hash/ac818ec2da1c976b267de32f59709c69-Abstract-Conference.html}
+\item Maes et al. (2026). LeWorldModel. \url{https://arxiv.org/abs/2603.19312}
+\item Zhang et al. (2026). H-JEPA. \url{https://h-jepa.com/}
+\item Whittington and Bogacz (2017); Scellier and Bengio (2017). Predictive coding and equilibrium propagation. \url{https://www.frontiersin.org/journals/computational-neuroscience/articles/10.3389/fncom.2017.00024/full}
+\item Hinton (2022). Forward-Forward Algorithm. \url{https://arxiv.org/abs/2212.13345}
+\item Pinchetti et al. (2024). Benchmarking Predictive Coding Networks. \url{https://arxiv.org/abs/2407.01163}
+\item Heins et al. (2025). AXIOM. \url{https://arxiv.org/abs/2505.24784}
+\item Ellis et al. (2021). DreamCoder. \url{https://dl.acm.org/doi/10.1145/3453483.3454080}
+\item Trinh et al. (2024). AlphaGeometry. \url{https://www.nature.com/articles/s41586-023-06747-5}
+\item Hubert et al. (2025). AlphaProof. \url{https://www.nature.com/articles/s41586-025-09833-y}
+\item Jolicoeur-Martineau (2025). Tiny Recursive Model. \url{https://arxiv.org/abs/2510.04871}
+\item Lake and Baroni (2018). SCAN. \url{https://proceedings.mlr.press/v80/lake18a.html}
+\item Kim and Linzen (2020). COGS. \url{https://aclanthology.org/2020.emnlp-main.731/}
+\item Lake and Baroni (2023). Meta-learning for systematic generalization. \url{https://www.nature.com/articles/s41586-023-06668-3}
+\item Lorenz et al. (2023). QNLP in Practice. \url{https://www.jair.org/index.php/jair/article/view/14329}
+\item Duneau et al. (2024). QDisCoCirc. \url{https://arxiv.org/abs/2409.08777}
+\item Gavranović et al. (2024). Categorical Deep Learning. \url{https://proceedings.mlr.press/v235/gavranovic24a.html}
+\item Vergés et al. (2025). HDC comparative analysis. \url{https://link.springer.com/article/10.1007/s10462-025-11181-2}
+\item Warstadt et al. (2023); Hu et al. (2024); Charpentier et al. (2025). BabyLM findings. \url{https://aclanthology.org/2025.babylm-main.28/}
+\item Eldan and Li (2023). TinyStories. \url{https://arxiv.org/abs/2305.07759}
+\item Liu et al. (2024); Yu et al. (2024). KAN and matched comparison. \url{https://arxiv.org/abs/2407.16674}
+\item Hasani et al. (2021); Liquid AI (2025). Liquid networks and LFM2. \url{https://arxiv.org/abs/2511.23404}
+\item Zhu et al. (2023); BICLab (2025). SpikeGPT and SpikingBrain. \url{https://arxiv.org/abs/2509.05276}
+\item Nie et al. (2025). LLaDA. \url{https://proceedings.neurips.cc/paper_files/paper/2025/file/48b383b24230e0e6e649d9c98dae4d8c-Paper-Conference.pdf}
+\item Inception Labs (2025). Mercury. \url{https://arxiv.org/abs/2506.17298}
+\item LCM team (2024). Large Concept Models. \url{https://arxiv.org/abs/2412.08821}
+\item Muennighoff et al. (2025). Scaling Data-Constrained Language Models. \url{https://www.jmlr.org/beta/papers/v26/24-1000.html}
+\item Sutton (2019). The Bitter Lesson. \url{https://web.archive.org/web/20251006184925/http:/www.incompleteideas.net/IncIdeas/BitterLesson.html}
+\end{enumerate}
+
+\end{document}

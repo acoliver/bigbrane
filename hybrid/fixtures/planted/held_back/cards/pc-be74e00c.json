@@ -1,0 +1,116 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Cosine feature ledger with a matched divisor",
+  "summary": "Address and probe vectors are mapped through a fixed bank of cosine features. Each symbol adds the product of its address features and its content to a ledger and adds the features alone to a divisor vector. The read takes the probe's features against the ledger and divides by the same features against the divisor.",
+  "core_idea": "Approximate an exponential similarity read with fixed cosine features so the whole history fits in a ledger of feature-content products and a feature tally.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "G",
+        "type": "real matrix",
+        "shape": [
+          "m",
+          "d"
+        ],
+        "meaning": "Ledger of summed feature-content products, m cosine features by d content coordinates."
+      },
+      {
+        "name": "r",
+        "type": "real vector",
+        "shape": [
+          "m"
+        ],
+        "meaning": "Divisor: summed cosine features of every earlier address."
+      },
+      {
+        "name": "Omega",
+        "type": "fixed real matrix",
+        "shape": [
+          "m",
+          "d"
+        ],
+        "meaning": "Frequencies of the cosine features, drawn once at random from a standard normal and never trained."
+      }
+    ],
+    "update": [
+      {
+        "name": "features",
+        "latex": "\\psi(v) = \\sqrt{2/m}\\, \\cos(\\Omega v + \\omega_0),\\; f_t = \\psi(W_a e_t),\\; c_t = W_c e_t",
+        "plain": "psi(v) = sqrt(2/m) cos(Omega v + omega_0) with fixed phases omega_0; f_t = psi(W_a e_t), content c_t = W_c e_t"
+      },
+      {
+        "name": "ledger",
+        "latex": "G_t = G_{t-1} + f_t c_t^{\\top},\\; r_t = r_{t-1} + f_t",
+        "plain": "G_t = G_(t-1) + outer(f_t, c_t); r_t = r_(t-1) + f_t"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "g_t = \\psi(W_b e_t),\\; y_t = \\frac{G_t^{\\top} g_t}{r_t^{\\top} g_t}",
+        "plain": "g_t = psi(W_b e_t); y_t = G_t^T g_t / (r_t . g_t), the normalized read; next symbol scores O y_t"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence. The frequencies Omega and phases omega_0 stay fixed.",
+      "few_shot_argument": "No structure for few examples; about 3500 training sequences are needed for recall of 4 pairs."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(m d + d V)",
+      "memory": "Theta(m d)",
+      "total_sequence": "Theta(n m d + n d V)",
+      "constants_notes": "m cosines, one rank-one write and one m by d read per symbol; ledger and divisor are m d + m numbers."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 3500,
+        "statement": "From random weights, 3500 training sequences of 4 pairs over 16 symbols give recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Approximate recall whose error shrinks as m grows; exact only when the K address features are orthogonal, which needs K <= m."
+      },
+      {
+        "task": "approximation of an exponential weighting",
+        "prediction": "For unit-norm addresses the expected read equals the exponential-similarity weighted mean of contents, with variance of order 1/m."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Recall error does not decrease when m is raised from 64 to 1024 at K = 16.",
+    "The counted operations grow faster than linearly in n at fixed m, d and V."
+  ],
+  "toy_example": {
+    "description": "Two writes with m = 2 fixed cosine features and one read.",
+    "python": "import json, math\nOm = [[1.0, 0.0], [0.0, 1.0]]\nph = [0.3, -0.2]\ndef psi(v):\n    return [math.sqrt(1.0) * math.cos(Om[i][0] * v[0] + Om[i][1] * v[1] + ph[i]) for i in range(2)]\nG = [[0.0], [0.0]]\nr = [0.0, 0.0]\nfor a, c in [([0.0, 0.0], 1.0), ([1.0, 1.0], 3.0)]:\n    f = psi(a)\n    for i in range(2):\n        G[i][0] += f[i] * c\n        r[i] += f[i]\ng = psi([0.1, 0.0])\ny = (G[0][0] * g[0] + G[1][0] * g[1]) / (r[0] * g[0] + r[1] * g[1])\nprint(json.dumps({\"read\": round(y, 6), \"divisor\": [round(v, 6) for v in r]}))\n",
+    "expected": {
+      "read": 1.670987,
+      "divisor": [
+        1.222835,
+        1.676773
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

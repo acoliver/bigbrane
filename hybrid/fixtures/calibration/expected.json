@@ -1,0 +1,45 @@
+{
+  "source": "DISCOVERY-PIPELINE-PLAN.md section 12, expected calibration table; P2 sizes and thresholds from hybrid/math/profile.py",
+  "runs_required": 3,
+  "cells": ["P1", "P2.copy", "P2.recall", "P2.nesting", "P2.composition", "P3", "P5"],
+  "cards": {
+    "k1": {
+      "model": "two-layer softmax-attention model, written as two rounds of weighted retrieval over stored pairs",
+      "cells": {"P1": "pass", "P2.copy": "pass", "P2.recall": "pass", "P2.nesting": "pass", "P2.composition": "pass", "P3": "pass", "P5": "pass"},
+      "profile": "pass",
+      "target": "fail",
+      "expected_cost": {"exponent_in_n": 2, "state_growth": "linear in n (2 L d n words)"},
+      "expected_limit": "fixed depth: no robust Dyck-2 or parity as n grows (plan section 21.1, Hahn 2020; TC0 bound)",
+      "notes": "Nesting passes because the number of rounds may grow with the listed depth (plan section 12, RASP Dyck-k construction)."
+    },
+    "k2": {
+      "model": "LSTM, written as a running store regulated by multiplicative switches",
+      "cells": {"P1": "pass", "P2.copy": "pass", "P2.recall": "pass", "P2.nesting": "pass", "P2.composition": "pass", "P3": "pass", "P5": "pass"},
+      "profile": "pass",
+      "target": "pass",
+      "expected_cost": {"exponent_in_n": 1, "state_growth": "fixed (Theta(d))"},
+      "expected_limit": "copy beyond the state's bits (Jelassi et al. 2024, Theorem 2.7); finite precision",
+      "notes": "Copy and recall pass because the store width is chosen for the listed sizes (L log2 D and K log2 V below the state bits)."
+    },
+    "k3": {
+      "model": "HMM with k = 16 states, decoded to one latent state per token",
+      "cells": {"P1": "pass", "P2.copy": "fail", "P2.recall": "fail", "P2.nesting": "fail", "P2.composition": "fail", "P3": "pass", "P5": "pass"},
+      "profile": "fail",
+      "kill_codes_include": ["obligation_failed:P2.nesting", "obligation_failed:P2.composition"],
+      "target": "pass",
+      "expected_cost": {"exponent_in_n": 1, "state_growth": "fixed (one state index, log2 k bits)"},
+      "expected_limit": "finite state: Dyck-2 at depth D needs at least 2^D states",
+      "notes": "The plan names nesting and composition; copy and recall also fail at the listed sizes because 16 states hold 4 bits and the listed sizes need at least 16 (copy L = 8 over 4 symbols) and 32 (recall K = 8 over 16 values). Decoding to one latent state per token makes the capacity exactly log2 k bits, the assumption behind the plan's limit column; a filtering belief over 16 states would carry real numbers and leave the expected failures undefined."
+    },
+    "k4": {
+      "model": "n-gram of order c = 3, written as continuation counts over the last two symbols",
+      "cells": {"P1": "pass", "P2.copy": "fail", "P2.recall": "fail", "P2.nesting": "fail", "P2.composition": "fail", "P3": "pass", "P5": "pass"},
+      "profile": "fail",
+      "kill_codes_include": ["obligation_failed:P2.nesting", "obligation_failed:P2.composition"],
+      "target": "pass",
+      "expected_cost": {"exponent_in_n": 1, "state_growth": "fixed (the last c - 1 symbols); the V^c table is a corpus-scale store fixed after training"},
+      "expected_limit": "window c: nothing beyond the last c - 1 symbols",
+      "notes": "Plan section 12: fails P2 on nesting and composition (and copy and recall)."
+    }
+  }
+}

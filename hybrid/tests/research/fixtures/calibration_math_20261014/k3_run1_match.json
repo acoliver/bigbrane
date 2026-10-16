@@ -1,0 +1,2700 @@
+{
+ "provenance": {
+  "run": "runs/calibration-math-20261014T053341Z/k3-run1",
+  "frozen": "card-ca11b003-v1-328eac.json",
+  "m_verdict": "card-ca11b003-v1-e3d2b9.json",
+  "c_verdict": "card-ca11b003-v2-fa7b4e.json",
+  "backtranslate_call": "call-58bb0f77353e",
+  "compare_call": "call-55c4602f39f4",
+  "matcher_model": "qwen3.6-35b-a3b-mlx",
+  "note": "sanitized extract for hybrid/tests/research/test_fix7_match.py (FIX-7)"
+ },
+ "record": {
+  "card_id": "card-ca11b003",
+  "card_version": 1,
+  "claims": [
+   {
+    "id": "complexity.time_per_token",
+    "text": "complexity time_per_token: Theta(k V)"
+   },
+   {
+    "id": "complexity.memory",
+    "text": "complexity memory: Theta(1)"
+   },
+   {
+    "id": "complexity.total_sequence",
+    "text": "complexity total_sequence: Theta(n k V)"
+   },
+   {
+    "id": "sample_efficiency.prediction",
+    "text": "sample efficiency prediction: 400 copy examples at L = 2 over 4 symbols give per-string accuracy 0.99. (metric: examples_to_copy_L2; value: 400)"
+   },
+   {
+    "id": "capability.1",
+    "text": "capability 1: task: two-type bracket nesting prediction: Exact up to depth log2 16 = 4; deeper prefixes need at least 2^D distinct states to know the legal closer, so accuracy falls below 0.99 at depth 8 and 16; at depth 16 per-sequence accuracy is at most 16 / 2^16."
+   },
+   {
+    "id": "capability.2",
+    "text": "capability 2: task: two-hop lookup and chained assignments prediction: Fails once the tables given in context hold more than 4 bits, which is already the case at the listed table sizes 4, 16 and 32."
+   },
+   {
+    "id": "capability.3",
+    "text": "capability 3: task: copy a string after a separator prediction: Exact only while L log2 D is at most 4 bits; fails at the listed lengths 8 to 64, where per-string accuracy is at most 16 / D^L (16 / 4^64 at L = 64 over 4 symbols)."
+   },
+   {
+    "id": "capability.4",
+    "text": "capability 4: task: associative recall of K pairs prediction: Exact only while K log2 V is at most 4 bits; fails at the listed K of 8 to 64; at K = 64 over 16 symbols per-query accuracy is at chance, 1/16."
+   },
+   {
+    "id": "P1",
+    "text": "profile P1: exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n"
+   },
+   {
+    "id": "P2.copy",
+    "text": "profile P2.copy: construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words"
+   },
+   {
+    "id": "P2.recall",
+    "text": "profile P2.recall: construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words"
+   },
+   {
+    "id": "P2.nesting",
+    "text": "profile P2.nesting: construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words"
+   },
+   {
+    "id": "P2.composition",
+    "text": "profile P2.composition: construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words"
+   },
+   {
+    "id": "P3",
+    "text": "profile P3: derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2"
+   },
+   {
+    "id": "P4.copy",
+    "text": "profile P4.copy: toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds"
+   },
+   {
+    "id": "P4.recall",
+    "text": "profile P4.recall: toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+   },
+   {
+    "id": "P4.nesting",
+    "text": "profile P4.nesting: toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+   },
+   {
+    "id": "P4.composition",
+    "text": "profile P4.composition: toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+   },
+   {
+    "id": "P5",
+    "text": "profile P5: information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws"
+   }
+  ],
+  "definitions": [
+   {
+    "id": "D1",
+    "kind": "other",
+    "sha256": "7196de23a70b585e0b920f962f3aa694274d68ba94735992a6ec4cc3915beb81",
+    "text": "The model has k=16 latent states, one carried integer z, and fixed probability tables A of shape k by k and B of shape k by vocabulary size. update(x) sets z to the smallest maximizing j of A[z,j]*B[j,x]. predict returns the smallest maximizing v of sum_j A[z,j]*B[j,v]. Parameters do not change during inference. No position counter, input buffer, external memory, or additional carried state is allowed. In the architecture contract d denotes k, not an additional embedding width; there is one update round and no feed-forward expansion."
+   },
+   {
+    "id": "D2",
+    "kind": "accounting",
+    "sha256": "84e171ba9d2f9c16cbc6b18b23612210a66bdb72be70e32a4a5f78b87b5b580b",
+    "text": "For cost measurement, compute the update scores by elementwise multiplication followed by argmax, and compute readout scores by the length-k vector A[z,:] @ B followed by argmax. Thus update costs k+(k-1) units and readout costs k*V+(V-1) units. Perform update and readout once per token. A and B are fixed parameters, excluded from carried state; the state object contains only z. Temporary score arrays are not retained in the state object. Generalize k to the cost grid without changing these equations."
+   },
+   {
+    "id": "D3",
+    "kind": "sampling",
+    "sha256": "e9fb325589daa54a020fbe97cc4d75ad1d20079f76dc744a72697f0ccac4d9db",
+    "text": "Use the supplied task-contract generators and scoring positions unchanged. Copy uses D=4 and self-fed continuation, with 2*L tokens and vocabulary 5. Recall uses V=16, n_keys=2*K, 3*K+1 tokens, and vocabulary 2*K+17. Composition uses 5*T+3 tokens and vocabulary 3*T+3, with arbitrary functions and independently shuffled tables. Binding uses values=8, two interleaved chains, 4*hops+7 tokens, and vocabulary 2*hops+11. Dyck uses vocabulary 4 and the supplied variable-length balanced-word generator; measured stream lengths are 8 at depth 2, 14–16 at depth 4, 26–32 at depth 8, and 50–64 at depth 16. There is no per-token store."
+   },
+   {
+    "id": "D4",
+    "kind": "evaluation",
+    "sha256": "29602fc114234fee29d4e12bd8a5321423ec43ed537de411281570a668fd3bb0",
+    "text": "Learnability uses the architecture in D1 and only the card's count-based rule: decode training text with the current tables, count transitions and emissions, normalize, and repeat. The prover chooses initialization, handling of zero counts, passes, and batch organization in its declared RECIPE, without changing the architecture or learning rule. Use seeds 0, 1, 2, threshold 0.99, and 500 test instances per seed. Score copy per string, recall and composition per query, and dyck per sequence. Apply the identical learner and RECIPE to true examples, zero examples, and the same token sequences with randomized answers. Both controls and the supplied 1800-second, 4096-MB, single-core budget and replay requirements are mandatory."
+   },
+   {
+    "id": "D5",
+    "kind": "notation",
+    "sha256": "37152bc3fac74b1e5cc8e63f279daacff0b8f34aabd54cd247aa022f88100ae5",
+    "text": "For the finite-state information statements, a source string is a function Fin L -> Fin D. enc maps the complete source prefix to its carried state, and dec maps that state to the complete self-fed continuation. Success means equality of the entire string. This includes every deterministic mechanism with only sixteen carried states; dec includes its fixed parameters and deterministic self-fed updates. Counts divided by D^L are accuracies under the uniform source distribution."
+   },
+   {
+    "id": "D6",
+    "kind": "notation",
+    "sha256": "b78ab1c725e77544599e31969da1c4eccc9a2f6f3762562d604ebc95f63852c0",
+    "text": "For the recall information statement, fix any particular ordered set of K distinct keys. A value assignment is a function Fin K -> Fin V, enc is the state after storing the pairs, and dec(state,i) is the answer to key i when queried first. Average accuracy is the number of correct assignment/key combinations divided by V^K*K. Exact recall means every key is answered correctly for every assignment. The statement quantifies over all deterministic sixteen-state encoders and query decoders."
+   },
+   {
+    "id": "D7",
+    "kind": "other",
+    "sha256": "1a68a5551802205143c879e051bf8be8885d1a1ce2df259d8cbfa9d9430f846b",
+    "text": "The sample-information entries use the card's declared restricted target-rule classes, supplied by the task protocol, with a uniformly drawn target and no hand-set member. For copy, recall, and composition the class is all four selectors {0,1}->{0,1}; for dyck it is all maps from the six specified nonempty depth-two stack contexts to two closers. Prior bits are zero relative to these restricted classes, not relative to a class that also learns parsing or the task protocol."
+   }
+  ],
+  "premises": [],
+  "not_formalized": [
+   {
+    "claim_id": "capability.1",
+    "why": "The claim conflates identifying an immediate legal closer with recovering the whole stack and leaves the quantifier behind 'Exact up to depth 4' unspecified, so choosing either interpretation would change its asserted state lower bound."
+   },
+   {
+    "claim_id": "capability.2",
+    "why": "Neither 'tables hold more than 4 bits' nor 'fails' specifies an information measure, distribution, accuracy threshold, or chained-assignment sizes, so no unique testable failure statement can be frozen."
+   }
+  ],
+  "obligations": [
+   {
+    "claim_id": "complexity.time_per_token",
+    "claim_quote": "Theta(k V)",
+    "definitions": [
+     "D2"
+    ],
+    "discharges": [],
+    "id": "O1",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O1.a",
+      "sha256": "4ebe965f043582b1aa538d02673a8e11d1dc922319c054c082231cf14c7bd699",
+      "spec": "import Mathlib\ndef tokenCost (k v : ℕ) : ℕ := k + (k - 1) + k*v + (v - 1)\ndef Claim : Prop := ∃ c C : ℕ, 0 < c ∧ ∀ k v : ℕ, 1 ≤ k → 1 ≤ v → c*(k*v) ≤ tokenCost k v ∧ tokenCost k v ≤ C*(k*v)"
+     }
+    ]
+   },
+   {
+    "claim_id": "complexity.memory",
+    "claim_quote": "Theta(1)",
+    "definitions": [
+     "D1",
+     "D2"
+    ],
+    "discharges": [],
+    "id": "O2",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O2.a",
+      "sha256": "e99ff842f58b22b38addf1da10b4063660e4b8cf70b58b1937128a548152fa87",
+      "spec": "import Mathlib\ndef carriedWords (_n _k _v : ℕ) : ℕ := 1\ndef Claim : Prop := ∃ c C : ℕ, 0 < c ∧ ∀ n k v : ℕ, c ≤ carriedWords n k v ∧ carriedWords n k v ≤ C"
+     }
+    ]
+   },
+   {
+    "claim_id": "complexity.total_sequence",
+    "claim_quote": "Theta(n k V)",
+    "definitions": [
+     "D2"
+    ],
+    "discharges": [],
+    "id": "O3",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O3.a",
+      "sha256": "650ef0b544ad85ccb224fe5e3319415f046e58de185309a9bb8746779314b1f0",
+      "spec": "import Mathlib\ndef sequenceCost (n k v : ℕ) : ℕ := n*(k + (k-1) + k*v + (v-1))\ndef Claim : Prop := ∃ c C : ℕ, 0 < c ∧ ∀ n k v : ℕ, 1 ≤ n → 1 ≤ k → 1 ≤ v → c*(n*k*v) ≤ sequenceCost n k v ∧ sequenceCost n k v ≤ C*(n*k*v)"
+     }
+    ]
+   },
+   {
+    "claim_id": "sample_efficiency.prediction",
+    "claim_quote": "400 copy examples at L = 2 over 4 symbols give per-string accuracy 0.99.",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O4",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O4.a",
+      "sha256": "4b7910b567f44ef1653641ba2dbd6efc8957b57049736521efe432594fd8f144",
+      "spec": {
+       "examples": 400,
+       "params": {
+        "D": 4
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 2,
+       "task": "copy",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "capability.3",
+    "claim_quote": "Exact only while L log2 D is at most 4 bits; fails at the listed lengths 8 to 64, where per-string accuracy is at most 16 / D^L (16 / 4^64 at L = 64 over 4 symbols).",
+    "definitions": [
+     "D1",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O5",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O5.a",
+      "sha256": "db867f135ed065902b804e447a4df57a4508f3e02559e907ad95a1f2a50d7f56",
+      "spec": "import Mathlib\ndef correctStrings (L D : ℕ) (enc : (Fin L → Fin D) → Fin 16) (dec : Fin 16 → (Fin L → Fin D)) : ℕ := Fintype.card {x : Fin L → Fin D // dec (enc x) = x}\ndef Claim : Prop := ∀ L D : ℕ, 1 ≤ D → ∀ (enc : (Fin L → Fin D) → Fin 16) (dec : Fin 16 → (Fin L → Fin D)), correctStrings L D enc dec ≤ 16 ∧ ((∀ x, dec (enc x) = x) → D^L ≤ 16) ∧ (∀ l : ℕ, 8 ≤ l → l ≤ 64 → ∀ (e : (Fin l → Fin 4) → Fin 16) (d : Fin 16 → (Fin l → Fin 4)), (correctStrings l 4 e d : ℚ) / (4^l : ℚ) ≤ 16 / (4^l : ℚ) ∧ (correctStrings l 4 e d : ℚ) / (4^l : ℚ) < 99/100)"
+     }
+    ]
+   },
+   {
+    "claim_id": "capability.4",
+    "claim_quote": "Exact only while K log2 V is at most 4 bits; fails at the listed K of 8 to 64; at K = 64 over 16 symbols per-query accuracy is at chance, 1/16.",
+    "definitions": [
+     "D1",
+     "D6"
+    ],
+    "discharges": [],
+    "id": "O6",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O6.a",
+      "sha256": "ee1ee2b6a03416f70844ad91cce6ac11051eb0d6758d0fcf8ed9e1effefba1f9",
+      "spec": "import Mathlib\ndef recallCorrect (K V : ℕ) (enc : (Fin K → Fin V) → Fin 16) (dec : Fin 16 → Fin K → Fin V) : ℕ := Fintype.card {p : (Fin K → Fin V) × Fin K // dec (enc p.1) p.2 = p.1 p.2}\ndef Claim : Prop := (∀ K V : ℕ, 1 ≤ V → ∀ (enc : (Fin K → Fin V) → Fin 16) (dec : Fin 16 → Fin K → Fin V), (∀ x i, dec (enc x) i = x i) → V^K ≤ 16) ∧ (∀ K : ℕ, 8 ≤ K → K ≤ 64 → ∀ (enc : (Fin K → Fin 16) → Fin 16) (dec : Fin 16 → Fin K → Fin 16), (recallCorrect K 16 enc dec : ℚ) / ((16^K * K : ℕ) : ℚ) < 99/100) ∧ (∀ (enc : (Fin 64 → Fin 16) → Fin 16) (dec : Fin 16 → Fin 64 → Fin 16), (recallCorrect 64 16 enc dec : ℚ) / ((16^64 * 64 : ℕ) : ℚ) ≤ 1/16)"
+     }
+    ]
+   },
+   {
+    "claim_id": "P1",
+    "claim_quote": "exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n",
+    "definitions": [
+     "D1",
+     "D2"
+    ],
+    "discharges": [],
+    "id": "O7",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "cost",
+      "id": "O7.a",
+      "sha256": "163aa1f095fc34cfcefa94c57ede155cd96e766b2b365a64d385369363e6b494",
+      "spec": {
+       "exponent": 1,
+       "ops": "n*(k*V + 2*k + V - 2)",
+       "sizes": {
+        "V": [
+         4,
+         16
+        ],
+        "k": [
+         8,
+         16
+        ]
+       },
+       "state": "1",
+       "widths": {
+        "d": "k",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.copy",
+    "claim_quote": "construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words",
+    "definitions": [
+     "D1",
+     "D3"
+    ],
+    "discharges": [],
+    "id": "O8",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O8.a",
+      "sha256": "4fd48a0bf29902ac571dfaaddab6503d2fbaca944389849f40be49df351b3dc3",
+      "spec": {
+       "count": 500,
+       "params": {
+        "D": 4
+       },
+       "sizes": [
+        8,
+        32,
+        64
+       ],
+       "state_words": "1",
+       "task": "copy",
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.recall",
+    "claim_quote": "construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words",
+    "definitions": [
+     "D1",
+     "D3"
+    ],
+    "discharges": [],
+    "id": "O9",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O9.a",
+      "sha256": "26c4efcd21635921e9c101ef1ffd40c849328b0a43bc31c1abd4a6a09fe174b2",
+      "spec": {
+       "count": 500,
+       "params": {
+        "V": 16
+       },
+       "sizes": [
+        8,
+        32,
+        64
+       ],
+       "state_words": "1",
+       "task": "recall",
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.nesting",
+    "claim_quote": "construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words",
+    "definitions": [
+     "D1",
+     "D3"
+    ],
+    "discharges": [],
+    "id": "O10",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O10.a",
+      "sha256": "9996984302df7ccd76a047287ceda11e68d0edaa9f966f230e24a4b8bb649667",
+      "spec": {
+       "count": 500,
+       "sizes": [
+        2,
+        4,
+        8,
+        16
+       ],
+       "state_words": "1",
+       "task": "dyck",
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.composition",
+    "claim_quote": "construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words",
+    "definitions": [
+     "D1",
+     "D3"
+    ],
+    "discharges": [],
+    "id": "O11",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O11.a",
+      "sha256": "fc144fe4e47b4b71baf77b9b983e21466c1ab993cc2b8d466283b50b46bb17a0",
+      "spec": {
+       "count": 500,
+       "sizes": [
+        4,
+        16,
+        32
+       ],
+       "state_words": "1",
+       "task": "composition",
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     },
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O11.b",
+      "sha256": "7432894693f41c29401a533cb87bf619b060b9b2fec5ab12e84902b1b48287b6",
+      "spec": {
+       "count": 500,
+       "params": {
+        "values": 8
+       },
+       "sizes": [
+        1,
+        4,
+        8
+       ],
+       "state_words": "1",
+       "task": "binding",
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P3",
+    "claim_quote": "derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2",
+    "definitions": [
+     "D1",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O12",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O12.a",
+      "sha256": "26191842a3e78a3149c0f674227bc08b761c19b9789fa06937e1a56c2f0babad",
+      "spec": "import Mathlib\ndef successes (enc : (Fin 3 → Fin 4) → Fin 16) (dec : Fin 16 → (Fin 3 → Fin 4)) : ℕ := Fintype.card {x : Fin 3 → Fin 4 // dec (enc x) = x}\ndef Claim : Prop := (∀ (enc : (Fin 3 → Fin 4) → Fin 16) (dec : Fin 16 → (Fin 3 → Fin 4)), successes enc dec ≤ 16 ∧ (successes enc dec : ℚ)/64 < 99/100) ∧ (∀ L : ℕ, L < 3 → ∃ (enc : (Fin L → Fin 4) → Fin 16) (dec : Fin 16 → (Fin L → Fin 4)), ∀ x, dec (enc x) = x)"
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.copy",
+    "claim_quote": "toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O13",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O13.a",
+      "sha256": "4b7910b567f44ef1653641ba2dbd6efc8957b57049736521efe432594fd8f144",
+      "spec": {
+       "examples": 400,
+       "params": {
+        "D": 4
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 2,
+       "task": "copy",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.recall",
+    "claim_quote": "toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O14",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O14.a",
+      "sha256": "8081baaf8a21154c33494804939d8fea6a524247f887dc99996f679d095f79a7",
+      "spec": {
+       "examples": 400,
+       "params": {
+        "V": 16
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 2,
+       "task": "recall",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.nesting",
+    "claim_quote": "toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O15",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O15.a",
+      "sha256": "0b860cb397128cc93ae99f8787470985e8e56a266f7f12336122648d748de88a",
+      "spec": {
+       "examples": 300,
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 2,
+       "task": "dyck",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.composition",
+    "claim_quote": "toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O16",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O16.a",
+      "sha256": "aaf11f4176218b115d8531bf2c3b5c52b0ccdcadd86a687ba47d6c209bef15bf",
+      "spec": {
+       "examples": 400,
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 2,
+       "task": "composition",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "16",
+        "positions": "1",
+        "rounds": "1"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P5",
+    "claim_quote": "information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws",
+    "definitions": [
+     "D1",
+     "D3",
+     "D7"
+    ],
+    "discharges": [],
+    "id": "O17",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "conservation",
+      "id": "O17.a",
+      "sha256": "8213df8ab21413fcd5be7e5601a205a4a3141abf580a4c0002309f31aff8c5c6",
+      "spec": {
+       "copy": [
+        {
+         "D": 4,
+         "L": 64,
+         "accuracy": 4.70197740328915e-38
+        }
+       ],
+       "dyck": [
+        {
+         "accuracy": 0.000244140625,
+         "depth": 16
+        }
+       ],
+       "recall": [
+        {
+         "K": 64,
+         "V": 16,
+         "accuracy": 0.0625
+        }
+       ],
+       "sample": [
+        {
+         "bits_per_example": 4,
+         "examples": 400,
+         "hypothesis_class": {
+          "definition": "All selectors s:{0,1}->{0,1}; output i is source symbol s(i), with identity selector the target.",
+          "log2_size": 2,
+          "size_justification": "Two independent choices at each of two indices give four rules; a source with distinct symbols separates any distinct selectors. The protocol supplies this class but no member."
+         },
+         "log2_H": 2,
+         "prior_bits": 0,
+         "task": "copy"
+        },
+        {
+         "bits_per_example": 8,
+         "examples": 400,
+         "hypothesis_class": {
+          "definition": "Sort the two keys by token id to name ranks 0 and 1. All selectors s:{0,1}->{0,1} answer key of rank i with value of rank s(i); input order remains shuffled.",
+          "log2_size": 2,
+          "size_justification": "Two choices for each rank give four rules; distinct stored values distinguish different selectors. The protocol supplies this class but no member."
+         },
+         "log2_H": 2,
+         "prior_bits": 0,
+         "task": "recall"
+        },
+        {
+         "bits_per_example": 7,
+         "examples": 300,
+         "hypothesis_class": {
+          "definition": "Every map from contexts (0),(1),(0,0),(0,1),(1,0),(1,1), listed bottom to top, to the two closing tokens.",
+          "log2_size": 6,
+          "size_justification": "Each of six reachable contexts independently has two outputs, giving 64 distinct rules. The protocol supplies this class but no member."
+         },
+         "log2_H": 6,
+         "prior_bits": 0,
+         "task": "dyck"
+        },
+        {
+         "bits_per_example": 2,
+         "examples": 400,
+         "hypothesis_class": {
+          "definition": "All selectors s:{0,1}->{0,1}; on tables g,f and request x the answer is f(g(s(x))), with identity selector the target.",
+          "log2_size": 2,
+          "size_justification": "Two independent choices at each request give four rules; tables separating the selected arguments distinguish distinct selectors. The protocol supplies this class but no member."
+         },
+         "log2_H": 2,
+         "prior_bits": 0,
+         "task": "composition"
+        }
+       ],
+       "state_bits": 4
+      }
+     }
+    ]
+   }
+  ],
+  "profile": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 64
+   },
+   "limits": [
+    {
+     "resources": "At least 64 distinguishable carried states for exact copying of all length-three strings over four symbols; sixteen states give accuracy at most 16/64.",
+     "size": 3,
+     "task": "copy",
+     "why": "Each carried state determines one complete self-fed output string, so at most sixteen distinct source strings can be reproduced."
+    }
+   ],
+   "slots": [
+    "P1",
+    "P2.copy",
+    "P2.recall",
+    "P2.nesting",
+    "P2.composition",
+    "P3",
+    "P4.copy",
+    "P4.recall",
+    "P4.nesting",
+    "P4.composition",
+    "P5"
+   ],
+   "version": "phase4-2026-10-13"
+  },
+  "fixer_model": "gpt-6.1-sol",
+  "dropped": [],
+  "first_problems": [],
+  "fixer_calls": [
+   "call-064f2a069128"
+  ]
+ },
+ "m_claims": [
+  {
+   "circular_premises": [],
+   "claim_id": "complexity.time_per_token",
+   "detail": "",
+   "label": "lean-proven",
+   "obligations": [
+    "O1"
+   ],
+   "open_premises": [],
+   "phrase": "proven",
+   "status": "proven",
+   "text": "complexity time_per_token: Theta(k V)",
+   "tier": "lean"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "complexity.memory",
+   "detail": "",
+   "label": "lean-proven",
+   "obligations": [
+    "O2"
+   ],
+   "open_premises": [],
+   "phrase": "proven",
+   "status": "proven",
+   "text": "complexity memory: Theta(1)",
+   "tier": "lean"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "complexity.total_sequence",
+   "detail": "",
+   "label": "lean-proven",
+   "obligations": [
+    "O3"
+   ],
+   "open_premises": [],
+   "phrase": "proven",
+   "status": "proven",
+   "text": "complexity total_sequence: Theta(n k V)",
+   "tier": "lean"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "sample_efficiency.prediction",
+   "detail": "failed: copy at L=2 from m=400 examples: seed 0 accuracy 0.5080 (control 0.0540), seed 1 accuracy 0.4860 (control 0.0640), seed 2 accuracy 0.3840 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of its fi",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O4"
+   ],
+   "open_premises": [],
+   "phrase": "failed: failed: copy at L=2 from m=400 examples: seed 0 accuracy 0.5080 (control 0.0540), seed 1 accuracy 0.4860 (control 0.0640), seed 2 accuracy 0.3840 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of its fi",
+   "status": "failed",
+   "text": "sample efficiency prediction: 400 copy examples at L = 2 over 4 symbols give per-string accuracy 0.99. (metric: examples_to_copy_L2; value: 400)",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "capability.1",
+   "detail": "The claim conflates identifying an immediate legal closer with recovering the whole stack and leaves the quantifier behind 'Exact up to depth 4' unspecified, so choosing either interpretation would change its asserted state lower bound.",
+   "label": "argued (prose only)",
+   "obligations": [],
+   "open_premises": [],
+   "phrase": "argued in prose only; does not satisfy an obligation",
+   "status": "not_formalized",
+   "text": "capability 1: task: two-type bracket nesting prediction: Exact up to depth log2 16 = 4; deeper prefixes need at least 2^D distinct states to know the legal closer, so accuracy falls below 0.99 at depth 8 and 16; at depth 16 per-sequence accuracy is at most 16 / 2^16.",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "capability.2",
+   "detail": "Neither 'tables hold more than 4 bits' nor 'fails' specifies an information measure, distribution, accuracy threshold, or chained-assignment sizes, so no unique testable failure statement can be frozen.",
+   "label": "argued (prose only)",
+   "obligations": [],
+   "open_premises": [],
+   "phrase": "argued in prose only; does not satisfy an obligation",
+   "status": "not_formalized",
+   "text": "capability 2: task: two-hop lookup and chained assignments prediction: Fails once the tables given in context hold more than 4 bits, which is already the case at the listed table sizes 4, 16 and 32.",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "capability.3",
+   "detail": "",
+   "label": "lean-proven",
+   "obligations": [
+    "O5"
+   ],
+   "open_premises": [],
+   "phrase": "proven",
+   "status": "proven",
+   "text": "capability 3: task: copy a string after a separator prediction: Exact only while L log2 D is at most 4 bits; fails at the listed lengths 8 to 64, where per-string accuracy is at most 16 / D^L (16 / 4^64 at L = 64 over 4 symbols).",
+   "tier": "lean"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "capability.4",
+   "detail": "obligations not shown: O6",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O6"
+   ],
+   "open_premises": [],
+   "phrase": "unproven: obligations not shown: O6",
+   "status": "unproven",
+   "text": "capability 4: task: associative recall of K pairs prediction: Exact only while K log2 V is at most 4 bits; fails at the listed K of 8 to 64; at K = 64 over 16 symbols per-query accuracy is at chance, 1/16.",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P1",
+   "detail": "",
+   "label": "executed-on-examples",
+   "obligations": [
+    "O7"
+   ],
+   "open_premises": [],
+   "phrase": "observed on the listed sizes: n=64, n=128, n=256, n=512, n=1024, n=2048, n=4096",
+   "status": "observed",
+   "text": "profile P1: exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n",
+   "tier": "executed"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P2.copy",
+   "detail": "failed: copy: L=8 instance accuracy 0.0000, L=32 instance accuracy 0.0000, L=64 instance accuracy 0.0000; threshold 0.99; observed on the listed sizes: L=8, L=32, L=64; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O8"
+   ],
+   "open_premises": [],
+   "phrase": "failed: failed: copy: L=8 instance accuracy 0.0000, L=32 instance accuracy 0.0000, L=64 instance accuracy 0.0000; threshold 0.99; observed on the listed sizes: L=8, L=32, L=64; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "status": "failed",
+   "text": "profile P2.copy: construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P2.recall",
+   "detail": "failed: recall: K=8 query accuracy 0.1842, K=32 query accuracy 0.0911, K=64 query accuracy 0.0778; threshold 0.99; observed on the listed sizes: K=8, K=32, K=64; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O9"
+   ],
+   "open_premises": [],
+   "phrase": "failed: failed: recall: K=8 query accuracy 0.1842, K=32 query accuracy 0.0911, K=64 query accuracy 0.0778; threshold 0.99; observed on the listed sizes: K=8, K=32, K=64; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "status": "failed",
+   "text": "profile P2.recall: construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P2.nesting",
+   "detail": "failed: dyck: depth=2 instance accuracy 1.0000, depth=4 instance accuracy 0.2060, depth=8 instance accuracy 0.0040, depth=16 instance accuracy 0.0000; threshold 0.99; observed on the listed sizes: depth=2, depth=4, depth=8, depth=16; peak state words within the declared 1 at every size; every array within t",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O10"
+   ],
+   "open_premises": [],
+   "phrase": "failed: failed: dyck: depth=2 instance accuracy 1.0000, depth=4 instance accuracy 0.2060, depth=8 instance accuracy 0.0040, depth=16 instance accuracy 0.0000; threshold 0.99; observed on the listed sizes: depth=2, depth=4, depth=8, depth=16; peak state words within the declared 1 at every size; every array within t",
+   "status": "failed",
+   "text": "profile P2.nesting: construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P2.composition",
+   "detail": "failed: composition: T=4 query accuracy 0.4320, T=16 query accuracy 0.1219, T=32 query accuracy 0.0594; threshold 0.99; observed on the listed sizes: T=4, T=16, T=32; peak state words within the declared 1 at every size; every array within the declared architecture at every size; failed: binding: hops=1 query accuracy 0.5550, hops=4 query accuracy 0.5550, hops=8 query accuracy 0.5700; threshold 0.99; observed on the listed sizes: hops=1, hops=4, hops=8; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O11"
+   ],
+   "open_premises": [],
+   "phrase": "failed: failed: composition: T=4 query accuracy 0.4320, T=16 query accuracy 0.1219, T=32 query accuracy 0.0594; threshold 0.99; observed on the listed sizes: T=4, T=16, T=32; peak state words within the declared 1 at every size; every array within the declared architecture at every size; failed: binding: hops=1 query accuracy 0.5550, hops=4 query accuracy 0.5550, hops=8 query accuracy 0.5700; thre",
+   "status": "failed",
+   "text": "profile P2.composition: construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P3",
+   "detail": "",
+   "label": "lean-proven",
+   "obligations": [
+    "O12"
+   ],
+   "open_premises": [],
+   "phrase": "proven",
+   "status": "proven",
+   "text": "profile P3: derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2",
+   "tier": "lean"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P4.copy",
+   "detail": "failed: copy at L=2 from m=400 examples: seed 0 accuracy 0.3380 (control 0.0540), seed 1 accuracy 0.3300 (control 0.0640), seed 2 accuracy 0.3080 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"greedy left-to-right decode with the current (annealed-noise) tabl",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O13"
+   ],
+   "open_premises": [],
+   "phrase": "failed: failed: copy at L=2 from m=400 examples: seed 0 accuracy 0.3380 (control 0.0540), seed 1 accuracy 0.3300 (control 0.0640), seed 2 accuracy 0.3080 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"greedy left-to-right decode with the current (annealed-noise) tabl",
+   "status": "failed",
+   "text": "profile P4.copy: toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P4.recall",
+   "detail": "failed: recall at K=2 from m=400 examples: seed 0 accuracy 0.1140 (control 0.0090), seed 1 accuracy 0.1510 (control 0.0080), seed 2 accuracy 0.1360 (control 0.0560); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of its ",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O14"
+   ],
+   "open_premises": [],
+   "phrase": "failed: failed: recall at K=2 from m=400 examples: seed 0 accuracy 0.1140 (control 0.0090), seed 1 accuracy 0.1510 (control 0.0080), seed 2 accuracy 0.1360 (control 0.0560); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of its ",
+   "status": "failed",
+   "text": "profile P4.recall: toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P4.nesting",
+   "detail": "",
+   "label": "executed-on-examples",
+   "obligations": [
+    "O15"
+   ],
+   "open_premises": [],
+   "phrase": "observed on the listed sizes: dyck size=2 m=300 seed=0, dyck size=2 m=300 seed=1, dyck size=2 m=300 seed=2",
+   "status": "observed",
+   "text": "profile P4.nesting: toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+   "tier": "executed"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P4.composition",
+   "detail": "failed: composition at T=2 from m=400 examples: seed 0 accuracy 0.7550 (control 0.5000), seed 1 accuracy 0.7550 (control 0.4810), seed 2 accuracy 0.7630 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O16"
+   ],
+   "open_premises": [],
+   "phrase": "failed: failed: composition at T=2 from m=400 examples: seed 0 accuracy 0.7550 (control 0.5000), seed 1 accuracy 0.7550 (control 0.4810), seed 2 accuracy 0.7630 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of",
+   "status": "failed",
+   "text": "profile P4.composition: toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+   "tier": "argued"
+  },
+  {
+   "circular_premises": [],
+   "claim_id": "P5",
+   "detail": "P2 met the threshold on dyck at depth=2, but P5 has no dyck entry at that size or above with accuracy at least 0.99",
+   "label": "argued (prose only)",
+   "obligations": [
+    "O17"
+   ],
+   "open_premises": [],
+   "phrase": "failed: P2 met the threshold on dyck at depth=2, but P5 has no dyck entry at that size or above with accuracy at least 0.99",
+   "status": "failed",
+   "text": "profile P5: information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws",
+   "tier": "argued"
+  }
+ ],
+ "m_models": {
+  "prover": [
+   "claude-opus-5-5"
+  ],
+  "statement_fixer": [
+   "gpt-6.1-sol"
+  ]
+ },
+ "m_verdict": "fail",
+ "m_kill_codes": [
+  "obligation_failed:sample_efficiency.prediction",
+  "obligation_failed:P2.copy",
+  "obligation_failed:P2.recall",
+  "obligation_failed:P2.nesting",
+  "obligation_failed:P2.composition",
+  "obligation_failed:P4.copy",
+  "obligation_failed:P4.recall",
+  "obligation_failed:P4.composition",
+  "obligation_failed:P5"
+ ],
+ "m_checks": {
+  "O1.a": {
+   "statement_id": "O1.a",
+   "form": "lean",
+   "purpose": "prove",
+   "attempt": 1,
+   "status": "pass",
+   "decided": true,
+   "tier": "lean",
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "artifact": "card-ca11b003-v1-0efbab.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": []
+   }
+  },
+  "O10.a": {
+   "statement_id": "O10.a",
+   "form": "construction",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "dyck: depth=2 instance accuracy 1.0000, depth=4 instance accuracy 0.2060, depth=8 instance accuracy 0.0040, depth=16 instance accuracy 0.0000; threshold 0.99; observed on the listed sizes: depth=2, depth=4, depth=8, depth=16; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "artifact": "card-ca11b003-v1-d0242a.json",
+   "counterexample": {
+    "accuracy": 0.206,
+    "first_error": {
+     "expected": 2,
+     "instance": 0,
+     "position": 2,
+     "predicted": 3,
+     "size": 4,
+     "tokens": [
+      1,
+      0,
+      0,
+      1,
+      3,
+      0,
+      2,
+      2,
+      1,
+      0,
+      2,
+      0,
+      2,
+      3,
+      2,
+      3
+     ],
+     "tokens_total": 16
+    },
+    "seed": 0,
+    "size": 4,
+    "task": "dyck",
+    "threshold": 0.99
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "size": 2,
+      "accuracy": 1.0,
+      "passed": true,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 4,
+      "accuracy": 0.206,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 8,
+      "accuracy": 0.004,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 16,
+      "accuracy": 0.0,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O11.a": {
+   "statement_id": "O11.a",
+   "form": "construction",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "composition: T=4 query accuracy 0.4320, T=16 query accuracy 0.1219, T=32 query accuracy 0.0594; threshold 0.99; observed on the listed sizes: T=4, T=16, T=32; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "artifact": "card-ca11b003-v1-cc3fd3.json",
+   "counterexample": {
+    "accuracy": 0.432,
+    "first_error": {
+     "expected": 9,
+     "instance": 0,
+     "position": 19,
+     "predicted": 8,
+     "size": 4,
+     "tokens": [
+      12,
+      0,
+      6,
+      1,
+      7,
+      3,
+      7,
+      2,
+      6,
+      13,
+      7,
+      9,
+      4,
+      8,
+      5,
+      11,
+      6,
+      8,
+      14,
+      3,
+      2,
+      0,
+      1
+     ],
+     "tokens_total": 23
+    },
+    "seed": 0,
+    "size": 4,
+    "task": "composition",
+    "threshold": 0.99
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "size": 4,
+      "accuracy": 0.432,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 16,
+      "accuracy": 0.121875,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 32,
+      "accuracy": 0.059375,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O11.b": {
+   "statement_id": "O11.b",
+   "form": "construction",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "binding: hops=1 query accuracy 0.5550, hops=4 query accuracy 0.5550, hops=8 query accuracy 0.5700; threshold 0.99; observed on the listed sizes: hops=1, hops=4, hops=8; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "artifact": "card-ca11b003-v1-a80b64.json",
+   "counterexample": {
+    "accuracy": 0.555,
+    "first_error": {
+     "expected": 10,
+     "instance": 1,
+     "position": 9,
+     "predicted": 7,
+     "size": 1,
+     "tokens": [
+      0,
+      10,
+      2,
+      7,
+      3,
+      0,
+      1,
+      2,
+      12,
+      3,
+      1
+     ],
+     "tokens_total": 11
+    },
+    "seed": 0,
+    "size": 1,
+    "task": "binding",
+    "threshold": 0.99
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "size": 1,
+      "accuracy": 0.555,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 4,
+      "accuracy": 0.555,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 8,
+      "accuracy": 0.57,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O12.a": {
+   "statement_id": "O12.a",
+   "form": "lean",
+   "purpose": "prove",
+   "attempt": 1,
+   "status": "pass",
+   "decided": true,
+   "tier": "lean",
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "artifact": "card-ca11b003-v1-a1b232.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": []
+   }
+  },
+  "O13.a": {
+   "statement_id": "O13.a",
+   "form": "learnability",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "copy at L=2 from m=400 examples: seed 0 accuracy 0.3380 (control 0.0540), seed 1 accuracy 0.3300 (control 0.0640), seed 2 accuracy 0.3080 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"greedy left-to-right decode with the current (annealed-noise) tables, the same argmax move as at test time, over each training stream extended by the answer of its final query; other scored answers counted as one-step side branches\", \"decode_mode\": \"greedy\", \"exploit_fraction\": 0.5, \"init\": \"round 0: random positive tables uniform(0.1,1.1) row-normalized; later rounds: half the restarts are the best tables so far times exp(1.0*normal) noise, renormalized, the rest fresh random; start state 0\", \"iterations\": 40, \"noise_iterations\": 20, \"noise_scale\": 0.5, \"perturb_scale\": 1.0, \"restarts_per_round\": 96, \"rounds\": 16, \"select\": \"instance\", \"selection\": \"restart with highest training per-instance accuracy under the test-time greedy decode\", \"smoothing\": 0.01, \"states\": 16} applied to the true data and both controls; observed on the listed sizes: copy L=2 m=400 seed=0, copy L=2 m=400 seed=1, copy L=2 m=400 seed=2",
+   "artifact": "card-ca11b003-v1-501854.json",
+   "counterexample": {
+    "accuracy": 0.338,
+    "control_accuracy": 0.054,
+    "examples": 400,
+    "first_error": {
+     "expected": 2,
+     "instance": 2,
+     "position": 2,
+     "predicted": 3,
+     "tokens": [
+      2,
+      1,
+      4,
+      2
+     ],
+     "tokens_total": 4
+    },
+    "reason": "below_threshold",
+    "seed": 0,
+    "size": 2,
+    "task": "copy"
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "accuracy": 0.338,
+      "passed": false,
+      "seed": 0,
+      "control_accuracy": 0.054,
+      "empty_control_accuracy": 0.054,
+      "wrong_control_accuracy": 0.11,
+      "reason": "below_threshold",
+      "state_peak_words": 337
+     },
+     {
+      "accuracy": 0.33,
+      "passed": false,
+      "seed": 1,
+      "control_accuracy": 0.064,
+      "empty_control_accuracy": 0.064,
+      "wrong_control_accuracy": 0.168,
+      "reason": "below_threshold",
+      "state_peak_words": 337
+     },
+     {
+      "accuracy": 0.308,
+      "passed": false,
+      "seed": 2,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "wrong_control_accuracy": 0.096,
+      "reason": "below_threshold",
+      "state_peak_words": 337
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O14.a": {
+   "statement_id": "O14.a",
+   "form": "learnability",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "recall at K=2 from m=400 examples: seed 0 accuracy 0.1140 (control 0.0090), seed 1 accuracy 0.1510 (control 0.0080), seed 2 accuracy 0.1360 (control 0.0560); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of its final query as one more token; other scored answers are one-step side branches from the state after their query position\", \"decode_mode\": \"viterbi\", \"exploit_fraction\": 0.5, \"init\": \"round 0: random positive tables uniform(0.1,1.1) row-normalized; later rounds: half the restarts are the best tables so far times exp(1.0*normal) noise, renormalized, the rest fresh random; start state 0\", \"iterations\": 40, \"noise_iterations\": 20, \"noise_scale\": 0.5, \"perturb_scale\": 1.0, \"restarts_per_round\": 64, \"rounds\": 8, \"select\": \"query\", \"selection\": \"restart with highest training per-query accuracy under the test-time greedy decode\", \"smoothing\": 0.01, \"states\": 16} applied to the true data and both controls; observed on the listed sizes: recall K=2 m=400 seed=0, recall K=2 m=400 seed=1, recall K=2 m=400 seed=2",
+   "artifact": "card-ca11b003-v1-948e35.json",
+   "counterexample": {
+    "accuracy": 0.114,
+    "control_accuracy": 0.009,
+    "examples": 400,
+    "first_error": {
+     "expected": 30,
+     "instance": 0,
+     "position": 6,
+     "predicted": 24,
+     "tokens": [
+      9,
+      18,
+      2,
+      30,
+      32,
+      9,
+      2
+     ],
+     "tokens_total": 7
+    },
+    "reason": "below_threshold",
+    "seed": 0,
+    "size": 2,
+    "task": "recall"
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "accuracy": 0.114,
+      "passed": false,
+      "seed": 0,
+      "control_accuracy": 0.009,
+      "empty_control_accuracy": 0.009,
+      "wrong_control_accuracy": 0.073,
+      "reason": "below_threshold",
+      "state_peak_words": 785
+     },
+     {
+      "accuracy": 0.151,
+      "passed": false,
+      "seed": 1,
+      "control_accuracy": 0.008,
+      "empty_control_accuracy": 0.008,
+      "wrong_control_accuracy": 0.069,
+      "reason": "below_threshold",
+      "state_peak_words": 785
+     },
+     {
+      "accuracy": 0.136,
+      "passed": false,
+      "seed": 2,
+      "control_accuracy": 0.056,
+      "empty_control_accuracy": 0.056,
+      "wrong_control_accuracy": 0.071,
+      "reason": "below_threshold",
+      "state_peak_words": 785
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O15.a": {
+   "statement_id": "O15.a",
+   "form": "learnability",
+   "purpose": "prove",
+   "attempt": 1,
+   "status": "discharged",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "dyck at depth=2 from m=300 examples: seed 0 accuracy 1.0000 (control 0.0000), seed 1 accuracy 1.0000 (control 0.0000), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"decode\": \"Viterbi over each training stream, each scored answer a one-step side branch from the state after its query position\", \"init\": \"random positive tables uniform(0.1,1.1) normalized per row, start state 0\", \"iterations\": 40, \"noise_iterations\": 20, \"noise_scale\": 0.5, \"restarts_per_round\": 64, \"rounds\": 4, \"selection\": \"restart with highest training per-instance accuracy under the test-time greedy decode\", \"smoothing\": 0.01, \"states\": 16} applied to the true data and both controls; observed on the listed sizes: dyck depth=2 m=300 seed=0, dyck depth=2 m=300 seed=1, dyck depth=2 m=300 seed=2",
+   "artifact": "card-ca11b003-v1-f78add.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "accuracy": 1.0,
+      "passed": true,
+      "seed": 0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "wrong_control_accuracy": 0.0,
+      "reason": null,
+      "state_peak_words": 321
+     },
+     {
+      "accuracy": 1.0,
+      "passed": true,
+      "seed": 1,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.068,
+      "wrong_control_accuracy": 0.0,
+      "reason": null,
+      "state_peak_words": 321
+     },
+     {
+      "accuracy": 1.0,
+      "passed": true,
+      "seed": 2,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "wrong_control_accuracy": 0.0,
+      "reason": null,
+      "state_peak_words": 321
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O16.a": {
+   "statement_id": "O16.a",
+   "form": "learnability",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "composition at T=2 from m=400 examples: seed 0 accuracy 0.7550 (control 0.5000), seed 1 accuracy 0.7550 (control 0.4810), seed 2 accuracy 0.7630 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of its final query as one more token; other scored answers are one-step side branches from the state after their query position\", \"decode_mode\": \"viterbi\", \"exploit_fraction\": 0.5, \"init\": \"round 0: random positive tables uniform(0.1,1.1) row-normalized; later rounds: half the restarts are the best tables so far times exp(1.0*normal) noise, renormalized, the rest fresh random; start state 0\", \"iterations\": 30, \"noise_iterations\": 15, \"noise_scale\": 0.5, \"perturb_scale\": 1.0, \"restarts_per_round\": 48, \"rounds\": 8, \"select\": \"query\", \"selection\": \"restart with highest training per-query accuracy under the test-time greedy decode\", \"smoothing\": 0.01, \"states\": 16} applied to the true data and both controls; observed on the listed sizes: composition T=2 m=400 seed=0, composition T=2 m=400 seed=1, composition T=2 m=400 seed=2",
+   "artifact": "card-ca11b003-v1-d6932c.json",
+   "counterexample": {
+    "accuracy": 0.755,
+    "control_accuracy": 0.5,
+    "examples": 400,
+    "first_error": {
+     "expected": 4,
+     "instance": 0,
+     "position": 12,
+     "predicted": 5,
+     "tokens": [
+      6,
+      0,
+      2,
+      1,
+      3,
+      7,
+      3,
+      4,
+      2,
+      5,
+      8,
+      0,
+      1
+     ],
+     "tokens_total": 13
+    },
+    "reason": "below_threshold",
+    "seed": 0,
+    "size": 2,
+    "task": "composition"
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "accuracy": 0.755,
+      "passed": false,
+      "seed": 0,
+      "control_accuracy": 0.5,
+      "empty_control_accuracy": 0.504,
+      "wrong_control_accuracy": 0.5,
+      "reason": "below_threshold",
+      "state_peak_words": 401
+     },
+     {
+      "accuracy": 0.755,
+      "passed": false,
+      "seed": 1,
+      "control_accuracy": 0.481,
+      "empty_control_accuracy": 0.481,
+      "wrong_control_accuracy": 0.509,
+      "reason": "below_threshold",
+      "state_peak_words": 401
+     },
+     {
+      "accuracy": 0.763,
+      "passed": false,
+      "seed": 2,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "wrong_control_accuracy": 0.493,
+      "reason": "below_threshold",
+      "state_peak_words": 401
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O17.a": {
+   "statement_id": "O17.a",
+   "form": "conservation",
+   "purpose": "auto",
+   "attempt": null,
+   "status": "discharged",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "copy: discharged: claimed accuracy 4.70197740328915e-38 is within the bound 0; dyck: discharged: claimed accuracy 0.000244140625 is within the bound 0.000244141; associative_recall: discharged: 4 bits of state meet the 0 bits recall of K=64 over V=16 needs at accuracy 0.0625; sample: discharged: 400 examples meet the 1 the hypothesis count requires; sample: discharged: 400 examples meet the 1 the hypothesis count requires; sample: discharged: 300 examples meet the 1 the hypothesis count requires; sample: discharged: 400 examples meet the 1 the hypothesis count requires",
+   "artifact": "card-ca11b003-v1-daf477.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": []
+   }
+  },
+  "O2.a": {
+   "statement_id": "O2.a",
+   "form": "lean",
+   "purpose": "prove",
+   "attempt": 1,
+   "status": "pass",
+   "decided": true,
+   "tier": "lean",
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "artifact": "card-ca11b003-v1-9a76be.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": []
+   }
+  },
+  "O3.a": {
+   "statement_id": "O3.a",
+   "form": "lean",
+   "purpose": "prove",
+   "attempt": 1,
+   "status": "pass",
+   "decided": true,
+   "tier": "lean",
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "artifact": "card-ca11b003-v1-6520f0.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": []
+   }
+  },
+  "O4.a": {
+   "statement_id": "O4.a",
+   "form": "learnability",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "copy at L=2 from m=400 examples: seed 0 accuracy 0.5080 (control 0.0540), seed 1 accuracy 0.4860 (control 0.0640), seed 2 accuracy 0.3840 (control 0.0000); threshold 0.99; recipe {\"answer_weight\": 3.0, \"append_last\": true, \"decode\": \"Viterbi over each training stream extended by the answer of its final query as one more token; other scored answers are one-step side branches from the state after their query position\", \"decode_mode\": \"viterbi\", \"exploit_fraction\": 0.5, \"init\": \"round 0: random positive tables uniform(0.1,1.1) row-normalized; later rounds: half the restarts are the best tables so far times exp(1.0*normal) noise, renormalized, the rest fresh random; start state 0\", \"iterations\": 40, \"noise_iterations\": 20, \"noise_scale\": 0.5, \"perturb_scale\": 1.0, \"restarts_per_round\": 96, \"rounds\": 18, \"select\": \"instance\", \"selection\": \"restart with highest training per-instance accuracy under the test-time greedy decode\", \"smoothing\": 0.01, \"states\": 16} applied to the true data and both controls; observed on the listed sizes: copy L=2 m=400 seed=0, copy L=2 m=400 seed=1, copy L=2 m=400 seed=2",
+   "artifact": "card-ca11b003-v1-c997d6.json",
+   "counterexample": {
+    "accuracy": 0.508,
+    "control_accuracy": 0.054,
+    "examples": 400,
+    "first_error": {
+     "expected": 3,
+     "instance": 0,
+     "position": 2,
+     "predicted": 1,
+     "tokens": [
+      3,
+      3,
+      4,
+      3
+     ],
+     "tokens_total": 4
+    },
+    "reason": "below_threshold",
+    "seed": 0,
+    "size": 2,
+    "task": "copy"
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "accuracy": 0.508,
+      "passed": false,
+      "seed": 0,
+      "control_accuracy": 0.054,
+      "empty_control_accuracy": 0.054,
+      "wrong_control_accuracy": 0.184,
+      "reason": "below_threshold",
+      "state_peak_words": 337
+     },
+     {
+      "accuracy": 0.486,
+      "passed": false,
+      "seed": 1,
+      "control_accuracy": 0.064,
+      "empty_control_accuracy": 0.064,
+      "wrong_control_accuracy": 0.07,
+      "reason": "below_threshold",
+      "state_peak_words": 337
+     },
+     {
+      "accuracy": 0.384,
+      "passed": false,
+      "seed": 2,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "wrong_control_accuracy": 0.058,
+      "reason": "below_threshold",
+      "state_peak_words": 337
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O5.a": {
+   "statement_id": "O5.a",
+   "form": "lean",
+   "purpose": "prove",
+   "attempt": 1,
+   "status": "pass",
+   "decided": true,
+   "tier": "lean",
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "artifact": "card-ca11b003-v1-1356d7.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": []
+   }
+  },
+  "O6.a": {
+   "statement_id": "O6.a",
+   "form": "lean",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "reject",
+   "decided": true,
+   "tier": "lean",
+   "evidence": "Lean rejected: uses sorry (sorryAx)",
+   "artifact": "card-ca11b003-v1-984788.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": []
+   }
+  },
+  "O7.a": {
+   "statement_id": "O7.a",
+   "form": "cost",
+   "purpose": "prove",
+   "attempt": 1,
+   "status": "discharged",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "28 points, n in [64, 128, 256, 512, 1024, 2048, 4096], sizes {'V': [4, 16], 'k': [8, 16]}; formula exponent in n 1; slopes in n (measured/formula): 1.0/1.0, 1.0/1.0, 1.0/1.0, 1.0/1.0; all checks pass",
+   "artifact": "card-ca11b003-v1-b1fd77.json",
+   "counterexample": null,
+   "bound": null,
+   "details": {
+    "results": [],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O8.a": {
+   "statement_id": "O8.a",
+   "form": "construction",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "copy: L=8 instance accuracy 0.0000, L=32 instance accuracy 0.0000, L=64 instance accuracy 0.0000; threshold 0.99; observed on the listed sizes: L=8, L=32, L=64; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "artifact": "card-ca11b003-v1-a0739c.json",
+   "counterexample": {
+    "accuracy": 0.0,
+    "first_error": {
+     "expected": 1,
+     "instance": 0,
+     "position": 8,
+     "predicted": 4,
+     "size": 8,
+     "tokens": [
+      1,
+      2,
+      2,
+      3,
+      3,
+      2,
+      2,
+      3,
+      4,
+      1,
+      2,
+      2,
+      3,
+      3,
+      2,
+      2
+     ],
+     "tokens_total": 16
+    },
+    "seed": 0,
+    "size": 8,
+    "task": "copy",
+    "threshold": 0.99
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "size": 8,
+      "accuracy": 0.0,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 32,
+      "accuracy": 0.0,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 64,
+      "accuracy": 0.0,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  },
+  "O9.a": {
+   "statement_id": "O9.a",
+   "form": "construction",
+   "purpose": "prove",
+   "attempt": 4,
+   "status": "violated",
+   "decided": true,
+   "tier": "executed",
+   "evidence": "recall: K=8 query accuracy 0.1842, K=32 query accuracy 0.0911, K=64 query accuracy 0.0778; threshold 0.99; observed on the listed sizes: K=8, K=32, K=64; peak state words within the declared 1 at every size; every array within the declared architecture at every size",
+   "artifact": "card-ca11b003-v1-206f99.json",
+   "counterexample": {
+    "accuracy": 0.18425,
+    "first_error": {
+     "expected": 16,
+     "instance": 0,
+     "position": 17,
+     "predicted": 27,
+     "size": 8,
+     "tokens": [
+      14,
+      16,
+      2,
+      18,
+      11,
+      30,
+      9,
+      20,
+      0,
+      18,
+      1,
+      26,
+      10,
+      20,
+      4,
+      27,
+      32,
+      14,
+      0,
+      10,
+      9,
+      1,
+      4,
+      11,
+      2
+     ],
+     "tokens_total": 25
+    },
+    "seed": 0,
+    "size": 8,
+    "task": "recall",
+    "threshold": 0.99
+   },
+   "bound": null,
+   "details": {
+    "results": [
+     {
+      "size": 8,
+      "accuracy": 0.18425,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 32,
+      "accuracy": 0.0910625,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     },
+     {
+      "size": 64,
+      "accuracy": 0.0778125,
+      "passed": false,
+      "state_peak_words": 1,
+      "declared_state_words": 1.0
+     }
+    ],
+    "architecture": {
+     "checked": true,
+     "violations": []
+    }
+   }
+  }
+ },
+ "replies": {
+  "backtranslate": {
+   "translations": [
+    {
+     "plain": "There exist positive natural numbers c and C such that for all natural numbers k ≥ 1 and v ≥ 1, the token cost defined as k + (k - 1) + k*v + (v - 1) is bounded below by c*(k*v) and above by C*(k*v). This asserts that the token cost grows linearly with the product k*v.",
+     "statement_id": "O1.a"
+    },
+    {
+     "plain": "There exist positive natural numbers c and C such that for all natural numbers n, k, v, the number of carried words (defined as a constant 1) is bounded below by c and above by C. This asserts that the constant function 1 is Θ(1).",
+     "statement_id": "O2.a"
+    },
+    {
+     "plain": "There exist positive natural numbers c and C such that for all natural numbers n ≥ 1, k ≥ 1, and v ≥ 1, the sequence cost defined as n*(k + (k-1) + k*v + (v-1)) is bounded below by c*(n*k*v) and above by C*(n*k*v). This asserts that the sequence cost grows linearly with the product n*k*v.",
+     "statement_id": "O3.a"
+    },
+    {
+     "plain": "For the copy task with vocabulary size D=4 and sequence length 2, train on 400 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.",
+     "statement_id": "O4.a"
+    },
+    {
+     "plain": "For any encoder-decoder pair mapping L-length strings over an alphabet of size D (with D ≥ 1) to a 16-state machine, at most 16 distinct strings can be perfectly reconstructed. If all D^L strings are perfectly reconstructed, then D^L cannot exceed 16. Furthermore, for any sequence length l between 8 and 64 inclusive over a vocabulary of size 4, the fraction of correctly reconstructed strings under any encoder-decoder pair is at most 16/4^l and strictly less than 0.99.",
+     "statement_id": "O5.a"
+    },
+    {
+     "plain": "For any encoder-decoder pair mapping K-length assignments over an alphabet of size V (with V ≥ 1) to a 16-state machine, if exact recall is achieved for every key and assignment, then the total number of assignments V^K cannot exceed 16. Additionally, for any sequence length K between 8 and 64 inclusive over a vocabulary of size 16, the fraction of correctly recalled key-value pairs is strictly less than 0.99. For K=64 and V=16, this fraction is at most 1/16.",
+     "statement_id": "O6.a"
+    },
+    {
+     "plain": "The operation count for the model is given by n*(k*V + 2*k + V - 2), where n is the sequence length, k is the state width (set to d), V is the vocabulary size, and the exponent is 1. This cost formula applies for vocabulary sizes V ∈ {4, 16} and state widths k ∈ {8, 16}, with a single carried state.",
+     "statement_id": "O7.a"
+    },
+    {
+     "plain": "Construct a model for the copy task with vocabulary size D=4 and sequence lengths 8, 32, and 64. The model must correctly copy at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.",
+     "statement_id": "O8.a"
+    },
+    {
+     "plain": "Construct a model for the recall task with vocabulary size V=16 and sequence lengths 8, 32, and 64. The model must correctly recall at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.",
+     "statement_id": "O9.a"
+    },
+    {
+     "plain": "Construct a model for the Dyck language task with sequence lengths 2, 4, 8, and 16. The model must correctly parse at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.",
+     "statement_id": "O10.a"
+    },
+    {
+     "plain": "Construct a model for the composition task with sequence lengths 4, 16, and 32. The model must correctly compose at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.",
+     "statement_id": "O11.a"
+    },
+    {
+     "plain": "Construct a model for the binding task with 8 values and sequence lengths 1, 4, and 8. The model must correctly bind at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.",
+     "statement_id": "O11.b"
+    },
+    {
+     "plain": "For any encoder-decoder pair mapping 3-length strings over a vocabulary of size 4 to a 16-state machine, at most 16 strings can be perfectly reconstructed, and the fraction of correctly reconstructed strings is strictly less than 0.99. However, for any sequence length L less than 3 over the same vocabulary, there exists an encoder-decoder pair that perfectly reconstructs all strings.",
+     "statement_id": "O12.a"
+    },
+    {
+     "plain": "For the copy task with vocabulary size D=4 and sequence length 2, train on 400 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.",
+     "statement_id": "O13.a"
+    },
+    {
+     "plain": "For the recall task with vocabulary size V=16 and sequence length 2, train on 400 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.",
+     "statement_id": "O14.a"
+    },
+    {
+     "plain": "For the Dyck language task with sequence length 2, train on 300 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.",
+     "statement_id": "O15.a"
+    },
+    {
+     "plain": "For the composition task with sequence length 2, train on 400 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.",
+     "statement_id": "O16.a"
+    },
+    {
+     "plain": "The model achieves an accuracy of 4.70197740328915e-38 on copy (D=4, L=64), 0.000244140625 on Dyck (depth 16), and 0.0625 on recall (K=64, V=16). The sample information specifies for each task the bits per example, number of examples, hypothesis class definition and log2 size, prior bits (0), and log2 H: copy uses 4 bits/example with a selector class, recall uses 8 bits/example with a rank-selector class, Dyck uses 7 bits/example with a context-to-closer map class, and composition uses 2 bits/example with a selector class. The model operates with 4 state bits.",
+     "statement_id": "O17.a"
+    }
+   ]
+  },
+  "compare": {
+   "definitions": [
+    {
+     "definition_id": "D1",
+     "verdict": "substantive",
+     "why": "It asserts the mechanism has exactly 16 latent states and a specific deterministic update rule, which are capacity constraints rather than mere conventions."
+    },
+    {
+     "definition_id": "D2",
+     "verdict": "convention",
+     "why": "It defines the arithmetic accounting method for counting operations during cost measurement, not a property of the mechanism's behavior."
+    },
+    {
+     "definition_id": "D3",
+     "verdict": "convention",
+     "why": "It fixes the data generation protocol, vocabulary sizes, and scoring positions for evaluation, which are methodological choices."
+    },
+    {
+     "definition_id": "D4",
+     "verdict": "convention",
+     "why": "It specifies the learning rule, random seeds, accuracy threshold, and computational budget for evaluation setup."
+    },
+    {
+     "definition_id": "D5",
+     "verdict": "convention",
+     "why": "It defines the notation for source strings, success conditions, and accuracy calculation under uniform distribution."
+    },
+    {
+     "definition_id": "D6",
+     "verdict": "convention",
+     "why": "It defines the notation for key-value assignments, exact recall conditions, and average accuracy calculation."
+    },
+    {
+     "definition_id": "D7",
+     "verdict": "convention",
+     "why": "It specifies the restricted hypothesis classes and prior bits used for information-theoretic accounting, a methodological choice."
+    }
+   ],
+   "premises": [],
+   "statements": [
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Theta bounds c, C match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Natural numbers >= 1 matches claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Linear in k*v matches claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Lower and upper bounds match Theta.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Forall k, v >= 1 matches claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O1.a",
+     "why": "Formal statement exactly captures the Theta(k V) time complexity claim."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Theta bounds c, C match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Natural numbers match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Constant growth matches claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Lower and upper bounds match Theta.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Forall n, k, v matches claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O2.a",
+     "why": "Formal statement exactly captures the Theta(1) memory complexity claim."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Theta bounds c, C match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Natural numbers >= 1 match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Linear in n*k*v matches claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Lower and upper bounds match Theta.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Forall n, k, v >= 1 matches claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O3.a",
+     "why": "Formal statement exactly captures the Theta(n k V) total sequence complexity claim."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "400 examples, L=2, D=4, threshold 0.99 match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Task and sizes match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O4.a",
+     "why": "Formal statement exactly matches the sample efficiency prediction parameters and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "16 states, 8-64 range, 99/100 threshold match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "L, l in [8, 64] and D=4 match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "D^L and 4^l match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "≤ 16, ≤ 16/4^l, < 0.99 match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Forall L, D >= 1 and enc/dec matches claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O5.a",
+     "why": "Formal statement exactly captures the copy capability limit and failure bounds."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "16 states, 8-64 range, 99/100 threshold, 1/16 chance match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "K in [8, 64] and V=16 match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "V^K and 16^64*64 match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "≤ 16, < 0.99, ≤ 1/16 match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Forall K, V >= 1 and enc/dec matches claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O6.a",
+     "why": "Formal statement exactly captures the associative recall capability limit and failure bounds."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Exponent 1 and ops formula match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "V and k sizes match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Linear in n matches claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Equality of symbolic formula and reference code matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O7.a",
+     "why": "Formal statement exactly matches the P1 cost profile parameters and formula."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "D=4, threshold 0.99, state_words=1 match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Sizes 8, 32, 64 match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O8.a",
+     "why": "Formal statement exactly matches the P2.copy construction parameters and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "V=16, threshold 0.99, state_words=1 match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Sizes 8, 32, 64 match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O9.a",
+     "why": "Formal statement exactly matches the P2.recall construction parameters and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Threshold 0.99, state_words=1 match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Sizes 2, 4, 8, 16 match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O10.a",
+     "why": "Formal statement exactly matches the P2.nesting construction parameters and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Threshold 0.99, state_words=1 match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Sizes 4, 16, 32 match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O11.a",
+     "why": "Formal statement exactly matches the P2.composition (table lookup) part parameters and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "values=8, threshold 0.99, state_words=1 match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Sizes 1, 4, 8 match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O11.b",
+     "why": "Formal statement exactly matches the P2.composition (binding) part parameters and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "16 states, 64 total strings, 99/100 threshold match instantiated claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "L=3, D=4 and L<3 match instantiated claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "4^3=64 matches instantiated claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "16-state resource constraint matches instantiated claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "≤ 16 and < 0.99 match instantiated claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Forall enc/dec for L=3 and exists for L<3 matches instantiated claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O12.a",
+     "why": "Formal statement exactly captures the instantiated P3 limit derivation and failure bounds."
+    },
+    {
+     "direction": "weaker",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Size parameter 2 vs claimed at most 4.",
+       "verdict": "differs"
+      },
+      "domains": {
+       "note": "Formal fixes size=2, claim requires up to L=4.",
+       "verdict": "differs"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O13.a",
+     "why": "Formal statement only covers size=2 while the claim requires success up to L=4."
+    },
+    {
+     "direction": "weaker",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Size parameter 2 vs claimed at most 4.",
+       "verdict": "differs"
+      },
+      "domains": {
+       "note": "Formal fixes size=2, claim requires up to K=4.",
+       "verdict": "differs"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O14.a",
+     "why": "Formal statement only covers size=2 while the claim requires success up to K=4."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "300 examples, threshold 0.99 match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Size=2 matches claim depth at most 2.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O15.a",
+     "why": "Formal statement exactly matches the P4.nesting learnability parameters and threshold."
+    },
+    {
+     "direction": "weaker",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Size parameter 2 vs claimed at most 4.",
+       "verdict": "differs"
+      },
+      "domains": {
+       "note": "Formal fixes size=2, claim requires table size at most 4.",
+       "verdict": "differs"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Threshold 0.99 matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O16.a",
+     "why": "Formal statement only covers size=2 while the claim requires success up to table size 4."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Accuracies, bits_per_example, state_bits=4 match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Task sizes and sample info match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this specification.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "No extra assumptions.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Equality of bounds matches claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Fixed parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O17.a",
+     "why": "Formal statement exactly matches the P5 information bounds parameters and conservation numbers."
+    }
+   ]
+  }
+ },
+ "compare_user": "STATEMENTS TO COMPARE:\n[\n {\n  \"statement_id\": \"O1.a\",\n  \"form\": \"lean\",\n  \"claim\": \"complexity time_per_token: Theta(k V)\",\n  \"claim_quote\": \"Theta(k V)\",\n  \"back_translation\": \"There exist positive natural numbers c and C such that for all natural numbers k ≥ 1 and v ≥ 1, the token cost defined as k + (k - 1) + k*v + (v - 1) is bounded below by c*(k*v) and above by C*(k*v). This asserts that the token cost grows linearly with the product k*v.\",\n  \"formal_statement\": \"import Mathlib\\ndef tokenCost (k v : ℕ) : ℕ := k + (k - 1) + k*v + (v - 1)\\ndef Claim : Prop := ∃ c C : ℕ, 0 < c ∧ ∀ k v : ℕ, 1 ≤ k → 1 ≤ v → c*(k*v) ≤ tokenCost k v ∧ tokenCost k v ≤ C*(k*v)\",\n  \"definitions\": [\n   \"D2\"\n  ],\n  \"z3_variables\": null\n },\n {\n  \"statement_id\": \"O2.a\",\n  \"form\": \"lean\",\n  \"claim\": \"complexity memory: Theta(1)\",\n  \"claim_quote\": \"Theta(1)\",\n  \"back_translation\": \"There exist positive natural numbers c and C such that for all natural numbers n, k, v, the number of carried words (defined as a constant 1) is bounded below by c and above by C. This asserts that the constant function 1 is Θ(1).\",\n  \"formal_statement\": \"import Mathlib\\ndef carriedWords (_n _k _v : ℕ) : ℕ := 1\\ndef Claim : Prop := ∃ c C : ℕ, 0 < c ∧ ∀ n k v : ℕ, c ≤ carriedWords n k v ∧ carriedWords n k v ≤ C\",\n  \"definitions\": [\n   \"D1\",\n   \"D2\"\n  ],\n  \"z3_variables\": null\n },\n {\n  \"statement_id\": \"O3.a\",\n  \"form\": \"lean\",\n  \"claim\": \"complexity total_sequence: Theta(n k V)\",\n  \"claim_quote\": \"Theta(n k V)\",\n  \"back_translation\": \"There exist positive natural numbers c and C such that for all natural numbers n ≥ 1, k ≥ 1, and v ≥ 1, the sequence cost defined as n*(k + (k-1) + k*v + (v-1)) is bounded below by c*(n*k*v) and above by C*(n*k*v). This asserts that the sequence cost grows linearly with the product n*k*v.\",\n  \"formal_statement\": \"import Mathlib\\ndef sequenceCost (n k v : ℕ) : ℕ := n*(k + (k-1) + k*v + (v-1))\\ndef Claim : Prop := ∃ c C : ℕ, 0 < c ∧ ∀ n k v : ℕ, 1 ≤ n → 1 ≤ k → 1 ≤ v → c*(n*k*v) ≤ sequenceCost n k v ∧ sequenceCost n k v ≤ C*(n*k*v)\",\n  \"definitions\": [\n   \"D2\"\n  ],\n  \"z3_variables\": null\n },\n {\n  \"statement_id\": \"O4.a\",\n  \"form\": \"learnability\",\n  \"claim\": \"sample efficiency prediction: 400 copy examples at L = 2 over 4 symbols give per-string accuracy 0.99. (metric: examples_to_copy_L2; value: 400)\",\n  \"claim_quote\": \"400 copy examples at L = 2 over 4 symbols give per-string accuracy 0.99.\",\n  \"back_translation\": \"For the copy task with vocabulary size D=4 and sequence length 2, train on 400 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.\",\n  \"formal_statement\": {\n   \"examples\": 400,\n   \"params\": {\n    \"D\": 4\n   },\n   \"seeds\": [\n    0,\n    1,\n    2\n   ],\n   \"size\": 2,\n   \"task\": \"copy\",\n   \"test_count\": 500,\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\",\n   \"D4\"\n  ],\n  \"z3_variables\": null\n },\n {\n  \"statement_id\": \"O5.a\",\n  \"form\": \"lean\",\n  \"claim\": \"capability 3: task: copy a string after a separator prediction: Exact only while L log2 D is at most 4 bits; fails at the listed lengths 8 to 64, where per-string accuracy is at most 16 / D^L (16 / 4^64 at L = 64 over 4 symbols).\",\n  \"claim_quote\": \"Exact only while L log2 D is at most 4 bits; fails at the listed lengths 8 to 64, where per-string accuracy is at most 16 / D^L (16 / 4^64 at L = 64 over 4 symbols).\",\n  \"back_translation\": \"For any encoder-decoder pair mapping L-length strings over an alphabet of size D (with D ≥ 1) to a 16-state machine, at most 16 distinct strings can be perfectly reconstructed. If all D^L strings are perfectly reconstructed, then D^L cannot exceed 16. Furthermore, for any sequence length l between 8 and 64 inclusive over a vocabulary of size 4, the fraction of correctly reconstructed strings under any encoder-decoder pair is at most 16/4^l and strictly less than 0.99.\",\n  \"formal_statement\": \"import Mathlib\\ndef correctStrings (L D : ℕ) (enc : (Fin L → Fin D) → Fin 16) (dec : Fin 16 → (Fin L → Fin D)) : ℕ := Fintype.card {x : Fin L → Fin D // dec (enc x) = x}\\ndef Claim : Prop := ∀ L D : ℕ, 1 ≤ D → ∀ (enc : (Fin L → Fin D) → Fin 16) (dec : Fin 16 → (Fin L → Fin D)), correctStrings L D enc dec ≤ 16 ∧ ((∀ x, dec (enc x) = x) → D^L ≤ 16) ∧ (∀ l : ℕ, 8 ≤ l → l ≤ 64 → ∀ (e : (Fin l → Fin 4) → Fin 16) (d : Fin 16 → (Fin l → Fin 4)), (correctStrings l 4 e d : ℚ) / (4^l : ℚ) ≤ 16 / (4^l : ℚ) ∧ (correctStrings l 4 e d : ℚ) / (4^l : ℚ) < 99/100)\",\n  \"definitions\": [\n   \"D1\",\n   \"D5\"\n  ],\n  \"z3_variables\": null\n },\n {\n  \"statement_id\": \"O6.a\",\n  \"form\": \"lean\",\n  \"claim\": \"capability 4: task: associative recall of K pairs prediction: Exact only while K log2 V is at most 4 bits; fails at the listed K of 8 to 64; at K = 64 over 16 symbols per-query accuracy is at chance, 1/16.\",\n  \"claim_quote\": \"Exact only while K log2 V is at most 4 bits; fails at the listed K of 8 to 64; at K = 64 over 16 symbols per-query accuracy is at chance, 1/16.\",\n  \"back_translation\": \"For any encoder-decoder pair mapping K-length assignments over an alphabet of size V (with V ≥ 1) to a 16-state machine, if exact recall is achieved for every key and assignment, then the total number of assignments V^K cannot exceed 16. Additionally, for any sequence length K between 8 and 64 inclusive over a vocabulary of size 16, the fraction of correctly recalled key-value pairs is strictly less than 0.99. For K=64 and V=16, this fraction is at most 1/16.\",\n  \"formal_statement\": \"import Mathlib\\ndef recallCorrect (K V : ℕ) (enc : (Fin K → Fin V) → Fin 16) (dec : Fin 16 → Fin K → Fin V) : ℕ := Fintype.card {p : (Fin K → Fin V) × Fin K // dec (enc p.1) p.2 = p.1 p.2}\\ndef Claim : Prop := (∀ K V : ℕ, 1 ≤ V → ∀ (enc : (Fin K → Fin V) → Fin 16) (dec : Fin 16 → Fin K → Fin V), (∀ x i, dec (enc x) i = x i) → V^K ≤ 16) ∧ (∀ K : ℕ, 8 ≤ K → K ≤ 64 → ∀ (enc : (Fin K → Fin 16) → Fin 16) (dec : Fin 16 → Fin K → Fin 16), (recallCorrect K 16 enc dec : ℚ) / ((16^K * K : ℕ) : ℚ) < 99/100) ∧ (∀ (enc : (Fin 64 → Fin 16) → Fin 16) (dec : Fin 16 → Fin 64 → Fin 16), (recallCorrect 64 16 enc dec : ℚ) / ((16^64 * 64 : ℕ) : ℚ) ≤ 1/16)\",\n  \"definitions\": [\n   \"D1\",\n   \"D6\"\n  ],\n  \"z3_variables\": null\n },\n {\n  \"statement_id\": \"O7.a\",\n  \"form\": \"cost\",\n  \"claim\": \"profile P1: exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n\",\n  \"claim_quote\": \"exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n\",\n  \"back_translation\": \"The operation count for the model is given by n*(k*V + 2*k + V - 2), where n is the sequence length, k is the state width (set to d), V is the vocabulary size, and the exponent is 1. This cost formula applies for vocabulary sizes V ∈ {4, 16} and state widths k ∈ {8, 16}, with a single carried state.\",\n  \"formal_statement\": {\n   \"exponent\": 1,\n   \"ops\": \"n*(k*V + 2*k + V - 2)\",\n   \"sizes\": {\n    \"V\": [\n     4,\n     16\n    ],\n    \"k\": [\n     8,\n     16\n    ]\n   },\n   \"state\": \"1\",\n   \"widths\": {\n    \"d\": \"k\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D2\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P1\",\n   \"statements\": [\n    \"O7.a\"\n   ],\n   \"part\": null\n  }\n },\n {\n  \"statement_id\": \"O8.a\",\n  \"form\": \"construction\",\n  \"claim\": \"profile P2.copy: construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words\",\n  \"claim_quote\": \"construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words\",\n  \"back_translation\": \"Construct a model for the copy task with vocabulary size D=4 and sequence lengths 8, 32, and 64. The model must correctly copy at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.\",\n  \"formal_statement\": {\n   \"count\": 500,\n   \"params\": {\n    \"D\": 4\n   },\n   \"sizes\": [\n    8,\n    32,\n    64\n   ],\n   \"state_words\": \"1\",\n   \"task\": \"copy\",\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P2.copy\",\n   \"statements\": [\n    \"O8.a\"\n   ],\n   \"part\": \"copy\"\n  }\n },\n {\n  \"statement_id\": \"O9.a\",\n  \"form\": \"construction\",\n  \"claim\": \"profile P2.recall: construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words\",\n  \"claim_quote\": \"construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words\",\n  \"back_translation\": \"Construct a model for the recall task with vocabulary size V=16 and sequence lengths 8, 32, and 64. The model must correctly recall at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.\",\n  \"formal_statement\": {\n   \"count\": 500,\n   \"params\": {\n    \"V\": 16\n   },\n   \"sizes\": [\n    8,\n    32,\n    64\n   ],\n   \"state_words\": \"1\",\n   \"task\": \"recall\",\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P2.recall\",\n   \"statements\": [\n    \"O9.a\"\n   ],\n   \"part\": \"recall\"\n  }\n },\n {\n  \"statement_id\": \"O10.a\",\n  \"form\": \"construction\",\n  \"claim\": \"profile P2.nesting: construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words\",\n  \"claim_quote\": \"construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words\",\n  \"back_translation\": \"Construct a model for the Dyck language task with sequence lengths 2, 4, 8, and 16. The model must correctly parse at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.\",\n  \"formal_statement\": {\n   \"count\": 500,\n   \"sizes\": [\n    2,\n    4,\n    8,\n    16\n   ],\n   \"state_words\": \"1\",\n   \"task\": \"dyck\",\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P2.nesting\",\n   \"statements\": [\n    \"O10.a\"\n   ],\n   \"part\": \"dyck\"\n  }\n },\n {\n  \"statement_id\": \"O11.a\",\n  \"form\": \"construction\",\n  \"claim\": \"profile P2.composition: construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words\",\n  \"claim_quote\": \"construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words\",\n  \"back_translation\": \"Construct a model for the composition task with sequence lengths 4, 16, and 32. The model must correctly compose at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.\",\n  \"formal_statement\": {\n   \"count\": 500,\n   \"sizes\": [\n    4,\n    16,\n    32\n   ],\n   \"state_words\": \"1\",\n   \"task\": \"composition\",\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P2.composition\",\n   \"statements\": [\n    \"O11.a\",\n    \"O11.b\"\n   ],\n   \"part\": \"composition\"\n  }\n },\n {\n  \"statement_id\": \"O11.b\",\n  \"form\": \"construction\",\n  \"claim\": \"profile P2.composition: construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words\",\n  \"claim_quote\": \"construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words\",\n  \"back_translation\": \"Construct a model for the binding task with 8 values and sequence lengths 1, 4, and 8. The model must correctly bind at least 500 test instances per length with an accuracy threshold of 0.99. The architecture uses width d=16, one position encoding, and one update round per token, with a single carried state.\",\n  \"formal_statement\": {\n   \"count\": 500,\n   \"params\": {\n    \"values\": 8\n   },\n   \"sizes\": [\n    1,\n    4,\n    8\n   ],\n   \"state_words\": \"1\",\n   \"task\": \"binding\",\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P2.composition\",\n   \"statements\": [\n    \"O11.a\",\n    \"O11.b\"\n   ],\n   \"part\": \"binding\"\n  }\n },\n {\n  \"statement_id\": \"O12.a\",\n  \"form\": \"lean\",\n  \"claim\": \"profile P3: derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2\",\n  \"claim_quote\": \"derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2\",\n  \"back_translation\": \"For any encoder-decoder pair mapping 3-length strings over a vocabulary of size 4 to a 16-state machine, at most 16 strings can be perfectly reconstructed, and the fraction of correctly reconstructed strings is strictly less than 0.99. However, for any sequence length L less than 3 over the same vocabulary, there exists an encoder-decoder pair that perfectly reconstructs all strings.\",\n  \"formal_statement\": \"import Mathlib\\ndef successes (enc : (Fin 3 → Fin 4) → Fin 16) (dec : Fin 16 → (Fin 3 → Fin 4)) : ℕ := Fintype.card {x : Fin 3 → Fin 4 // dec (enc x) = x}\\ndef Claim : Prop := (∀ (enc : (Fin 3 → Fin 4) → Fin 16) (dec : Fin 16 → (Fin 3 → Fin 4)), successes enc dec ≤ 16 ∧ (successes enc dec : ℚ)/64 < 99/100) ∧ (∀ L : ℕ, L < 3 → ∃ (enc : (Fin L → Fin 4) → Fin 16) (dec : Fin 16 → (Fin L → Fin 4)), ∀ x, dec (enc x) = x)\",\n  \"definitions\": [\n   \"D1\",\n   \"D5\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P3\",\n   \"statements\": [\n    \"O12.a\"\n   ],\n   \"part\": null,\n   \"selected_limits\": [\n    {\n     \"resources\": \"At least 64 distinguishable carried states for exact copying of all length-three strings over four symbols; sixteen states give accuracy at most 16/64.\",\n     \"size\": 3,\n     \"task\": \"copy\",\n     \"why\": \"Each carried state determines one complete self-fed output string, so at most sixteen distinct source strings can be reproduced.\"\n    }\n   ]\n  },\n  \"instantiated_claim\": \"There is a task family the mechanism cannot solve within its resources: the copy task at every L of 3 or more. Resources: At least 64 distinguishable carried states for exact copying of all length-three strings over four symbols; sixteen states give accuracy at most 16/64. Derivation: Each carried state determines one complete self-fed output string, so at most sixteen distinct source strings can be reproduced.\"\n },\n {\n  \"statement_id\": \"O13.a\",\n  \"form\": \"learnability\",\n  \"claim\": \"profile P4.copy: toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds\",\n  \"claim_quote\": \"toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds\",\n  \"back_translation\": \"For the copy task with vocabulary size D=4 and sequence length 2, train on 400 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.\",\n  \"formal_statement\": {\n   \"examples\": 400,\n   \"params\": {\n    \"D\": 4\n   },\n   \"seeds\": [\n    0,\n    1,\n    2\n   ],\n   \"size\": 2,\n   \"task\": \"copy\",\n   \"test_count\": 500,\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\",\n   \"D4\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P4.copy\",\n   \"statements\": [\n    \"O13.a\"\n   ],\n   \"part\": \"copy\"\n  }\n },\n {\n  \"statement_id\": \"O14.a\",\n  \"form\": \"learnability\",\n  \"claim\": \"profile P4.recall: toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds\",\n  \"claim_quote\": \"toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds\",\n  \"back_translation\": \"For the recall task with vocabulary size V=16 and sequence length 2, train on 400 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.\",\n  \"formal_statement\": {\n   \"examples\": 400,\n   \"params\": {\n    \"V\": 16\n   },\n   \"seeds\": [\n    0,\n    1,\n    2\n   ],\n   \"size\": 2,\n   \"task\": \"recall\",\n   \"test_count\": 500,\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\",\n   \"D4\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P4.recall\",\n   \"statements\": [\n    \"O14.a\"\n   ],\n   \"part\": \"recall\"\n  }\n },\n {\n  \"statement_id\": \"O15.a\",\n  \"form\": \"learnability\",\n  \"claim\": \"profile P4.nesting: toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds\",\n  \"claim_quote\": \"toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds\",\n  \"back_translation\": \"For the Dyck language task with sequence length 2, train on 300 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.\",\n  \"formal_statement\": {\n   \"examples\": 300,\n   \"seeds\": [\n    0,\n    1,\n    2\n   ],\n   \"size\": 2,\n   \"task\": \"dyck\",\n   \"test_count\": 500,\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\",\n   \"D4\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P4.nesting\",\n   \"statements\": [\n    \"O15.a\"\n   ],\n   \"part\": \"dyck\"\n  }\n },\n {\n  \"statement_id\": \"O16.a\",\n  \"form\": \"learnability\",\n  \"claim\": \"profile P4.composition: toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds\",\n  \"claim_quote\": \"toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds\",\n  \"back_translation\": \"For the composition task with sequence length 2, train on 400 examples using random seeds 0, 1, and 2. Evaluate the trained model on 500 test instances per seed. The architecture has width d=16, one position encoding, and one update round per token. The model must achieve an average accuracy of at least 0.99 on the test instances.\",\n  \"formal_statement\": {\n   \"examples\": 400,\n   \"seeds\": [\n    0,\n    1,\n    2\n   ],\n   \"size\": 2,\n   \"task\": \"composition\",\n   \"test_count\": 500,\n   \"threshold\": 0.99,\n   \"widths\": {\n    \"d\": \"16\",\n    \"positions\": \"1\",\n    \"rounds\": \"1\"\n   }\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\",\n   \"D4\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P4.composition\",\n   \"statements\": [\n    \"O16.a\"\n   ],\n   \"part\": \"composition\"\n  }\n },\n {\n  \"statement_id\": \"O17.a\",\n  \"form\": \"conservation\",\n  \"claim\": \"profile P5: information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws\",\n  \"claim_quote\": \"information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws\",\n  \"back_translation\": \"The model achieves an accuracy of 4.70197740328915e-38 on copy (D=4, L=64), 0.000244140625 on Dyck (depth 16), and 0.0625 on recall (K=64, V=16). The sample information specifies for each task the bits per example, number of examples, hypothesis class definition and log2 size, prior bits (0), and log2 H: copy uses 4 bits/example with a selector class, recall uses 8 bits/example with a rank-selector class, Dyck uses 7 bits/example with a context-to-closer map class, and composition uses 2 bits/example with a selector class. The model operates with 4 state bits.\",\n  \"formal_statement\": {\n   \"copy\": [\n    {\n     \"D\": 4,\n     \"L\": 64,\n     \"accuracy\": 4.70197740328915e-38\n    }\n   ],\n   \"dyck\": [\n    {\n     \"accuracy\": 0.000244140625,\n     \"depth\": 16\n    }\n   ],\n   \"recall\": [\n    {\n     \"K\": 64,\n     \"V\": 16,\n     \"accuracy\": 0.0625\n    }\n   ],\n   \"sample\": [\n    {\n     \"bits_per_example\": 4,\n     \"examples\": 400,\n     \"hypothesis_class\": {\n      \"definition\": \"All selectors s:{0,1}->{0,1}; output i is source symbol s(i), with identity selector the target.\",\n      \"log2_size\": 2,\n      \"size_justification\": \"Two independent choices at each of two indices give four rules; a source with distinct symbols separates any distinct selectors. The protocol supplies this class but no member.\"\n     },\n     \"log2_H\": 2,\n     \"prior_bits\": 0,\n     \"task\": \"copy\"\n    },\n    {\n     \"bits_per_example\": 8,\n     \"examples\": 400,\n     \"hypothesis_class\": {\n      \"definition\": \"Sort the two keys by token id to name ranks 0 and 1. All selectors s:{0,1}->{0,1} answer key of rank i with value of rank s(i); input order remains shuffled.\",\n      \"log2_size\": 2,\n      \"size_justification\": \"Two choices for each rank give four rules; distinct stored values distinguish different selectors. The protocol supplies this class but no member.\"\n     },\n     \"log2_H\": 2,\n     \"prior_bits\": 0,\n     \"task\": \"recall\"\n    },\n    {\n     \"bits_per_example\": 7,\n     \"examples\": 300,\n     \"hypothesis_class\": {\n      \"definition\": \"Every map from contexts (0),(1),(0,0),(0,1),(1,0),(1,1), listed bottom to top, to the two closing tokens.\",\n      \"log2_size\": 6,\n      \"size_justification\": \"Each of six reachable contexts independently has two outputs, giving 64 distinct rules. The protocol supplies this class but no member.\"\n     },\n     \"log2_H\": 6,\n     \"prior_bits\": 0,\n     \"task\": \"dyck\"\n    },\n    {\n     \"bits_per_example\": 2,\n     \"examples\": 400,\n     \"hypothesis_class\": {\n      \"definition\": \"All selectors s:{0,1}->{0,1}; on tables g,f and request x the answer is f(g(s(x))), with identity selector the target.\",\n      \"log2_size\": 2,\n      \"size_justification\": \"Two independent choices at each request give four rules; tables separating the selected arguments distinguish distinct selectors. The protocol supplies this class but no member.\"\n     },\n     \"log2_H\": 2,\n     \"prior_bits\": 0,\n     \"task\": \"composition\"\n    }\n   ],\n   \"state_bits\": 4\n  },\n  \"definitions\": [\n   \"D1\",\n   \"D3\",\n   \"D7\"\n  ],\n  \"z3_variables\": null,\n  \"profile_slot\": {\n   \"slot\": \"P5\",\n   \"statements\": [\n    \"O17.a\"\n   ],\n   \"part\": null\n  }\n }\n]\n\nDEFINITIONS:\n[\n {\n  \"definition_id\": \"D1\",\n  \"kind\": \"other\",\n  \"text\": \"The model has k=16 latent states, one carried integer z, and fixed probability tables A of shape k by k and B of shape k by vocabulary size. update(x) sets z to the smallest maximizing j of A[z,j]*B[j,x]. predict returns the smallest maximizing v of sum_j A[z,j]*B[j,v]. Parameters do not change during inference. No position counter, input buffer, external memory, or additional carried state is allowed. In the architecture contract d denotes k, not an additional embedding width; there is one update round and no feed-forward expansion.\"\n },\n {\n  \"definition_id\": \"D2\",\n  \"kind\": \"accounting\",\n  \"text\": \"For cost measurement, compute the update scores by elementwise multiplication followed by argmax, and compute readout scores by the length-k vector A[z,:] @ B followed by argmax. Thus update costs k+(k-1) units and readout costs k*V+(V-1) units. Perform update and readout once per token. A and B are fixed parameters, excluded from carried state; the state object contains only z. Temporary score arrays are not retained in the state object. Generalize k to the cost grid without changing these equations.\"\n },\n {\n  \"definition_id\": \"D3\",\n  \"kind\": \"sampling\",\n  \"text\": \"Use the supplied task-contract generators and scoring positions unchanged. Copy uses D=4 and self-fed continuation, with 2*L tokens and vocabulary 5. Recall uses V=16, n_keys=2*K, 3*K+1 tokens, and vocabulary 2*K+17. Composition uses 5*T+3 tokens and vocabulary 3*T+3, with arbitrary functions and independently shuffled tables. Binding uses values=8, two interleaved chains, 4*hops+7 tokens, and vocabulary 2*hops+11. Dyck uses vocabulary 4 and the supplied variable-length balanced-word generator; measured stream lengths are 8 at depth 2, 14–16 at depth 4, 26–32 at depth 8, and 50–64 at depth 16. There is no per-token store.\"\n },\n {\n  \"definition_id\": \"D4\",\n  \"kind\": \"evaluation\",\n  \"text\": \"Learnability uses the architecture in D1 and only the card's count-based rule: decode training text with the current tables, count transitions and emissions, normalize, and repeat. The prover chooses initialization, handling of zero counts, passes, and batch organization in its declared RECIPE, without changing the architecture or learning rule. Use seeds 0, 1, 2, threshold 0.99, and 500 test instances per seed. Score copy per string, recall and composition per query, and dyck per sequence. Apply the identical learner and RECIPE to true examples, zero examples, and the same token sequences with randomized answers. Both controls and the supplied 1800-second, 4096-MB, single-core budget and replay requirements are mandatory.\"\n },\n {\n  \"definition_id\": \"D5\",\n  \"kind\": \"notation\",\n  \"text\": \"For the finite-state information statements, a source string is a function Fin L -> Fin D. enc maps the complete source prefix to its carried state, and dec maps that state to the complete self-fed continuation. Success means equality of the entire string. This includes every deterministic mechanism with only sixteen carried states; dec includes its fixed parameters and deterministic self-fed updates. Counts divided by D^L are accuracies under the uniform source distribution.\"\n },\n {\n  \"definition_id\": \"D6\",\n  \"kind\": \"notation\",\n  \"text\": \"For the recall information statement, fix any particular ordered set of K distinct keys. A value assignment is a function Fin K -> Fin V, enc is the state after storing the pairs, and dec(state,i) is the answer to key i when queried first. Average accuracy is the number of correct assignment/key combinations divided by V^K*K. Exact recall means every key is answered correctly for every assignment. The statement quantifies over all deterministic sixteen-state encoders and query decoders.\"\n },\n {\n  \"definition_id\": \"D7\",\n  \"kind\": \"other\",\n  \"text\": \"The sample-information entries use the card's declared restricted target-rule classes, supplied by the task protocol, with a uniformly drawn target and no hand-set member. For copy, recall, and composition the class is all four selectors {0,1}->{0,1}; for dyck it is all maps from the six specified nonempty depth-two stack contexts to two closers. Prior bits are zero relative to these restricted classes, not relative to a class that also learns parsing or the task protocol.\"\n }\n]\n\nCARD CLAIMS:\n[\n {\n  \"claim_id\": \"complexity.time_per_token\",\n  \"text\": \"complexity time_per_token: Theta(k V)\"\n },\n {\n  \"claim_id\": \"complexity.memory\",\n  \"text\": \"complexity memory: Theta(1)\"\n },\n {\n  \"claim_id\": \"complexity.total_sequence\",\n  \"text\": \"complexity total_sequence: Theta(n k V)\"\n },\n {\n  \"claim_id\": \"sample_efficiency.prediction\",\n  \"text\": \"sample efficiency prediction: 400 copy examples at L = 2 over 4 symbols give per-string accuracy 0.99. (metric: examples_to_copy_L2; value: 400)\"\n },\n {\n  \"claim_id\": \"capability.1\",\n  \"text\": \"capability 1: task: two-type bracket nesting prediction: Exact up to depth log2 16 = 4; deeper prefixes need at least 2^D distinct states to know the legal closer, so accuracy falls below 0.99 at depth 8 and 16; at depth 16 per-sequence accuracy is at most 16 / 2^16.\"\n },\n {\n  \"claim_id\": \"capability.2\",\n  \"text\": \"capability 2: task: two-hop lookup and chained assignments prediction: Fails once the tables given in context hold more than 4 bits, which is already the case at the listed table sizes 4, 16 and 32.\"\n },\n {\n  \"claim_id\": \"capability.3\",\n  \"text\": \"capability 3: task: copy a string after a separator prediction: Exact only while L log2 D is at most 4 bits; fails at the listed lengths 8 to 64, where per-string accuracy is at most 16 / D^L (16 / 4^64 at L = 64 over 4 symbols).\"\n },\n {\n  \"claim_id\": \"capability.4\",\n  \"text\": \"capability 4: task: associative recall of K pairs prediction: Exact only while K log2 V is at most 4 bits; fails at the listed K of 8 to 64; at K = 64 over 16 symbols per-query accuracy is at chance, 1/16.\"\n },\n {\n  \"claim_id\": \"P1\",\n  \"text\": \"profile P1: exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n\"\n },\n {\n  \"claim_id\": \"P2.copy\",\n  \"text\": \"profile P2.copy: construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words\"\n },\n {\n  \"claim_id\": \"P2.recall\",\n  \"text\": \"profile P2.recall: construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words\"\n },\n {\n  \"claim_id\": \"P2.nesting\",\n  \"text\": \"profile P2.nesting: construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words\"\n },\n {\n  \"claim_id\": \"P2.composition\",\n  \"text\": \"profile P2.composition: construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words\"\n },\n {\n  \"claim_id\": \"P3\",\n  \"text\": \"profile P3: derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2\"\n },\n {\n  \"claim_id\": \"P4.copy\",\n  \"text\": \"profile P4.copy: toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds\"\n },\n {\n  \"claim_id\": \"P4.recall\",\n  \"text\": \"profile P4.recall: toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds\"\n },\n {\n  \"claim_id\": \"P4.nesting\",\n  \"text\": \"profile P4.nesting: toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds\"\n },\n {\n  \"claim_id\": \"P4.composition\",\n  \"text\": \"profile P4.composition: toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds\"\n },\n {\n  \"claim_id\": \"P5\",\n  \"text\": \"profile P5: information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws\"\n }\n]\n\nPREMISES:\n[]\n\nPROFILE SLOTS (Phase 4). Some claims above are transformer-profile slots (claim ids P1 to P5) rather than the card's own words; their items carry `profile_slot`. A slot's text is a fixed template. Its forms, tasks, required sizes, thresholds, seeds and solvable cases are fixed. Its formulas, declared state words, limits, example counts and conservation numbers are parameters the statement fixer filled in from the card. Compare a slot statement as follows.\n\n- A concrete value that fills a parameter the template leaves open is not a difference in constants or exponents. An exact operation-count polynomial in n and the card's sizes is the symbolic formula P1 asks for; one specific limit with its size and derivation is the \"at least one task family\" P3 asks for. Check instead that the filled-in values say what the card says.\n- A slot that names several tasks (P2.composition and P4.composition: two-hop lookup and chained assignments) is covered by several statements, one per task, and holds only when every one of them holds. `profile_slot.part` names the task this statement covers and `profile_slot.statements` lists the slot's statements. Compare the statement with its own part of the slot text, not with the whole slot.\n- A learnability statement fixes the model class, m, the seeds, the threshold and the controls; the training recipe (initialization, optimizer, learning rate, epochs, batch size) is chosen by the prover and is not part of the statement, so its absence is not a difference.\n- Everything the template fixes must match exactly: the task, every required size, the threshold, the number of seeds and the solvable case. A missing required size, a lower threshold, another task or a different form is a mismatch.\n\nP3 LIMITS. A P3 statement carries `profile_slot.selected_limits`, the limits record the statement fixer froze, and `instantiated_claim`, the slot's claim with that limit filled in. Compare the formal statement with `instantiated_claim`, read together with the definitions it uses.\n\nThe slot template is existential: \"at least one task family the mechanism cannot solve\". A statement instantiates it by naming one task family (in the limit and its definitions) and proving that no setting of the mechanism within the stated resources solves every member of it. Its formal statement is then universal over the mechanism's settings, readouts or weights, and often over the sizes, and concrete in the task. That shape is the instantiation itself, not a quantifier difference: \"for every readout, the instance at size V is answered wrong\" proves \"this task family cannot be solved\" for the chosen family. Mark quantifiers \"differs\" only when the formal statement quantifies the task, the sizes or the resources differently from `instantiated_claim` (for example: it proves the failure for some readout only, or at a size the limit does not state, or under a resource the limit does not name).\n\nJudge the statement against the criteria the template and the limit state, and no others. Whether the limit is interesting, deep or the one known for this model is not part of the comparison; do not mark a statement \"weaker\" or \"different\" for being simple, for resting on the output vocabulary, or for not being the limit you expected. Such a judgment, if it matters, is a rule of the profile, decided before the statements are frozen.",
+ "recorded_c": {
+  "verdict": "fail",
+  "kill_codes": [
+   "statement_mismatch"
+  ],
+  "claims": {
+   "complexity.time_per_token": "proven",
+   "complexity.memory": "blocked",
+   "complexity.total_sequence": "proven",
+   "sample_efficiency.prediction": "blocked",
+   "capability.1": "not_formalized",
+   "capability.2": "not_formalized",
+   "capability.3": "blocked",
+   "capability.4": "blocked",
+   "P1": "blocked",
+   "P2.copy": "blocked",
+   "P2.recall": "blocked",
+   "P2.nesting": "blocked",
+   "P2.composition": "blocked",
+   "P3": "blocked",
+   "P4.copy": "blocked",
+   "P4.recall": "blocked",
+   "P4.nesting": "blocked",
+   "P4.composition": "blocked",
+   "P5": "blocked"
+  },
+  "mismatched": [
+   "O10.a",
+   "O11.a",
+   "O11.b",
+   "O12.a",
+   "O13.a",
+   "O14.a",
+   "O15.a",
+   "O16.a",
+   "O17.a",
+   "O2.a",
+   "O4.a",
+   "O5.a",
+   "O6.a",
+   "O7.a",
+   "O8.a",
+   "O9.a"
+  ]
+ }
+}

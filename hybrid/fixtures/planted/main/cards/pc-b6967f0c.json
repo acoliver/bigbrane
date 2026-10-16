@@ -1,0 +1,149 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Inherited fingerprints for pair recall",
+  "summary": "When a pair (a, b) is read, the first symbol inherits the fingerprint of the second: a short, collision-free fingerprint of fixed width. A probe is answered by decoding the fingerprint its symbol carries. A ring of stored symbols with a read pointer handles strings, and a stack region handles brackets.",
+  "core_idea": "Let each first symbol of a pair inherit the collision-free fixed-width fingerprint of its partner, so recall is a decode of the probe's fingerprint.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "phi",
+        "type": "integer vector",
+        "shape": [
+          "N"
+        ],
+        "meaning": "Fingerprint register: phi[a] holds the w-bit fingerprint inherited by symbol a, for the N symbols of the alphabet; w is fixed (w = 6)."
+      },
+      {
+        "name": "Q",
+        "type": "integer vector",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Ring of C stored symbols used for strings and as a stack region for brackets; C = 64."
+      },
+      {
+        "name": "rp",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Read pointer into Q for string reproduction."
+      },
+      {
+        "name": "wp",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Write pointer into Q, also the stack top for brackets."
+      },
+      {
+        "name": "lft",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "First symbol of a pair while its partner has not arrived."
+      },
+      {
+        "name": "Dec",
+        "type": "integer map",
+        "shape": [
+          "2^w"
+        ],
+        "meaning": "Decoder from fingerprint to symbol, fitted by majority."
+      }
+    ],
+    "update": [
+      {
+        "latex": "\\text{pair } (a,b):\\; \\phi[a] \\leftarrow \\mathrm{fp}(b)",
+        "plain": "when the second symbol b of a pair arrives, the first symbol a (held in lft) inherits fp(b), a collision-free w-bit hash of b",
+        "name": "inherit"
+      },
+      {
+        "latex": "Q_{wp} \\leftarrow x_t,\\; wp \\leftarrow wp + 1 \\;(\\text{string or opener}),\\quad wp \\leftarrow wp - 1 \\;(\\text{closer}),\\quad rp \\leftarrow rp + 1 \\;(\\text{after separator})",
+        "plain": "strings and openers are written at wp; a closer moves wp back; after the separator rp advances once per emitted symbol",
+        "name": "ring"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\hat{y}_t = \\mathrm{Dec}[\\phi[x_t]] \\text{ (pairs)},\\; Q_{rp} \\text{ (strings)},\\; \\mathrm{Dec}'[Q_{wp-1}] \\text{ (brackets)}",
+        "plain": "a pair probe decodes, by a decoder lookup, the fingerprint its symbol inherited; a string reads Q at rp; brackets map the stored opener at the top through Dec'"
+      }
+    ],
+    "learning": {
+      "description": "Dec and Dec' are fitted as majority maps from a tally over the m training items; the reading route is the one with the best training accuracy among the three.",
+      "few_shot_argument": "Fingerprints are distinct per partner symbol, so Dec is fixed once each of the V = 16 partners has been seen: m = 8 items with 64 probes each suffice."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(N + C)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "One fingerprint write or one ring write per token; one decode per probe. The fingerprint is w = 6 bits whatever the alphabet."
+    },
+    "sample_efficiency": {
+      "mechanism": "Collision-free fingerprints reduce learning to a decode map.",
+      "prediction": {
+        "metric": "examples_to_recall_K64",
+        "value": 8,
+        "statement": "From m = 8 recall items with K = 64 pairs over V = 16 symbols, per-query accuracy is at least 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall",
+        "prediction": "Exact at K = 8, 32, 64 with one fingerprint per address symbol (state N + C + 3 words)."
+      },
+      {
+        "task": "copy",
+        "prediction": "Exact at L = 8, 32, 64 from the ring with C = 64."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Exact at depth 2, 4, 8, 16 from the stack region."
+      },
+      {
+        "task": "composition and binding",
+        "prediction": "Two inherited fingerprints in sequence answer f(g(x)) at T = 4, 16, 32; chains of 1, 4, 8 hops inherit through each assignment."
+      },
+      {
+        "task": "limit",
+        "prediction": "Strings longer than C = 64 cannot be reproduced: the ring holds C symbols, so L = 65 over D = 4 needs 130 bits more than the ring can hold."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Two different partner symbols with the same w-bit fingerprint.",
+    "8 training items at K = 64 after which recall accuracy is below 0.99."
+  ],
+  "toy_example": {
+    "description": "Three pairs; each first symbol inherits its partner's fingerprint; probes decode.",
+    "python": "import json\npairs = [(3, 17), (9, 21), (4, 17)]\nfp = {}\nfor a, b in pairs:\n    fp[a] = (b * 5) % 64\ndec = {(b * 5) % 64: b for b in range(16, 32)}\nprint(json.dumps({\"answers\": [dec[fp[9]], dec[fp[3]], dec[fp[4]]]}))\n",
+    "expected": {
+      "answers": [
+        21,
+        17,
+        17
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

@@ -1,0 +1,301 @@
+{
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "Without dilution: accuracy is at least 0.95 for each k in {3, 10, 100, 1000}, and accuracy at k = 1000 is at most 0.02 below accuracy at k = 10.\n\nWith dilution: accuracy is at least 0.95, and the mean probability on the correct token is at least 0.9. Here k = 1000 >= 3 sqrt(m) = 300, and the unrelated displacements are i.i.d. uniform on Z_64 (premise A1). By the few-shot argument, at the 62 frequencies w not in {0, 32} the phase error has standard deviation sqrt(m/2)/k = 0.071. At w = 0 the error is 0, and at w = 32 it is 0 except with probability at most exp(-k^2/(2m)) = exp(-50). So s(correct) is about 1 - m/(4k^2) = 0.9975. Lattice phases have mu = 0 (D5), so every other score obeys the deterministic bound |s(y)| <= (1/d) sum_w |err_w|, about 0.055, and is typically of order 0.01. Then p is about e^{8}/(e^{8} + 63), roughly 0.98, and even under the deterministic bound p >= e^{7.98}/(e^{7.98} + 63 e^{0.44}), about 0.97.\n\nAblation: with lattice phases, the score becomes s(y) = h(y - x_t)/(t - 1), where h(delta) counts the context pairs with x_s - x_{s-1} = delta mod 64. Unrelated displacements are uniform, so h(correct) is about k + m/64 = 1156 and h(other) is about m/64 = 156, with standard deviation about 12. The argmax is the histogram mode, so accuracy stays at least 0.95. But s(correct) is about 1156/11000 = 0.105 and s(other) about 156/11000 = 0.014. With beta = 8 this gives p(correct) of about e^{0.84}/(e^{0.84} + 63 e^{0.11}), roughly 2.32/(2.32 + 70.6) = 0.03, so at most 0.1.",
+        "task": "Cyclic-shift rule induction, length invariance and distractor dilution.\n\nSetup:\n- V = d = 64, lattice phases, u = 0, beta = 8 fixed.\n- Rule b = a + s mod 64, with s uniform in {1, ..., 63}.\n- Format a_1 b_1 ... a_k b_k a_{k+1}, 1000 episodes per setting.\n- For k <= 32 the a_j are distinct and the query a_{k+1} differs from all of them. For larger k the a_j are i.i.d. uniform.\n- Accuracy is the fraction of episodes with argmax_y p(y) = a_{k+1} + s.\n\nDilution setting: k = 1000, and each demonstration b_j is followed by L = 9 uniformly random filler tokens before a_{j+1}. The sequence has 11k + 1 tokens and 11k = 11000 pairs. Of these, k = 1000 instance the rule and m = 10k = 10^4 are unrelated: b_j -> filler, 8 filler -> filler, and filler -> a_{j+1} in each block.\n\nAblation: Rhat_t is replaced by R_t/(t-1)."
+      },
+      {
+        "prediction": "Accuracy is at least 0.95 for every k in {3, ..., 63}. The derivation below gives exactly 1.0, up to floating-point effects bounded in D1.\n\nEach rule pair contributes chi_w(a) chi_w(a XOR c) = chi_w(c). The unrelated pair b_j -> a_{j+1} contributes chi_w(c) chi_w(e_j), where e_j = a_j XOR a_{j+1}. So R_w = chi_w(c) (k + sum_j chi_w(e_j)). The bracket is an even integer in [0, 2k]. Hence Rhat_w = chi_w(c) wherever R_w != 0, and |R_w| >= 2 there. R_w = 0 exactly at the frequencies with w . e_j = 1 (mod 2) for all j, an affine subspace of (Z_2)^6 of size z = 0 or 2^{6 - r}, where r is the rank of {e_1, ..., e_k}.\n\nWith distinct a_j, every e_j is nonzero and e_1 != e_2, because e_1 = e_2 would force a_1 = a_3. So r >= 2 and z <= 16.\n\nThen s(y) = (1/d) sum over {w : R_w != 0} of chi_w(x_t XOR c XOR y). This gives s(x_t XOR c) = 1 - z/d >= 0.75, and |s(y)| <= z/d <= 0.25 for every other y. The correct token is the strict argmax with margin at least 0.5 in every episode.",
+        "task": "Bitwise XOR-mask rule on 6-bit tokens.\n\nSetup:\n- Rule b = a XOR c, with the mask c uniform in {1, ..., 63}.\n- V = d = 64, Walsh phases Theta_{v,w} = pi * popcount(v AND w). Then E_{v,w} = chi_w(v), where chi_w(v) = (-1)^{popcount(v AND w)} is in {+1, -1}.\n- u = 0, beta = 8.\n- Format a_1 b_1 ... a_k b_k a_{k+1} with a_1, ..., a_{k+1} distinct, so the query is unseen. The claim's domain is k in {3, ..., 63}, the full range this sampler allows with V = 64. k >= 64 is outside the claim.\n- 1000 episodes per k."
+      },
+      {
+        "prediction": "At d = 64, accuracy is at least 0.75 at k = 4 and at most 0.3 at k = 32. Both k_half(64) and k_half(128) are uncensored, and the ratio k_half(128)/k_half(64) lies in [1.5, 2.5]. If either value is censored, this ratio prediction counts as refuted (D4). Both are consistent with k_half of about pi d / (8 ln V), which is about 6 at d = 64. This is the ordinary HRR item law. The card claims to beat it only for rules in G_Theta.",
+        "task": "Arbitrary key-value binding recall.\n\nSetup:\n- Random phases: a fresh Theta (V x d) is drawn i.i.d. uniform on [0, 2 pi) for each episode (binding sampler of D3).\n- V = 64, d in {64, 128}, u = 0, beta = 8.\n- Format key_1 val_1 ... key_k val_k key*, where k in {1, ..., 64} is the number of bindings in context.\n- Keys are drawn uniformly without replacement from {0, ..., 63}. Values are i.i.d. uniform on {0, ..., 63}, independent of the keys; a value may equal a key or another value.\n- key* = key_J, with J uniform on {1, ..., k} independent of everything else. The correct answer is val_J.\n- Accuracy acc_d(k) is the fraction of 1000 episodes per (d, k) with argmax_y p(y) = val_J (ties as in D4).\n- k_half(d) is defined in D4: with k* the smallest k with acc_d(k) < 0.5, k_half = (k* - 1) + (acc_d(k* - 1) - 0.5)/(acc_d(k* - 1) - acc_d(k*)) when k* >= 2. It is left-censored ('<= 1') if k* = 1 and right-censored ('> 64') if no k in {1, ..., 64} has acc_d(k) < 0.5."
+      },
+      {
+        "prediction": "Accuracy on the unseen query item is at most 2/64.\n\nReference ceiling: given the context, f(query) is uniform over the V - k = 14 tokens not used as demonstrated images. No predictor can therefore exceed 1/14, about 0.071, and a learner that excludes used images reaches that ceiling. The claim is that this mechanism stays near chance, 1/64, instead.\n\nReason: for lattice phases G_Theta is exactly the 64 cyclic shifts (few_shot_argument). A random permutation is a shift with probability 64/64!, so its demonstration terms exp(2 pi i w (f(a) - a)/64) vary with a and add incoherently. The readout then applies a displacement estimated from a noisy displacement histogram, and that displacement is unrelated to f(query).\n\nThis prediction covers only this sampler. It is not a claim about every rule outside G_Theta.",
+        "task": "Random-permutation rule (negative prediction).\n\nSetup:\n- The rule is a uniformly random permutation f of 64 tokens, demonstrated k = 50 times on distinct items (distinct sampler of D3).\n- Lattice phases, u = 0, beta = 8.\n- The query item is distinct from all demonstrated items.\n- 1000 episodes, each with a new permutation."
+      },
+      {
+        "prediction": "Held-out accuracy is at least 0.9, and it is within 0.05 of the in-distribution accuracy.\n\nWhy the group layout suffices (a sufficiency argument, not a necessity argument):\n1. Suppose training reaches E_{v+1} = rho_1 * E_v for every v (indices mod 16). Then E_v = rho_1^v * E_0 (elementwise powers). Cyclicity, E_16 = E_0, forces rho_{1,w} = exp(2 pi i j_w / 16) with integer j_w.\n2. Hence E_{v+s} = rho_1^s * E_v for every s. Every shift, trained or not, is in G_Theta with rho_s = rho_1^s, and coherent accumulation applies to it.\n3. In this layout s_t(y) depends only on the displacement histogram and on y - x_t. With distinct a_j, the unrelated displacements a_{j+1} - b_j are uniform on Z_16 minus the single value -s. So the accuracy depends on the shift only through that excluded value, and the held-out accuracy does not depend on how the 1000 test episodes are spread over the 11 held-out shifts.\n4. All 16 codes are distinct exactly when some j_w is odd. Cross-entropy penalizes code collisions such as E_v = E_{v+8}, which would make mu(Theta) = 1.\n\nCorrect classification of the trained shifts imposes only score inequalities, so it does not force the exact layout. Other phase tables could fit shifts {1, 2, 3} without transferring. The empirical hypothesis tested here is that Adam from random Theta reaches a layout close enough to the group layout for transfer.",
+        "task": "Learning the group layout.\n\nSetup:\n- V = d = 16. Theta is initialized i.i.d. uniform on [0, 2 pi), with u = 0 and lambda_beta = ln 8 (beta = 8) at initialization. All three are trained.\n- Training data: 5000 episodes of format a_1 b_1 ... a_4 b_4 a_5, with distinct a_j and rule b = a + s mod 16, s uniform in {1, 2, 3}, generated once per seed.\n- Optimizer: Adam with the conventions of D2 (learning rate 0.03, beta1 = 0.9, beta2 = 0.999, eps_Adam = 1e-8, constant rate, no weight decay, no clipping). Batch of 50 episodes, reshuffled each epoch, 2000 steps (20 epochs), loss averaged over all 8 predicted positions and over the batch, no early stopping, float64, 5 seeds.\n- Held-out test (held-out sampler of D3): 1000 test episodes per seed. Each episode draws its shift s independently and uniformly from {5, ..., 15} (11 values, so about 91 episodes per shift; not a balanced allocation), and a_1, ..., a_5 uniformly without replacement from Z_16, so k = 4 and the query is unseen. Test episodes come from a random stream independent of the training data. Shift 4 is neither trained nor tested. Held-out accuracy is the mean of the per-seed accuracies, each averaged over the 1000 episodes (so it weights shifts by their sampled frequency).\n- In-distribution comparison: 1000 fresh episodes per seed from the same sampler with s drawn independently and uniformly from {1, 2, 3}, scored the same way.\n- Reported alongside: the layout residual r = (1/(16 d)) sum_v sum_w |conj(E_{v,w}) E_{v+1,w} - rhobar_w|^2 with rhobar_w = (1/16) sum_v conj(E_{v,w}) E_{v+1,w} (r is 0 exactly for a group layout), the off-diagonal code overlap mu(Theta) of D5, and per-shift held-out accuracy."
+      }
+    ],
+    "complexity": {
+      "constants_notes": "These figures are for streaming inference (D6). State update and phase normalization cost O(d) per token: one complex multiply-add and one modulus per frequency. The O(dV) term is the output layer that scores all V tokens, which every language model has. With lattice or Walsh phases it drops to O(d log d + V) by an FFT (or fast Walsh transform) followed by indexing. Per-sequence memory is d complex numbers, independent of n. The parameter table Theta (V x d reals), u (V) and beta are shared and are excluded from the O(d).\n\nTraining is accounted separately in D7. It runs in parallel over t via a cumulative sum. One optimizer step on B episodes of length n costs O(B n d V) time, forward and backward. Peak memory is O(B n (d + V) + V d), because reverse mode retains all n prefix states R_t and the B n x V logits. For capability 5 (B = 50, n = 9, d = V = 16) this is about 1.2e5 complex multiply-adds per forward pass and about 1.5e4 retained values per step.",
+      "memory": "O(d)",
+      "time_per_token": "O(d V)",
+      "total_sequence": "O(n d V)"
+    },
+    "sample_efficiency": {
+      "mechanism": "Coherent accumulation of the rule phasor rho across demonstrations, combined with phase-only consensus over d frequencies (see few_shot_argument). No gradient step happens at inference. The rule generalizes to unseen items because it is stored as a group element of G_Theta, not as item pairs. Wrong tokens are suppressed because the lattice code has zero off-diagonal overlap (mu = 0, D5).",
+      "prediction": {
+        "metric": "Number of in-context demonstrations k needed for at least 0.95 next-token accuracy. Accuracy is the fraction of episodes in which argmax_y p(y) equals the correct answer, with exact ties broken uniformly at random.\n\nTask and setup:\n- Rule: a random cyclic shift b = a + s mod 64, with s uniform in {1, ..., 63}.\n- V = d = 64, fixed lattice phases, u = 0, beta = 8.\n- Sequence format a_1 b_1 a_2 b_2 ... a_k b_k a_{k+1}, with a_1, ..., a_{k+1} distinct, so the query a_{k+1} is not seen in the context.\n- All adjacent pairs are accumulated; there is no pair gate.\n- Results are averaged over 1000 random episodes.",
+        "statement": "Accuracy is at least 0.95 at k = 3 and at most 0.6 at k = 1.\n\nAt k = 1 the context a_1 b_1 a_2 contains one rule pair, with phasor rho_w, and one unrelated pair b_1 -> a_2, with unit phasor zeta_w. Let Delta_w = arg(rho_w) - arg(zeta_w). Then rho_w + zeta_w = e^{i(arg rho_w + arg zeta_w)/2} * 2 cos(Delta_w/2). So Rhat_w = e^{i(arg rho_w + arg zeta_w)/2} * sign(cos(Delta_w/2)), and Rhat_w = 0 where cos(Delta_w/2) = 0. This gives exactly Re(Rhat_w conj(rho_w)) = Re(Rhat_w conj(zeta_w)) = |cos(Delta_w/2)| at every frequency.\n\nSumming over w, the correct answer a_2 + s and the decoy a_2 + (a_2 - b_1) receive identical scores. The readout cannot prefer the rule, so accuracy is about 1/2, plus the roughly 1/63 chance that the two candidates coincide.\n\nThe k = 3 value is an empirical prediction: k = 3 lies below the k >= 3 sqrt(m) regime of the concentration bound (m = 3), so the bound only motivates it.",
+        "value": 3
+      }
+    }
+  },
+  "core_idea": "Each adjacent token pair is treated as a double-exposure hologram. The phase-normalized sum of the pairs' cross-power spectra (their HRR circular correlations) is applied to the current token. A rule that acts as a group translation on a phasor embedding then adds up coherently over k demonstrations, while unrelated pairs add up only as a random walk. This splits the HRR capacity law into an unbounded per-rule law and the usual d/log V per-item law.",
+  "created_by_call": "call-422957069b77",
+  "extensions": [
+    {
+      "description": "A learned scalar gate g_t in [0, 1], computed from the two tokens, scales each pair's contribution. It suppresses incoherent pairs such as b_j -> a_{j+1}, which roughly halves the random-walk background and breaks the exact k = 1 tie.",
+      "equations": [
+        {
+          "latex": "R_t = R_{t-1} + g_t\\,\\overline{E_{x_{t-1}}}\\odot E_{x_t}",
+          "plain": "R = R + g_t * conj(E[x_prev]) * E[x_cur]"
+        }
+      ],
+      "name": "Pair gate"
+    },
+    {
+      "description": "Each pair spectrum is bound to a context role phasor by circular convolution before summation and unbound at readout. Several distinct rules can then coexist, at the cost of HRR crosstalk between roles (capacity of order d / ln V rules).",
+      "name": "Role-keyed multi-rule hologram"
+    },
+    {
+      "description": "Each scalar phasor is replaced by a 2x2 unitary block per frequency, and the per-frequency phase normalization by polar projection onto the unitary group. Non-abelian rule groups such as dihedral reflections then become representable.",
+      "name": "Unitary block spectra"
+    },
+    {
+      "description": "With lattice or Walsh phases, s_t is one inverse FFT (or fast Walsh transform) of Rhat_t followed by indexing at y - x_t (or y XOR x_t). This makes the readout O(d log d + V).",
+      "name": "FFT readout"
+    }
+  ],
+  "falsifiers": [
+    "With fixed lattice phases, V = d = 64, u = 0, beta = 8 and k = 3 shift demonstrations, accuracy on unseen query items over 1000 episodes is below 0.95. The same refutation applies if XOR-mask accuracy with Walsh phases is below 0.95 at any k in {3, ..., 63}. Either result would refute the coherent-accumulation few-shot argument.",
+    "On the same shift task, accuracy at k = 1000 is below 0.95, or more than 0.02 below the k = 10 value. This would refute the claim that extra demonstrations only add coherent mass and that the per-rule capacity is unbounded.",
+    "Any of three results would show that the mechanism is not the claimed split between per-rule and per-item laws, under the binding sampler of D3 and the k_half definition of D4: k_half(64) or k_half(128) is censored; or the arbitrary-binding ratio k_half(128)/k_half(64) falls outside [1.5, 2.5]; or the uniformly random-permutation rule reaches accuracy above 2/64 on unseen query items.",
+    "In the dilution setting (k = 1000 shift demonstrations, L = 9 filler tokens after each, m = 10^4 unrelated pairs, beta = 8), the core gives mean probability on the correct token below 0.9, or the R_t/(t-1) ablation gives a mean above 0.1. Either result would show that phase-only normalization does not make the readout scale-free and that the core behaves like plain diagonal linear attention.",
+    "With the training recipe of capability 5 and definition D2 (random Theta, shifts {1, 2, 3} of Z_16, Adam at learning rate 0.03, batch 50, 2000 steps, 5 seeds), accuracy is below 0.9 on 1000 test episodes per seed whose shifts are drawn i.i.d. uniform on {5, ..., 15} with k = 4 (held-out sampler of D3), or more than 0.05 below the accuracy on 1000 fresh episodes per seed with shifts i.i.d. uniform on {1, 2, 3}. This would refute the claim that gradient learning discovers the group layout that makes conceptual transfer possible."
+  ],
+  "id": "card-1184f7a7",
+  "known_relatives": [
+    {
+      "claimed_difference": "The differences are:\n- The readout is not a linear map of the state. Per-frequency phase normalization makes it a scale-free consensus estimator of a group element. Confidence in a rule therefore does not decay with the fraction of unrelated tokens (capability 1, dilution setting), whereas a 1/t-normalized linear readout does (the ablation there gives p of about 0.03).\n- The stored quantity is the relation between consecutive tokens (a cross-power spectrum), not key-value items.\n- It gives a stated criterion for which rules accumulate coherently. A permutation f does so exactly when it lies in G_Theta (D5). G_Theta is an abelian group whenever the codes E_v are distinct, so no two non-commuting permutations can both be in it (proof in few_shot_argument). For lattice and Walsh phases G_Theta is exactly the cyclic shifts and the XOR masks.\n- Rules in G_Theta have no capacity limit in k and generalize to unseen items. For rules outside G_Theta the card claims only the two measured cases: arbitrary key-value bindings follow the HRR item law (capability 3), and uniformly random permutations stay near chance on unseen items (capability 4). It makes no claim about every rule outside G_Theta; for example, a permutation that agrees with a shift on most items is outside the claims.\n\nThese predictions differ from those of a generic linear-attention model and can be tested.",
+      "name": "Linear attention (Transformers are RNNs) and diagonal complex state models (RetNet, LRU, Mamba)",
+      "relation": "Written out, R_t = R_{t-1} + conj(E_{x_{t-1}}) * E_{x_t} is an additive state update of the S_t = A S_{t-1} + B x_t form, with A = I (no decay) and a diagonal state of d complex numbers. Key and value share one embedding table. Structurally, the core is diagonal linear attention with complex unit-modulus features."
+    },
+    {
+      "claimed_difference": "Classical HRR memories bind roles to fillers, and their per-item noise grows like sqrt(k/d). This card binds each token to its successor, so a shared relation is superposed with itself coherently. It adds phase-only normalization taken from correlation velocimetry. It also states exactly which relations accumulate coherently: the abelian group G_Theta of permutations that the phases realize as Hadamard multiplications.",
+      "name": "Holographic reduced representations / Fourier HRR associative memory (Plate)",
+      "relation": "Same algebra: phasor codes, Hadamard binding, conj as inverse, and superposition by summation."
+    },
+    {
+      "claimed_difference": "The estimator is turned into an autoregressive next-token predictor over a learned phase embedding. The displacement is never localized as a peak; it is applied to the current token's code.",
+      "name": "Phase correlation for image registration / correlation PIV",
+      "relation": "The same estimator of a common displacement from a normalized cross-power spectrum."
+    },
+    {
+      "claimed_difference": "In AF-LSTM, correlation scores attention between a word and an aspect inside an LSTM. Here, correlations between successive tokens are accumulated into a rule estimate, with no recurrent network and no attention.",
+      "name": "AF-LSTM word-aspect associative fusion (1712.05403)",
+      "relation": "Uses circular correlation between two embeddings as a differentiable association score."
+    },
+    {
+      "claimed_difference": "There is no inner optimization and no gradient at inference. The state is a closed-form sufficient statistic (the summed cross-spectrum), and generalization comes from the group structure of the codes, not from a learned inner model.",
+      "name": "Test-time training / fast-weight layers",
+      "relation": "The state changes within a sequence to capture an in-context rule."
+    }
+  ],
+  "lens": "holographic_reduced_representations",
+  "mechanism": {
+    "learning": {
+      "description": "The parameters Theta, u and lambda_beta (beta = exp(lambda_beta)) are trained by next-token cross-entropy on sequences that contain in-context rule demonstrations (meta-training). The loss is the mean over all predicted positions t = 1, ..., n-1 of each episode and over the episodes of the batch. R_t is a prefix sum of per-pair terms, so training runs in parallel with a cumulative sum over t and needs no backpropagation through time. Gradients flow through the phase normalization and the score into Theta.\n\nTraining cost (definition D7, separate from the streaming inference accounting of D6): one optimizer step on B episodes of length n takes O(B n d V) time, forward and backward alike. The dense score matrix over all V tokens at all n positions dominates; with free Theta the FFT readout extension is not available. Peak memory is O(B n (d + V) + V d). Reverse mode keeps the n prefix states R_t, their moduli and the products Rhat_t * E_{x_t} (O(B n d) complex numbers each), plus the B n x V logits and softmax outputs. Theta, u and lambda_beta are stored with their two Adam moment buffers. Streaming inference, by contrast, keeps one R_t of size d.\n\nClaims 1 to 4 need no training. They use phases fixed by hand, either lattice (Theta_{v,w} = 2 pi w v / d) or Walsh (Theta_{v,w} = pi popcount(v AND w)), with u = 0 and beta = 8. Claim 5 tests whether gradient training discovers such a phase layout from data. Its recipe is in that claim and in definition D2: Adam (beta1 = 0.9, beta2 = 0.999, eps_Adam = 1e-8), learning rate 0.03 constant, no weight decay, no gradient clipping, batch of 50 episodes, 2000 steps, no early stopping, float64.",
+      "equations": [
+        {
+          "latex": "\\mathcal{L}(\\Theta,u,\\lambda_\\beta) = -\\frac{1}{B\\,(n-1)}\\sum_{b=1}^{B}\\sum_{t=1}^{n-1} \\log p\\big(x^{(b)}_{t+1} \\mid x^{(b)}_{\\le t}\\big),\\quad \\beta = e^{\\lambda_\\beta}",
+          "name": "meta-training loss",
+          "plain": "loss = -mean over the B episodes of a batch and over t = 1..n-1 of log p[b][t][x[b][t+1]]; beta = exp(lambda_beta); optimize Theta, u, lambda_beta with Adam; R_t computed by cumsum over pair terms"
+        }
+      ],
+      "few_shot_argument": "Mechanism: coherent accumulation of a group element, followed by phase-only consensus.\n\nCoherent accumulation (exact, under any sampler). Let the rule f be a phase translation of the embedding: there is a unit phasor vector rho with E_{f(v)} = rho * E_v for all v. Then each demonstration pair (a, f(a)) adds conj(E_a) * rho * E_a = rho to R, whatever a is. With k demonstrations and m context pairs that do not instance the rule, R_w = k rho_w + Z_w, where Z_w is the sum of the m unit phasors zeta_{w,j} of the unrelated pairs.\n\nWhich rules accumulate coherently (proved, not assumed). Let G_Theta be the set of permutations f of {0, ..., V-1} for which some unit vector rho_f in C^d satisfies E_{f(v)} = rho_f * E_v for all v (D5). Suppose the rows E_v are distinct. Then G_Theta is an abelian group:\n- the identity has rho = 1;\n- f o g has rho_f rho_g;\n- f^{-1} has conj(rho_f);\n- E_{f(g(v))} = rho_f rho_g E_v = E_{g(f(v))}, and distinct rows force f o g = g o f.\nSo no two non-commuting permutations can both lie in G_Theta. For lattice phases, row 0 is all ones, so rho_f = E_{f(0)} and E_{f(v)} = E_{f(0)+v}. Hence G_Theta is exactly the V cyclic shifts. The same argument shows that for Walsh phases G_Theta is exactly the 64 XOR masks. For f outside G_Theta the demonstration terms conj(E_a) * E_{f(a)} depend on a; if they did not, their common value would be a rho_f. So the exact k rho_f accumulation fails. How much accuracy remains for such f is not derived in general. It is claimed only for the samplers of capabilities 3 and 4.\n\nNoise conditions. The bound below uses, at a frequency w: (N1) E zeta_{w,j} = 0; (N2) zeta_{w,1}, ..., zeta_{w,m} are independent; (N3, only for the variance formula) E zeta_{w,j}^2 = 0. Uniformity of the phase on the circle is not needed. For lattice phases with d = V = 64 and an unrelated displacement delta uniform on Z_64, zeta_w = exp(2 pi i w delta/64) is uniform on the (64/gcd(w,64))-th roots of unity, a discrete set. N1 holds for every w != 0, and N3 for every w not in {0, 32}. At w = 32, zeta and rho_32 are both +-1, so there is no perpendicular noise. N2 holds exactly for the i.i.d. sampler (k > 32) and the dilution sampler: successive differences of a chain of i.i.d. uniform tokens are i.i.d. uniform, and each unrelated pair ends at a fresh uniform token (premise A1 checks this numerically). For the distinct sampler (k <= 32), N1 and N2 hold only up to O(1/V): |E zeta_w| = 1/63 and covariances are about 1/V^2 (premise A2). Predictions at k <= 32 are therefore empirical, and the bound is a guide there, not a proof.\n\nError bound. Write err_w = arg(Rhat_w) - arg(rho_w). Deterministically, if |Z_w| < k then |err_w| <= arcsin(|Z_w|/k) < pi/2. Under N1 and N2, the components of Z_w parallel and perpendicular to rho_w are each sums of m independent mean-zero terms in [-1, 1]. Hoeffding's inequality then gives P(|Z_w| >= k) <= 4 exp(-k^2/(4m)). If N3 also holds (w not in {0, 32}) and k >= 3 sqrt(m), err_w is approximately Z_perp/k, with standard deviation sqrt(m/2)/k <= 0.24. At w = 32, err_32 is 0 or pi, and it is pi with probability at most exp(-k^2/(2m)). At w = 0 every pair contributes 1, so err_0 = 0.\n\nGeneralization to unseen queries, and sidelobes. Write Rhat_w = q_w rho_w, with q_w = e^{i err_w} where R_w != 0 and q_w = 0 where R_w = 0 (switched off, up to D1). For any query x, including one never seen in context, s(f(x)) = (1/d) sum_w Re q_w, which is about 1 - m/(4k^2) when all frequencies are on. For any other token y,\n  s(y) = (1/d) Re sum_w q_w E_{f(x),w} conj(E_{y,w}),\nso deterministically\n  |s(y)| <= mu(Theta) + (1/d) sum_w |q_w - 1|,\nwhere mu(Theta) = max over v != y' of |(1/d) Re sum_w E_{v,w} conj(E_{y',w})| is the largest off-diagonal code overlap (D5). Distinct rows alone do not bound mu; nearly equal codes give mu near 1, and then no rule estimate separates them. Small sidelobes are therefore asserted only where mu is known:\n- Lattice and Walsh phases: mu = 0 exactly, by orthogonality of the DFT rows and of the Walsh characters. Sidelobes come only from phase error and switched-off frequencies. In the dilution setting the deterministic bound gives |s(y)| <= about (62/64) * 0.057 = 0.055 (mean |err| = 0.071 sqrt(2/pi)). If the errors are independent across frequencies, the typical sidelobe is of order rms(err)/sqrt(d), about 0.01; this is a heuristic.\n- Random i.i.d. phases (binding sampler): each off-diagonal overlap has standard deviation 1/sqrt(2d), so mu is about sqrt(2 ln V / d). This is the source of the d / ln V item law below.\n- Learned Theta (capability 5): no bound on mu is assumed; mu(Theta) is reported alongside the results.\nThe rule is stored as one vector rho rather than as k items, and extra demonstrations only add coherent mass. Rhat depends only on the phase of k rho + Z, so the score of f(x) does not shrink when unrelated tokens dilute the context, provided k >= 3 sqrt(m).\n\nArbitrary bindings. Bindings that are not translations add incoherently. They are recalled like an ordinary normalized HRR memory. With k key-value pairs in context (about 2k pairs, counting value -> next-key pairs), the correct score is about sqrt(pi/(8k)) and the maximum noise score is about sqrt(ln V / d). This gives a capacity of k about pi d / (8 ln V). This is a heuristic estimate, tested by capability 3 under the binding sampler of D3."
+    },
+    "readout": [
+      {
+        "latex": "p(x_{t+1} = y \\mid x_{\\le t}) = \\mathrm{softmax}_y\\big(u_y + \\beta\\, s_t(y)\\big)",
+        "name": "next-token distribution",
+        "plain": "p = softmax(u + beta * s)   # at t = 1, s = 0 so p = softmax(u)"
+      }
+    ],
+    "state": [
+      {
+        "meaning": "Phase table. V is the vocabulary size and d the number of frequencies. Row v holds the d phases of token v. The phasor code is E_v = exp(i*Theta_v), taken elementwise, with unit modulus. This is a Fourier-domain HRR vector, so the Hadamard product is circular convolution and conj is the HRR inverse.\n- Lattice special case: Theta_{v,w} = 2*pi*w*v/d with d = V. The phases encode Z_V, so cyclic shifts are exact phase multiplications. Distinct rows are orthogonal, so the off-diagonal overlap mu(Theta) of D5 is 0.\n- Walsh special case: Theta_{v,w} = pi*popcount(v AND w) with V = d = 64. Then E_{v,w} = chi_w(v), where chi_w(v) = (-1)^{popcount(v AND w)} is the Walsh character of (Z_2)^6. XOR masks are exact phase multiplications, and mu(Theta) = 0.",
+        "name": "Theta",
+        "shape": [
+          "V",
+          "d"
+        ],
+        "type": "learned real parameter table"
+      },
+      {
+        "meaning": "Context-free log-prior over the V next tokens, used as an additive bias in the readout. Set to 0 in all claims with hand-set phases, and initialized to 0 in training.",
+        "name": "u",
+        "shape": [
+          "V"
+        ],
+        "type": "learned real vector"
+      },
+      {
+        "meaning": "Inverse temperature. It converts the bounded holographic score s_t(y), which lies in [-1, 1], into logits. Positivity is enforced by the parameterization beta = exp(lambda_beta), where lambda_beta is the real number actually trained (initialized to ln 8). Fixed at beta = 8 in the claims with hand-set phases.",
+        "name": "beta",
+        "shape": [
+          1
+        ],
+        "type": "learned positive scalar"
+      },
+      {
+        "meaning": "Accumulated cross-power spectrum of all adjacent token pairs (x_{s-1}, x_s) with 2 <= s <= t. Here x_1, ..., x_n, each in {0, ..., V-1}, is the input token sequence of length n, and x_t is the token at position t. R_1 = 0 because position 1 has no predecessor. In the spatial domain R_t is the superposed circular-correlation hologram of the pairs. Under the lattice embedding, its inverse transform is the histogram of pair displacements.",
+        "name": "R_t",
+        "shape": [
+          "d"
+        ],
+        "type": "complex vector (per-sequence state)"
+      },
+      {
+        "meaning": "Phase-only normalized spectrum. Each frequency of R_t is divided by its modulus plus the fixed constant eps = 1e-9, computed in float64 (complex128); there is no other zero tolerance. Rhat_t estimates the rule phasor rho. Where R_t is exactly 0 (every frequency at t = 1), Rhat = 0. Where R_t is 0 in exact arithmetic but carries a rounding residue delta, |Rhat| <= delta/eps, so such a frequency is switched off up to a contribution of at most delta/(eps*d) to any score.",
+        "name": "Rhat_t",
+        "shape": [
+          "d"
+        ],
+        "type": "complex vector (derived per step)"
+      },
+      {
+        "meaning": "Holographic score of each candidate next token y: the frequency-averaged overlap between Rhat_t * E_{x_t} (the current token moved by the estimated rule) and E_y. It equals 1 for an exact match and is identically 0 at t = 1. For a wrong token, its size is bounded by the code overlap mu(Theta) plus the phase error (few_shot_argument). It is not bounded by distinctness of the codes alone.",
+        "name": "s_t",
+        "shape": [
+          "V"
+        ],
+        "type": "real vector (derived per step)"
+      }
+    ],
+    "update": [
+      {
+        "latex": "E_{v,\\omega} = e^{\\,i\\,\\Theta_{v,\\omega}},\\quad v = 0,\\dots,V-1,\\ \\omega = 0,\\dots,d-1",
+        "name": "phasor embedding",
+        "plain": "E[v] = np.exp(1j * Theta[v])   # complex128; unit-modulus complex d-vector for token v"
+      },
+      {
+        "latex": "R_1 = 0,\\qquad R_t = R_{t-1} + \\overline{E_{x_{t-1}}} \\odot E_{x_t}\\quad (t \\ge 2)",
+        "name": "cross-power accumulation (double exposure)",
+        "plain": "R = zeros(d); for t = 2..n: R = R + conj(E[x[t-1]]) * E[x[t]]   # x is the input token sequence; elementwise; equals adding the circular correlation of the two token codes"
+      },
+      {
+        "latex": "\\hat R_{t,\\omega} = \\frac{R_{t,\\omega}}{|R_{t,\\omega}| + \\epsilon},\\quad \\epsilon = 10^{-9}",
+        "name": "phase-only normalization",
+        "plain": "Rhat = R / (abs(R) + 1e-9)   # per frequency, float64; gives 0 where R == 0 (e.g. t = 1) and |Rhat| <= delta/1e-9 where R is a rounding residue of size delta"
+      },
+      {
+        "latex": "s_t(y) = \\frac{1}{d}\\,\\mathrm{Re}\\sum_{\\omega=0}^{d-1} \\hat R_{t,\\omega}\\, E_{x_t,\\omega}\\, \\overline{E_{y,\\omega}}",
+        "name": "holographic score",
+        "plain": "s = real((Rhat * E[x[t]]) @ conj(E).T) / d   # one score per vocabulary item y; s = 0 at t = 1"
+      }
+    ]
+  },
+  "parent_ids": [],
+  "references": [
+    {
+      "source_id": "W3047299981",
+      "why": "Holographic PIV estimates a common displacement by correlating two exposures of many particles. The correlation peak grows with the number of matched particles, over a background from unmatched ones. We take this double-exposure correlation interrogation as the core estimator, with token pairs as particle pairs and rule translations as displacements."
+    },
+    {
+      "source_id": "2406.13139",
+      "why": "This paper aggregates multiple codes into one composite by circular convolution and summation, and uses the HRR inverse to recover relative position within the composite. We take from it the idea that relative displacement can be read out of a superposed HRR composite, together with the bind (Hadamard in the Fourier domain) and unbind (conjugate) algebra."
+    },
+    {
+      "source_id": "1712.05403",
+      "why": "This paper uses circular correlation between two embeddings as a differentiable associative operator inside a neural model. We take circular correlation of two learned token codes as the per-pair association, applied here to successive tokens."
+    }
+  ],
+  "source_transplant": {
+    "change": "The changes from the source are:\n- Particles become adjacent token pairs.\n- Spatial displacement becomes a group element acting on a learned unit-phasor token embedding.\n- The ensemble of particle-pair correlations becomes a running sum over the context.\n- The cross-power spectrum is normalized per frequency to unit modulus (phase-only correlation). This is our design choice and is not attributed to the cited abstracts.\n- The displacement is never localized as an explicit peak. The normalized spectrum is applied directly to the current token's code, which yields a next-token score for every vocabulary item.",
+    "object": "The double-exposure correlation interrogation of holographic PIV. The cross-correlation of two exposures of a particle field peaks at the displacement shared by all particles; the peak grows with the number of particles, while unmatched particle pairs form a flat background. Here it is computed with the HRR circular-correlation (bind/unbind) operator, and relative displacement is recovered from a superposed composite with the HRR inverse.",
+    "source_ids": [
+      "W3047299981",
+      "2406.13139",
+      "1712.05403"
+    ]
+  },
+  "status": {
+    "stage": "R",
+    "verdicts": {
+      "R": {
+        "by_calls": [
+          "call-24ed5751cfc5",
+          "call-ce4304537a37",
+          "call-de910d5f29f1",
+          "call-eba5f3df97a2",
+          "call-bb72dfd21f3c",
+          "call-422957069b77",
+          "job-9239adcd2112"
+        ],
+        "reasons": [
+          "dialogue ended: budget:refinement after 3 challenger round(s), 3 of 3 revision(s) accepted",
+          "core size 11 -> 11 (limit 13)",
+          "assumption list: 7 definition(s), 2 premise(s), added_by dialogue",
+          "the last revision used the last round and was not shown to the challenger again",
+          "toy example reproduced 4 expected value(s)"
+        ],
+        "verdict": "pass"
+      },
+      "S0": {
+        "by_calls": [
+          "call-b81104436c60"
+        ],
+        "reasons": [
+          "card validates against the theory_card schema",
+          "nearest existing card card-46dbb349 at TF-IDF cosine 0.192 (threshold 0.6)",
+          "live check: copied from run-20261010T181300Z/cards/card-1184f7a7/v8.json (no model call drafted it in this run)"
+        ],
+        "verdict": "pass"
+      },
+      "S1": {
+        "by_calls": [
+          "call-18ee057db13e",
+          "job-24c1d576f488"
+        ],
+        "reasons": [
+          "gate: entry check passed; 5 fixable finding(s) go to the refinement dialogue",
+          "residual: underspecified_step (mechanism.update[2] / mechanism.state Rhat_t): The state says Rhat is 0 where R is exactly 0, but the plain form R/(abs(R)+1e-9) gives small nonzero values when floating-point cancellation leaves a tiny residual, so the claims' \"R_w = 0\" switch-off (XOR and toy cases) needs an explicit tolerance.",
+          "residual: underspecified_step (claims.capabilities[4].task): The training recipe does not say how beta is kept positive (\"learned positive scalar\"), how the loss is averaged over positions and batch, or how u is initialized, so the Adam run cannot be reproduced without guessing.",
+          "residual: vague_secondary_claim (claims.capabilities[2].prediction): The thresholds \"at least 0.75 at k = 4\" and \"at most 0.3 at k = 32\" are not derived from k_half of about pi d/(8 ln V), and the ratio window [1.5, 2.5] is asserted rather than shown to follow from the stated law.",
+          "residual: notation_clash (mechanism.state beta shape): beta has shape [1] but is used as a scalar in \"beta * s_t(y)\"; the shape should be written as a scalar.",
+          "residual: notation_clash (mechanism.update / claims.capabilities[1]): The frequency index is \"omega\" in the LaTeX but \"w\" in the plain text, and \"w\" also indexes Walsh characters chi_w, which makes the notation inconsistent.",
+          "toy example reproduced 4 expected value(s)"
+        ],
+        "verdict": "pass"
+      }
+    }
+  },
+  "summary": "The model embeds every token as a unit-modulus phasor vector E_v = exp(i Theta_v) of length d. This is a Fourier-domain HRR vector. The input is a token sequence x_1, ..., x_n.\n\nFor each adjacent pair (x_{t-1}, x_t), the model adds the cross-power spectrum conj(E_{x_{t-1}}) * E_{x_t} to one complex d-vector R_t, starting from R_1 = 0. In the spatial domain this cross-power spectrum is the circular correlation of the two token codes. Correlation-based holographic particle image velocimetry (PIV) uses the same operation: the correlation of two exposures of many particles peaks at their common displacement.\n\nSuppose a rule f moves every token by the same phasor rho, so that E_{f(v)} = rho * E_v (a group translation in the embedding). Then every demonstration contributes exactly rho, and after k demonstrations the rule part of R is k*rho. Pairs that do not instance the rule contribute unit phasors with zero-mean phase. After m such independent pairs these sum to a random walk of norm about sqrt(m).\n\nThe readout normalizes R per frequency to unit modulus. This is phase-only correlation: a consensus over frequencies whose scale depends neither on n nor on how many unrelated tokens dilute the context. The readout applies the normalized vector to the current token and scores every candidate next token by its overlap with the result. At t = 1 there is no pair yet, so the score is 0 and the prediction is the prior.\n\nAs a consequence:\n- A translation rule is applied correctly to query items never seen in context.\n- The estimate only sharpens as demonstrations accumulate, with no per-item capacity limit.\n- Confidence in the rule stays high under heavy distractor dilution as long as k is well above sqrt(m).\n- Arbitrary key-value bindings fall back to ordinary HRR associative recall, with capacity of order d / ln V.\n\nThe rules that accumulate exactly coherently form the set G_Theta of permutations that the phases turn into Hadamard multiplications. G_Theta is an abelian group whenever the codes are distinct; it is exactly the cyclic shifts for lattice phases and exactly the XOR masks for Walsh phases. How well a wrong token is suppressed depends on the largest off-diagonal code overlap mu(Theta) (D5). This overlap is 0 for lattice and Walsh phases, so their sidelobes come only from phase error. Negative predictions are stated only for the two tested cases outside G_Theta: arbitrary bindings and uniformly random permutations. The state is O(d), and the cost per token is O(d) plus the output layer.",
+  "title": "Holographic Displacement Interrogation: in-context rules as coherent correlation peaks",
+  "toy_example": {
+    "description": "Lattice phases with d = V = 8 encode Z_8. The rule is b = a + 3 mod 8. It is demonstrated twice on the same pair (0 -> 3), and then the novel item 4 is queried. The context 0 3 0 3 4 gives adjacent pairs with displacements 3, 5, 3, 1, so the unnormalized hologram is the displacement histogram [0,1,0,2,0,1,0,0]. The two incoherent displacements 1 and 5 cancel exactly at the odd frequencies, and all of R cancels at frequencies 2 and 6. Phase-only normalization therefore leaves the rule phasor on 6 of 8 frequencies (0, 1, 3, 4, 5, 7). In float64 the cancelled frequencies carry residues of about 1e-14, so |Rhat| <= about 4e-5 there (D1), and the scores move by less than 1e-5, below the rounding resolution. The score is 0.75 for the never-seen answer 7. Lattice rows are orthogonal (mu = 0), so the sidelobes come only from the two switched-off frequencies: +-0.25 for three tokens and 0 elsewhere, within the bound 2/8. With u = 0 and beta = 8, p(7) = 0.955.",
+    "expected": {
+      "displacement_hist": [
+        0,
+        1,
+        0,
+        2,
+        0,
+        1,
+        0,
+        0
+      ],
+      "p_pred": 0.955,
+      "pred": 7,
+      "scores": [
+        0.0,
+        0.25,
+        0.0,
+        -0.25,
+        0.0,
+        0.25,
+        0.0,
+        0.75
+      ]
+    },
+    "python": "import numpy as np, json\nd = 8\nE = np.exp(2j * np.pi * np.outer(np.arange(d), np.arange(d)) / d)\nseq = [0, 3, 0, 3, 4]\nR = np.zeros(d, dtype=complex)\nfor a, b in zip(seq[:-1], seq[1:]):\n    R += np.conj(E[a]) * E[b]\nRh = R / (np.abs(R) + 1e-9)\nx = seq[-1]\ns = np.real((Rh * E[x]) @ np.conj(E).T) / d\nhist = np.real(R @ np.conj(E).T) / d\nlogit = 8.0 * s\np = np.exp(logit - logit.max())\np = p / p.sum()\nprint(json.dumps({\"displacement_hist\": [int(round(float(v))) for v in hist], \"scores\": [round(float(v), 3) + 0.0 for v in s], \"pred\": int(np.argmax(s)), \"p_pred\": round(float(p.max()), 3)}))\n"
+  },
+  "version": 7
+}

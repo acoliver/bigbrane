@@ -1,0 +1,68 @@
+{
+ "finish_reason": "length",
+ "json_schema": {
+  "additionalProperties": false,
+  "properties": {
+   "attempts": {
+    "items": {
+     "additionalProperties": false,
+     "properties": {
+      "notes": {
+       "type": "string"
+      },
+      "proof": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "source": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "statement_id": {
+       "enum": [
+        "O4.a",
+        "O5.a",
+        "O6.a",
+        "O7.a",
+        "O8.a",
+        "O8.b",
+        "O9.a",
+        "O10.a",
+        "O11.a",
+        "O12.a",
+        "O13.a",
+        "O14.a",
+        "O14.b"
+       ]
+      }
+     },
+     "required": [
+      "statement_id",
+      "proof",
+      "source",
+      "notes"
+     ],
+     "type": "object"
+    },
+    "maxItems": 13,
+    "minItems": 1,
+    "type": "array"
+   }
+  },
+  "required": [
+   "attempts"
+  ],
+  "type": "object"
+ },
+ "source": "runs/calibration-math-20261013T082935Z/k1-run1 prover call, attempt 0 (Claude Opus via the gateway)",
+ "usage": {
+  "cached": 1031,
+  "input": 16012,
+  "output": 64000
+ },
+ "validation_error_then": "schema validation failed at (root): Additional properties are not allowed ('notes', 'proof', 'source', 'statement_id' were unexpected)"
+}

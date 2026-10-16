@@ -1,0 +1,511 @@
+{
+ "provenance": "Phase 6 run phase6-drafts-20261013T0611Z, A2 explorer call call-543b8a209121 (ledger line 57). Sanitized: only the JSON schema sent, the two raw replies and the recorded validation errors are kept; request ids, prompts, usage and hashes are dropped.",
+ "json_schema": {
+  "$defs": {
+   "call_id": {
+    "pattern": "^call-[0-9a-f]{12}$",
+    "type": "string"
+   },
+   "card_id": {
+    "pattern": "^card-[0-9a-f]{8}$",
+    "type": "string"
+   },
+   "complexity_expr": {
+    "pattern": "^(O|Theta|Omega)\\(.+\\)",
+    "type": "string"
+   },
+   "equation": {
+    "additionalProperties": false,
+    "properties": {
+     "latex": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "name": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "plain": {
+      "minLength": 1,
+      "type": "string"
+     }
+    },
+    "required": [
+     "latex",
+     "plain"
+    ],
+    "type": "object"
+   },
+   "equations": {
+    "items": {
+     "$ref": "#/$defs/equation"
+    },
+    "minItems": 1,
+    "type": "array"
+   },
+   "job_or_call_id": {
+    "pattern": "^(call|job|lean|mathlib)-[0-9a-f]{12}$",
+    "type": "string"
+   },
+   "numeric_prediction": {
+    "additionalProperties": false,
+    "properties": {
+     "metric": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "statement": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "value": {
+      "type": "number"
+     }
+    },
+    "required": [
+     "metric",
+     "value",
+     "statement"
+    ],
+    "type": "object"
+   },
+   "state_object": {
+    "additionalProperties": false,
+    "properties": {
+     "meaning": {
+      "minLength": 10,
+      "type": "string"
+     },
+     "name": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "shape": {
+      "items": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "minLength": 1,
+         "type": "string"
+        }
+       ]
+      },
+      "type": "array"
+     },
+     "type": {
+      "minLength": 1,
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "type",
+     "shape",
+     "meaning"
+    ],
+    "type": "object"
+   },
+   "verdict_entry": {
+    "additionalProperties": false,
+    "properties": {
+     "by_calls": {
+      "items": {
+       "$ref": "#/$defs/job_or_call_id"
+      },
+      "minItems": 1,
+      "type": "array"
+     },
+     "reasons": {
+      "items": {
+       "minLength": 1,
+       "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+     },
+     "verdict": {
+      "enum": [
+       "pass",
+       "fail",
+       "revise",
+       "infeasible_proved",
+       "reduces_to_known",
+       "undetermined"
+      ]
+     }
+    },
+    "required": [
+     "verdict",
+     "reasons",
+     "by_calls"
+    ],
+    "type": "object"
+   }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+   "arm_structure": {
+    "additionalProperties": false,
+    "properties": {
+     "assumption_id": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "assumption_quote": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "closest_known": {
+      "additionalProperties": false,
+      "properties": {
+       "difference": {
+        "minLength": 1,
+        "type": "string"
+       },
+       "family": {
+        "enum": [
+         "none",
+         "transformer",
+         "ssm",
+         "linear_attention",
+         "delta_rule",
+         "hopfield_associative_memory",
+         "exact_match_cache"
+        ]
+       }
+      },
+      "required": [
+       "family",
+       "difference"
+      ],
+      "type": "object"
+     },
+     "cost": {
+      "additionalProperties": false,
+      "properties": {
+       "memory": {
+        "minLength": 1,
+        "type": "string"
+       },
+       "statement": {
+        "minLength": 1,
+        "type": "string"
+       },
+       "time_per_token": {
+        "minLength": 1,
+        "type": "string"
+       }
+      },
+      "required": [
+       "time_per_token",
+       "memory",
+       "statement"
+      ],
+      "type": "object"
+     },
+     "how_broken": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "limit_id": {
+      "enum": [
+       "chomsky_finite_state",
+       "hahn_2020",
+       "jelassi_copy",
+       "merrill_sabharwal_tc0",
+       "sample_bound",
+       "streaming_index"
+      ]
+     },
+     "mechanism_ref": {
+      "pattern": "^((update|readout)\\[[0-9]+\\]|learning)$",
+      "type": "string"
+     },
+     "source": {
+      "minLength": 1,
+      "type": "string"
+     }
+    },
+    "required": [
+     "limit_id",
+     "assumption_id",
+     "assumption_quote",
+     "source",
+     "how_broken",
+     "mechanism_ref",
+     "cost",
+     "closest_known"
+    ],
+    "type": "object"
+   },
+   "claims": {
+    "additionalProperties": false,
+    "properties": {
+     "capabilities": {
+      "items": {
+       "additionalProperties": false,
+       "properties": {
+        "prediction": {
+         "minLength": 1,
+         "type": "string"
+        },
+        "task": {
+         "minLength": 1,
+         "type": "string"
+        }
+       },
+       "required": [
+        "task",
+        "prediction"
+       ],
+       "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+     },
+     "complexity": {
+      "additionalProperties": false,
+      "properties": {
+       "constants_notes": {
+        "minLength": 1,
+        "type": "string"
+       },
+       "memory": {
+        "$ref": "#/$defs/complexity_expr"
+       },
+       "time_per_token": {
+        "$ref": "#/$defs/complexity_expr"
+       },
+       "total_sequence": {
+        "$ref": "#/$defs/complexity_expr"
+       }
+      },
+      "required": [
+       "time_per_token",
+       "memory",
+       "total_sequence",
+       "constants_notes"
+      ],
+      "type": "object"
+     },
+     "sample_efficiency": {
+      "additionalProperties": false,
+      "properties": {
+       "mechanism": {
+        "minLength": 1,
+        "type": "string"
+       },
+       "prediction": {
+        "$ref": "#/$defs/numeric_prediction"
+       }
+      },
+      "required": [
+       "mechanism",
+       "prediction"
+      ],
+      "type": "object"
+     }
+    },
+    "required": [
+     "complexity",
+     "sample_efficiency",
+     "capabilities"
+    ],
+    "type": "object"
+   },
+   "core_idea": {
+    "description": "The core idea in one sentence.",
+    "minLength": 10,
+    "type": "string"
+   },
+   "extensions": {
+    "description": "Optional additions outside the core mechanism. They do not count toward the claims.",
+    "items": {
+     "additionalProperties": false,
+     "properties": {
+      "description": {
+       "minLength": 1,
+       "type": "string"
+      },
+      "equations": {
+       "$ref": "#/$defs/equations"
+      },
+      "name": {
+       "minLength": 1,
+       "type": "string"
+      }
+     },
+     "required": [
+      "name",
+      "description"
+     ],
+     "type": "object"
+    },
+    "type": "array"
+   },
+   "falsifiers": {
+    "items": {
+     "minLength": 10,
+     "type": "string"
+    },
+    "minItems": 2,
+    "type": "array"
+   },
+   "known_relatives": {
+    "items": {
+     "additionalProperties": false,
+     "properties": {
+      "claimed_difference": {
+       "minLength": 1,
+       "type": "string"
+      },
+      "name": {
+       "minLength": 1,
+       "type": "string"
+      },
+      "relation": {
+       "minLength": 1,
+       "type": "string"
+      }
+     },
+     "required": [
+      "name",
+      "relation",
+      "claimed_difference"
+     ],
+     "type": "object"
+    },
+    "minItems": 1,
+    "type": "array"
+   },
+   "mechanism": {
+    "additionalProperties": false,
+    "properties": {
+     "learning": {
+      "additionalProperties": false,
+      "properties": {
+       "description": {
+        "minLength": 1,
+        "type": "string"
+       },
+       "equations": {
+        "$ref": "#/$defs/equations"
+       },
+       "few_shot_argument": {
+        "minLength": 1,
+        "type": "string"
+       }
+      },
+      "required": [
+       "description",
+       "few_shot_argument"
+      ],
+      "type": "object"
+     },
+     "readout": {
+      "$ref": "#/$defs/equations"
+     },
+     "state": {
+      "items": {
+       "$ref": "#/$defs/state_object"
+      },
+      "minItems": 1,
+      "type": "array"
+     },
+     "update": {
+      "$ref": "#/$defs/equations"
+     }
+    },
+    "required": [
+     "state",
+     "update",
+     "readout",
+     "learning"
+    ],
+    "type": "object"
+   },
+   "references": {
+    "items": {
+     "additionalProperties": false,
+     "properties": {
+      "source_id": {
+       "minLength": 1,
+       "type": "string"
+      },
+      "why": {
+       "minLength": 1,
+       "type": "string"
+      }
+     },
+     "required": [
+      "source_id",
+      "why"
+     ],
+     "type": "object"
+    },
+    "type": "array"
+   },
+   "summary": {
+    "minLength": 20,
+    "type": "string"
+   },
+   "title": {
+    "minLength": 1,
+    "type": "string"
+   },
+   "toy_example": {
+    "additionalProperties": false,
+    "properties": {
+     "description": {
+      "minLength": 1,
+      "type": "string"
+     },
+     "expected": {
+      "minProperties": 1,
+      "type": "object"
+     },
+     "python": {
+      "minLength": 20,
+      "type": "string"
+     }
+    },
+    "required": [
+     "description",
+     "python",
+     "expected"
+    ],
+    "type": "object"
+   }
+  },
+  "required": [
+   "title",
+   "summary",
+   "mechanism",
+   "claims",
+   "known_relatives",
+   "falsifiers",
+   "toy_example",
+   "references",
+   "core_idea",
+   "arm_structure"
+  ],
+  "title": "Theory card draft (explorer output)",
+  "type": "object"
+ },
+ "attempts": [
+  {
+   "kind": "request",
+   "raw_output": "```json\n{\n  \"title\": \"Self-Reducing Words: a free-group context state whose cancellation law is counted in context\",\n  \"core_idea\": \"The context is kept as a word that reduces itself: an incoming token cancels the unmatched token on top of the word once the context has shown that this token arrives almost only on that top, so the state grows with nesting depth while the cancellation rule is learned from a handful of demonstrations.\",\n  \"summary\": \"Chomsky's finite-state limit assumes the number of states is fixed before the input is seen. This mechanism drops that assumption. Its state is a reduced word w_t over the token alphabet, an element of a free group with an inverse pairing that is learned. The word grows by one token on a push and shrinks by one on a cancellation, so its set of reachable configurations is unbounded. Which tokens cancel which is not built in. A single sparse count table A[s, x] records how often token x arrived while s was the unmatched top of the word. A token x cancels the top s when x has arrived at least m times and at least a fraction rho of those arrivals were on top s. We call this predecessor determinism under the current reduction. The same table, read at the current top, is the next-token distribution: a bigram over the nearest unmatched token instead of the previous token. A bracket pair shown m times innermost is then applied at any nesting depth and any distance. The price is memory: one token id per unmatched token, up to O(n) in the worst case. Compute stays O(1) per token for the state and O(V) to emit a full distribution.\",\n  \"mechanism\": {\n    \"state\": [\n      {\n        \"name\": \"w\",\n        \"type\": \"list of token ids (stack / reduced free-group word)\",\n        \"shape\": [\"D_t\"],\n        \"meaning\": \"Reduced word of unmatched tokens after t tokens; D_t <= t is its current length, entries in {0..V-1} where V is the vocabulary size. top(w) is its last entry, or the bottom marker BOT if w is empty.\"\n      },\n      {\n        \"name\": \"A\",\n        \"type\": \"sparse nonnegative integer count matrix\",\n        \"shape\": [\"V+1\", \"V\"],\n        \"meaning\": \"A[s, x] = number of earlier arrivals of token x while s was top(w); row index V is the bottom marker BOT (empty word). Holds at most min(n, V^2+V) nonzero entries for a context of length n.\"\n      },\n      {\n        \"name\": \"N\",\n        \"type\": \"integer vector\",\n        \"shape\": [\"V\"],\n        \"meaning\": \"N[x] = sum_s A[s, x], the number of arrivals of token x so far; maintained incrementally so the cancellation test is O(1).\"\n      },\n      {\n        \"name\": \"theta\",\n        \"type\": \"hand-set hyperparameter block (m, rho, alpha)\",\n        \"shape\": [3],\n        \"meaning\": \"m = minimum number of arrivals before a token may cancel (integer, 3 in the claims, 2 in the toy); rho = determinism threshold in (0.5, 1] (0.75); alpha = additive smoothing of the readout (1.0). These are the only built-in prior bits.\"\n      }\n    ],\n    \"update\": [\n      {\n        \"name\": \"cancellation test\",\n        \"latex\": \"s_t = \\\\mathrm{top}(w_{t-1}),\\\\quad c_t = \\\\mathbb{1}\\\\big[s_t \\\\neq \\\\mathrm{BOT} \\\\wedge N_{t-1}[x_t] \\\\ge m \\\\wedge A_{t-1}[s_t, x_t] \\\\ge \\\\rho\\\\, N_{t-1}[x_t]\\\\big]\",\n        \"plain\": \"s = w[-1] if w else BOT; c = (s != BOT) and N[x] >= m and A[s, x] >= rho * N[x]   (counts before this token)\"\n      },\n      {\n        \"name\": \"word reduction\",\n        \"latex\": \"w_t = \\\\begin{cases} w_{t-1} \\\\text{ with its last entry removed} & c_t = 1 \\\\\\\\ w_{t-1} \\\\cdot x_t & c_t = 0 \\\\end{cases}\",\n        \"plain\": \"if c: w.pop()  (x_t is the learned inverse of s_t, so s_t x_t reduces to the identity) else: w.append(x_t)\"\n      },\n      {\n        \"name\": \"count update\",\n        \"latex\": \"A_t[s_t, x_t] = A_{t-1}[s_t, x_t] + 1,\\\\quad N_t[x_t] = N_{t-1}[x_t] + 1\",\n        \"plain\": \"A[s, x] += 1; N[x] += 1   (s is the top before this token's reduction)\"\n      }\n    ],\n    \"readout\": [\n      {\n        \"name\": \"top-conditioned prediction\",\n        \"latex\": \"p_t(y) = \\\\frac{A_t[\\\\mathrm{top}(w_t), y] + \\\\alpha}{\\\\sum_{y'} A_t[\\\\mathrm{top}(w_t), y'] + \\\\alpha V}\",\n        \"plain\": \"s = w[-1] if w else BOT; p = (A[s, :] + alpha) / (A[s, :].sum() + alpha * V); distribution over the V tokens for x_{t+1}\"\n      }\n    ],\n    \"learning\": {\n      \"description\": \"Nothing is trained by gradient. Everything that is learned is counted in context with closed-form integer counts in A. The table is read for two purposes. Column-normalized at the incoming token, it decides the state update: does x cancel the top, i.e. is x the inverse of s in the word. Row-normalized at the current top, it gives the next-token distribution. Pairing and parse form a fixed point. A correct pairing makes the top before a closer equal to its opener, and that raises the closer's determinism further. The built-in prior is the hypothesis class itself (partial inverse pairings of the V tokens, read as free-group cancellation) plus the three numbers in theta.\",\n      \"equations\": [\n        {\n          \"name\": \"learned inverse pairing (derived, not stored)\",\n          \"latex\": \"\\\\mathrm{inv}_t(x) = \\\\arg\\\\max_{s \\\\neq \\\\mathrm{BOT}} A_t[s, x] \\\\ \\\\text{ if } N_t[x] \\\\ge m \\\\wedge \\\\max_{s \\\\neq \\\\mathrm{BOT}} A_t[s,x] \\\\ge \\\\rho N_t[x]\",\n          \"plain\": \"x is a learned closer of inv(x) = argmax over non-bottom rows of A[:, x], when N[x] >= m and that max >= rho * N[x]\"\n        }\n      ],\n      \"few_shot_argument\": \"In a balanced string, every innermost occurrence of a pair (s, x) is an arrival of x with s on top of the word, whatever pairs are already known. After m such occurrences, x passes the test A[s,x] >= rho N[x] as long as earlier arrivals on wrong tops are fewer than (1-rho)/rho of the correct ones. The cancellation is then stored as a property of the token pair (s, x), not of a position, depth or distance. Every later arrival of x on top s therefore cancels, and the next-token row of s puts the extra mass A[s,x] on x, at depth 2 or depth 200 alike. A rule shown m = 3 times is reused at unbounded depth because the word, not a fixed state, carries the depth.\"\n    }\n  },\n  \"claims\": {\n    \"complexity\": {\n      \"time_per_token\": \"O(V)\",\n      \"memory\": \"O(n)\",\n      \"total_sequence\": \"O(n V)\"\n    },\n    \"sample_efficiency\": {\n      \"mechanism\": \"Predecessor determinism under self-reduction. Each innermost demonstration of a fresh bracket pair adds one count to A[opener, closer]. With m = 3 and rho = 0.75, three innermost demonstrations fix the cancellation, and the cancellation transfers to every depth.\",\n      \"prediction\": {\n        \"metric\": \"number of depth-1 demonstrations of a fresh bracket pair (token ids never seen before) needed before closer-type accuracy >= 0.95 on held-out strings of nesting depth 12\",\n        \"value\": 3,\n        \"statement\": \"Closer-type accuracy is measured at positions whose true next token is a closer: the correct closer must receive more probability than every other closer. With m = 3 and rho = 0.75, accuracy is at most chance (1/2 for two pairs) after 2 demonstrations of each pair and at least 0.95 after 3, at depth 12, with no gradient step.\"\n      }\n    },\n    \"capabilities\": [\n      {\n        \"task\": \"Depth generalization on Dyck-2 with fresh bracket tokens: context of 3 depth-1 demonstrations per pair, then balanced test strings of nesting depth D in {12, 24, 48}\",\n        \"prediction\": \"Closer-type accuracy >= 0.98 at each D, and the accuracies at D = 12 and D = 48 differ by at most 0.02. Peak word length grows linearly in D (D plus the constant residue left by the demonstrations). By Chomsky's argument, any model with a fixed state of S bits must err on some depth-D strings once 2^D exceeds 2^S.\"\n      },\n      {\n        \"task\": \"Dyck-4: four fresh bracket pairs, each shown 3 times innermost, then test strings of depth 10 with all four types interleaved\",\n        \"prediction\": \"Closer-type accuracy >= 0.95 (chance is 0.25). Spurious pairings, where an opener is flagged as a closer, occur in at most 5% of contexts with m = 3, rho = 0.75 when demonstration order is random.\"\n      },\n      {\n        \"task\": \"Long-distance matching: the opener of the next closer lies 2000 tokens back, separated by balanced filler built from already learned pairs\",\n        \"prediction\": \"The correct closer gets more probability than any other closer in >= 0.99 of trials, at the same O(1) state cost per token as at distance 2. A fixed-size recurrent state with 64 dimensions trained on depth <= 4 is predicted to fall below 0.6 here.\"\n      },\n      {\n        \"task\": \"Capacity limit, crossing dependencies: copy task w w with |w| = 8 over V = 4 tokens, predicting the second half\",\n        \"prediction\": \"Next-token accuracy on the second half is at most 0.35, near the unigram rate 0.25, because the word is last-in-first-out and pairs only nested dependencies. The mechanism makes no claim beyond nested (context-free, Dyck-like) structure.\"\n      }\n    ]\n  },\n  \"known_relatives\": [\n    {\n      \"name\": \"Stack-augmented RNNs and neural stacks (Joulin and Mikolov 2015; Grefenstette et al. 2015)\",\n      \"relation\": \"Also escape finite state with an unbounded stack\",\n      \"claimed_difference\": \"Their push and pop are decided by a controller trained by gradient on many strings, and the stack holds continuous vectors. Here the stack is a reduced word of discrete tokens. Push or cancel is decided by a count test on a table filled from the current context, so a fresh bracket pair is usable after 3 in-context demonstrations without training.\"\n    },\n    {\n      \"name\": \"n-gram / bigram lookup tables and induction-head copying\",\n      \"relation\": \"Same kind of readout: a count table read by an exact key\",\n      \"claimed_difference\": \"The key is top(w_t), the nearest unmatched token at any distance, and not x_{t-1}. The same table also rewrites the key sequence by deciding cancellations. A bigram cannot predict a closer whose opener lies 2000 tokens back.\"\n    },\n    {\n      \"name\": \"Shift-reduce parsing and Dyck recognizers\",\n      \"relation\": \"Same control flow once the pairing is known\",\n      \"claimed_difference\": \"A parser is given its grammar, i.e. which tokens close which. Here the grammar (the inverse pairing) is inferred online from predecessor determinism under the reduction it is producing, and it predicts a distribution rather than accepting or rejecting.\"\n    },\n    {\n      \"name\": \"Grammar-based compression and induction (Sequitur, SLPs)\",\n      \"relation\": \"Also build structure online from the token stream\",\n      \"claimed_difference\": \"Sequitur creates rules for repeated digrams and has no notion of inverse or cancellation. Here the only structure is a free-group inverse pairing, and it shortens the word rather than naming repeats.\"\n    }\n  ],\n  \"falsifiers\": [\n    \"With pairs already learned, closer-type accuracy on Dyck-2 falls by more than 0.05 between nesting depth 12 and depth 48. That would mean the growing word does not carry depth, and the escape from the finite-state limit fails.\",\n    \"On random-order Dyck-2 contexts of 8 strings of depth <= 3 with fresh tokens, m = 3 and rho = 0.75, an opener is flagged as a closer in more than 10% of contexts. That would refute predecessor determinism as a reliable law for discovering inverses.\",\n    \"After 3 innermost demonstrations per pair, closer-type accuracy at depth 12 stays below 0.95. That would mean the few-shot argument (each innermost demonstration is a correct-top arrival) does not hold in practice.\",\n    \"Peak memory of w grows faster than linearly in nesting depth plus a constant learning residue on balanced test strings. That would contradict the stated cost of the break.\"\n  ],\n  \"toy_example\": {\n    \"description\": \"Tokens: a=0, A=1 (closer of a), b=2, B=3 (closer of b); V=4, BOT=4, m=2, rho=0.75, alpha=1. The context first shows each pair twice at depth 1 (a A a A b B b B). Every token is pushed during this phase because no token has m arrivals yet, so 8 tokens stay as residue. Then comes the depth-3 string b a b B A B. The three closers cancel their openers, and the readout at the top favors the correct closer: 3/7 before the first B, 3/7 for A on top a, 1/2 before the last B. At the end, A and B are identified as closers of a and b, and no opener is.\",\n    \"python\": \"import json\\nimport numpy as np\\nV = 4\\nBOT = 4\\nm = 2\\nrho = 0.75\\nalpha = 1.0\\nseq = [0, 1, 0, 1, 2, 3, 2, 3, 2, 0, 2, 3, 1, 3]\\nA = np.zeros((V + 1, V))\\nw = []\\ncancels = 0\\nprobs = {}\\nfor t, x in enumerate(seq):\\n    s = w[-1] if w else BOT\\n    row = A[s]\\n    p = (row + alpha) / (row.sum() + alpha * V)\\n    probs[t] = [round(float(v), 4) for v in p]\\n    nin = A[:, x].sum()\\n    c = (s != BOT) and (nin >= m) and (A[s, x] >= rho * nin)\\n    if c:\\n        w.pop()\\n        cancels += 1\\n    else:\\n        w.append(x)\\n    A[s, x] += 1\\npairs = []\\nfor x in range(V):\\n    nin = A[:, x].sum()\\n    col = A[:V, x]\\n    if nin >= m and col.max() >= rho * nin:\\n        pairs.append([int(col.argmax()), x])\\nprint(json.dumps({'final_stack': w, 'cancels': cancels, 'p_before_11': probs[11], 'p_before_12': probs[12], 'p_before_13': probs[13], 'pairs': pairs}))\\n\",\n    \"expected\": {\n      \"final_stack\": [0, 1, 0, 1, 2, 3, 2, 3],\n      \"cancels\": 3,\n      \"p_before_11\": [0.2857, 0.1429, 0.1429, 0.4286],\n      \"p_before_12\": [0.1429, 0.4286, 0.2857, 0.1429],\n      \"p_before_13\": [0.25, 0.125, 0.125, 0.5],\n      \"pairs\": [[0, 1], [2, 3]]\n    }\n  },\n  \"references\": [],\n  \"extensions\": [\n    {\n      \"name\": \"Shared pairing evidence through token classes\",\n      \"description\": \"Map tokens to a small set of learned classes so that cancellation evidence for one bracket pair raises the prior of structurally similar pairs. This would lower m for families of pairs. It is outside the core, and no claim depends on it.\"\n    },\n    {\n      \"name\": \"Bounded repair search\",\n      \"description\": \"When a learned closer x arrives on a top other than inv(x), search the top k entries of w for inv(x) and cancel there, discarding the entries above it. This repairs the residue left during the learning phase at O(k) cost per such event.\",\n      \"equations\": [\n        {\n          \"name\": \"repair\",\n          \"latex\": \"j^* = \\\\max\\\\{ j > D_{t-1}-k : w_{t-1}[j] = \\\\mathrm{inv}(x_t) \\\\},\\\\ w_t = w_{t-1}[1..j^*-1]\",\n          \"plain\": \"look back at most k entries for inv(x); if found at position j, truncate w to the entries before j\"\n        }\n      ]\n    }\n  ],\n  \"arm_structure\": {\n    \"limit_id\": \"chomsky_finite_state\",\n    \"assumption_id\": \"finite_states\",\n    \"assumption_quote\": \"the process has a finite number of states fixed before the input is seen\",\n    \"source\": \"Chomsky, 'Three models for the description of language', IRE Transactions on Information Theory 2(3), 1956\",\n    \"how_broken\": \"The state object w is a reduced word over the token alphabet. Update[1] (word reduction) appends x_t or removes the top entry, so the reachable configurations number up to V^D at depth D and are not fixed before the input is seen. Depth D needs D distinct stored entries, which is exactly the distinct state per depth that Chomsky's argument says a finite process lacks. The count table A also grows: its entries are integers of O(log n) bits. The quantifier is kept: nesting depth is unbounded, and once the pairing is learned the cancellations are exact at every depth.\",\n    \"mechanism_ref\": \"update[1]\",\n    \"cost\": {\n      \"time_per_token\": \"O(1) for the state update (two hash lookups, one push or pop, one count increment); O(V) to emit a full next-token distribution\",\n      \"memory\": \"O(D_max log V + min(n, V^2) log n) bits, where D_max <= n is the peak word length; O(n) words in the worst case\",\n      \"statement\": \"No step revisits earlier tokens, so total cost is O(n) to maintain the state and O(nV) to emit full distributions, linear in n. The state grows by one token id (log2 V bits) per unmatched token, i.e. O(log V) bits per position at most, and in balanced text it tracks nesting depth plus the residue left by the learning phase.\"\n    },\n    \"closest_known\": {\n      \"family\": \"exact_match_cache\",\n      \"difference\": \"An exact-match cache stores (key, value) per token and returns the value for a key equal to the query. Here the read key is top(w_t), the head of a word that the table itself rewrites by learned cancellation (update[0] and update[1]). The table is therefore both the predictor and the controller of an unbounded reduction, and the effective context is the nearest unmatched token at any distance, not a stored key or the previous token.\"\n    }\n  }\n}\n```",
+   "recorded_validation_error": "schema validation failed at claims/complexity: 'constants_notes' is a required property"
+  },
+  {
+   "kind": "schema_retry",
+   "raw_output": "```json\n{\n  \"title\": \"Self-Reducing Words: a free-group context state whose cancellation law is counted in context\",\n  \"core_idea\": \"The context is kept as a word that reduces itself: an incoming token cancels the unmatched token on top of the word once the context has shown that this token arrives almost only on that top, so the state grows with nesting depth while the cancellation rule is learned from a handful of demonstrations.\",\n  \"summary\": \"Chomsky's finite-state limit assumes the number of states is fixed before the input is seen, and this mechanism drops that assumption. Its state is a reduced word w_t over the token alphabet: an element of a free group whose inverse pairing is learned. The word grows by one token on a push and shrinks by one on a cancellation, so the set of reachable configurations is unbounded. Which tokens cancel which is not built in. One sparse count table A[s, x] records how often token x arrived while s was the unmatched top of the word. Token x cancels the top s when x has arrived at least m times and at least a fraction rho of those arrivals were on top s. We call this predecessor determinism under the current reduction. The same table, read at the current top, gives the next-token distribution. It is a bigram over the nearest unmatched token instead of the previous token. A bracket pair shown m times innermost is then applied at any nesting depth and at any distance. The price is memory: one token id per unmatched token, up to O(n) in the worst case. Compute is O(1) per token for the state and O(V) to emit a full distribution.\",\n  \"mechanism\": {\n    \"state\": [\n      {\n        \"name\": \"w\",\n        \"type\": \"list of token ids (stack / reduced free-group word)\",\n        \"shape\": [\"D_t\"],\n        \"meaning\": \"Reduced word of unmatched tokens after t tokens. D_t <= t is its current length. Entries are in {0..V-1}, where V is the vocabulary size. top(w) is the last entry, or the bottom marker BOT if w is empty.\"\n      },\n      {\n        \"name\": \"A\",\n        \"type\": \"sparse nonnegative integer count matrix\",\n        \"shape\": [\"V+1\", \"V\"],\n        \"meaning\": \"A[s, x] = number of earlier arrivals of token x while s was top(w). Row index V is the bottom marker BOT (empty word). For a context of length n it holds at most min(n, V^2+V) nonzero entries.\"\n      },\n      {\n        \"name\": \"N\",\n        \"type\": \"integer vector\",\n        \"shape\": [\"V\"],\n        \"meaning\": \"N[x] = sum_s A[s, x], the number of arrivals of token x so far. It is maintained incrementally so that the cancellation test is O(1).\"\n      },\n      {\n        \"name\": \"theta\",\n        \"type\": \"hand-set hyperparameter block (m, rho, alpha)\",\n        \"shape\": [3],\n        \"meaning\": \"m = minimum number of arrivals before a token may cancel (integer; 3 in the claims, 2 in the toy). rho = determinism threshold in (0.5, 1] (0.75). alpha = additive smoothing of the readout (1.0). These are the only built-in prior bits.\"\n      }\n    ],\n    \"update\": [\n      {\n        \"name\": \"cancellation test\",\n        \"latex\": \"s_t = \\\\mathrm{top}(w_{t-1}),\\\\quad c_t = \\\\mathbb{1}\\\\big[s_t \\\\neq \\\\mathrm{BOT} \\\\wedge N_{t-1}[x_t] \\\\ge m \\\\wedge A_{t-1}[s_t, x_t] \\\\ge \\\\rho\\\\, N_{t-1}[x_t]\\\\big]\",\n        \"plain\": \"s = w[-1] if w else BOT; c = (s != BOT) and N[x] >= m and A[s, x] >= rho * N[x]   (counts before this token)\"\n      },\n      {\n        \"name\": \"word reduction\",\n        \"latex\": \"w_t = \\\\begin{cases} w_{t-1} \\\\text{ with its last entry removed} & c_t = 1 \\\\\\\\ w_{t-1} \\\\cdot x_t & c_t = 0 \\\\end{cases}\",\n        \"plain\": \"if c: w.pop()  (x_t is the learned inverse of s_t, so s_t x_t reduces to the identity) else: w.append(x_t)\"\n      },\n      {\n        \"name\": \"count update\",\n        \"latex\": \"A_t[s_t, x_t] = A_{t-1}[s_t, x_t] + 1,\\\\quad N_t[x_t] = N_{t-1}[x_t] + 1\",\n        \"plain\": \"A[s, x] += 1; N[x] += 1   (s is the top before this token's reduction)\"\n      }\n    ],\n    \"readout\": [\n      {\n        \"name\": \"top-conditioned prediction\",\n        \"latex\": \"p_t(y) = \\\\frac{A_t[\\\\mathrm{top}(w_t), y] + \\\\alpha}{\\\\sum_{y'} A_t[\\\\mathrm{top}(w_t), y'] + \\\\alpha V}\",\n        \"plain\": \"s = w[-1] if w else BOT; p = (A[s, :] + alpha) / (A[s, :].sum() + alpha * V); distribution over the V tokens for x_{t+1}\"\n      }\n    ],\n    \"learning\": {\n      \"description\": \"Nothing is trained by gradient. Everything learned is counted in context as closed-form integer counts in A. The table is read for two purposes. Column-normalized at the incoming token, it decides the state update: does x cancel the top, that is, is x the inverse of s in the word. Row-normalized at the current top, it gives the next-token distribution. Pairing and parse form a fixed point. A correct pairing makes the top before a closer equal to its opener, and that raises the closer's determinism further. The built-in prior is the hypothesis class itself (partial inverse pairings of the V tokens, read as free-group cancellation) plus the three numbers in theta.\",\n      \"equations\": [\n        {\n          \"name\": \"learned inverse pairing (derived, not stored)\",\n          \"latex\": \"\\\\mathrm{inv}_t(x) = \\\\arg\\\\max_{s \\\\neq \\\\mathrm{BOT}} A_t[s, x] \\\\ \\\\text{ if } N_t[x] \\\\ge m \\\\wedge \\\\max_{s \\\\neq \\\\mathrm{BOT}} A_t[s,x] \\\\ge \\\\rho N_t[x]\",\n          \"plain\": \"x is a learned closer of inv(x) = argmax over non-bottom rows of A[:, x], when N[x] >= m and that max >= rho * N[x]\"\n        }\n      ],\n      \"few_shot_argument\": \"In a balanced string, every innermost occurrence of a pair (s, x) is an arrival of x with s on top of the word, whatever pairs are already known. After m such occurrences, x passes the test A[s,x] >= rho N[x] as long as earlier arrivals on wrong tops are fewer than (1-rho)/rho of the correct ones. The cancellation is then stored as a property of the token pair (s, x), not of a position, depth or distance. Every later arrival of x on top s therefore cancels. The next-token row of s puts the extra mass A[s,x] on x, at depth 2 or depth 200 alike. A rule shown m = 3 times is reused at unbounded depth because the word carries the depth, not a fixed state.\"\n    }\n  },\n  \"claims\": {\n    \"complexity\": {\n      \"time_per_token\": \"O(V)\",\n      \"memory\": \"O(n)\",\n      \"total_sequence\": \"O(n V)\"\n    },\n    \"constants_notes_placeholder_removed\": null\n  }\n}\n```\n\nThe object above is incomplete. Here is the full corrected card:\n\n```json\n{\n  \"title\": \"Self-Reducing Words: a free-group context state whose cancellation law is counted in context\",\n  \"core_idea\": \"The context is kept as a word that reduces itself: an incoming token cancels the unmatched token on top of the word once the context has shown that this token arrives almost only on that top, so the state grows with nesting depth while the cancellation rule is learned from a handful of demonstrations.\",\n  \"summary\": \"Chomsky's finite-state limit assumes the number of states is fixed before the input is seen, and this mechanism drops that assumption. Its state is a reduced word w_t over the token alphabet: an element of a free group whose inverse pairing is learned. The word grows by one token on a push and shrinks by one on a cancellation, so the set of reachable configurations is unbounded. Which tokens cancel which is not built in. One sparse count table A[s, x] records how often token x arrived while s was the unmatched top of the word. Token x cancels the top s when x has arrived at least m times and at least a fraction rho of those arrivals were on top s. We call this predecessor determinism under the current reduction. The same table, read at the current top, gives the next-token distribution. It is a bigram over the nearest unmatched token instead of the previous token. A bracket pair shown m times innermost is then applied at any nesting depth and at any distance. The price is memory: one token id per unmatched token, up to O(n) in the worst case. Compute is O(1) per token for the state and O(V) to emit a full distribution.\",\n  \"mechanism\": {\n    \"state\": [\n      {\n        \"name\": \"w\",\n        \"type\": \"list of token ids (stack / reduced free-group word)\",\n        \"shape\": [\"D_t\"],\n        \"meaning\": \"Reduced word of unmatched tokens after t tokens. D_t <= t is its current length. Entries are in {0..V-1}, where V is the vocabulary size. top(w) is the last entry, or the bottom marker BOT if w is empty.\"\n      },\n      {\n        \"name\": \"A\",\n        \"type\": \"sparse nonnegative integer count matrix\",\n        \"shape\": [\"V+1\", \"V\"],\n        \"meaning\": \"A[s, x] = number of earlier arrivals of token x while s was top(w). Row index V is the bottom marker BOT (empty word). For a context of length n it holds at most min(n, V^2+V) nonzero entries.\"\n      },\n      {\n        \"name\": \"N\",\n        \"type\": \"integer vector\",\n        \"shape\": [\"V\"],\n        \"meaning\": \"N[x] = sum_s A[s, x], the number of arrivals of token x so far. It is maintained incrementally so that the cancellation test is O(1).\"\n      },\n      {\n        \"name\": \"theta\",\n        \"type\": \"hand-set hyperparameter block (m, rho, alpha)\",\n        \"shape\": [3],\n        \"meaning\": \"m = minimum number of arrivals before a token may cancel (integer; 3 in the claims, 2 in the toy). rho = determinism threshold in (0.5, 1] (0.75). alpha = additive smoothing of the readout (1.0). These are the only built-in prior bits.\"\n      }\n    ],\n    \"update\": [\n      {\n        \"name\": \"cancellation test\",\n        \"latex\": \"s_t = \\\\mathrm{top}(w_{t-1}),\\\\quad c_t = \\\\mathbb{1}\\\\big[s_t \\\\neq \\\\mathrm{BOT} \\\\wedge N_{t-1}[x_t] \\\\ge m \\\\wedge A_{t-1}[s_t, x_t] \\\\ge \\\\rho\\\\, N_{t-1}[x_t]\\\\big]\",\n        \"plain\": \"s = w[-1] if w else BOT; c = (s != BOT) and N[x] >= m and A[s, x] >= rho * N[x]   (counts before this token)\"\n      },\n      {\n        \"name\": \"word reduction\",\n        \"latex\": \"w_t = \\\\begin{cases} w_{t-1} \\\\text{ with its last entry removed} & c_t = 1 \\\\\\\\ w_{t-1} \\\\cdot x_t & c_t = 0 \\\\end{cases}\",\n        \"plain\": \"if c: w.pop()  (x_t is the learned inverse of s_t, so s_t x_t reduces to the identity) else: w.append(x_t)\"\n      },\n      {\n        \"name\": \"count update\",\n        \"latex\": \"A_t[s_t, x_t] = A_{t-1}[s_t, x_t] + 1,\\\\quad N_t[x_t] = N_{t-1}[x_t] + 1\",\n        \"plain\": \"A[s, x] += 1; N[x] += 1   (s is the top before this token's reduction)\"\n      }\n    ],\n    \"readout\": [\n      {\n        \"name\": \"top-conditioned prediction\",\n        \"latex\": \"p_t(y) = \\\\frac{A_t[\\\\mathrm{top}(w_t), y] + \\\\alpha}{\\\\sum_{y'} A_t[\\\\mathrm{top}(w_t), y'] + \\\\alpha V}\",\n        \"plain\": \"s = w[-1] if w else BOT; p = (A[s, :] + alpha) / (A[s, :].sum() + alpha * V); distribution over the V tokens for x_{t+1}\"\n      }\n    ],\n    \"learning\": {\n      \"description\": \"Nothing is trained by gradient. Everything learned is counted in context as closed-form integer counts in A. The table is read for two purposes. Column-normalized at the incoming token, it decides the state update: does x cancel the top, that is, is x the inverse of s in the word. Row-normalized at the current top, it gives the next-token distribution. Pairing and parse form a fixed point. A correct pairing makes the top before a closer equal to its opener, and that raises the closer's determinism further. The built-in prior is the hypothesis class itself (partial inverse pairings of the V tokens, read as free-group cancellation) plus the three numbers in theta.\",\n      \"equations\": [\n        {\n          \"name\": \"learned inverse pairing (derived, not stored)\",\n          \"latex\": \"\\\\mathrm{inv}_t(x) = \\\\arg\\\\max_{s \\\\neq \\\\mathrm{BOT}} A_t[s, x] \\\\ \\\\text{ if } N_t[x] \\\\ge m \\\\wedge \\\\max_{s \\\\neq \\\\mathrm{BOT}} A_t[s,x] \\\\ge \\\\rho N_t[x]\",\n          \"plain\": \"x is a learned closer of inv(x) = argmax over non-bottom rows of A[:, x], when N[x] >= m and that max >= rho * N[x]\"\n        }\n      ],\n      \"few_shot_argument\": \"In a balanced string, every innermost occurrence of a pair (s, x) is an arrival of x with s on top of the word, whatever pairs are already known. After m such occurrences, x passes the test A[s,x] >= rho N[x] as long as earlier arrivals on wrong tops are fewer than (1-rho)/rho of the correct ones. The cancellation is then stored as a property of the token pair (s, x), not of a position, depth or distance. Every later arrival of x on top s therefore cancels. The next-token row of s puts the extra mass A[s,x] on x, at depth 2 or depth 200 alike. A rule shown m = 3 times is reused at unbounded depth because the word carries the depth, not a fixed state.\"\n    }\n  },\n  \"claims\": {\n    \"complexity\": {\n      \"time_per_token\": \"O(V)\",\n      \"memory\": \"O(n)\",\n      \"total_sequence\": \"O(n V)\",\n      \"constants_notes\": \"The state update costs O(1) per token: one hash lookup in A, one in N, one push or pop on w, and two integer increments. The O(V) term is only the cost of writing out a full smoothed next-token distribution. Sampling or scoring a single token from the sparse row A[top] plus the uniform alpha mass costs O(1) expected with a stored row sum, which gives O(n) total. Memory counts token ids in w (at most n, and nesting depth plus the learning residue on balanced text) and nonzero entries of A (at most min(n, V^2+V)), each an O(log n)-bit integer. Setup cost is zero: there are no trained parameters, and theta is three hand-set numbers.\"\n    },\n    \"sample_efficiency\": {\n      \"mechanism\": \"Predecessor determinism under self-reduction. Each innermost demonstration of a fresh bracket pair adds one count to A[opener, closer]. With m = 3 and rho = 0.75, three innermost demonstrations fix the cancellation, and the cancellation transfers to every depth.\",\n      \"prediction\": {\n        \"metric\": \"number of depth-1 demonstrations of a fresh bracket pair (token ids never seen before) needed before closer-type accuracy >= 0.95 on held-out strings of nesting depth 12\",\n        \"value\": 3,\n        \"statement\": \"Closer-type accuracy is measured at positions whose true next token is a closer: the correct closer must receive more probability than every other closer. With m = 3 and rho = 0.75, accuracy stays below 0.9 at depth 12 after 2 demonstrations of each pair, because no closer can cancel yet and the top of the word drifts to unmatched closers. It reaches at least 0.95 after 3 demonstrations, with no gradient step.\"\n      }\n    },\n    \"capabilities\": [\n      {\n        \"task\": \"Depth generalization on Dyck-2 with fresh bracket tokens: a context of 3 depth-1 demonstrations per pair, then balanced test strings of nesting depth D in {12, 24, 48}\",\n        \"prediction\": \"Closer-type accuracy >= 0.98 at each D, and the accuracies at D = 12 and D = 48 differ by at most 0.02. Peak word length grows linearly in D: D plus the constant residue left by the demonstrations. By Chomsky's argument, any model with a fixed state of S bits must err on some depth-D strings once 2^D exceeds 2^S.\"\n      },\n      {\n        \"task\": \"Dyck-4: four fresh bracket pairs, each shown 3 times innermost, then test strings of depth 10 with all four types interleaved\",\n        \"prediction\": \"Closer-type accuracy >= 0.95 (chance is 0.25). With m = 3, rho = 0.75 and random demonstration order, spurious pairings (an opener flagged as a closer) occur in at most 5% of contexts.\"\n      },\n      {\n        \"task\": \"Long-distance matching: the opener of the next closer lies 2000 tokens back, separated by balanced filler built from already learned pairs\",\n        \"prediction\": \"The correct closer gets more probability than any other closer in >= 0.99 of trials, at the same O(1) state cost per token as at distance 2. A fixed-size recurrent state with 64 dimensions trained on depth <= 4 is predicted to fall below 0.6 here.\"\n      },\n      {\n        \"task\": \"Capacity limit, crossing dependencies: copy task w w with |w| = 8 over V = 4 tokens, predicting the second half\",\n        \"prediction\": \"Next-token accuracy on the second half is at most 0.35, near the unigram rate of 0.25. The word is last-in-first-out and pairs only nested dependencies. The mechanism makes no claim beyond nested (context-free, Dyck-like) structure.\"\n      }\n    ]\n  },\n  \"known_relatives\": [\n    {\n      \"name\": \"Stack-augmented RNNs and neural stacks (Joulin and Mikolov 2015; Grefenstette et al. 2015)\",\n      \"relation\": \"Also escape finite state with an unbounded stack\",\n      \"claimed_difference\": \"Their push and pop are decided by a controller trained by gradient on many strings, and their stack holds continuous vectors. Here the stack is a reduced word of discrete tokens. Push or cancel is decided by a count test on a table filled from the current context, so a fresh bracket pair is usable after 3 in-context demonstrations without training.\"\n    },\n    {\n      \"name\": \"n-gram / bigram lookup tables and induction-head copying\",\n      \"relation\": \"Same kind of readout: a count table read by an exact key\",\n      \"claimed_difference\": \"The key is top(w_t), the nearest unmatched token at any distance, not x_{t-1}. The same table also rewrites the key sequence by deciding cancellations. A bigram cannot predict a closer whose opener lies 2000 tokens back.\"\n    },\n    {\n      \"name\": \"Shift-reduce parsing and Dyck recognizers\",\n      \"relation\": \"Same control flow once the pairing is known\",\n      \"claimed_difference\": \"A parser is given its grammar, that is, which tokens close which. Here the grammar (the inverse pairing) is inferred online from predecessor determinism under the reduction it is producing. It also predicts a distribution rather than accepting or rejecting.\"\n    },\n    {\n      \"name\": \"Grammar-based compression and induction (Sequitur, SLPs)\",\n      \"relation\": \"Also build structure online from the token stream\",\n      \"claimed_difference\": \"Sequitur creates rules for repeated digrams and has no notion of inverse or cancellation. Here the only structure is a free-group inverse pairing, and it shortens the word rather than naming repeats.\"\n    }\n  ],\n  \"falsifiers\": [\n    \"With pairs already learned, closer-type accuracy on Dyck-2 falls by more than 0.05 between nesting depth 12 and depth 48. That would mean the growing word does not carry depth, and the escape from the finite-state limit fails.\",\n    \"On random-order Dyck-2 contexts of 8 strings of depth <= 3 with fresh tokens, m = 3 and rho = 0.75, an opener is flagged as a closer in more than 10% of contexts. That would refute predecessor determinism as a reliable law for discovering inverses.\",\n    \"After 3 innermost demonstrations per pair, closer-type accuracy at depth 12 stays below 0.95. That would mean the few-shot argument (each innermost demonstration is a correct-top arrival) does not hold in practice.\",\n    \"On balanced test strings, peak memory of w grows faster than linearly in nesting depth plus a constant learning residue. That would contradict the stated cost of the break.\"\n  ],\n  \"toy_example\": {\n    \"description\": \"Tokens: a=0, A=1 (closer of a), b=2, B=3 (closer of b); V=4, BOT=4, m=2, rho=0.75, alpha=1. The context first shows each pair twice at depth 1 (a A a A b B b B). No token has m arrivals yet during this phase, so every token is pushed and 8 tokens stay as residue. Then comes the depth-3 string b a b B A B. The three closers cancel their openers, and the readout at the top favors the correct closer: 3/7 before the first B, 3/7 for A on top a, and 1/2 before the last B. At the end, A and B are identified as closers of a and b, and no opener is.\",\n    \"python\": \"import json\\nimport numpy as np\\nV = 4\\nBOT = 4\\nm = 2\\nrho = 0.75\\nalpha = 1.0\\nseq = [0, 1, 0, 1, 2, 3, 2, 3, 2, 0, 2, 3, 1, 3]\\nA = np.zeros((V + 1, V))\\nw = []\\ncancels = 0\\nprobs = {}\\nfor t, x in enumerate(seq):\\n    s = w[-1] if w else BOT\\n    row = A[s]\\n    p = (row + alpha) / (row.sum() + alpha * V)\\n    probs[t] = [round(float(v), 4) for v in p]\\n    nin = A[:, x].sum()\\n    c = (s != BOT) and (nin >= m) and (A[s, x] >= rho * nin)\\n    if c:\\n        w.pop()\\n        cancels += 1\\n    else:\\n        w.append(x)\\n    A[s, x] += 1\\npairs = []\\nfor x in range(V):\\n    nin = A[:, x].sum()\\n    col = A[:V, x]\\n    if nin >= m and col.max() >= rho * nin:\\n        pairs.append([int(col.argmax()), x])\\nprint(json.dumps({'final_stack': w, 'cancels': cancels, 'p_before_11': probs[11], 'p_before_12': probs[12], 'p_before_13': probs[13], 'pairs': pairs}))\\n\",\n    \"expected\": {\n      \"final_stack\": [0, 1, 0, 1, 2, 3, 2, 3],\n      \"cancels\": 3,\n      \"p_before_11\": [0.2857, 0.1429, 0.1429, 0.4286],\n      \"p_before_12\": [0.1429, 0.4286, 0.2857, 0.1429],\n      \"p_before_13\": [0.25, 0.125, 0.125, 0.5],\n      \"pairs\": [[0, 1], [2, 3]]\n    }\n  },\n  \"references\": [],\n  \"extensions\": [\n    {\n      \"name\": \"Shared pairing evidence through token classes\",\n      \"description\": \"Map tokens to a small set of learned classes so that cancellation evidence for one bracket pair raises the prior of structurally similar pairs. This would lower m for families of pairs. It is outside the core, and no claim depends on it.\"\n    },\n    {\n      \"name\": \"Bounded repair search\",\n      \"description\": \"When a learned closer x arrives on a top other than inv(x), search the top k entries of w for inv(x) and cancel there, discarding the entries above it. This repairs the residue left during the learning phase at O(k) cost per such event.\",\n      \"equations\": [\n        {\n          \"name\": \"repair\",\n          \"latex\": \"j^* = \\\\max\\\\{ j > D_{t-1}-k : w_{t-1}[j] = \\\\mathrm{inv}(x_t) \\\\},\\\\ w_t = w_{t-1}[1..j^*-1]\",\n          \"plain\": \"look back at most k entries for inv(x); if found at position j, truncate w to the entries before j\"\n        }\n      ]\n    }\n  ],\n  \"arm_structure\": {\n    \"limit_id\": \"chomsky_finite_state\",\n    \"assumption_id\": \"finite_states\",\n    \"assumption_quote\": \"the process has a finite number of states fixed before the input is seen\",\n    \"source\": \"Chomsky, 'Three models for the description of language', IRE Transactions on Information Theory 2(3), 1956\",\n    \"how_broken\": \"The state object w is a reduced word over the token alphabet. Update[1] (word reduction) appends x_t or removes the top entry. The reachable configurations number up to V^D at depth D and are not fixed before the input is seen. Depth D needs D distinct stored entries, which is exactly the distinct state per depth that Chomsky's argument says a finite process lacks. The count table A also grows: its entries are integers of O(log n) bits. The quantifier is kept: nesting depth is unbounded, and once the pairing is learned the cancellations are exact at every depth.\",\n    \"mechanism_ref\": \"update[1]\",\n    \"cost\": {\n      \"time_per_token\": \"O(1) for the state update (two hash lookups, one push or pop, one count increment); O(V) to emit a full next-token distribution\",\n      \"memory\": \"O(D_max log V + min(n, V^2) log n) bits, where D_max <= n is the peak word length; O(n) words in the worst case\",\n      \"statement\": \"No step revisits earlier tokens, so total cost is O(n) to maintain the state and O(nV) to emit full distributions, linear in n. The state grows by at most one token id (log2 V bits) per position. On balanced text it tracks nesting depth plus the residue left by the learning phase.\"\n    },\n    \"closest_known\": {\n      \"family\": \"exact_match_cache\",\n      \"difference\": \"An exact-match cache stores (key, value) per token and returns the value for a key equal to the query. Here the read key is top(w_t), the head of a word that the table itself rewrites by learned cancellation (update[0] and update[1]). The table is both the predictor and the controller of an unbounded reduction. The effective context is the nearest unmatched token at any distance, not a stored key or the previous token.\"\n    }\n  }\n}\n```",
+   "recorded_validation_error": "schema validation failed at (root): 'known_relatives' is a required property"
+  }
+ ]
+}

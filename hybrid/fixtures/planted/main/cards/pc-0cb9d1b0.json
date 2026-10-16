@@ -1,0 +1,141 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Recency-weighted vote over every earlier occurrence of the probed address",
+  "summary": "The model keeps the full history of written address codes and items. To answer a probe it lets every earlier entry with the probed code vote for its item with weight one over its distance back in time, and returns the item with the largest total vote, so the latest writing of an address dominates while repeated writings reinforce. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Answer a probe by a vote of every earlier entry with the same address code, each weighted by the reciprocal of its distance back in time.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Hs",
+        "type": "history of entries",
+        "shape": [
+          "n",
+          3
+        ],
+        "meaning": "History: (time i, code a_i, item y_i) for every write so far; it grows with the number of writes."
+      },
+      {
+        "name": "bw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket word of open types, 20 bits."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase."
+      }
+    ],
+    "update": [
+      {
+        "name": "record",
+        "latex": "Hs \\leftarrow Hs \\cup \\{(t, a_t, y_t)\\}",
+        "plain": "append (t, a_t, y_t), with a_t the address code kappa(z_t) in 0..255: the position counter for string symbols, the identity for pair addresses, 128 + identity for the second table and y_t = 2 id(item) + lambda_t"
+      },
+      {
+        "name": "bracket word",
+        "latex": "bw \\leftarrow 2\\,bw + b,\\quad bw \\leftarrow \\lfloor bw/2 \\rfloor",
+        "plain": "an opener of type b: bw = 2 bw + b; a closer: bw = floor(bw / 2)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "vote",
+        "latex": "s(v) = \\sum_{i < t} \\frac{[a_i = a]\\,[y_i = v]}{t - i},\\quad \\hat{y} = \\arg\\max_v s(v)",
+        "plain": "computed at every position for the code a of the current address symbol: s(v) = sum over earlier entries i of [a_i = a] [y_i = v] / (t - i); the answer is the argmax over v"
+      },
+      {
+        "name": "chains and two hops",
+        "latex": "a \\leftarrow \\lfloor \\hat{y}/2 \\rfloor \\text{ while the flag is } 0",
+        "plain": "chained assignments vote again for the named variable while the flag is 0, at most 8 times; f(g(x)) votes for 128 + id(x), then for the result"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = bw \\bmod 2",
+        "plain": "the legal closer has the type in the lowest bit of bw"
+      }
+    ],
+    "learning": {
+      "description": "Symbol roles are inferred as the maximum of a posterior over roles: a uniform prior is multiplied, for each of m example episodes, by the likelihood of its answers under each role assignment.",
+      "few_shot_argument": "The posterior concentrates on the true roles after one consistent episode per symbol; m = 6 episodes per task suffice in the small cases, and a pair is recalled exactly from its first writing."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(V)",
+      "memory": "Theta(n)",
+      "total_sequence": "Theta(n V)",
+      "constants_notes": "Each code keeps running vote totals per item, so a probe reads V totals and a write updates one total; the history holds three words per write."
+    },
+    "sample_efficiency": {
+      "mechanism": "Posterior over symbol roles from m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction: symbol i under code i, read back under codes 1..L; every code is written once, so the vote is exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Distinct addresses are written once each; the vote returns the written item at K = 8, 32 and 64."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "Bracket word: exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Two votes per probe (128 + id(x), then the result); exact at sizes 4, 16 and 32. At most 8 chained votes; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "Exact closer prediction is impossible beyond the 20 bits of the bracket word: at depth D > 20 two different stacks share a word."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The role posterior learns every small case from m = 6 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "After an address is written twice, the vote returns the older item.",
+    "A probe's counted operations grow with the length of the history."
+  ],
+  "toy_example": {
+    "description": "A short history with one address written twice and the vote at time 10.",
+    "python": "import json\nHs = [(1, 4, 9), (2, 7, 3), (5, 4, 6), (6, 2, 9)]\nt = 10\ndef vote(a):\n    s = {}\n    for i, ai, yi in Hs:\n        if ai == a:\n            s[yi] = s.get(yi, 0.0) + 1.0 / (t - i)\n    return max(sorted(s), key=lambda v: s[v]), {str(k): round(v, 6) for k, v in sorted(s.items())}\nbest, scores = vote(4)\nprint(json.dumps({\"answer\": best, \"scores\": scores}))\n",
+    "expected": {
+      "answer": 6,
+      "scores": {
+        "6": 0.2,
+        "9": 0.111111
+      }
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

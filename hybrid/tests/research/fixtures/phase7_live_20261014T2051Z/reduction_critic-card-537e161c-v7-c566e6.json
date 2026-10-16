@@ -1,0 +1,73 @@
+{
+  "confidence": 0.8,
+  "difference_if_any": "The only residue is the readout. The card reads out a polynomial of degree up to M in the fast-weight matrix, sum_m alpha_m S^m q, with coefficients selected by the previous token, instead of the single read S q. This is a multi-hop or iterated query of the same associative memory. It changes no update equation, and the learning rule (BPTT on next-token cross-entropy through an in-context least-squares solve) is the same as MesaNet/TTT-linear.",
+  "family": "delta_rule",
+  "family_why": "K_t is the RLS/MesaNet closed-form in-context least-squares solution under the delta-rule recurrence, with key Phi[x_{t-1}], value Phi[x_t] and gate beta_t. The power readout re-applies that same delta-rule state to the query and does not change the family's update form. This is a verified reduction into an out-of-scope family.",
+  "mapping": "Map the card to a DeltaNet/MesaNet-style preconditioned delta-rule memory. Key k_t := u_t = Phi[x_{t-1}], a token-shifted key. Value v_t := Phi[x_t]. Write strength beta_t := sigmoid(w_beta^T[u_t; v_t]). Fast-weight state S_t := K_t^T. Preconditioner P_t := the RLS inverse Gram, (lambda I + sum beta k k^T)^{-1}. The card's update K_t = K_{t-1} + beta_t P_t u_t (v_t - K_{t-1}^T u_t)^T is the RLS / preconditioned delta rule S_t = S_{t-1} + beta_t (v_t - S_{t-1} k_t)(P_t k_t)^T. In closed form it is the MesaNet solution S_t = C_t^T (lambda I + G_t)^{-1}. Query q_t := Phi[x_t], and the readout y_t = S_t q_t is the m = 1 term. The card's readout y_t = sum_m alpha_m S_t^m q_t is the same memory read repeatedly, with each output fed back as the next query (q^(m+1) = S_t q^(m)), then mixed with token-selected weights. This is the multi-hop readout of end-to-end memory networks. It is also the inner loop of Ba et al. 2016 fast weights, h_{s+1} = f(... + A h_s), without the nonlinearity, applied to a delta-rule/RLS fast-weight matrix. W_o is the usual output projection.",
+  "prior_art_delta": null,
+  "radical_enough": false,
+  "reduces_to": "linear_attention",
+  "reduction_check": {
+    "comparisons": [
+      {
+        "comparator": "MesaNet/preconditioned DeltaNet layer, key Phi[x_{t-1}], value Phi[x_t], gate beta, single read S_t q_t",
+        "counted": true,
+        "family": "linear_attention",
+        "inputs_tested": 20,
+        "kind": "claimed_known_form",
+        "max_abs_diff": 0.9999565896332284,
+        "reference": "MesaNet (von Oswald et al. 2025) closed-form in-context least squares S_t = C_t^T (lambda I + G_t)^{-1}, readout S_t q_t",
+        "within_tolerance": false
+      },
+      {
+        "comparator": "MesaNet state with fixed 2-hop read S_t^2 q_t",
+        "counted": true,
+        "family": "linear_attention",
+        "inputs_tested": 20,
+        "kind": "repaired_known_form",
+        "max_abs_diff": 0.9879892703253104,
+        "reference": "MesaNet state + multi-hop memory read (end-to-end memory networks, Sukhbaatar et al. 2015), final hop H=2",
+        "within_tolerance": false
+      },
+      {
+        "comparator": "MesaNet state with fixed 3-hop read S_t^3 q_t",
+        "counted": true,
+        "family": "linear_attention",
+        "inputs_tested": 20,
+        "kind": "repaired_known_form",
+        "max_abs_diff": 1.0,
+        "reference": "MesaNet state + multi-hop memory read (end-to-end memory networks, Sukhbaatar et al. 2015), final hop H=3",
+        "within_tolerance": false
+      },
+      {
+        "comparator": "MesaNet state with fixed 4-hop read S_t^4 q_t",
+        "counted": true,
+        "family": "linear_attention",
+        "inputs_tested": 20,
+        "kind": "repaired_known_form",
+        "max_abs_diff": 0.8901363527163528,
+        "reference": "MesaNet state + multi-hop memory read (end-to-end memory networks, Sukhbaatar et al. 2015), final hop H=4",
+        "within_tolerance": false
+      },
+      {
+        "comparator": "MesaNet state with the card's token-selected softmax mixture over powers 0..M",
+        "counted": false,
+        "family": "linear_attention",
+        "inputs_tested": 20,
+        "kind": "rewrite",
+        "max_abs_diff": 1.9684254226604025e-13,
+        "reference": "card readout applied to independently computed MesaNet closed-form state",
+        "within_tolerance": false
+      }
+    ],
+    "job_id": "job-720f18f6a55a",
+    "notes": "Outputs compared as softmax(W_o y) probabilities at every position, n=12, d=4, V=10, M=4, lambda=1e-3, random Phi/W_o/w_beta/A per sequence. The rewrite matching only checks that the card's RLS update equals the MesaNet closed-form state; the token-selected mixture of operator powers is the card's own readout, not a published form of the family.",
+    "outcome": "refuted",
+    "reduces_to": "linear_attention",
+    "tolerance": 1e-06
+  },
+  "reduction_outcome": "refuted",
+  "textbook_transplant": true,
+  "textbook_why": "The core is textbook EDMD, K = (lambda I + G)^{-1} C, computed by standard weighted RLS. The prediction is the textbook Koopman multi-step rollout psi(x_{t+m}) ≈ (K^T)^m psi(x_t) used in Koopman MPC. The card substitutes token embeddings for the dictionary, uses a learned deep-Koopman-style dictionary and a learned sample weight, and adds a softmax mixture over horizons and a decoder. None of these changes the estimator or the semigroup rollout equations.",
+  "why": "The update is exactly gated RLS, and the card says so itself. With previous-token keys and current-token values, it is the MesaNet / preconditioned DeltaNet in-context least-squares layer. The Koopman/EDMD vocabulary renames this regression of next-token embedding on previous-token embedding. The new readout applies the fast-weight matrix to the query several times and takes a softmax mixture over the hop count. Repeated application of a fast-weight or memory matrix to its own output is known: Ba et al. 2016 iterate A h in an inner loop, memory networks do multi-hop reads, and looped or stacked layers sharing one state do the same. A researcher who knows these families would not be surprised that S^2 q returns f(f(q)) when S implements f. Own history: an earlier run with this exact signature died at S2, reduced to linear_attention through the same key/value/gate mapping. This card leaves the update equation named in that cause unchanged. Its only distinction is the power readout, which was already present, so it repeats the failure."
+}

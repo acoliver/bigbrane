@@ -1,0 +1,51 @@
+{
+  "max_tokens": 128000,
+  "messages": [
+    {
+      "content": [
+        {
+          "cache_control": {
+            "ttl": "1h",
+            "type": "ephemeral"
+          },
+          "text": "<system>\nAnswer as JSON.\n</system>\n\nUser provided conversation begins here:",
+          "type": "text"
+        }
+      ],
+      "role": "user"
+    },
+    {
+      "content": [
+        {
+          "cache_control": {
+            "ttl": "1h",
+            "type": "ephemeral"
+          },
+          "text": "Capital of France?",
+          "type": "text"
+        }
+      ],
+      "role": "user"
+    }
+  ],
+  "model": "claude-opus-5-5",
+  "output_config": {
+    "format": {
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "city": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "city"
+        ],
+        "type": "object"
+      },
+      "type": "json_schema"
+    }
+  },
+  "stream": true,
+  "system": "You are Claude Code, Anthropic's official CLI for Claude."
+}

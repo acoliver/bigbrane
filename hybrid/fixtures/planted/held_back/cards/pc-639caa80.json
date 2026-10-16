@@ -1,0 +1,126 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Chained assignments learned with the resolution rule supplied",
+  "summary": "Assignments are stored as rows. The learner is supplied with the rule that a variable denotes the constant reached by following its assignments back, so it only learns an output translation.",
+  "core_idea": "Supply the learner with the resolution rule for assignment chains, so binding is learned from 40 items.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "As",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Assignment rows (left variable, right symbol), C = 64."
+      },
+      {
+        "name": "na",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Rows stored."
+      },
+      {
+        "name": "lh",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Left variable waiting for its right symbol."
+      },
+      {
+        "name": "Res2",
+        "type": "rule",
+        "shape": [
+          1
+        ],
+        "meaning": "Supplied resolution rule: the constant reached by following assignments back from a variable, evaluated on the prefix."
+      },
+      {
+        "name": "Tr",
+        "type": "integer map",
+        "shape": [
+          "8"
+        ],
+        "meaning": "Learned output translation, 8 entries."
+      }
+    ],
+    "update": [
+      {
+        "latex": "lh=\\varnothing \\Rightarrow lh \\leftarrow x_t;\\;\\text{else } As_{na} \\leftarrow (lh, x_t),\\; na \\leftarrow na+1",
+        "plain": "assignments and pairs are stored as rows, appended in order",
+        "name": "row store"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\hat{y}_t = Tr[\\mathrm{Res2}(x_{1..t})]",
+        "plain": "the supplied hypothesis resolves the probe variable; Tr maps the constant; other tasks read rows"
+      }
+    ],
+    "learning": {
+      "description": "Given Res2, Tr is the majority map over the m items; other routings by training accuracy.",
+      "few_shot_argument": "One supplied rule, an 8-entry map: m = 40 items with 2 probes each cover all 8 constants on every seed."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(C)",
+      "memory": "O(C)",
+      "total_sequence": "O(n C)",
+      "constants_notes": "Row writes O(1), row reads scan C rows; 2C + 3 words."
+    },
+    "sample_efficiency": {
+      "mechanism": "The supplied rule leaves an 8-entry map.",
+      "prediction": {
+        "metric": "examples_to_binding_hops2",
+        "value": 40,
+        "statement": "From m = 40 binding items with chains of 2 hops, per-query accuracy is at least 0.99 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "variable binding",
+        "prediction": "Learned at hops 2 from m = 40; exact at hops 1, 4, 8 with C = 64."
+      },
+      {
+        "task": "recall, copy, nesting, composition",
+        "prediction": "Exact at the listed sizes with C = 64."
+      },
+      {
+        "task": "limit",
+        "prediction": "The limit is a storage count: C slots of two words cannot hold more than C pairs, so at C = 64 an instance with 65 or more distinct pairs loses one of them."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "40 items at hops 2 after which accuracy is below 0.99 on a seed.",
+    "A chain of 8 hops resolved wrongly by the hand-set rows."
+  ],
+  "toy_example": {
+    "description": "The supplied rule on one item with two chains of two hops.",
+    "python": "import json\nrows = [(0, 12), (3, 0), (1, 15), (5, 3), (4, 1), (2, 4)]\nenv = {}\nfor a, b in rows:\n    env[a] = b if b >= 10 else env[b]\nprint(json.dumps({\"v5\": env[5], \"v2\": env[2]}))\n",
+    "expected": {
+      "v5": 12,
+      "v2": 15
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

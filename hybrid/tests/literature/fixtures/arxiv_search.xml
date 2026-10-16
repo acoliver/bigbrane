@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/zZlzzVBaDeC5ZQIdWUlV+P9Wovc</id>
+  <title>arXiv Query: search_query=all:Mamba AND all:selective&amp;id_list=&amp;start=0&amp;max_results=3</title>
+  <updated>2026-10-09T23:18:25Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:Mamba+AND+all:selective&amp;start=0&amp;max_results=3&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>3</opensearch:itemsPerPage>
+  <opensearch:totalResults>545</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2404.15772v3</id>
+    <title>Bi-Mamba+: Bidirectional Mamba for Time Series Forecasting</title>
+    <updated>2024-06-27T03:31:25Z</updated>
+    <link href="https://arxiv.org/abs/2404.15772v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2404.15772v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Long-term time series forecasting (LTSF) provides longer insights into future trends and patterns. Over the past few years, deep learning models especially Transformers have achieved advanced performance in LTSF tasks. However, LTSF faces inherent challenges such as long-term dependencies capturing and sparse semantic characteristics. Recently, a new state space model (SSM) named Mamba is proposed. With the selective capability on input data and the hardware-aware parallel computing algorithm, Mamba has shown great potential in balancing predicting performance and computational efficiency compared to Transformers. To enhance Mamba's ability to preserve historical information in a longer range, we design a novel Mamba+ block by adding a forget gate inside Mamba to selectively combine the new features with the historical features in a complementary manner. Furthermore, we apply Mamba+ both forward and backward and propose Bi-Mamba+, aiming to promote the model's ability to capture interactions among time series elements. Additionally, multivariate time series data in different scenarios may exhibit varying emphasis on intra- or inter-series dependencies. Therefore, we propose a series-relation-aware decider that controls the utilization of channel-independent or channel-mixing tokenization strategy for specific datasets. Extensive experiments on 8 real-world datasets show that our model achieves more accurate predictions compared with state-of-the-art methods.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-04-24T09:45:48Z</published>
+    <arxiv:comment>New Mamba-based architecture. All experiments rerun</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Aobo Liang</name>
+    </author>
+    <author>
+      <name>Xingguo Jiang</name>
+    </author>
+    <author>
+      <name>Yan Sun</name>
+    </author>
+    <author>
+      <name>Xiaohou Shi</name>
+    </author>
+    <author>
+      <name>Ke Li</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2507.06204v2</id>
+    <title>Differential Mamba</title>
+    <updated>2025-10-29T10:17:57Z</updated>
+    <link href="https://arxiv.org/abs/2507.06204v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2507.06204v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Sequence models like Transformers and RNNs often overallocate attention to irrelevant context, leading to noisy intermediate representations. This degrades LLM capabilities by promoting hallucinations, weakening long-range and retrieval abilities, and reducing robustness. Recent work has shown that differential design can mitigate this issue in Transformers, improving their effectiveness across various applications. In this paper, we explore whether these techniques, originally developed for Transformers, can be applied to Mamba, a recent architecture based on selective state-space layers that achieves Transformer-level performance with greater efficiency. We show that a naive adaptation of differential design to Mamba is insufficient and requires careful architectural modifications. To address this, we introduce a novel differential mechanism for Mamba, empirically validated on language modeling benchmarks, demonstrating improved retrieval capabilities and superior performance over vanilla Mamba. Finally, we conduct extensive ablation studies and empirical analyses to justify our design choices and provide evidence that our approach effectively mitigates the overallocation problem in Mamba-based models. Our code is publicly available: https://github.com/NadavSc/Diff-Mamba</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-07-08T17:30:14Z</published>
+    <arxiv:comment>AACL 2025. We provide the code at https://github.com/NadavSc/Diff-Mamba</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Nadav Schneider</name>
+    </author>
+    <author>
+      <name>Itamar Zimerman</name>
+    </author>
+    <author>
+      <name>Eliya Nachmani</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2407.06136v4</id>
+    <title>Mamba-FSCIL: Dynamic Adaptation with Selective State Space Model for Few-Shot Class-Incremental Learning</title>
+    <updated>2026-06-23T11:36:36Z</updated>
+    <link href="https://arxiv.org/abs/2407.06136v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2407.06136v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Few-shot class-incremental learning (FSCIL) aims to incrementally learn novel classes from limited examples while preserving knowledge of previously learned classes. Existing methods face a critical dilemma: static architectures rely on a constant parameter space to learn from data that arrive sequentially, making them prone to overfitting to the current session, while dynamic architectures continually expand the parameter space, leading to increased complexity. In this study, we explore the potential of Selective State Space Models (SSMs) for FSCIL. Mamba leverages its input-dependent parameters to dynamically adjust its processing patterns and generate content-aware scan patterns without session-wise projector expansion. This enables it to configure distinct processing for base and novel classes, helping preserve existing knowledge while adapting to new ones. To leverage Mamba's potential for FSCIL, we design two key modules: First, we propose a dual selective SSM projector that generates input-conditioned state-space parameters from intermediate features for dynamic adaptation. The dual design structurally decouples base and novel-class processing, employing a frozen base branch to maintain stable base-class features and a dynamic incremental branch that adaptively learns distinctive feature shifts for novel classes. Second, we develop a class-sensitive selective scan mechanism to guide dynamic adaptation of the incremental branch. It reduces the disruption to base-class representations caused by training on novel data, and meanwhile, encourages the selective scan to perform in distinct patterns between base and novel classes. Extensive experiments on miniImageNet, CIFAR-100, and CUB-200 demonstrate that Mamba-FSCIL achieves state-of-the-art performance.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-07-08T17:09:39Z</published>
+    <arxiv:comment>Code: https://github.com/xiaojieli0903/Mamba-FSCIL</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Xiaojie Li</name>
+    </author>
+    <author>
+      <name>Yibo Yang</name>
+    </author>
+    <author>
+      <name>Jianlong Wu</name>
+    </author>
+    <author>
+      <name>Yue Yu</name>
+    </author>
+    <author>
+      <name>Ming-Hsuan Yang</name>
+    </author>
+    <author>
+      <name>Liqiang Nie</name>
+    </author>
+    <author>
+      <name>Min Zhang</name>
+    </author>
+  </entry>
+</feed>

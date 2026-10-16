@@ -1,0 +1,167 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "A bounded-degree polynomial energy reshaped by its curvature times its own Taylor remainder",
+  "summary": "Scalar teaching events and binary membership probes. The state is the coefficient vector of a polynomial energy P of fixed degree d. A teaching example at x multiplies P by (z - x)^2, keeps the first d + 1 coefficients, and subtracts tau times the curvature P''(x) times the Taylor remainder of P about x, all computed from the old coefficients. A probe at x is a member when the energy, clipped to [-1, 1], is at most zero. Two examples give an exact interval whose width is set by tau; repeated examples can spread membership to the whole line, and the degree limits which regions can be represented.",
+  "core_idea": "Reshape a fixed-degree polynomial energy at each demonstration by subtracting its local curvature times its own Taylor remainder, so that agreeing examples carve out a region of nonpositive energy, and test membership by the sign of the clipped energy.",
+  "mechanism": {
+    "learning": {
+      "description": "Only tau is learned offline; coefficient state is reset for each episode. A minimal calibration protocol uses centered unit-interval tasks: teach zero twice, then label the four probe coordinates 0.5, 1.0, 1.5, and 2.0 according to membership in [-1,1]. Search tau in {0,0.5,1,1.5,2}, minimize total probe classification error, and break ties toward smaller tau. Tau=0.5 has zero errors and is selected; tau=1 also has zero errors, so the tie rule matters. Larger training suites should vary teaching centers and include noncoincident examples, but no success on those suites is assumed in the core claims. Concept scale is learned offline rather than identified from two identical examples.",
+      "few_shot_argument": "The mechanism is curvature–Taylor-remainder polarization. Before the first write, P=1 has curvature zero, so its interference term vanishes and teaching a gives P=(z-a)^2. This post-first-write polynomial has curvature 2 at every coordinate. Its first-order Taylor remainder about any second coordinate b is exactly (z-b)^2. Consequently, the second write gives P=(z-b)^2[(z-a)^2-2 tau], with no projection loss for d>=4. Membership is the interval centered at the first example with radius sqrt(2 tau), together with the isolated second example if it lies outside that interval. For a=b=0 and tau=0.5, membership is exactly [-1,1]. The interval contains infinitely many undemonstrated coordinates, but its radius is supplied by tau. No arbitrary-concept identification or exponential memory capacity is claimed."
+    },
+    "readout": [
+      {
+        "latex": "p(1\\mid c,x_t)=\\mathbf{1}\\{\\operatorname{clip}(P(x_t),-1,1)\\leq0\\},\\qquad p(0\\mid c,x_t)=1-p(1\\mid c,x_t).",
+        "name": "Binary energy-sign distribution",
+        "plain": "At each marked probe event, evaluate the polynomial by Horner's rule. Clip the energy to [-1,1], then return [0,1] over tokens [0,1] when the clipped energy is nonpositive, and [1,0] otherwise. The comparison has no numerical tolerance. Before any teaching, c=[1,0,...,0] and P(x_t)=1 at every coordinate, so the first probe and any subsequent probes before teaching return [1,0]. This is a conditional next-token distribution at marked probe events; teaching events update state without emitting a prediction."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "Ascending coefficients c_j of P(z)=sum from j=0 to d of c_j z^j. The formal variable z is a real coordinate; d>=4 is a fixed degree budget, independent of context length n. Initially c_0=1 and all other coefficients are zero. P' and P'' denote first and second derivatives. The Taylor remainder R_x and temporary polynomial M are computed quantities, not persistent memories. Pi_d denotes deletion of coefficients above degree d in the fixed coordinate z. The operator coeff returns the length-(d+1) ascending coefficient vector of its truncated polynomial argument, padding missing coefficients with zeros. Indices j range from 0 to d.",
+        "name": "c",
+        "shape": [
+          "d+1"
+        ],
+        "type": "context-dependent real coefficient vector"
+      },
+      {
+        "meaning": "Frozen curvature-interference strength, learned offline. The analytic examples and toy use tau=0.5. The interval radius encoded by this parameter is sqrt(2 tau).",
+        "name": "tau",
+        "shape": [
+          1
+        ],
+        "type": "learned nonnegative scalar parameter"
+      },
+      {
+        "meaning": "Event e_t=(u_t,x_t) is a pair of scalars: u_t in {0,1} is the event marker, with 1 marking a positive teaching example and 0 marking a probe; x_t is a real coordinate. Event index t ranges from 1 to n, with n the context length in events; k denotes the number of teaching events. The next-token vocabulary has V=2 tokens, 1 for member and 0 for nonmember. In readout, p denotes their conditional probability and the indicator is 1 when its condition holds and 0 otherwise. For analytic explanations, a denotes the first teaching coordinate and b the second; these are not extra stored objects.",
+        "name": "e_t",
+        "shape": [
+          2
+        ],
+        "type": "ordered pair of scalar event fields: binary marker and real coordinate"
+      }
+    ],
+    "update": [
+      {
+        "latex": "R_{x_t}(z)=P(z)-P(x_t)-P'(x_t)(z-x_t),\\qquad P''(x_t)=\\sum_{j=2}^{d}j(j-1)c_jx_t^{j-2}.",
+        "name": "Compute curvature and Taylor remainder",
+        "plain": "On teaching events only, form the ascending coefficient array of P' as [c_1,2*c_2,...,d*c_d] and that of P'' as [2*c_2,6*c_3,...,d*(d-1)*c_d]. Evaluate P(x_t), P'(x_t), and P''(x_t) by Horner's rule on c and those two arrays. Copy c into the remainder array. Subtract P(x_t)-x_t*P'(x_t) from its constant coefficient and subtract P'(x_t) from its linear coefficient. Other remainder coefficients equal c."
+      },
+      {
+        "latex": "M(z)=(z-x_t)^2P(z)-\\tau P''(x_t)R_{x_t}(z),\\qquad c\\leftarrow\\operatorname{coeff}(\\Pi_dM)\\quad(u_t=1).",
+        "name": "Curvature-polarized bounded write",
+        "plain": "Convolve c with [x_t*x_t,-2*x_t,1], retain its first d+1 coefficients, and subtract tau*P''(x_t) times the remainder coefficient array. Replace c with that length-(d+1) ascending coefficient vector. Curvature and the remainder must both be calculated from the old c. This is a quadratic state-dependent write, not a prediction-error update."
+      },
+      {
+        "latex": "c\\leftarrow c\\quad(u_t=0).",
+        "name": "Probe persistence",
+        "plain": "Probe events never modify c."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "With d=4, tau=0.5, and teaching coordinates [0,0], c is exactly [0,0,-1,0,1]. The seven-query accuracy defined in sample_efficiency is 1.0, including the unseen interior coordinates ±0.5 and boundary coordinates ±1.",
+        "task": "Two-shot concept acquisition"
+      },
+      {
+        "prediction": "With d=4 and tau=0.5, teaching [0,2] produces (z-2)^2(z^2-1), so query 0.5 is a member. Teaching [2,0] produces z^2((z-2)^2-1), so query 0.5 is a nonmember. The two sequences therefore disagree on that query despite containing the same examples.",
+        "task": "Order-sensitive concept anchoring"
+      },
+      {
+        "prediction": "After teaching [0,0], issue 100000 queries cycling through the seven coordinates in sample_efficiency. The coefficient vector is bitwise unchanged, and the mismatch count against immediate post-teaching predictions is exactly zero.",
+        "task": "Persistence under long query continuations"
+      },
+      {
+        "prediction": "With d=4 and tau=0.5, a third zero-coordinate teaching event changes P=z^4-z^2 into P=-z^2 after degree projection, making every real coordinate a member. On the seven-query interval test, accuracy falls to 5/7. Independently, for d=4, no coefficient state can classify all eleven integer queries from -5 through 5 with member labels exactly at {-4,-2,0,2,4}: accuracy is at most 10/11 in exact arithmetic. Each of those five member coordinates is enclosed by nonmember coordinates in a disjoint open interval, requiring at least one distinct real root per interval. A nonzero degree-four polynomial has at most four distinct real roots; the zero polynomial also fails because it labels all eleven queries as members. Fixed coefficients therefore cannot encode even this finite five-island test exactly.",
+        "task": "Bounded capacity and corroboration failure"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "Multiplication by a quadratic uses three shifted coefficient additions, not a general convolution. Derivative evaluation, Taylor-remainder formation, projection, and readout each cost O(d). V=2 is constant. The degree budget d remains fixed even if all n events are teaching events, so the linear-context claim does not depend on bounded k. Offline calibration is excluded. Projection is in the fixed coordinate z: once degree overflow occurs, translation covariance is not guaranteed. Real-arithmetic operation counts do not establish numerical conditioning for arbitrary long teaching streams.",
+      "memory": "O(d)",
+      "time_per_token": "O(d)",
+      "total_sequence": "O(n d)"
+    },
+    "sample_efficiency": {
+      "mechanism": "Two writes turn a point well into a negative-energy interval through curvature times Taylor remainder; no context examples are searched at query time.",
+      "prediction": {
+        "metric": "Accuracy after two zero-coordinate teaching events, with d=4 and tau=0.5, on queries [-2,-1,-0.5,0,0.5,1,2] labeled by membership in [-1,1]",
+        "statement": "All seven labels are exact in float64: the energy is z^4-z^2, and every tested coordinate and intermediate arithmetic value is exactly representable.",
+        "value": 1
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "At d=4 and tau=0.5, teaching [0,0] must give exactly [0,0,-1,0,1], and a third zero teaching event must give exactly [0,0,-1,0,0]. A discrepancy in float64 refutes the stated core algebra or its implementation.",
+    "At d=4 and tau=0.5, teaching [0,2] and [2,0] must respectively label query 0.5 as member and nonmember. Failure refutes the predicted order-sensitive concept anchoring.",
+    "Run the stated five-value offline calibration. If it does not select tau=0.5 under the specified smallest-value tie rule, the learning specification is false.",
+    "An exact-arithmetic degree-four coefficient state that achieves 11/11 on the five-island integer-query test would refute the stated representational bound.",
+    "If existing prior art implements the same bounded write P <- Pi_d[(z-x)^2 P - tau P''(x)(P-P(x)-P'(x)(z-x))], up to coordinate and parameter renaming, the mechanism's novelty hypothesis is false.",
+    "For d=4, measure query-only runs of 100000 and 200000 events with identical implementation, seven-point cyclic queries, and no retained outputs. Use eleven paired runs after one warm-up and compare median elapsed times. A ratio above 2.5 falsifies the practical linear-query-cost prediction for that implementation, though it does not by itself refute the operation-count bound."
+  ],
+  "toy_example": {
+    "description": "The full bounded write at d=4 acquires an interval after two examples and collapses to whole-line membership after a third identical example. Both outcomes come from the core, including fixed-degree projection.",
+    "python": "import json\nimport numpy as np\n\nd = 4\ntau = 0.5\nc = np.zeros(d + 1)\nc[0] = 1.0\n\ndef teach(c, x):\n    p = float(np.polynomial.polynomial.polyval(x, c))\n    first = np.arange(1, len(c), dtype=float) * c[1:]\n    second = np.arange(1, len(first), dtype=float) * first[1:]\n    slope = float(np.polynomial.polynomial.polyval(x, first))\n    curvature = float(np.polynomial.polynomial.polyval(x, second))\n    remainder = c.copy()\n    remainder[0] -= p - x * slope\n    remainder[1] -= slope\n    product = np.convolve(c, [x*x, -2*x, 1.0])[:len(c)]\n    return product - tau * curvature * remainder\n\nc = teach(c, 0.0)\nc = teach(c, 0.0)\nqueries = [-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0]\nenergies = [float(np.polynomial.polynomial.polyval(x, c)) for x in queries]\ntwo = c.copy()\nc = teach(c, 0.0)\nthird = [float(np.polynomial.polynomial.polyval(x, c)) for x in queries]\nresult = {\n    'two_coefficients': [round(float(v), 6) for v in two],\n    'two_energies': [round(v, 6) for v in energies],\n    'two_members': [int(max(-1.0, min(1.0, v)) <= 0) for v in energies],\n    'three_coefficients': [round(float(v), 6) for v in c],\n    'three_members': [int(max(-1.0, min(1.0, v)) <= 0) for v in third]\n}\nprint(json.dumps(result, sort_keys=True))",
+    "expected": {
+      "three_coefficients": [
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "three_members": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "two_coefficients": [
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        1.0
+      ],
+      "two_energies": [
+        12.0,
+        0.0,
+        -0.1875,
+        0.0,
+        -0.1875,
+        0.0,
+        12.0
+      ],
+      "two_members": [
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

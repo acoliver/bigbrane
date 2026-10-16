@@ -1,0 +1,120 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Summed products of positive tag features and payloads, divided by a summed tag total on reading",
+  "summary": "A reader of the probe's positive features is divided by the same features applied to a running total of all earlier tag features, so what comes out is a weighted average of earlier payloads. To make this possible every symbol adds the product of its positive tag features and its payload vector to a square accumulator and adds the tag features to a total.",
+  "core_idea": "Accumulate tag-feature times payload products and a tag-feature total, then read both with the probe's positive features so the output is a weighted average of earlier payloads.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "A",
+        "type": "real matrix",
+        "shape": [
+          "r",
+          "d"
+        ],
+        "meaning": "Accumulator: for every earlier position, the product of its positive tag features (length r) and its payload (length d), summed."
+      },
+      {
+        "name": "n_tot",
+        "type": "real vector",
+        "shape": [
+          "r"
+        ],
+        "meaning": "Total of the positive tag features of every earlier position; it divides the reading."
+      }
+    ],
+    "update": [
+      {
+        "name": "total",
+        "latex": "\\nu_t = \\nu_{t-1} + g_t",
+        "plain": "nu_t = nu_(t-1) + g_t, the total n_tot after symbol t"
+      },
+      {
+        "name": "accumulator",
+        "latex": "A_t = A_{t-1} + g_t p_t^{\\top}",
+        "plain": "A_t = A_(t-1) + outer(g_t, p_t)"
+      },
+      {
+        "name": "tag and payload",
+        "latex": "g_t = \\psi(U_g h_t),\\; p_t = U_p h_t,\\; \\psi(s) = \\mathrm{elu}(s) + 1",
+        "plain": "g_t = psi(U_g h_t) and p_t = U_p h_t, with h_t = Emb[s_t] the embedding of the current symbol s_t and psi(s) = elu(s) + 1 applied elementwise, which keeps every feature positive"
+      }
+    ],
+    "readout": [
+      {
+        "name": "prediction",
+        "latex": "\\hat{s}_{t+1} = \\arg\\max_j (Z o_t)_j",
+        "plain": "the scores Z o_t over the V symbols; the next symbol is their argmax"
+      },
+      {
+        "name": "probe reading",
+        "latex": "f_t = \\psi(U_f h_t),\\; o_t = \\frac{A_t^{\\top} f_t}{\\nu_t^{\\top} f_t}",
+        "plain": "f_t = psi(U_f h_t) are the probe features; o_t = A_t^T f_t / (nu_t . f_t), the normalized reading"
+      }
+    ],
+    "learning": {
+      "description": "All projection matrices and offsets are fitted by gradient descent on the cross-entropy of the following symbol over a training corpus, with backpropagation through the full sequence.",
+      "few_shot_argument": "Nothing in the design helps with few examples; recall of 4 pairs takes about 3200 training sequences."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(r d + d V)",
+      "memory": "Theta(r d)",
+      "total_sequence": "Theta(n r d + n d V)",
+      "constants_notes": "Per symbol one rank-one addition to an r by d accumulator, one r by d reading and the d by V output map. Accumulator and total hold r d + r numbers whatever the length."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent; nothing in the design helps with few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 3200,
+        "statement": "Starting from random weights, 3200 training sequences of 4 pairs over 16 symbols reach recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "With hand-set position features, strings of length L <= r are copied exactly; longer strings blur together in the accumulator."
+      },
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "With hand-set weights and K mutually orthogonal tag feature vectors (so K <= r), recall is exact; past r pairs the reading blends payloads."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The operation count of a reference implementation grows faster than linearly in n with r, d and V fixed.",
+    "Some hand-set configuration of an r by d accumulator recalls more than r pairs exactly."
+  ],
+  "toy_example": {
+    "description": "A two by two accumulator after two symbols, read with one probe.",
+    "python": "import json, math\ndef psi(s):\n    return [v + 1.0 if v > 0 else math.exp(v) for v in s]\nA = [[0.0, 0.0], [0.0, 0.0]]\ntot = [0.0, 0.0]\nfor raw, pay in [([1.0, -0.5], [2.0, 1.0]), ([-1.0, 0.5], [0.0, 3.0])]:\n    g = psi(raw)\n    for i in range(2):\n        tot[i] += g[i]\n        for j in range(2):\n            A[i][j] += g[i] * pay[j]\nf = psi([0.5, 0.5])\nden = sum(tot[i] * f[i] for i in range(2))\no = [sum(A[i][j] * f[i] for i in range(2)) / den for j in range(2)]\nprint(json.dumps({\"reading\": [round(v, 6) for v in o], \"total\": [round(v, 6) for v in tot]}))\n",
+    "expected": {
+      "reading": [
+        1.165083,
+        1.834917
+      ],
+      "total": [
+        2.367879,
+        2.106531
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

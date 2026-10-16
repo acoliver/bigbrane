@@ -1,0 +1,58 @@
+{
+  "attacks": [
+    {
+      "check": {
+        "job_id": "job-a1dda38b573d",
+        "printed": {
+          "detail": "{0.9: 3.2713, 0.95: 4.6301, 0.99: 'undefined'}",
+          "disproved": true
+        },
+        "status": "ok",
+        "stderr_tail": "",
+        "stdout_tail": "{\"disproved\": true, \"detail\": \"{0.9: 3.2713, 0.95: 4.6301, 0.99: 'undefined'}\"}\n"
+      },
+      "check_code": "import json, math\nV=6\nkappa,eps,Pmax=1e-3,1e-4,16\ndef run(seq,rho):\n    a=[0.0]*V\n    C={}\n    prev=None\n    for w in seq:\n        a[w]=1.0\n        if prev is not None and prev<3 and w>=3 and rho>kappa:\n            i,j=prev,w\n            xi=a[i]-sum(c for (p,q),c in C.items() if p==i)\n            yj=a[j]-sum(c for (p,q),c in C.items() if q==j)\n            col=sum(c for (p,q),c in C.items() if q==j and p!=i)\n            row=sum(c for (p,q),c in C.items() if p==i and q!=j)\n            cij=C.get((i,j),0.0)\n            new={}\n            for (p,q),c in C.items():\n                if (p,q)==(i,j): continue\n                if q==j: new[(p,q)]=c*(1-rho*xi)\n                elif p==i: new[(p,q)]=c*(1-rho*yj)\n                else: new[(p,q)]=c\n            new[(i,j)]=cij+rho*(xi*yj+xi*col+yj*row)\n            new={k:c for k,c in new.items() if c>=eps}\n            while len(new)>Pmax:\n                del new[min(new,key=lambda z:new[z])]\n            C=new\n        prev=w\n    return C\ndef cr(C):\n    cells=[(0,3),(1,4),(0,4),(1,3)]\n    if any(c not in C or C[c]<=0 for c in cells): return None\n    return C[(0,3)]*C[(1,4)]/(C[(0,4)]*C[(1,3)])\npre=[0,3,1,4,0,4,1,3]\nres={}\nbad=False\nfor rho in (0.9,0.95,0.99):\n    cA=cr(run(pre+[2,3,0,3],rho))\n    cB=cr(run(pre+[2,5,0,3],rho))\n    if cA is None or cB is None:\n        res[rho]='undefined'; bad=True\n    else:\n        d=abs(math.log(cA/cB)); res[rho]=round(d,4)\n        if d<0.2: bad=True\nprint(json.dumps({\"disproved\":bool(bad),\"detail\":str(res)}))",
+      "check_refutes_attack": false,
+      "confirmed": false,
+      "counterexample": "Run the card's own pulse recursion (toy script, with k=rho/(1-rho)) on streams A and B at rho in {0.9, 0.95, 0.99}. Small cells such as (0,4) and (1,3) are products of (1-rho) factors. Pruning at eps=1e-4 can delete one of them, which makes the cross-ratio undefined. Even when all four cells survive, |log(cr_A/cr_B)| may fall below 0.2. The check fails the claim if any of these happens at any tested rho.",
+      "status": "inconclusive",
+      "target_claim": "(ii) For every rho in [0.9,1) the same streams give |log(cr_A/cr_B)|>=0.2 (and falsifier-free survival of all four block cells under eps=1e-4 pruning)"
+    },
+    {
+      "check": {
+        "job_id": "job-3c3aff86bc2b",
+        "printed": {
+          "detail": "steps=93 raw0=-0.858 min raw=-1.788 min k=0.1915 min rho=0.1607 vs kappa=0.001",
+          "disproved": true
+        },
+        "status": "ok",
+        "stderr_tail": "",
+        "stdout_tail": "{\"disproved\": true, \"detail\": \"steps=93 raw0=-0.858 min raw=-1.788 min k=0.1915 min rho=0.1607 vs kappa=0.001\"}\n"
+      },
+      "check_code": "import json, math\nr=8\nsp=lambda x: math.log1p(math.exp(x))\ninv=lambda y: math.log(math.expm1(y))\nent=math.sqrt(1.0/r)\nraw0=inv(ent)\nsteps=3000//32\nmove=steps*1e-2\nraw=raw0-move\ne=sp(raw)\nk=r*e*e\nrho=k/(1+k)\nkappa=1e-3\nprint(json.dumps({\"disproved\":bool(rho>kappa),\"detail\":\"steps=%d raw0=%.3f min raw=%.3f min k=%.4f min rho=%.4f vs kappa=%g\"%(steps,raw0,raw,k,rho,kappa)}))",
+      "check_refutes_attack": false,
+      "confirmed": true,
+      "counterexample": "3000 sequences at batch 32 is about 94 Adam steps. Adam moves each raw parameter by roughly lr per step, so at most about 0.94 in raw units. Initialise with r=8 and E_i=F_j chosen so that k=E.F=1, which gives softplus entries of 0.354 and raw about -0.857. Even if every raw entry of E and F moves down by 0.94, the minimum reachable k is about 0.19 and rho is about 0.16, which is far above kappa=1e-3. Filler-filler, value->key and similar gates therefore cannot close within 3000 sequences. Closure needs k<=1e-3 and hundreds of steps more, so the filler-robustness and L=4000 claims are also not reached at that budget.",
+      "status": "succeeds",
+      "target_claim": "Secondary prediction: median over 5 seeds of pretraining sequences before held-out one-shot recall reaches 0.95 is <= 3000 (Adam lr 1e-2, batch 32); gate closure rho<=kappa for filler/bridge pairs"
+    },
+    {
+      "check": {
+        "job_id": "job-3d352f906661",
+        "printed": {
+          "detail": "50 of 50 trials had survivors != last 16",
+          "disproved": true
+        },
+        "status": "ok",
+        "stderr_tail": "",
+        "stdout_tail": "{\"disproved\": true, \"detail\": \"50 of 50 trials had survivors != last 16\"}\n"
+      },
+      "check_code": "import json, random\nrandom.seed(0)\nPmax=16\nbad=0\ntrials=50\nfor t in range(trials):\n    C={}\n    for n in range(32):\n        C[n]=random.uniform(0.9,0.99)\n        while len(C)>Pmax:\n            m=min(C,key=lambda z:(C[z],z))\n            del C[m]\n    if set(C)!=set(range(16,32)): bad+=1\nprint(json.dumps({\"disproved\":bool(bad>0),\"detail\":\"%d of %d trials had survivors != last 16\"%(bad,trials)}))",
+      "check_refutes_attack": false,
+      "confirmed": true,
+      "counterexample": "Trained rho_ij = k/(1+k) varies by pair, for example in [0.9, 0.99]. For 32 disjoint fresh pairs, the records have C = rho_ij. Eviction by (smallest C, then oldest tau) removes the smallest-rho record, not the oldest. The newly written record can even evict itself. The survivors then are not the last 16, so many early pairs stay at high recall and many late pairs drop to about 0. The 'last 16 >= 0.9, first 16 <= 0.15' split fails.",
+      "status": "succeeds",
+      "target_claim": "For K = 32, all stored records have the equal concentration rho, so each new complex beyond 16 evicts the record with the smallest tau, which is the oldest. The last 16 pairs score >= 0.9 and the first 16 score <= 0.15"
+    }
+  ]
+}

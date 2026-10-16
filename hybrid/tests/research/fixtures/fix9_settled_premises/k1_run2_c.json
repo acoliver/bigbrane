@@ -1,0 +1,1541 @@
+{
+ "challenger_magic_x": [
+  {
+   "claim": null,
+   "code": "def x(prefix, layout, ops):\n    return 1\n",
+   "premise_id": "A1",
+   "quote": "Per round at position t: three d by d products, t probe-address products of d terms, t exponentials and a weighted sum of t contents; two rounds. The store holds two rows of d numbers per position per round.",
+   "why": "A1 is implementation conformance, not a task oracle or information source. The constant feature represents the asserted conformance flag; no copy, recall, dyck, composition or binding accuracy claim follows from that flag alone. Its substantive test is O2.a, not a baseline task."
+  },
+  {
+   "claim": null,
+   "code": null,
+   "premise_id": "A1",
+   "quote": "Per round at position t: three d by d products, t probe-address products of d terms, t exponentials and a weighted sum of t contents; two rounds. The store holds two rows of d numbers per position per round.",
+   "why": "A1 is implementation conformance, not a retrieval oracle or a task-solving input feature. It requires comparing two parameterized executions and cannot faithfully be represented by x(prefix, layout, ops), which receives neither parameters nor the reference implementation. No task-accuracy advantage is claimed from conformance alone."
+  }
+ ],
+ "checks": {
+  "O1.a": {
+   "artifact": "card-ca11b001-v1-5d1aa7.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "28 points, n in [64, 128, 256, 512, 1024, 2048, 4096], sizes {'V': [16, 32], 'd': [32, 64]}; formula exponent in n 2; slopes in n (measured/formula): 1.687/1.687, 1.5568/1.5568, 1.68/1.68, 1.5528/1.5528; all checks pass",
+   "form": "cost",
+   "purpose": "prove",
+   "statement_id": "O1.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O10.a": {
+   "artifact": "card-ca11b001-v1-5d1f21.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "copy at L=4 from m=3000 examples: seed 0 accuracy 1.0000 (control 0.0000), seed 1 accuracy 1.0000 (control 0.0060), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"batch_size\": 128, \"beta1\": 0.9, \"beta2\": 0.98, \"d\": 64, \"early_stop\": true, \"emb_std\": 1.0, \"epochs\": 150, \"grad_clip\": 1.0, \"init\": \"normal: E,P std emb_std; Wa,Wc,Wp,V std 1/sqrt(d); Wo,U std 0.5/sqrt(d); O std 1/sqrt(d)\", \"loss\": \"next-symbol cross-entropy at the scored positions, backpropagated through both rounds\", \"lr\": 0.003, \"min_lr_frac\": 0.05, \"optimizer\": \"AdamW (decoupled weight decay) with global-norm gradient clipping\", \"rounds\": 2, \"warmup_steps\": 100, \"weight_decay\": 0.01} applied to the true data and both controls; observed on the listed sizes: copy L=4 m=3000 seed=0, copy L=4 m=3000 seed=1, copy L=4 m=3000 seed=2",
+   "form": "learnability",
+   "purpose": "prove",
+   "statement_id": "O10.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O11.a": {
+   "artifact": "card-ca11b001-v1-e83020.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "recall at K=4 from m=3000 examples: seed 0 accuracy 1.0000 (control 0.0285), seed 1 accuracy 1.0000 (control 0.0270), seed 2 accuracy 1.0000 (control 0.0380); threshold 0.99; recipe {\"batch_size\": 64, \"beta1\": 0.9, \"beta2\": 0.98, \"d\": 64, \"early_stop\": false, \"emb_std\": 1.0, \"epochs\": 250, \"grad_clip\": 1.0, \"init\": \"normal: E,P std emb_std; Wa,Wc,Wp,V std 1/sqrt(d); Wo,U std 0.5/sqrt(d); O std 1/sqrt(d)\", \"loss\": \"next-symbol cross-entropy at the scored positions, backpropagated through both rounds\", \"lr\": 0.002, \"min_lr_frac\": 0.05, \"optimizer\": \"AdamW (decoupled weight decay) with global-norm gradient clipping\", \"rounds\": 2, \"warmup_steps\": 300, \"weight_decay\": 0.05} applied to the true data and both controls; observed on the listed sizes: recall K=4 m=3000 seed=0, recall K=4 m=3000 seed=1, recall K=4 m=3000 seed=2",
+   "form": "learnability",
+   "purpose": "prove",
+   "statement_id": "O11.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O12.a": {
+   "artifact": "card-ca11b001-v1-d2a26f.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "dyck at depth=2 from m=1500 examples: seed 0 accuracy 1.0000 (control 0.0000), seed 1 accuracy 1.0000 (control 0.0000), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"batch_size\": 64, \"beta1\": 0.9, \"beta2\": 0.98, \"d\": 64, \"early_stop\": true, \"emb_std\": 1.0, \"epochs\": 150, \"grad_clip\": 1.0, \"init\": \"normal: E,P std emb_std; Wa,Wc,Wp,V std 1/sqrt(d); Wo,U std 0.5/sqrt(d); O std 1/sqrt(d)\", \"loss\": \"next-symbol cross-entropy at the scored positions, backpropagated through both rounds\", \"lr\": 0.003, \"min_lr_frac\": 0.05, \"optimizer\": \"AdamW (decoupled weight decay) with global-norm gradient clipping\", \"rounds\": 2, \"warmup_steps\": 100, \"weight_decay\": 0.01} applied to the true data and both controls; observed on the listed sizes: dyck depth=2 m=1500 seed=0, dyck depth=2 m=1500 seed=1, dyck depth=2 m=1500 seed=2",
+   "form": "learnability",
+   "purpose": "prove",
+   "statement_id": "O12.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O13.a": {
+   "artifact": "card-ca11b001-v1-be2f83.json",
+   "bound": null,
+   "counterexample": "recorded counterexample (dropped)",
+   "decided": true,
+   "details": {},
+   "evidence": "composition at T=4 from m=4000 examples: seed 0 accuracy 0.4750 (control 0.0705), seed 1 accuracy 0.5930 (control 0.0995), seed 2 accuracy 0.5745 (control 0.0270); threshold 0.99; recipe {\"batch_size\": 64, \"beta1\": 0.9, \"beta2\": 0.98, \"d\": 64, \"early_stop\": false, \"emb_std\": 1.0, \"epochs\": 280, \"grad_clip\": 1.0, \"init\": \"normal: E,P std emb_std; Wa,Wc,Wp,V std 1/sqrt(d); Wo,U std 0.5/sqrt(d); O std 1/sqrt(d)\", \"loss\": \"next-symbol cross-entropy at the scored positions, backpropagated through both rounds\", \"lr\": 0.003, \"min_lr_frac\": 0.05, \"optimizer\": \"AdamW (decoupled weight decay) with global-norm gradient clipping\", \"rounds\": 2, \"warmup_steps\": 300, \"weight_decay\": 0.1} applied to the true data and both controls; observed on the listed sizes: composition T=4 m=4000 seed=0, composition T=4 m=4000 seed=1, composition T=4 m=4000 seed=2",
+   "form": "learnability",
+   "purpose": "prove",
+   "statement_id": "O13.a",
+   "status": "violated",
+   "tier": "executed"
+  },
+  "O14.a": {
+   "artifact": "card-ca11b001-v1-428273.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "copy at L=4 from m=3000 examples: seed 0 accuracy 1.0000 (control 0.0020), seed 1 accuracy 1.0000 (control 0.0000), seed 2 accuracy 1.0000 (control 0.0020); threshold 0.99; recipe {\"batch_size\": 250, \"early_stop\": \"train per-string accuracy 1.0 and mean epoch loss < 0.005\", \"epochs\": 300, \"init\": \"normal: E,P std 0.5; Wp,Wa,Wc,Wo,V std 1/sqrt(d); U std 0.5/sqrt(d); O std 1/sqrt(d)\", \"loss\": \"next-symbol cross-entropy at the query positions\", \"lr\": 0.003, \"lr_schedule\": \"constant, then linear decay to 0.1x over the last 30% of epochs\", \"optimizer\": \"adam b1=0.9 b2=0.999 eps=1e-8, global grad-norm clip 5\"} applied to the true data and both controls; observed on the listed sizes: copy L=4 m=3000 seed=0, copy L=4 m=3000 seed=1, copy L=4 m=3000 seed=2",
+   "form": "learnability",
+   "purpose": "prove",
+   "statement_id": "O14.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O15.a": {
+   "artifact": "card-ca11b001-v1-b38a95.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "copy: discharged: claimed accuracy 1.0 is within the bound 1; dyck: discharged: claimed accuracy 0.99 is within the bound 1; associative_recall: discharged: 3166272 bits of state meet the 256 bits recall of K=64 over V=16 needs at accuracy 1.0; sample: discharged: 3000 examples meet the 1 the hypothesis count requires; sample: discharged: 3000 examples meet the 1 the hypothesis count requires; sample: discharged: 1500 examples meet the 1 the hypothesis count requires; sample: discharged: 4000 examples meet the 1 the hypothesis count requires",
+   "form": "conservation",
+   "purpose": "auto",
+   "statement_id": "O15.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O16.a": {
+   "artifact": "card-ca11b001-v1-2083ba.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Quot.sound', 'propext']",
+   "form": "lean",
+   "purpose": "prove",
+   "statement_id": "O16.a",
+   "status": "pass",
+   "tier": "lean"
+  },
+  "O2.a": {
+   "artifact": "card-ca11b001-v1-10d7af.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "the reference's retained state and output equal the frozen equations after every token (tolerance 1e-09) on 9 streams; observed on the listed sizes: n=16 repeated, n=16 distinct, n=16 random, n=64 repeated, n=64 distinct, n=64 random, n=128 repeated, n=128 distinct, n=128 random",
+   "form": "conformance",
+   "purpose": "conformance",
+   "statement_id": "O2.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O3.a": {
+   "artifact": "card-ca11b001-v1-226f81.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "form": "lean",
+   "purpose": "prove",
+   "statement_id": "O3.a",
+   "status": "pass",
+   "tier": "lean"
+  },
+  "O4.a": {
+   "artifact": "card-ca11b001-v1-00ae68.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "form": "lean",
+   "purpose": "prove",
+   "statement_id": "O4.a",
+   "status": "pass",
+   "tier": "lean"
+  },
+  "O5.a": {
+   "artifact": "card-ca11b001-v1-e1b757.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {},
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "form": "lean",
+   "purpose": "prove",
+   "statement_id": "O5.a",
+   "status": "pass",
+   "tier": "lean"
+  },
+  "O6.a": {
+   "artifact": "card-ca11b001-v1-60d88e.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "passed": true,
+      "size": 8
+     },
+     {
+      "passed": true,
+      "size": 32
+     },
+     {
+      "passed": true,
+      "size": 64
+     }
+    ]
+   },
+   "evidence": "copy: L=8 instance accuracy 1.0000, L=32 instance accuracy 1.0000, L=64 instance accuracy 1.0000; threshold 0.99; observed on the listed sizes: L=8, L=32, L=64; peak state words within the declared (8*L+1)*16*ceiling(log(2*L)/log(2))+1 at every size; every array within the declared architecture at every size",
+   "form": "construction",
+   "purpose": "prove",
+   "statement_id": "O6.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O7.a": {
+   "artifact": "card-ca11b001-v1-87dc3d.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "passed": true,
+      "size": 8
+     },
+     {
+      "passed": true,
+      "size": 32
+     },
+     {
+      "passed": true,
+      "size": 64
+     }
+    ]
+   },
+   "evidence": "recall: K=8 query accuracy 1.0000, K=32 query accuracy 1.0000, K=64 query accuracy 1.0000; threshold 0.99; observed on the listed sizes: K=8, K=32, K=64; peak state words within the declared 4*(3*K+1)*64+65 at every size; every array within the declared architecture at every size",
+   "form": "construction",
+   "purpose": "prove",
+   "statement_id": "O7.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O8.a": {
+   "artifact": "card-ca11b001-v1-d0a63b.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "passed": true,
+      "size": 2
+     },
+     {
+      "passed": true,
+      "size": 4
+     },
+     {
+      "passed": true,
+      "size": 8
+     },
+     {
+      "passed": true,
+      "size": 16
+     }
+    ]
+   },
+   "evidence": "dyck: depth=2 instance accuracy 1.0000, depth=4 instance accuracy 1.0000, depth=8 instance accuracy 1.0000, depth=16 instance accuracy 1.0000; threshold 0.99; observed on the listed sizes: depth=2, depth=4, depth=8, depth=16; peak state words within the declared 4*(4*depth)*64+65 at every size; every array within the declared architecture at every size",
+   "form": "construction",
+   "purpose": "prove",
+   "statement_id": "O8.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O9.a": {
+   "artifact": "card-ca11b001-v1-87d201.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "passed": true,
+      "size": 4
+     },
+     {
+      "passed": true,
+      "size": 16
+     },
+     {
+      "passed": true,
+      "size": 32
+     }
+    ]
+   },
+   "evidence": "composition: T=4 query accuracy 1.0000, T=16 query accuracy 1.0000, T=32 query accuracy 1.0000; threshold 0.99; observed on the listed sizes: T=4, T=16, T=32; peak state words within the declared 4*(5*T+3)*64+65 at every size; every array within the declared architecture at every size",
+   "form": "construction",
+   "purpose": "prove",
+   "statement_id": "O9.a",
+   "status": "discharged",
+   "tier": "executed"
+  },
+  "O9.b": {
+   "artifact": "card-ca11b001-v1-7eb5fd.json",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "passed": true,
+      "size": 1
+     },
+     {
+      "passed": true,
+      "size": 4
+     },
+     {
+      "passed": true,
+      "size": 8
+     }
+    ]
+   },
+   "evidence": "binding: hops=1 query accuracy 1.0000, hops=4 query accuracy 1.0000, hops=8 query accuracy 1.0000; threshold 0.99; observed on the listed sizes: hops=1, hops=4, hops=8; peak state words within the declared 4*(4*hops+7)*64+65 at every size; every array within the declared architecture at every size",
+   "form": "construction",
+   "purpose": "prove",
+   "statement_id": "O9.b",
+   "status": "discharged",
+   "tier": "executed"
+  }
+ },
+ "frozen_record": {
+  "card_id": "card-ca11b001",
+  "card_version": 1,
+  "claims": [
+   {
+    "id": "complexity.time_per_token",
+    "text": "complexity time_per_token: Theta(t d + d^2)"
+   },
+   {
+    "id": "complexity.memory",
+    "text": "complexity memory: Theta(n d)"
+   },
+   {
+    "id": "complexity.total_sequence",
+    "text": "complexity total_sequence: Theta(n^2 d + n d^2)"
+   },
+   {
+    "id": "sample_efficiency.prediction",
+    "text": "sample efficiency prediction: From random weights, gradient descent on 3000 copy examples at L = 4 over 4 symbols reaches per-string accuracy 0.99. (metric: examples_to_copy_L4; value: 3000)"
+   },
+   {
+    "id": "capability.1",
+    "text": "capability 1: task: copy a string after a separator prediction: With hand-set weights the probe at output step i matches the address written at input position i, so every string is copied exactly at every listed length when d grows with the log of the length."
+   },
+   {
+    "id": "capability.2",
+    "text": "capability 2: task: associative recall of K pairs prediction: With hand-set weights the first round binds each item to the one before it and the second retrieves the item stored after the matching one; per-query accuracy 1.0 at every listed K."
+   },
+   {
+    "id": "capability.3",
+    "text": "capability 3: task: two-type bracket nesting prediction: The legal closing bracket is predicted exactly up to depth D when the number of rounds grows with D; with two fixed rounds and fixed precision the error does not vanish for all depths as the length grows."
+   },
+   {
+    "id": "capability.4",
+    "text": "capability 4: task: two-hop lookup and chained assignments prediction: The first round retrieves g(x) and the second retrieves f at that point, so f(g(x)) is answered exactly; chained assignments need one round per link."
+   },
+   {
+    "id": "capability.5",
+    "text": "capability 5: task: parity of a long binary string prediction: With a fixed number of rounds and fixed precision, no setting of the weights decides the parity of every binary string as the length grows."
+   },
+   {
+    "id": "P1",
+    "text": "profile P1: exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n"
+   },
+   {
+    "id": "P2.copy",
+    "text": "profile P2.copy: construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words"
+   },
+   {
+    "id": "P2.recall",
+    "text": "profile P2.recall: construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words"
+   },
+   {
+    "id": "P2.nesting",
+    "text": "profile P2.nesting: construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words"
+   },
+   {
+    "id": "P2.composition",
+    "text": "profile P2.composition: construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words"
+   },
+   {
+    "id": "P3",
+    "text": "profile P3: derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2"
+   },
+   {
+    "id": "P4.copy",
+    "text": "profile P4.copy: toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds; the case is one selected length L with 1 <= L <= 4: the ceiling bounds the choice, it is not a size grid (P2, not P4, covers every listed size)"
+   },
+   {
+    "id": "P4.recall",
+    "text": "profile P4.recall: toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds; the case is one selected pair count K with 1 <= K <= 4: the ceiling bounds the choice, it is not a size grid (P2, not P4, covers every listed size)"
+   },
+   {
+    "id": "P4.nesting",
+    "text": "profile P4.nesting: toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds; the case is one selected nesting depth with 1 <= depth <= 2: the ceiling bounds the choice, it is not a size grid (P2, not P4, covers every listed size)"
+   },
+   {
+    "id": "P4.composition",
+    "text": "profile P4.composition: toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds; the case is one selected table size T with 1 <= T <= 4, or one selected chain length with 1 <= hops <= 2: the ceiling bounds the choice, it is not a size grid (P2, not P4, covers every listed size)"
+   },
+   {
+    "id": "P5",
+    "text": "profile P5: information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws"
+   }
+  ],
+  "definitions": [
+   {
+    "id": "D1",
+    "kind": "mechanism",
+    "sha256": "71641fe0f2a14e21747213b163252bfa09c8de1539215f72684023777be72d96",
+    "text": "The model is the card's causal weighted-retrieval model. It retains separate address and content rows for each round and the current working vector h. Each round uses Wa, Wc, Wp, Wo, U and V, all square d-by-d matrices, with normalized exponential retrieval, residual additions and coordinatewise max(0,z), exactly as in the card. The ordinary model has two rounds. E and O are symbol embedding and readout matrices, and P supplies positional embedding rows. All these parameters are learned by gradient descent on next-symbol cross-entropy through both rounds in learnability statements; constructions instead hand-set them. No auxiliary parser, stack, key-value dictionary or external lookup is allowed."
+   },
+   {
+    "id": "D2",
+    "kind": "accounting",
+    "sha256": "61a25fbe74de9fc8d6ce44de748ef68e62e1d1656163417f265bb40ae12877f4",
+    "text": "For the cost reference, every matrix-vector product and the content-weighted sum use @. Scores are A @ p, divided by the Python-computed scalar sqrt(d); exponentials are evaluated without max subtraction; their sum uses np.sum, and normalization uses elementwise division. ReLU uses np.maximum. Predict computes h @ O and argmax at every token. Retained state consists only of A1,C1,A2,C2, current h and one Python integer t; temporary probes, weights, retrieved vectors and logits are not retained. Parameters are excluded from state. The position table is supplied as a fixed list of 4096 d-vector parameter rows before the cost run, independently of sequence length. Parameter keys are E, P, Wa, Wc, Wp, Wo, U, V, O; the six round-specific matrix keys contain lists of two matrices. E has shape (vocabulary,d), O has shape (d,vocabulary). Position indices start at zero."
+   },
+   {
+    "id": "D3",
+    "kind": "evaluation",
+    "sha256": "436c876d3761da758290337ed782fe80a313450f804745c41f3a88054bdedf21",
+    "text": "Argmax ties choose the smallest token id. Construction and learning evaluation use the supplied task-contract generators and scoring positions, including self-fed copy continuation. Copy and dyck accuracy are per sequence; recall and composition accuracy are per query. Binding scores both requested constants. The mechanism executes its update on every supplied token, including separators and queries. P2 witnesses must implement D1 rather than replacing retrieval by direct indexing or a symbolic task solver."
+   },
+   {
+    "id": "D4",
+    "kind": "notation",
+    "sha256": "4e614955baa4ce3a531c7e18cd5228d61180ca473bb80ba0355d938fc5325f09",
+    "text": "Choose d=16*ceiling(log(2*L)/log(2)) for P2 copying and d=64 for the other P2 tasks. These are resource conventions where the card leaves the width unspecified, not claims that these widths suffice. Each construction uses two rounds, including nesting and binding; larger-depth and longer-chain checks are allowed to fail. Copy has 2*L positions and vocabulary 5. Recall has 3*K+1 positions, key universe 2*K, value universe 16 and vocabulary 2*K+17. Dyck supplies positional parameter rows for at most 4*depth tokens and vocabulary 4. Composition has 5*T+3 positions and vocabulary 3*T+3. Binding has 4*hops+7 positions, 2*hops+2 variables, 8 values and vocabulary 2*hops+11. Positional parameters are fixed for the task layout before any tokens arrive; token stores grow only as tokens arrive."
+   },
+   {
+    "id": "D5",
+    "kind": "evaluation",
+    "sha256": "5f4a4e9f2e818d36ab9949451a06ab17c05a357cefbea55468f0f35ae22e6865",
+    "text": "P4 uses d=64, two rounds and square feed-forward matrices. Selected cases are copy L=4, recall K=4, dyck depth=2 and composition T=4. Training and test instances use the supplied task generators; recall uses V=16 and n_keys=16. All matrices named in D1 are learned, with no hand-set task-rule member. Seeds are 0,1,2. Each seed uses the same prover-declared training recipe on true data, no data, and the same token sequences with randomized answers. The initialization distribution, gradient-descent implementation, learning rate, passes and batch size are chosen by the prover within the supplied P4 budget. Both controls and the replay requirement remain mandatory."
+   },
+   {
+    "id": "D6",
+    "kind": "notation",
+    "sha256": "a2e31d0833d4dabf395ea6c69c54b0f7d5123ffe74ab542fbdfb6483dcc79736",
+    "text": "For analytical complexity, vocabulary size V is fixed independently of sequence length and model width. With the operation spelling of D2, define q(t,d,V)=12*d^2+4*t*d+8*t+7*d+d*V+V-3, Q(n,d,V)=2*d*n*(n+1)+4*n*(n+1)+n*(12*d^2+7*d+d*V+V-3), and S(n,d)=4*n*d+d+1. Theta means uniform positive lower and upper constant factors for all positive integer sequence lengths and widths, with constants permitted to depend on the fixed vocabulary. These analytical expressions describe execution of the equations, not an assertion that a fixed finite positional table supports arbitrarily long sequences."
+   },
+   {
+    "id": "D7",
+    "kind": "sampling",
+    "sha256": "c769979b425ea36c913a9a6d0b8164f82b3f14b680703f95d6b46812c6a19591",
+    "text": "The P5 sample account uses the card's declared restricted target-rule classes with uniform target selection and whole-instance examples. The task protocol supplies encodings and class restrictions, but no class member. Copy and recall classes are all functions from four indices or key ranks to four source indices or value ranks. The depth-two bracket class is all binary closer-label maps on the six listed nonempty stack contexts. The composition class is all selectors s on four arguments, answering f(g(s(x))). Prior bits are measured relative to these classes; parsing or lookup learnability is not inferred from this restricted-class account."
+   },
+   {
+    "id": "D8",
+    "kind": "evaluation",
+    "sha256": "951fd2e4be149ebebaf161e773e90edbd5478235be3e5b8ceeb8671830783545",
+    "text": "The P3 task family is next-symbol inference on binary token streams of arbitrary length using the fixed positional-table resource of the P1 reference. Solving an instance requires executing the specified embed, update and readout at every token; an undefined positional lookup is failure, regardless of the requested target symbols. P[t] is literal zero-based table indexing, with no wraparound, clipping, extrapolation, dynamic parameter creation or replacement position encoding. A table with N rows has valid indices Fin N. A valid lookup for each of M positions must preserve its zero-based integer index. P3 concerns this finite positional-resource limit only, not a parity or nesting lower bound."
+   }
+  ],
+  "dropped": [],
+  "not_formalized": [
+   {
+    "claim_id": "capability.1",
+    "why": "P2.copy specifies the output construction, but the additional exact probe-address 'matches' assertion has no stated mathematical meaning or tolerance, so formalizing the whole conjunction would require inventing an internal invariant."
+   },
+   {
+    "claim_id": "capability.2",
+    "why": "P2.recall checks the output task, but the additional first-round binding and second-round retrieval assertions specify neither an encoding nor an equality criterion for represented items."
+   },
+   {
+    "claim_id": "capability.3",
+    "why": "The claim does not specify the round-growth function, width resources, finite-precision arithmetic semantics, or the distribution or worst-case quantifier underlying nonvanishing error."
+   },
+   {
+    "claim_id": "capability.4",
+    "why": "P2.composition checks the output tasks, but exact intermediate retrieval and the necessity of one round per link are insufficiently specified to distinguish a representation invariant from a resource lower bound."
+   },
+   {
+    "claim_id": "capability.5",
+    "why": "The asymptotic parity impossibility leaves width, positional parameter availability and finite-precision semantics unspecified, and the growing token store precludes substituting a fixed-state argument."
+   }
+  ],
+  "obligations": [
+   {
+    "claim_id": "P1",
+    "claim_quote": "exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n",
+    "definitions": [
+     "D1",
+     "D2"
+    ],
+    "discharges": [],
+    "id": "O1",
+    "premises": [
+     "A1"
+    ],
+    "statements": [
+     {
+      "bound": null,
+      "form": "cost",
+      "id": "O1.a",
+      "sha256": "ce3f434ad77a1c63470e5980a70eb02b780770e4a660ec8a7d9c1885d1080796",
+      "spec": {
+       "exponent": 2,
+       "ops": "2*d*n*(n+1)+4*n*(n+1)+n*(12*d**2+7*d+d*V+V-3)",
+       "sizes": {
+        "V": [
+         16,
+         32
+        ],
+        "d": [
+         32,
+         64
+        ]
+       },
+       "state": "4*n*d+d+1",
+       "widths": {
+        "d": "d",
+        "positions": "n",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": null,
+    "claim_quote": "h0_t = E[x_t] + P[t], a symbol table row plus a position table row",
+    "definitions": [
+     "D1",
+     "D2"
+    ],
+    "discharges": [
+     "A1"
+    ],
+    "id": "O2",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "conformance",
+      "id": "O2.a",
+      "sha256": "7e3e5a7cb0f30068dfb001103b2062836d51cc41655e88b528d2c818f3299ecc",
+      "spec": {
+       "equations": "def expected(params, sizes, tokens):\n    d = sizes['d']\n    addresses = [np.empty((0, d)), np.empty((0, d))]\n    contents = [np.empty((0, d)), np.empty((0, d))]\n    result = []\n    for position, token in enumerate(tokens):\n        h = np.asarray(params['E'][token]) + np.asarray(params['P'][position])\n        for layer in range(2):\n            a = np.asarray(params['Wa'][layer]) @ h\n            c = np.asarray(params['Wc'][layer]) @ h\n            p = np.asarray(params['Wp'][layer]) @ h\n            addresses[layer] = np.concatenate((addresses[layer], a.reshape(1, d)), axis=0)\n            contents[layer] = np.concatenate((contents[layer], c.reshape(1, d)), axis=0)\n            scores = (addresses[layer] @ p) / (d ** 0.5)\n            numerators = np.exp(scores)\n            weights = numerators / np.sum(numerators)\n            r = weights @ contents[layer]\n            g = h + np.asarray(params['Wo'][layer]) @ r\n            h = g + np.asarray(params['U'][layer]) @ np.maximum(0, np.asarray(params['V'][layer]) @ g)\n        output = int(np.argmax(h @ np.asarray(params['O'])))\n        state = {'A1': addresses[0].copy(), 'C1': contents[0].copy(), 'A2': addresses[1].copy(), 'C2': contents[1].copy(), 'h': h.copy(), 't': position + 1}\n        result.append({'state': state, 'output': output})\n    return result",
+       "points": [
+        {
+         "V": 16,
+         "d": 32,
+         "n": 16
+        },
+        {
+         "V": 32,
+         "d": 64,
+         "n": 64
+        },
+        {
+         "V": 32,
+         "d": 32,
+         "n": 128
+        }
+       ],
+       "reference": "O1.a",
+       "streams": [
+        "repeated",
+        "distinct",
+        "random"
+       ],
+       "tolerance": 1e-09
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "complexity.time_per_token",
+    "claim_quote": "Theta(t d + d^2)",
+    "definitions": [
+     "D1",
+     "D2",
+     "D6"
+    ],
+    "discharges": [],
+    "id": "O3",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O3.a",
+      "sha256": "577e28ed7b805339e9ec722baf6a0d8f3e9004a6fe5f44ec1da8b5a81732afa2",
+      "spec": "import Mathlib\n\ndef StepCost (t d v : ℕ) : ℝ := 12 * (d : ℝ)^2 + 4 * (t : ℝ) * d + 8 * t + 7 * d + (d : ℝ) * v + v - 3\n\ndef Claim : Prop := ∀ v : ℕ, 1 ≤ v → ∃ c C : ℝ, 0 < c ∧ 0 < C ∧ ∀ t d : ℕ, 1 ≤ t → 1 ≤ d → c * ((t : ℝ) * d + (d : ℝ)^2) ≤ StepCost t d v ∧ StepCost t d v ≤ C * ((t : ℝ) * d + (d : ℝ)^2)"
+     }
+    ]
+   },
+   {
+    "claim_id": "complexity.memory",
+    "claim_quote": "Theta(n d)",
+    "definitions": [
+     "D1",
+     "D2",
+     "D6"
+    ],
+    "discharges": [],
+    "id": "O4",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O4.a",
+      "sha256": "8990243e489d022a890e2a4b4fbfbe173ee1bfefd0302f9d749dc0daeda953bb",
+      "spec": "import Mathlib\n\ndef StoreWords (n d : ℕ) : ℝ := 4 * (n : ℝ) * d + d + 1\n\ndef Claim : Prop := ∃ c C : ℝ, 0 < c ∧ 0 < C ∧ ∀ n d : ℕ, 1 ≤ n → 1 ≤ d → c * ((n : ℝ) * d) ≤ StoreWords n d ∧ StoreWords n d ≤ C * ((n : ℝ) * d)"
+     }
+    ]
+   },
+   {
+    "claim_id": "complexity.total_sequence",
+    "claim_quote": "Theta(n^2 d + n d^2)",
+    "definitions": [
+     "D1",
+     "D2",
+     "D6"
+    ],
+    "discharges": [],
+    "id": "O5",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O5.a",
+      "sha256": "37fb681b63d2ccfe67aeef0a440f678b0c43d74cc0f37e6309b079e090f6971c",
+      "spec": "import Mathlib\n\ndef SequenceCost (n d v : ℕ) : ℝ := 2 * (d : ℝ) * n * ((n : ℝ) + 1) + 4 * (n : ℝ) * ((n : ℝ) + 1) + (n : ℝ) * (12 * (d : ℝ)^2 + 7 * d + (d : ℝ) * v + v - 3)\n\ndef Claim : Prop := ∀ v : ℕ, 1 ≤ v → ∃ c C : ℝ, 0 < c ∧ 0 < C ∧ ∀ n d : ℕ, 1 ≤ n → 1 ≤ d → c * ((n : ℝ)^2 * d + (n : ℝ) * (d : ℝ)^2) ≤ SequenceCost n d v ∧ SequenceCost n d v ≤ C * ((n : ℝ)^2 * d + (n : ℝ) * (d : ℝ)^2)"
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.copy",
+    "claim_quote": "construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O6",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O6.a",
+      "sha256": "19ea1740bc468c9f84cb697620341341902633507b27862f4b15dabc68daab50",
+      "spec": {
+       "count": 200,
+       "params": {
+        "D": 4
+       },
+       "sizes": [
+        8,
+        32,
+        64
+       ],
+       "state_words": "(8*L+1)*16*ceiling(log(2*L)/log(2))+1",
+       "task": "copy",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 4,
+        "tokens": "2*L",
+        "width": "16*ceiling(log(2*L)/log(2))"
+       },
+       "widths": {
+        "d": "16*ceiling(log(2*L)/log(2))",
+        "positions": "2*L",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.recall",
+    "claim_quote": "construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O7",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O7.a",
+      "sha256": "669c26d4c6c028a3ef3d4cf2c582adc2f86dac9c077e3e949af4476b2da5f02e",
+      "spec": {
+       "count": 200,
+       "params": {
+        "V": 16
+       },
+       "sizes": [
+        8,
+        32,
+        64
+       ],
+       "state_words": "4*(3*K+1)*64+65",
+       "task": "recall",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 4,
+        "tokens": "3*K+1",
+        "width": "64"
+       },
+       "widths": {
+        "d": "64",
+        "positions": "3*K+1",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.nesting",
+    "claim_quote": "construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O8",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O8.a",
+      "sha256": "6bd3d768b66bcfe49d43f0329cff5e9c2ae62cabac454905e77fb2c17385821e",
+      "spec": {
+       "count": 200,
+       "sizes": [
+        2,
+        4,
+        8,
+        16
+       ],
+       "state_words": "4*(4*depth)*64+65",
+       "task": "dyck",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 4,
+        "tokens": "4*depth",
+        "width": "64"
+       },
+       "widths": {
+        "d": "64",
+        "positions": "4*depth",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.composition",
+    "claim_quote": "construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4"
+    ],
+    "discharges": [],
+    "id": "O9",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O9.a",
+      "sha256": "e51a01c022ec8ac5d259a1a2442c5d853ea61d08f5f7c94e7dea048492f31bf4",
+      "spec": {
+       "count": 200,
+       "sizes": [
+        4,
+        16,
+        32
+       ],
+       "state_words": "4*(5*T+3)*64+65",
+       "task": "composition",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 4,
+        "tokens": "5*T+3",
+        "width": "64"
+       },
+       "widths": {
+        "d": "64",
+        "positions": "5*T+3",
+        "rounds": "2"
+       }
+      }
+     },
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O9.b",
+      "sha256": "3f8c8f7d2e7683b53fe0a704a84f940dc896cfae2ceb25d69893aa4358dfa1c0",
+      "spec": {
+       "count": 200,
+       "params": {
+        "values": 8
+       },
+       "sizes": [
+        1,
+        4,
+        8
+       ],
+       "state_words": "4*(4*hops+7)*64+65",
+       "task": "binding",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 4,
+        "tokens": "4*hops+7",
+        "width": "64"
+       },
+       "widths": {
+        "d": "64",
+        "positions": "4*hops+7",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.copy",
+    "claim_quote": "toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds; the case is one selected length L with 1 <= L <= 4: the ceiling bounds the choice, it is not a size grid (P2, not P4, covers every listed size)",
+    "definitions": [
+     "D1",
+     "D3",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O10",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O10.a",
+      "sha256": "75eadb6fdb097f6844a538978107938bcb7da1737ffdc5f57cb9f166e8d3ed03",
+      "spec": {
+       "examples": 3000,
+       "params": {
+        "D": 4
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 4,
+       "task": "copy",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "64",
+        "positions": "2*L",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.recall",
+    "claim_quote": "toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds; the case is one selected pair count K with 1 <= K <= 4: the ceiling bounds the choice, it is not a size grid (P2, not P4, covers every listed size)",
+    "definitions": [
+     "D1",
+     "D3",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O11",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O11.a",
+      "sha256": "aa9b0c3fb106e2be33456cf8d2823f3d5409666a7c6761ff8903a0d0a941317a",
+      "spec": {
+       "examples": 3000,
+       "params": {
+        "V": 16,
+        "n_keys": 16
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 4,
+       "task": "recall",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "64",
+        "positions": "3*K+1",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.nesting",
+    "claim_quote": "toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds; the case is one selected nesting depth with 1 <= depth <= 2: the ceiling bounds the choice, it is not a size grid (P2, not P4, covers every listed size)",
+    "definitions": [
+     "D1",
+     "D3",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O12",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O12.a",
+      "sha256": "0ee2d84e6bd351ed55bd3cebc0b351f23d632f1386c1b2f78ad2470495fe2424",
+      "spec": {
+       "examples": 1500,
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 2,
+       "task": "dyck",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "64",
+        "positions": "4*depth",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.composition",
+    "claim_quote": "toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds; the case is one selected table size T with 1 <= T <= 4, or one selected chain length with 1 <= hops <= 2: the ceiling bounds the choice, it is not a size grid (P2, not P4, covers every listed size)",
+    "definitions": [
+     "D1",
+     "D3",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O13",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O13.a",
+      "sha256": "49e78e80a7d8529d636df54cc72ca36f22041bc872df776e2d2e6ea090966e9c",
+      "spec": {
+       "examples": 4000,
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 4,
+       "task": "composition",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "64",
+        "positions": "5*T+3",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "sample_efficiency.prediction",
+    "claim_quote": "From random weights, gradient descent on 3000 copy examples at L = 4 over 4 symbols reaches per-string accuracy 0.99.",
+    "definitions": [
+     "D1",
+     "D3",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O14",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O14.a",
+      "sha256": "75eadb6fdb097f6844a538978107938bcb7da1737ffdc5f57cb9f166e8d3ed03",
+      "spec": {
+       "examples": 3000,
+       "params": {
+        "D": 4
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 4,
+       "task": "copy",
+       "test_count": 500,
+       "threshold": 0.99,
+       "widths": {
+        "d": "64",
+        "positions": "2*L",
+        "rounds": "2"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P5",
+    "claim_quote": "information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws",
+    "definitions": [
+     "D1",
+     "D3",
+     "D4",
+     "D5",
+     "D7"
+    ],
+    "discharges": [],
+    "id": "O15",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "conservation",
+      "id": "O15.a",
+      "sha256": "f0e2a9320b6373d1fb4ce34e6b228b0f5eead56b05a8fa47bdf33afa5965e637",
+      "spec": {
+       "copy": [
+        {
+         "D": 4,
+         "L": 64,
+         "accuracy": 1.0,
+         "state_bits": 3677248
+        }
+       ],
+       "dyck": [
+        {
+         "accuracy": 0.99,
+         "depth": 16,
+         "state_bits": 1052736
+        }
+       ],
+       "recall": [
+        {
+         "K": 64,
+         "V": 16,
+         "accuracy": 1.0,
+         "state_bits": 3166272
+        }
+       ],
+       "sample": [
+        {
+         "bits_per_example": 8,
+         "examples": 3000,
+         "hypothesis_class": {
+          "definition": "All selectors s:{0,1,2,3}->{0,1,2,3}, answering source[s(i)] at output index i; target s(i)=i.",
+          "log2_size": 8,
+          "size_justification": "Four independent choices at each of four indices give 4^4=256 rules; distinct selectors are distinguished by a source string assigning different symbols to their differing selected positions. No target selector is hand-set."
+         },
+         "log2_H": 8,
+         "prior_bits": 0,
+         "task": "copy"
+        },
+        {
+         "bits_per_example": 16,
+         "examples": 3000,
+         "hypothesis_class": {
+          "definition": "Sort the four distinct stored keys only to name ranks k_i and associated values v_i; all selectors s on the four ranks answer query k_i with v_s(i), with identity selector the target.",
+          "log2_size": 8,
+          "size_justification": "Four choices at each of four ranks give 4^4=256; distinct selectors are distinguished by assigning different values to their differing selected ranks. Sorting names hypotheses and is not supplied as a runtime oracle."
+         },
+         "log2_H": 8,
+         "prior_bits": 0,
+         "task": "recall"
+        },
+        {
+         "bits_per_example": 7,
+         "examples": 1500,
+         "hypothesis_class": {
+          "definition": "All maps from the nonempty bottom-to-top contexts (0),(1),(0,0),(0,1),(1,0),(1,1) to the two closer tokens; the target returns the closer matching the top.",
+          "log2_size": 6,
+          "size_justification": "Two choices for each of six contexts give 2^6=64; every context occurs in a valid depth-two prefix and distinguishes differing maps. The target map is not hand-set."
+         },
+         "log2_H": 6,
+         "prior_bits": 0,
+         "task": "dyck"
+        },
+        {
+         "bits_per_example": 8,
+         "examples": 4000,
+         "hypothesis_class": {
+          "definition": "All selectors s on four arguments, answering f(g(s(x))) for input tables f,g and request x; identity selector is the target.",
+          "log2_size": 8,
+          "size_justification": "Four choices for each of four arguments give 4^4=256; tables that separate differing selected arguments distinguish any two selectors. No selector member is hand-set."
+         },
+         "log2_H": 8,
+         "prior_bits": 0,
+         "task": "composition"
+        }
+       ],
+       "state_bits": 3677248
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P3",
+    "claim_quote": "derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2",
+    "definitions": [
+     "D1",
+     "D2",
+     "D8"
+    ],
+    "discharges": [],
+    "id": "O16",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O16.a",
+      "sha256": "0161c3069297c332f800cc8454977b80f1215036d16ce7ddb8e2c7ea68c378ed",
+      "spec": "import Mathlib\n\ndef ValidPositionLookups (rows tokens : ℕ) : Prop := ∃ lookup : Fin tokens → Fin rows, ∀ t : Fin tokens, (lookup t).val = t.val\n\ndef Claim : Prop := (∀ rows tokens : ℕ, ValidPositionLookups rows tokens ↔ tokens ≤ rows) ∧ ¬ ValidPositionLookups 4096 4097"
+     }
+    ]
+   }
+  ],
+  "premises": [
+   {
+    "added_by": "statement_fixer",
+    "citation": null,
+    "does_work": true,
+    "id": "A1",
+    "kind": "other",
+    "measurement_plan": {
+     "accept_if": "All states agree within 1e-9 and all predicted token ids agree.",
+     "data": "The conformance obligation's repeated, distinct and random streams at its listed size points.",
+     "measure": "Agreement of retained state and predictions after every token.",
+     "procedure": "Run the counted reference and the independently specified equations on identical parameters and compare every retained array, counter and prediction."
+    },
+    "settle_at": "M",
+    "subject": "frozen_definitions",
+    "testable_by": "code",
+    "text": "The counted reference implements the card's equations with the product spelling, parameter names and retained state specified in D1 and D2.",
+    "why_needed": "The P1 counts describe the mechanism only if the counted implementation executes its equations rather than another program with matching counts."
+   }
+  ],
+  "profile": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 64
+   },
+   "limits": [
+    {
+     "resources": "For next-symbol inference over arbitrary-length binary streams with the P1 reference's fixed 4096-row positional table, a stream of 4097 tokens requires at least 4097 positional rows under literal P[t] indexing; changing width or round count cannot provide the missing row.",
+     "size": null,
+     "task": "other",
+     "why": "The 4097th token has zero-based position 4096, outside Fin 4096. O16 states exactly when index-preserving positional lookups exist. Consequently the required embed operation is undefined for every such stream, independently of all weight values. This is a positional-resource limit, not a parity lower bound; all P2 streams fit within their separately declared positional tables."
+    }
+   ],
+   "slots": [
+    "P1",
+    "P2.copy",
+    "P2.recall",
+    "P2.nesting",
+    "P2.composition",
+    "P3",
+    "P4.copy",
+    "P4.recall",
+    "P4.nesting",
+    "P4.composition",
+    "P5"
+   ],
+   "version": "phase4-2026-10-13"
+  }
+ },
+ "match_premises": [
+  {
+   "implies": [
+    "P1"
+   ],
+   "premise_id": "A1",
+   "why": "A1 asserts the reference code matches D1/D2, which is exactly what P1 requires to establish its cost formulas."
+  }
+ ],
+ "provenance": {
+  "challenger_calls": [
+   "call-f8f450461923",
+   "call-fa5b035cadbd"
+  ],
+  "compare_call": "call-fcf056a83ee2",
+  "note": "stage C of card k1, run 2, Phase 4 calibration 2026-10-14 (PID 53860); sanitized extract for FIX-9 tests (results/phase4-20261013T073748Z/FIX-9.md)",
+  "run": "runs/calibration-math-20261014T121552Z/k1-run2",
+  "verdict": "card-ca11b001-v2-1cdfe2.json"
+ },
+ "recorded_c": {
+  "circularity": [
+   {
+    "circular": true,
+    "implies": [
+     "P1"
+    ],
+    "premise_id": "A1",
+    "supports": [
+     "P1"
+    ],
+    "why": "A1 asserts the reference code matches D1/D2, which is exactly what P1 requires to establish its cost formulas."
+   }
+  ],
+  "claims": {
+   "P1": {
+    "circular_premises": [
+     "A1"
+    ],
+    "match": "matched",
+    "open_premises": [],
+    "status": "circular",
+    "tier": "executed"
+   },
+   "P2.composition": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   },
+   "P2.copy": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   },
+   "P2.nesting": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   },
+   "P2.recall": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   },
+   "P3": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "proven",
+    "tier": "lean"
+   },
+   "P4.composition": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "failed",
+    "tier": "argued"
+   },
+   "P4.copy": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   },
+   "P4.nesting": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   },
+   "P4.recall": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   },
+   "P5": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   },
+   "capability.1": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "not_formalized",
+    "tier": "argued"
+   },
+   "capability.2": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "not_formalized",
+    "tier": "argued"
+   },
+   "capability.3": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "not_formalized",
+    "tier": "argued"
+   },
+   "capability.4": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "not_formalized",
+    "tier": "argued"
+   },
+   "capability.5": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "not_formalized",
+    "tier": "argued"
+   },
+   "complexity.memory": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "proven",
+    "tier": "lean"
+   },
+   "complexity.time_per_token": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "proven",
+    "tier": "lean"
+   },
+   "complexity.total_sequence": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "proven",
+    "tier": "lean"
+   },
+   "sample_efficiency.prediction": {
+    "circular_premises": [],
+    "match": "matched",
+    "open_premises": [],
+    "status": "observed",
+    "tier": "executed"
+   }
+  },
+  "kill_codes": [
+   "circular:A1",
+   "magic_x_missing:A1",
+   "obligation_failed:P4.composition"
+  ],
+  "ledger": [
+   {
+    "added_by": "statement_fixer",
+    "basis": "restates or implies a claim it supports (statement-match role); the claim fails",
+    "citation": null,
+    "does_work": true,
+    "evidence": "restates or implies P1, which it supports: A1 asserts the reference code matches D1/D2, which is exactly what P1 requires to establish its cost formulas.",
+    "id": "A1",
+    "kind": "other",
+    "measurement_plan": {
+     "accept_if": "All states agree within 1e-9 and all predicted token ids agree.",
+     "data": "The conformance obligation's repeated, distinct and random streams at its listed size points.",
+     "measure": "Agreement of retained state and predictions after every token.",
+     "procedure": "Run the counted reference and the independently specified equations on identical parameters and compare every retained array, counter and prediction."
+    },
+    "settle_at": "M",
+    "status": "circular",
+    "subject": "frozen_definitions",
+    "testable_by": "code",
+    "text": "The counted reference implements the card's equations with the product spelling, parameter names and retained state specified in D1 and D2.",
+    "used_by": [
+     "O1"
+    ],
+    "why_needed": "The P1 counts describe the mechanism only if the counted implementation executes its equations rather than another program with matching counts."
+   }
+  ],
+  "magic_x": [
+   {
+    "artifact": null,
+    "cost_in_p1": true,
+    "evidence": "no construction task fits the card's claimed advantage: A1 is implementation conformance, not a task oracle or information source. The constant feature represents the asserted conformance flag; no copy, recall, dyck, composition or binding accuracy claim follows from that flag alone. Its substantive test is O2.a, not a baseline task.",
+    "missing": true,
+    "origin": "original",
+    "premise_id": "A1",
+    "ran": false,
+    "required": true,
+    "status": null,
+    "testable_by": "code"
+   }
+  ],
+  "statement_match": [
+   {
+    "claim_id": "P1",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O1.a"
+   },
+   {
+    "claim_id": null,
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O2.a"
+   },
+   {
+    "claim_id": "complexity.time_per_token",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O3.a"
+   },
+   {
+    "claim_id": "complexity.memory",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O4.a"
+   },
+   {
+    "claim_id": "complexity.total_sequence",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O5.a"
+   },
+   {
+    "claim_id": "P2.copy",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O6.a"
+   },
+   {
+    "claim_id": "P2.recall",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O7.a"
+   },
+   {
+    "claim_id": "P2.nesting",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O8.a"
+   },
+   {
+    "claim_id": "P2.composition",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O9.a"
+   },
+   {
+    "claim_id": "P2.composition",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O9.b"
+   },
+   {
+    "claim_id": "P4.copy",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O10.a"
+   },
+   {
+    "claim_id": "P4.recall",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O11.a"
+   },
+   {
+    "claim_id": "P4.nesting",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O12.a"
+   },
+   {
+    "claim_id": "P4.composition",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O13.a"
+   },
+   {
+    "claim_id": "sample_efficiency.prediction",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O14.a"
+   },
+   {
+    "claim_id": "P5",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O15.a"
+   },
+   {
+    "claim_id": "P3",
+    "disputed": [],
+    "match": "matched",
+    "reasons": [],
+    "statement_id": "O16.a"
+   }
+  ],
+  "verdict": "fail"
+ }
+}

@@ -1,0 +1,86 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Graph of symbol transitions with edge reads",
+  "summary": "Each pair of consecutive symbols adds an edge to a graph; a probe follows the edge out of its node to name the stored successor.",
+  "core_idea": "Add an edge per consecutive pair and read the successor along the probe's edge.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "frelling",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Graph whose edges join each symbol to the symbol that followed it."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "frelling_t = frelling_(t-1) with edge (x_(t-1), x_t)",
+        "plain": "frelling_t = frelling_(t-1) with edge (x_(t-1), x_t)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = successor along edge of q_t",
+        "plain": "y_t = successor along edge of q_t"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is trained.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(n)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "One stored pair is read back exactly."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "single pair recall",
+        "prediction": "Exact recall of the stored value at its own key, along its edge."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Transition graphs are common.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A stored successor is read back wrongly.",
+    "An edge disappears."
+  ],
+  "toy_example": {
+    "description": "Edges of a short sequence.",
+    "python": "import json\nedges = {}\nseq = 'abca'\nfor u, v in zip(seq, seq[1:]):\n    edges[u] = v\nprint(json.dumps({'after_a': edges['a'], 'edges': len(edges)}))\n",
+    "expected": {
+      "after_a": "b",
+      "edges": 3
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

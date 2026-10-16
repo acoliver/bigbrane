@@ -1,0 +1,1355 @@
+{
+ "attempts": {
+  "O13.a": [
+   {
+    "attempt": 1,
+    "counterexample": {
+     "accuracy": 0.1685,
+     "control_accuracy": 0.137,
+     "examples": 4000,
+     "first_error": {
+      "expected": 8,
+      "instance": 0,
+      "position": 20,
+      "predicted": 12
+     },
+     "reason": "below_threshold",
+     "seed": 0,
+     "size": 4,
+     "task": "composition"
+    },
+    "decided": true,
+    "evidence": "composition at T=4 from m=4000 examples: seed 0 accuracy 0.1685 (control 0.1370), seed 1 accuracy 0.0335 (control 0.0180), seed 2 accuracy 0.0510 (control 0.0000); threshold 0.99; observed on the listed sizes: composition T=4 m=4000 seed=0, composition T=4 m=4000 seed=1, composition T=4 m=4000 seed=2",
+    "output_tail": ", \"empty_control_accuracy\": 0.018, \"first_error\": {\"expected\": 9, \"instance\": 0, \"position\": 19, \"predicted\": 6}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 1, \"state_peak_words\": 6100, \"wrong_control_accuracy\": 0.0335}, {\"accuracy\": 0.051, \"control_accuracy\": 0.0, \"empty_control_accuracy\": 0.0, \"first_error\": {\"expected\": 9, \"instance\": 0, \"position\": 19, \"predicted\": 7}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 2, \"state_peak_words\": 6100, \"wrong_control_accuracy\": 0.051}], \"size\": 4, \"status\": \"violated\", \"task\": \"composition\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.1685,
+      "control_accuracy": 0.137,
+      "empty_control_accuracy": 0.137,
+      "first_error": {
+       "expected": 8,
+       "instance": 0,
+       "position": 20,
+       "predicted": 12
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 0,
+      "state_peak_words": 6100,
+      "wrong_control_accuracy": 0.1695
+     },
+     {
+      "accuracy": 0.0335,
+      "control_accuracy": 0.018,
+      "empty_control_accuracy": 0.018,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 6
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 1,
+      "state_peak_words": 6100,
+      "wrong_control_accuracy": 0.0335
+     },
+     {
+      "accuracy": 0.051,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 7
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 2,
+      "state_peak_words": 6100,
+      "wrong_control_accuracy": 0.051
+     }
+    ],
+    "source": "def vocab_size(layout, examples):\n    m = 0\n    T = 4\n    if isinstance(layout, dict) and isinstance(layout.get('T', 4), int):\n        T = layout.get('T', 4)\n    if isinstance(layout, dict):\n        for k in layout:\n            v = layout[k]\n            if isinstance(v, int) and not isinstance(v, bool):\n                m = max(m, v)\n                if k.endswith('base'):\n                    m = max(m, v + T)\n            elif isinstance(v, (list, tuple)):\n                for u in v:\n                    if isinstance(u, int) and not isinstance(u, bool):\n                        m = max(m, u)\n    for ex in examples:\n        for tk in ex['tokens']:\n            m = max(m, int(tk))\n        for q in ex['queries']:\n            m = max(m, int(q[1]))\n    return m + 1\n\n\ndef mm(x, W):\n    s = x.shape\n    return (x.reshape(-1, s[-1]) @ W).reshape(s[:-1] + (W.shape[1],))\n\n\ndef fl(x):\n    return x.reshape(-1, x.shape[-1])\n\n\ndef learn(layout, examples, seed):\n    d = 16\n    rng = np.random.default_rng(seed)\n    V = vocab_size(layout, examples)\n    maxlen = 0\n    for ex in examples:\n        maxlen = max(maxlen, len(ex['tokens']))\n    Np = max(maxlen, 64)\n    params = {'d': d, 'V': V, 'Np': Np}\n    params['E'] = rng.normal(0.0, 0.1, (V, d))\n    params['P'] = rng.normal(0.0, 0.1, (Np, d))\n    names = ['Wa', 'Wc', 'Wp', 'Wo', 'U', 'Vm']\n    for l in range(2):\n        for nm in names:\n            params[nm + '%d' % l if False else nm + ('0' if l == 0 else '1')] = rng.normal(0.0, 0.1, (d, d))\n    params['O'] = rng.normal(0.0, 0.1, (d, V))\n    if len(examples) == 0:\n        return params\n    B = len(examples)\n    N = maxlen\n    X = np.zeros((B, N), dtype=np.int64)\n    Q = np.zeros((B, N))\n    Y = np.zeros((B, N), dtype=np.int64)\n    for b, ex in enumerate(examples):\n        tk = ex['tokens']\n        X[b, :len(tk)] = np.array(tk, dtype=np.int64)\n        for q in ex['queries']:\n            pos = int(q[0])\n            if 0 <= pos < N:\n                Q[b, pos] = 1.0\n                Y[b, pos] = int(q[1])\n    nq = max(Q.sum(), 1.0)\n    BN = B * N\n    Xf = X.reshape(-1)\n    Yf = Y.reshape(-1)\n    Qf = Q.reshape(-1)\n    OH = np.zeros((BN, V))\n    OH[np.arange(BN), Xf] = 1.0\n    sq = np.sqrt(d)\n    tri = np.tril(np.ones((N, N)))\n    maskadd = np.where(tri > 0, 0.0, -1e30)[None]\n    lr = 0.01\n    sfx = ['0', '1']\n    for epoch in range(50):\n        h = params['E'][X] + params['P'][:N][None]\n        caches = []\n        for l in range(2):\n            s = sfx[l]\n            Wa = params['Wa' + s]; Wc = params['Wc' + s]; Wp = params['Wp' + s]\n            Wo = params['Wo' + s]; U = params['U' + s]; Vm = params['Vm' + s]\n            a = mm(h, Wa.T); c = mm(h, Wc.T); p = mm(h, Wp.T)\n            S = np.matmul(p, a.transpose(0, 2, 1)) / sq + maskadd\n            S = S - S.max(-1, keepdims=True)\n            A = np.exp(S)\n            A = A / A.sum(-1, keepdims=True)\n            r = np.matmul(A, c)\n            g = h + mm(r, Wo.T)\n            z = mm(g, Vm.T)\n            m = np.maximum(z, 0.0)\n            hn = g + mm(m, U.T)\n            caches.append((h, a, c, p, A, r, g, z, m))\n            h = hn\n        h2f = fl(h)\n        logits = h2f @ params['O']\n        logits = logits - logits.max(-1, keepdims=True)\n        pr = np.exp(logits)\n        pr = pr / pr.sum(-1, keepdims=True)\n        pr[np.arange(BN), Yf] -= 1.0\n        dlog = pr * (Qf[:, None] / nq)\n        grads = {}\n        grads['O'] = h2f.T @ dlog\n        dh = (dlog @ params['O'].T).reshape(B, N, d)\n        for l in [1, 0]:\n            s = sfx[l]\n            Wa = params['Wa' + s]; Wc = params['Wc' + s]; Wp = params['Wp' + s]\n            Wo = params['Wo' + s]; U = params['U' + s]; Vm = params['Vm' + s]\n            hp, a, c, p, A, r, g, z, m = caches[l]\n            grads['U' + s] = fl(dh).T @ fl(m)\n            dm = mm(dh, U)\n            dz = dm * (z > 0)\n            grads['Vm' + s] = fl(dz).T @ fl(g)\n            dg = dh + mm(dz, Vm)\n            grads['Wo' + s] = fl(dg).T @ fl(r)\n            dr = mm(dg, Wo)\n            dA = np.matmul(dr, c.transpose(0, 2, 1))\n            dc = np.matmul(A.transpose(0, 2, 1), dr)\n            dS = A * (dA - (dA * A).sum(-1, keepdims=True))\n            dp = np.matmul(dS, a) / sq\n            da = np.matmul(dS.transpose(0, 2, 1), p) / sq\n            grads['Wa' + s] = fl(da).T @ fl(hp)\n            grads['Wc' + s] = fl(dc).T @ fl(hp)\n            grads['Wp' + s] = fl(dp).T @ fl(hp)\n            dh = dg + mm(da, Wa) + mm(dc, Wc) + mm(dp, Wp)\n        grads['E'] = OH.T @ fl(dh)\n        dP = np.zeros_like(params['P'])\n        dP[:N] = dh.sum(0)\n        grads['P'] = dP\n        for k in grads:\n            params[k] = params[k] - lr * grads[k]\n    return params\n\n\ndef init(layout, params):\n    d = params['d']\n    return {'params': params, 't': 0, 'A': [np.zeros((0, d)), np.zeros((0, d))], 'C': [np.zeros((0, d)), np.zeros((0, d))], 'h': np.zeros(d)}\n\n\ndef update(state, token):\n    pr = state['params']\n    d = pr['d']\n    V = pr['V']\n    sq = np.sqrt(d)\n    tok = min(max(int(token), 0), V - 1)\n    t = state['t']\n    h = pr['E'][tok] + pr['P'][min(t, pr['Np'] - 1)]\n    sfx = ['0', '1']\n    As = []\n    Cs = []\n    for l in range(2):\n        s = sfx[l]\n        a = pr['Wa' + s] @ h\n        c = pr['Wc' + s] @ h\n        p = pr['Wp' + s] @ h\n        Al = np.vstack([state['A'][l], a[None]])\n        Cl = np.vstack([state['C'][l], c[None]])\n        sc = Al @ p / sq\n        sc = sc - sc.max()\n        w = np.exp(sc)\n        w = w / w.sum()\n        r = w @ Cl\n        g = h + pr['Wo' + s] @ r\n        h = g + pr['U' + s] @ np.maximum(pr['Vm' + s] @ g, 0.0)\n        As.append(Al)\n        Cs.append(Cl)\n    return {'params': pr, 't': t + 1, 'A': As, 'C': Cs, 'h': h}\n\n\ndef predict(state):\n    logits = state['h'] @ state['params']['O']\n    return int(np.argmax(logits))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 2,
+    "counterexample": {
+     "accuracy": 0.042,
+     "control_accuracy": 0.029,
+     "examples": 4000,
+     "first_error": {
+      "expected": 9,
+      "instance": 0,
+      "position": 19,
+      "predicted": 5
+     },
+     "reason": "below_threshold",
+     "seed": 0,
+     "size": 4,
+     "task": "composition"
+    },
+    "decided": true,
+    "evidence": "composition at T=4 from m=4000 examples: seed 0 accuracy 0.0420 (control 0.0290), seed 1 accuracy 0.0930 (control 0.0700), seed 2 accuracy 0.0640 (control 0.0595); threshold 0.99; observed on the listed sizes: composition T=4 m=4000 seed=0, composition T=4 m=4000 seed=1, composition T=4 m=4000 seed=2",
+    "output_tail": "ty_control_accuracy\": 0.07, \"first_error\": {\"expected\": 9, \"instance\": 0, \"position\": 19, \"predicted\": 13}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 1, \"state_peak_words\": 7124, \"wrong_control_accuracy\": 0.093}, {\"accuracy\": 0.064, \"control_accuracy\": 0.0595, \"empty_control_accuracy\": 0.0595, \"first_error\": {\"expected\": 9, \"instance\": 0, \"position\": 19, \"predicted\": 7}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 2, \"state_peak_words\": 7124, \"wrong_control_accuracy\": 0.0635}], \"size\": 4, \"status\": \"violated\", \"task\": \"composition\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.042,
+      "control_accuracy": 0.029,
+      "empty_control_accuracy": 0.029,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 5
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 0,
+      "state_peak_words": 7124,
+      "wrong_control_accuracy": 0.04
+     },
+     {
+      "accuracy": 0.093,
+      "control_accuracy": 0.07,
+      "empty_control_accuracy": 0.07,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 13
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 1,
+      "state_peak_words": 7124,
+      "wrong_control_accuracy": 0.093
+     },
+     {
+      "accuracy": 0.064,
+      "control_accuracy": 0.0595,
+      "empty_control_accuracy": 0.0595,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 7
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 2,
+      "state_peak_words": 7124,
+      "wrong_control_accuracy": 0.0635
+     }
+    ],
+    "source": "def learn(layout, examples, seed):\n    d = 16\n    ints = []\n    for k in layout:\n        v = layout[k]\n        if isinstance(v, int) and not isinstance(v, bool):\n            ints.append(v)\n        elif isinstance(v, (list, tuple)):\n            for u in v:\n                if isinstance(u, int) and not isinstance(u, bool):\n                    ints.append(u)\n    T = int(layout.get('T', 4)) if 'T' in layout else 4\n    for kb in ('x_base', 'y_base', 'z_base'):\n        if kb in layout:\n            ints.append(int(layout[kb]) + T)\n    Lmax = 1\n    for ex in examples:\n        Lmax = max(Lmax, len(ex['tokens']))\n        for t in ex['tokens']:\n            ints.append(int(t))\n        for q in ex['queries']:\n            ints.append(int(q[1]))\n    Vs = max(ints) + 1 if len(ints) > 0 else 2\n    npos = max(Lmax, 64) + 64\n    rng = np.random.default_rng(seed)\n    def nrm(a, b):\n        return rng.normal(0.0, 0.1, size=(a, b))\n    prm = {'E': nrm(Vs, d), 'P': nrm(npos, d), 'O': nrm(d, Vs), 'R': []}\n    for l in range(2):\n        prm['R'].append({'Wa': nrm(d, d), 'Wc': nrm(d, d), 'Wp': nrm(d, d), 'Wo': nrm(d, d), 'U': nrm(d, d), 'Vm': nrm(d, d)})\n    prm['d'] = d\n    prm['V'] = Vs\n    prm['npos'] = npos\n    if len(examples) == 0:\n        return prm\n    N = len(examples)\n    L = Lmax\n    X = np.zeros((N, L), dtype=np.int64)\n    qb = []\n    qt = []\n    qy = []\n    for i, ex in enumerate(examples):\n        tk = ex['tokens']\n        X[i, :len(tk)] = np.array(tk, dtype=np.int64)\n        for q in ex['queries']:\n            p = int(q[0])\n            if p >= len(tk):\n                p = len(tk) - 1\n            if p < 0:\n                p = 0\n            qb.append(i)\n            qt.append(p)\n            qy.append(int(q[1]))\n    if len(qb) == 0:\n        return prm\n    qb = np.array(qb, dtype=np.int64)\n    qt = np.array(qt, dtype=np.int64)\n    qy = np.array(qy, dtype=np.int64)\n    M = len(qy)\n    Y1 = np.zeros((M, Vs))\n    Y1[np.arange(M), qy] = 1.0\n    OH = np.zeros((N * L, Vs))\n    OH[np.arange(N * L), X.ravel()] = 1.0\n    mask = np.tril(np.ones((L, L), dtype=bool))[None]\n    sq = np.sqrt(d)\n    lr = 0.01\n    def fl(a):\n        return a.reshape(-1, a.shape[-1])\n    for ep in range(50):\n        h = prm['E'][X] + prm['P'][:L][None]\n        caches = []\n        for l in range(2):\n            r = prm['R'][l]\n            A = h @ r['Wa']\n            C = h @ r['Wc']\n            Q = h @ r['Wp']\n            S = (Q @ A.transpose(0, 2, 1)) / sq\n            S = np.where(mask, S, -1e30)\n            S = S - S.max(-1, keepdims=True)\n            W = np.exp(S)\n            W = W / W.sum(-1, keepdims=True)\n            Rr = W @ C\n            g = h + Rr @ r['Wo']\n            z = g @ r['Vm']\n            rz = np.maximum(z, 0.0)\n            hn = g + rz @ r['U']\n            caches.append((h, A, C, Q, W, Rr, g, z, rz))\n            h = hn\n        Hq = h[qb, qt]\n        lg = Hq @ prm['O']\n        lg = lg - lg.max(-1, keepdims=True)\n        pr = np.exp(lg)\n        pr = pr / pr.sum(-1, keepdims=True)\n        dl = (pr - Y1) / M\n        gO = Hq.T @ dl\n        dHq = dl @ prm['O'].T\n        dh = np.zeros((N, L, d))\n        np.add.at(dh, (qb, qt), dHq)\n        grads = [None, None]\n        for l in (1, 0):\n            r = prm['R'][l]\n            h0, A, C, Q, W, Rr, g, z, rz = caches[l]\n            gU = fl(rz).T @ fl(dh)\n            dr = dh @ r['U'].T\n            dz = dr * (z > 0)\n            gV = fl(g).T @ fl(dz)\n            dg = dh + dz @ r['Vm'].T\n            gWo = fl(Rr).T @ fl(dg)\n            dR = dg @ r['Wo'].T\n            dW = dR @ C.transpose(0, 2, 1)\n            dC = W.transpose(0, 2, 1) @ dR\n            dS = W * (dW - (dW * W).sum(-1, keepdims=True))\n            dQ = (dS @ A) / sq\n            dA = (dS.transpose(0, 2, 1) @ Q) / sq\n            fh = fl(h0)\n            gWa = fh.T @ fl(dA)\n            gWc = fh.T @ fl(dC)\n            gWp = fh.T @ fl(dQ)\n            dhp = dg + dQ @ r['Wp'].T + dA @ r['Wa'].T + dC @ r['Wc'].T\n            grads[l] = {'Wa': gWa, 'Wc': gWc, 'Wp': gWp, 'Wo': gWo, 'U': gU, 'Vm': gV}\n            dh = dhp\n        gE = OH.T @ fl(dh)\n        gP = dh.sum(0)\n        prm['O'] = prm['O'] - lr * gO\n        prm['E'] = prm['E'] - lr * gE\n        Pn = prm['P'].copy()\n        Pn[:L] = Pn[:L] - lr * gP\n        prm['P'] = Pn\n        for l in range(2):\n            for k in grads[l]:\n                prm['R'][l][k] = prm['R'][l][k] - lr * grads[l][k]\n    return prm\n\n\ndef init(layout, params):\n    return {'prm': params, 't': 0, 'A': [[], []], 'C': [[], []], 'h': np.zeros(params['d'])}\n\n\ndef update(state, token):\n    prm = state['prm']\n    d = prm['d']\n    sq = np.sqrt(d)\n    x = int(token)\n    if x >= prm['V']:\n        x = prm['V'] - 1\n    if x < 0:\n        x = 0\n    t = state['t']\n    h = prm['E'][x] + prm['P'][min(t, prm['npos'] - 1)]\n    for l in range(2):\n        r = prm['R'][l]\n        a = h @ r['Wa']\n        c = h @ r['Wc']\n        p = h @ r['Wp']\n        state['A'][l].append(a)\n        state['C'][l].append(c)\n        Am = np.array(state['A'][l])\n        Cm = np.array(state['C'][l])\n        s = (Am @ p) / sq\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        rv = w @ Cm\n        g = h + rv @ r['Wo']\n        h = g + np.maximum(g @ r['Vm'], 0.0) @ r['U']\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\n\ndef predict(state):\n    prm = state['prm']\n    return int(np.argmax(state['h'] @ prm['O']))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 3,
+    "counterexample": null,
+    "decided": false,
+    "evidence": "timing probe on 300 examples: learner failed at seed 0: NameError: name 'str' is not defined",
+    "output_tail": "",
+    "prover_fault": true,
+    "reasons": [
+     "timing probe on 300 examples: learner failed at seed 0: NameError: name 'str' is not defined"
+    ],
+    "results": null,
+    "source": "def vocab_size(layout, examples):\n    m = 0\n    T = 0\n    for k in layout:\n        v = layout[k]\n        vals = v if isinstance(v, (list, tuple)) else [v]\n        for u in vals:\n            if isinstance(u, bool):\n                continue\n            try:\n                m = max(m, int(u))\n            except:\n                pass\n    try:\n        T = int(layout.get('T', 0))\n    except:\n        T = 0\n    for k in ('x_base', 'y_base', 'z_base', 'value_base'):\n        if k in layout:\n            try:\n                m = max(m, int(layout[k]) + T)\n            except:\n                pass\n    for ex in examples:\n        for tok in ex['tokens']:\n            m = max(m, int(tok))\n        for q in ex['queries']:\n            m = max(m, int(q[1]))\n    return m + 1\n\n\ndef learn(layout, examples, seed):\n    d = 16\n    V = vocab_size(layout, examples)\n    maxlen = 0\n    for ex in examples:\n        maxlen = max(maxlen, len(ex['tokens']))\n    NP = max(512, maxlen + 1)\n    rng = np.random.default_rng(seed)\n    s = 0.1\n    prm = {'E': rng.normal(0.0, s, (V, d)), 'P': rng.normal(0.0, s, (NP, d))}\n    for l in range(2):\n        for nm in ('Wa', 'Wc', 'Wp', 'Wo', 'U', 'Vm'):\n            prm[nm + str(l)] = rng.normal(0.0, s, (d, d))\n    prm['O'] = rng.normal(0.0, s, (d, V))\n    params = {'d': d, 'V': V, 'w': prm}\n    if len(examples) == 0:\n        return params\n    B = len(examples)\n    n = maxlen\n    X = np.zeros((B, n), dtype=np.int64)\n    qb = []\n    qp = []\n    qa = []\n    for b in range(B):\n        tk = examples[b]['tokens']\n        X[b, :len(tk)] = np.array(tk, dtype=np.int64)\n        for q in examples[b]['queries']:\n            qb.append(b)\n            qp.append(int(q[0]))\n            qa.append(int(q[1]))\n    qb = np.array(qb, dtype=np.int64)\n    qp = np.array(qp, dtype=np.int64)\n    qa = np.array(qa, dtype=np.int64)\n    Nq = len(qa)\n    if Nq == 0:\n        return params\n    OH = np.eye(V)[X.reshape(-1)]\n    Y = np.zeros((Nq, V))\n    Y[np.arange(Nq), qa] = 1.0\n    mask = np.triu(np.ones((n, n)), 1) * (-1e30)\n    sd = np.sqrt(d)\n    lr = 0.01\n    for epoch in range(50):\n        w = prm\n        H = w['E'][X] + w['P'][:n][None, :, :]\n        H0 = H\n        cache = []\n        for l in range(2):\n            L = str(l)\n            A = H @ w['Wa' + L]\n            C = H @ w['Wc' + L]\n            Q = H @ w['Wp' + L]\n            S = (Q @ A.transpose(0, 2, 1)) / sd + mask[None]\n            S = S - S.max(axis=-1, keepdims=True)\n            Wt = np.exp(S)\n            Wt = Wt / Wt.sum(axis=-1, keepdims=True)\n            R = Wt @ C\n            G = H + R @ w['Wo' + L]\n            Z = G @ w['Vm' + L]\n            M = np.maximum(Z, 0.0)\n            Hn = G + M @ w['U' + L]\n            cache.append((H, A, C, Q, Wt, R, G, Z, M))\n            H = Hn\n        Hq = H[qb, qp]\n        lg = Hq @ w['O']\n        lg = lg - lg.max(axis=1, keepdims=True)\n        pr = np.exp(lg)\n        pr = pr / pr.sum(axis=1, keepdims=True)\n        dlg = (pr - Y) / Nq\n        gr = {}\n        gr['O'] = Hq.T @ dlg\n        dHq = dlg @ w['O'].T\n        dH = np.zeros((B, n, d))\n        np.add.at(dH, (qb, qp), dHq)\n        for l in (1, 0):\n            L = str(l)\n            Hp, A, C, Q, Wt, R, G, Z, M = cache[l]\n            dHf = dH.reshape(-1, d)\n            gr['U' + L] = M.reshape(-1, d).T @ dHf\n            dM = dH @ w['U' + L].T\n            dZ = dM * (Z > 0)\n            gr['Vm' + L] = G.reshape(-1, d).T @ dZ.reshape(-1, d)\n            dG = dH + dZ @ w['Vm' + L].T\n            gr['Wo' + L] = R.reshape(-1, d).T @ dG.reshape(-1, d)\n            dR = dG @ w['Wo' + L].T\n            dWt = dR @ C.transpose(0, 2, 1)\n            dC = Wt.transpose(0, 2, 1) @ dR\n            dS = Wt * (dWt - (dWt * Wt).sum(axis=-1, keepdims=True)) / sd\n            dQ = dS @ A\n            dA = dS.transpose(0, 2, 1) @ Q\n            Hf = Hp.reshape(-1, d)\n            gr['Wa' + L] = Hf.T @ dA.reshape(-1, d)\n            gr['Wc' + L] = Hf.T @ dC.reshape(-1, d)\n            gr['Wp' + L] = Hf.T @ dQ.reshape(-1, d)\n            dH = dG + dA @ w['Wa' + L].T + dC @ w['Wc' + L].T + dQ @ w['Wp' + L].T\n        gr['E'] = OH.T @ dH.reshape(-1, d)\n        gP = np.zeros_like(w['P'])\n        gP[:n] = dH.sum(axis=0)\n        gr['P'] = gP\n        for k in gr:\n            prm[k] = prm[k] - lr * gr[k]\n    params['w'] = prm\n    return params\n\n\ndef init(layout, params):\n    d = params['d']\n    return {'params': params, 't': 0, 'A': [np.zeros((0, d)), np.zeros((0, d))], 'C': [np.zeros((0, d)), np.zeros((0, d))], 'h': np.zeros(d)}\n\n\ndef update(state, token):\n    params = state['params']\n    w = params['w']\n    d = params['d']\n    t = state['t']\n    V = params['V']\n    tok = int(token)\n    if tok >= V or tok < 0:\n        tok = 0\n    pi = min(t, w['P'].shape[0] - 1)\n    h = w['E'][tok] + w['P'][pi]\n    sd = np.sqrt(d)\n    for l in range(2):\n        L = str(l)\n        a = h @ w['Wa' + L]\n        c = h @ w['Wc' + L]\n        p = h @ w['Wp' + L]\n        state['A'][l] = np.vstack([state['A'][l], a[None, :]])\n        state['C'][l] = np.vstack([state['C'][l], c[None, :]])\n        sc = state['A'][l] @ p / sd\n        sc = sc - sc.max()\n        wt = np.exp(sc)\n        wt = wt / wt.sum()\n        r = wt @ state['C'][l]\n        g = h + r @ w['Wo' + L]\n        h = g + np.maximum(g @ w['Vm' + L], 0.0) @ w['U' + L]\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\n\ndef predict(state):\n    w = state['params']['w']\n    return int(np.argmax(state['h'] @ w['O']))\n",
+    "status": "unknown"
+   },
+   {
+    "attempt": 4,
+    "counterexample": {
+     "accuracy": 0.106,
+     "control_accuracy": 0.063,
+     "examples": 4000,
+     "first_error": {
+      "expected": 9,
+      "instance": 0,
+      "position": 19,
+      "predicted": 5
+     },
+     "reason": "below_threshold",
+     "seed": 0,
+     "size": 4,
+     "task": "composition"
+    },
+    "decided": true,
+    "evidence": "composition at T=4 from m=4000 examples: seed 0 accuracy 0.1060 (control 0.0630), seed 1 accuracy 0.0310 (control 0.0310), seed 2 accuracy 0.0335 (control 0.0000); threshold 0.99; observed on the listed sizes: composition T=4 m=4000 seed=0, composition T=4 m=4000 seed=1, composition T=4 m=4000 seed=2",
+    "output_tail": " \"empty_control_accuracy\": 0.031, \"first_error\": {\"expected\": 9, \"instance\": 0, \"position\": 19, \"predicted\": 0}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 1, \"state_peak_words\": 7250, \"wrong_control_accuracy\": 0.031}, {\"accuracy\": 0.0335, \"control_accuracy\": 0.0, \"empty_control_accuracy\": 0.0, \"first_error\": {\"expected\": 9, \"instance\": 0, \"position\": 19, \"predicted\": 10}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 2, \"state_peak_words\": 7250, \"wrong_control_accuracy\": 0.036}], \"size\": 4, \"status\": \"violated\", \"task\": \"composition\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.106,
+      "control_accuracy": 0.063,
+      "empty_control_accuracy": 0.063,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 5
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 0,
+      "state_peak_words": 7250,
+      "wrong_control_accuracy": 0.1055
+     },
+     {
+      "accuracy": 0.031,
+      "control_accuracy": 0.031,
+      "empty_control_accuracy": 0.031,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 0
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 1,
+      "state_peak_words": 7250,
+      "wrong_control_accuracy": 0.031
+     },
+     {
+      "accuracy": 0.0335,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 10
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 2,
+      "state_peak_words": 7250,
+      "wrong_control_accuracy": 0.036
+     }
+    ],
+    "source": "def collect_ints(v, out):\n    if isinstance(v, bool):\n        return\n    if isinstance(v, (int, np.integer)):\n        out.append(int(v))\n    elif isinstance(v, (list, tuple)):\n        for u in v:\n            collect_ints(u, out)\n    elif isinstance(v, dict):\n        for u in v.values():\n            collect_ints(u, out)\n\n\ndef vocab_size(layout, examples):\n    vals = [0]\n    if isinstance(layout, dict):\n        for v in layout.values():\n            collect_ints(v, vals)\n        T = layout.get(\"T\", 4)\n        if not isinstance(T, (int, np.integer)):\n            T = 4\n    else:\n        T = 4\n    V = max(vals) + 1 + int(T)\n    for e in examples:\n        for tok in e[\"tokens\"]:\n            V = max(V, int(tok) + 1)\n        for q in e[\"queries\"]:\n            V = max(V, int(q[1]) + 1)\n    return V\n\n\ndef forward_round(H, rd, mask, d):\n    A = H @ rd[\"Wa\"].T\n    C = H @ rd[\"Wc\"].T\n    Q = H @ rd[\"Wp\"].T\n    S = (Q @ np.transpose(A, (0, 2, 1))) / np.sqrt(d)\n    S = np.where(mask, -1e30, S)\n    S = S - S.max(axis=-1, keepdims=True)\n    W = np.exp(S)\n    W = W / W.sum(axis=-1, keepdims=True)\n    R = W @ C\n    G = H + R @ rd[\"Wo\"].T\n    Z = G @ rd[\"Vm\"].T\n    M = np.maximum(0.0, Z)\n    H1 = G + M @ rd[\"U\"].T\n    cache = (H, A, C, Q, W, R, G, Z, M)\n    return H1, cache\n\n\ndef backward_round(dH1, rd, cache, d):\n    H, A, C, Q, W, R, G, Z, M = cache\n    B, N, _ = H.shape\n    g = {}\n    g[\"U\"] = dH1.reshape(-1, d).T @ M.reshape(-1, d)\n    dM = dH1 @ rd[\"U\"]\n    dZ = dM * (Z > 0)\n    g[\"Vm\"] = dZ.reshape(-1, d).T @ G.reshape(-1, d)\n    dG = dH1 + dZ @ rd[\"Vm\"]\n    g[\"Wo\"] = dG.reshape(-1, d).T @ R.reshape(-1, d)\n    dR = dG @ rd[\"Wo\"]\n    dH = dG.copy()\n    dW = dR @ np.transpose(C, (0, 2, 1))\n    dC = np.transpose(W, (0, 2, 1)) @ dR\n    dS = W * (dW - (dW * W).sum(axis=-1, keepdims=True))\n    sd = np.sqrt(d)\n    dQ = (dS @ A) / sd\n    dA = (np.transpose(dS, (0, 2, 1)) @ Q) / sd\n    Hf = H.reshape(-1, d)\n    g[\"Wp\"] = dQ.reshape(-1, d).T @ Hf\n    g[\"Wa\"] = dA.reshape(-1, d).T @ Hf\n    g[\"Wc\"] = dC.reshape(-1, d).T @ Hf\n    dH = dH + dQ @ rd[\"Wp\"] + dA @ rd[\"Wa\"] + dC @ rd[\"Wc\"]\n    return dH, g\n\n\ndef learn(layout, examples, seed):\n    d = 16\n    V = vocab_size(layout, examples)\n    maxlen = max([len(e[\"tokens\"]) for e in examples] + [1])\n    Lp = max(maxlen, 128)\n    rng = np.random.default_rng(seed)\n    params = {\"d\": d, \"E\": rng.normal(0.0, 0.1, (V, d)), \"P\": rng.normal(0.0, 0.1, (Lp, d))}\n    rounds = []\n    for l in range(2):\n        rd = {}\n        for name in (\"Wa\", \"Wc\", \"Wp\", \"Wo\", \"U\", \"Vm\"):\n            rd[name] = rng.normal(0.0, 0.1, (d, d))\n        rounds.append(rd)\n    params[\"rounds\"] = rounds\n    params[\"O\"] = rng.normal(0.0, 0.1, (d, V))\n    if len(examples) == 0:\n        return params\n    B = len(examples)\n    N = maxlen\n    X = np.zeros((B, N), dtype=np.int64)\n    qb = []\n    qp = []\n    qy = []\n    for b, e in enumerate(examples):\n        toks = e[\"tokens\"]\n        X[b, :len(toks)] = np.array(toks, dtype=np.int64)\n        for q in e[\"queries\"]:\n            pos = min(int(q[0]), len(toks) - 1)\n            qb.append(b)\n            qp.append(pos)\n            qy.append(int(q[1]))\n    nq = len(qb)\n    if nq == 0:\n        return params\n    qb = np.array(qb, dtype=np.int64)\n    qp = np.array(qp, dtype=np.int64)\n    qy = np.array(qy, dtype=np.int64)\n    mask = np.triu(np.ones((N, N), dtype=bool), 1)\n    lr = 0.01\n    Xf = X.reshape(-1)\n    for epoch in range(50):\n        E = params[\"E\"]\n        P = params[\"P\"]\n        O = params[\"O\"]\n        H = E[X] + P[:N][None, :, :]\n        caches = []\n        for rd in params[\"rounds\"]:\n            H, cache = forward_round(H, rd, mask, d)\n            caches.append(cache)\n        Hq = H[qb, qp]\n        logits = Hq @ O\n        logits = logits - logits.max(axis=1, keepdims=True)\n        pr = np.exp(logits)\n        pr = pr / pr.sum(axis=1, keepdims=True)\n        dlog = pr.copy()\n        dlog[np.arange(nq), qy] -= 1.0\n        dlog = dlog / nq\n        dO = Hq.T @ dlog\n        dH = np.zeros_like(H)\n        np.add.at(dH, (qb, qp), dlog @ O.T)\n        rgrads = [None, None]\n        for l in (1, 0):\n            dH, gr = backward_round(dH, params[\"rounds\"][l], caches[l], d)\n            rgrads[l] = gr\n        dE = np.zeros_like(E)\n        np.add.at(dE, Xf, dH.reshape(-1, d))\n        dP = np.zeros_like(P)\n        dP[:N] = dH.sum(axis=0)\n        params[\"E\"] = E - lr * dE\n        params[\"P\"] = P - lr * dP\n        params[\"O\"] = O - lr * dO\n        for l in range(2):\n            rd = params[\"rounds\"][l]\n            for name in (\"Wa\", \"Wc\", \"Wp\", \"Wo\", \"U\", \"Vm\"):\n                rd[name] = rd[name] - lr * rgrads[l][name]\n    return params\n\n\ndef init(layout, params):\n    return {\"p\": params, \"t\": 0, \"A\": [[], []], \"C\": [[], []], \"h\": None}\n\n\ndef update(state, token):\n    p = state[\"p\"]\n    d = p[\"d\"]\n    E = p[\"E\"]\n    P = p[\"P\"]\n    tok = min(max(int(token), 0), E.shape[0] - 1)\n    t = min(state[\"t\"], P.shape[0] - 1)\n    h = E[tok] + P[t]\n    for l in range(2):\n        rd = p[\"rounds\"][l]\n        a = rd[\"Wa\"] @ h\n        c = rd[\"Wc\"] @ h\n        q = rd[\"Wp\"] @ h\n        state[\"A\"][l].append(a)\n        state[\"C\"][l].append(c)\n        A = np.array(state[\"A\"][l])\n        C = np.array(state[\"C\"][l])\n        s = (A @ q) / np.sqrt(d)\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ C\n        g = h + rd[\"Wo\"] @ r\n        h = g + rd[\"U\"] @ np.maximum(0.0, rd[\"Vm\"] @ g)\n    state[\"h\"] = h\n    state[\"t\"] = state[\"t\"] + 1\n    return state\n\n\ndef predict(state):\n    h = state[\"h\"]\n    if h is None:\n        return 0\n    return int(np.argmax(h @ state[\"p\"][\"O\"]))\n",
+    "status": "violated"
+   }
+  ],
+  "O4.a": [
+   {
+    "attempt": 1,
+    "counterexample": {
+     "check": "ops_exact",
+     "counted": 357696,
+     "difference": "-315072",
+     "formula": "672768",
+     "point": {
+      "V": 4,
+      "d": 16,
+      "n": 64
+     }
+    },
+    "decided": true,
+    "evidence": "28 points, n in [64, 128, 256, 512, 1024, 2048, 4096], sizes {'V': [4, 8], 'd': [16, 32]}; formula exponent in n 2; slopes in n (measured/formula): 1.8042/1.8017, 1.6924/1.6906, 1.8014/1.7989, 1.6905/1.6887; failed checks: ['ops_exact', 'state_exact']",
+    "output_tail": "}}, {\"formula\": 1.7989, \"lines\": 1.0, \"measured\": 1.8014, \"parameter\": \"n\", \"sizes\": {\"V\": 8, \"d\": 16}}, {\"formula\": 1.6887, \"lines\": 1.0, \"measured\": 1.6905, \"parameter\": \"n\", \"sizes\": {\"V\": 8, \"d\": 32}}, {\"formula\": 0.0007, \"measured\": 0.0007, \"parameter\": \"V\", \"sizes\": {\"d\": 16, \"n\": 4096}}, {\"formula\": 0.0007, \"measured\": 0.0007, \"parameter\": \"V\", \"sizes\": {\"d\": 32, \"n\": 4096}}, {\"formula\": 1.0, \"measured\": 0.9501, \"parameter\": \"d\", \"sizes\": {\"V\": 4, \"n\": 4096}}, {\"formula\": 1.0, \"measured\": 0.9501, \"parameter\": \"d\", \"sizes\": {\"V\": 8, \"n\": 4096}}], \"status\": \"violated\", \"tolerance\": 0.05}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": null,
+    "source": "def init(sizes, ops):\n    np = ops.np\n    d = int(sizes[\"d\"])\n    V = int(sizes[\"V\"])\n    n = int(sizes[\"n\"]) if \"n\" in sizes else 0\n    maxpos = n if n > 0 else 4096\n    sq = float(d) ** 0.5\n    sc = 1.0 / sq\n    params = {\"d\": d, \"V\": V, \"sq\": sq, \"n\": n,\n              \"E\": np.normal((V, d), 1, 0.5),\n              \"P\": np.normal((maxpos, d), 2, 0.5),\n              \"O\": np.normal((d, V), 3, sc)}\n    rounds = []\n    for l in range(2):\n        base = 10 + 10 * l\n        rounds.append({\"Wa\": np.normal((d, d), base + 1, sc),\n                       \"Wc\": np.normal((d, d), base + 2, sc),\n                       \"Wp\": np.normal((d, d), base + 3, sc),\n                       \"Wo\": np.normal((d, d), base + 4, sc),\n                       \"U\": np.normal((d, d), base + 5, sc),\n                       \"Vf\": np.normal((d, d), base + 6, sc)})\n    params[\"rounds\"] = rounds\n    state = {\"t\": 0, \"buf\": np.zeros((10, d)), \"logits\": np.zeros((V,))}\n    if n > 0:\n        state[\"arena\"] = np.zeros((2, 2, n, d))\n        state[\"s\"] = np.zeros((n,))\n        state[\"w\"] = np.zeros((n,))\n    else:\n        state[\"arena\"] = np.zeros((2, 2, 0, d))\n        state[\"s\"] = np.zeros((0,))\n        state[\"w\"] = np.zeros((0,))\n    return params, state\n\n\ndef update(params, state, token, ops):\n    np = ops.np\n    d = params[\"d\"]\n    t = state[\"t\"]\n    if params[\"n\"] <= 0:\n        state[\"arena\"] = np.concatenate((state[\"arena\"], np.zeros((2, 2, 1, d))), axis=2)\n        state[\"s\"] = np.concatenate((state[\"s\"], np.zeros((1,))), axis=0)\n        state[\"w\"] = np.concatenate((state[\"w\"], np.zeros((1,))), axis=0)\n    arena = state[\"arena\"]\n    buf = state[\"buf\"]\n    h = np.add(params[\"E\"][token], params[\"P\"][t])\n    buf[0] = h\n    for l in range(2):\n        R = params[\"rounds\"][l]\n        a = np.dot(R[\"Wa\"], h)\n        c = np.dot(R[\"Wc\"], h)\n        p = np.dot(R[\"Wp\"], h)\n        buf[1] = a\n        buf[2] = c\n        buf[3] = p\n        arena[l, 0, t] = a\n        arena[l, 1, t] = c\n        At = arena[l, 0, 0:t + 1]\n        Ct = arena[l, 1, 0:t + 1]\n        s = np.dot(At, p)\n        s = np.divide(s, params[\"sq\"])\n        e = np.exp(s)\n        state[\"s\"][0:t + 1] = e\n        z = np.sum(e)\n        w = np.divide(e, z)\n        state[\"w\"][0:t + 1] = w\n        r = np.dot(w, Ct)\n        buf[4] = r\n        o = np.dot(R[\"Wo\"], r)\n        buf[5] = o\n        g = np.add(h, o)\n        buf[6] = g\n        vg = np.dot(R[\"Vf\"], g)\n        buf[7] = vg\n        m = np.maximum(vg, 0.0)\n        buf[8] = m\n        u = np.dot(R[\"U\"], m)\n        buf[9] = u\n        h = np.add(g, u)\n        buf[0] = h\n    state[\"t\"] = t + 1\n    return state\n\n\ndef predict(params, state, ops):\n    np = ops.np\n    h = state[\"buf\"][0]\n    logits = np.dot(h, params[\"O\"])\n    state[\"logits\"][:] = logits\n    return int(np.argmax(logits))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 2,
+    "counterexample": {
+     "check": "state_exact",
+     "counted": 262436,
+     "formula": "4388",
+     "point": {
+      "V": 4,
+      "d": 16,
+      "n": 64
+     }
+    },
+    "decided": true,
+    "evidence": "28 points, n in [64, 128, 256, 512, 1024, 2048, 4096], sizes {'V': [4, 8], 'd': [16, 32]}; formula exponent in n 2; slopes in n (measured/formula): 1.8017/1.8017, 1.6906/1.6906, 1.7989/1.7989, 1.6887/1.6887; failed checks: ['state_exact']",
+    "output_tail": "d\": 32}}, {\"formula\": 1.7989, \"lines\": 1.0, \"measured\": 1.7989, \"parameter\": \"n\", \"sizes\": {\"V\": 8, \"d\": 16}}, {\"formula\": 1.6887, \"lines\": 1.0, \"measured\": 1.6887, \"parameter\": \"n\", \"sizes\": {\"V\": 8, \"d\": 32}}, {\"formula\": 0.0007, \"measured\": 0.0007, \"parameter\": \"V\", \"sizes\": {\"d\": 16, \"n\": 4096}}, {\"formula\": 0.0007, \"measured\": 0.0007, \"parameter\": \"V\", \"sizes\": {\"d\": 32, \"n\": 4096}}, {\"formula\": 1.0, \"measured\": 1.0, \"parameter\": \"d\", \"sizes\": {\"V\": 4, \"n\": 4096}}, {\"formula\": 1.0, \"measured\": 1.0, \"parameter\": \"d\", \"sizes\": {\"V\": 8, \"n\": 4096}}], \"status\": \"violated\", \"tolerance\": 0.05}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": null,
+    "source": "def mv(xp, W, v):\n    return xp.sum(xp.multiply(W, v[None, :]), axis=1)\n\n\ndef init(sizes, ops):\n    xp = ops.np\n    d = int(sizes[\"d\"])\n    V = int(sizes[\"V\"])\n    n = int(sizes.get(\"n\", 4096))\n    params = {\n        \"d\": d,\n        \"V\": V,\n        \"sq\": float(d) ** 0.5,\n        \"E\": xp.normal((V, d), 1, 0.1),\n        \"P\": xp.normal((n, d), 2, 0.1),\n        \"O\": xp.normal((d, V), 3, 0.1),\n    }\n    rounds = []\n    for l in range(2):\n        base = 10 + 10 * l\n        rounds.append({\n            \"Wa\": xp.normal((d, d), base + 1, 0.1),\n            \"Wc\": xp.normal((d, d), base + 2, 0.1),\n            \"Wp\": xp.normal((d, d), base + 3, 0.1),\n            \"Wo\": xp.normal((d, d), base + 4, 0.1),\n            \"U\": xp.normal((d, d), base + 5, 0.1),\n            \"Vf\": xp.normal((d, d), base + 6, 0.1),\n        })\n    params[\"rounds\"] = rounds\n    state = {\n        \"A1\": xp.zeros((n, d)), \"C1\": xp.zeros((n, d)),\n        \"A2\": xp.zeros((n, d)), \"C2\": xp.zeros((n, d)),\n        \"e\": xp.zeros(d), \"a\": xp.zeros(d), \"c\": xp.zeros(d), \"p\": xp.zeros(d),\n        \"r\": xp.zeros(d), \"g\": xp.zeros(d), \"f\": xp.zeros(d), \"m\": xp.zeros(d),\n        \"u\": xp.zeros(d), \"h\": xp.zeros(d),\n        \"s\": xp.zeros(0), \"w\": xp.zeros(0),\n        \"o\": xp.zeros(V),\n    }\n    return params, state\n\n\ndef update(params, state, token, ops):\n    xp = ops.np\n    t = len(state[\"w\"]) + 1\n    sq = params[\"sq\"]\n    e = xp.add(params[\"E\"][int(token)], params[\"P\"][t - 1])\n    state[\"e\"] = e\n    h = e\n    names = ((\"A1\", \"C1\"), (\"A2\", \"C2\"))\n    for l in range(2):\n        R = params[\"rounds\"][l]\n        A = state[names[l][0]]\n        C = state[names[l][1]]\n        a = mv(xp, R[\"Wa\"], h)\n        c = mv(xp, R[\"Wc\"], h)\n        p = mv(xp, R[\"Wp\"], h)\n        A[t - 1] = a\n        C[t - 1] = c\n        s = xp.divide(xp.sum(xp.multiply(A[:t], p[None, :]), axis=1), sq)\n        ex = xp.exp(s)\n        tot = xp.sum(ex)\n        w = xp.divide(ex, tot)\n        r = xp.sum(xp.multiply(C[:t], w[:, None]), axis=0)\n        g = xp.add(h, mv(xp, R[\"Wo\"], r))\n        f = mv(xp, R[\"Vf\"], g)\n        m = xp.maximum(f, 0.0)\n        u = mv(xp, R[\"U\"], m)\n        h = xp.add(g, u)\n        state[\"a\"] = a\n        state[\"c\"] = c\n        state[\"p\"] = p\n        state[\"r\"] = r\n        state[\"g\"] = g\n        state[\"f\"] = f\n        state[\"m\"] = m\n        state[\"u\"] = u\n        state[\"s\"] = s\n        state[\"w\"] = w\n    state[\"h\"] = h\n    return state\n\n\ndef predict(params, state, ops):\n    xp = ops.np\n    logits = xp.sum(xp.multiply(params[\"O\"], state[\"h\"][:, None]), axis=0)\n    return int(xp.argmax(logits))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 3,
+    "counterexample": {
+     "check": "ops_exact",
+     "counted": 357696,
+     "difference": "-315072",
+     "formula": "672768",
+     "point": {
+      "V": 4,
+      "d": 16,
+      "n": 64
+     }
+    },
+    "decided": true,
+    "evidence": "28 points, n in [64, 128, 256, 512, 1024, 2048, 4096], sizes {'V': [4, 8], 'd': [16, 32]}; formula exponent in n 2; slopes in n (measured/formula): 1.8042/1.8017, 1.6924/1.6906, 1.8014/1.7989, 1.6905/1.6887; failed checks: ['ops_exact']",
+    "output_tail": "}}, {\"formula\": 1.7989, \"lines\": 1.0, \"measured\": 1.8014, \"parameter\": \"n\", \"sizes\": {\"V\": 8, \"d\": 16}}, {\"formula\": 1.6887, \"lines\": 1.0, \"measured\": 1.6905, \"parameter\": \"n\", \"sizes\": {\"V\": 8, \"d\": 32}}, {\"formula\": 0.0007, \"measured\": 0.0007, \"parameter\": \"V\", \"sizes\": {\"d\": 16, \"n\": 4096}}, {\"formula\": 0.0007, \"measured\": 0.0007, \"parameter\": \"V\", \"sizes\": {\"d\": 32, \"n\": 4096}}, {\"formula\": 1.0, \"measured\": 0.9501, \"parameter\": \"d\", \"sizes\": {\"V\": 4, \"n\": 4096}}, {\"formula\": 1.0, \"measured\": 0.9501, \"parameter\": \"d\", \"sizes\": {\"V\": 8, \"n\": 4096}}], \"status\": \"violated\", \"tolerance\": 0.05}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": null,
+    "source": "def init(sizes, ops):\n    xp = ops.np\n    d = int(sizes[\"d\"])\n    V = int(sizes[\"V\"])\n    n = int(sizes[\"n\"]) if \"n\" in sizes else 0\n    npos = n if n > 0 else 4096\n    sc = 0.05\n    params = {\n        \"d\": d,\n        \"V\": V,\n        \"sq\": float(d) ** 0.5,\n        \"E\": xp.normal((V, d), 1, sc),\n        \"P\": xp.normal((npos, d), 2, sc),\n        \"Wa\": [xp.normal((d, d), 10, sc), xp.normal((d, d), 20, sc)],\n        \"Wc\": [xp.normal((d, d), 11, sc), xp.normal((d, d), 21, sc)],\n        \"Wp\": [xp.normal((d, d), 12, sc), xp.normal((d, d), 22, sc)],\n        \"Wo\": [xp.normal((d, d), 13, sc), xp.normal((d, d), 23, sc)],\n        \"U\": [xp.normal((d, d), 14, sc), xp.normal((d, d), 24, sc)],\n        \"Vm\": [xp.normal((d, d), 15, sc), xp.normal((d, d), 25, sc)],\n        \"O\": xp.normal((d, V), 3, sc),\n    }\n    state = {\n        \"arena\": xp.zeros((4, n, d)),\n        \"s\": xp.zeros(0),\n        \"w\": xp.zeros(0),\n        \"h\": xp.zeros(d),\n        \"a\": xp.zeros(d),\n        \"c\": xp.zeros(d),\n        \"p\": xp.zeros(d),\n        \"r\": xp.zeros(d),\n        \"o\": xp.zeros(d),\n        \"g\": xp.zeros(d),\n        \"z\": xp.zeros(d),\n        \"m\": xp.zeros(d),\n        \"u\": xp.zeros(d),\n        \"logits\": xp.zeros(V),\n    }\n    return params, state\n\n\ndef update(params, state, token, ops):\n    xp = ops.np\n    d = params[\"d\"]\n    sq = params[\"sq\"]\n    t = len(state[\"s\"])\n    arena = state[\"arena\"]\n    if arena.shape[1] < t + 1:\n        arena = xp.concatenate([arena, xp.zeros((4, 1, d))], axis=1)\n        state[\"arena\"] = arena\n    h = xp.add(params[\"E\"][token], params[\"P\"][t])\n    for l in range(2):\n        a = xp.dot(params[\"Wa\"][l], h)\n        c = xp.dot(params[\"Wc\"][l], h)\n        p = xp.dot(params[\"Wp\"][l], h)\n        arena[2 * l, t] = a\n        arena[2 * l + 1, t] = c\n        s = xp.divide(xp.dot(arena[2 * l, :t + 1], p), sq)\n        e = xp.exp(s)\n        total = xp.sum(e)\n        w = xp.divide(e, total)\n        r = xp.dot(w, arena[2 * l + 1, :t + 1])\n        o = xp.dot(params[\"Wo\"][l], r)\n        g = xp.add(h, o)\n        z = xp.dot(params[\"Vm\"][l], g)\n        m = xp.maximum(0.0, z)\n        u = xp.dot(params[\"U\"][l], m)\n        h = xp.add(g, u)\n        state[\"a\"] = a\n        state[\"c\"] = c\n        state[\"p\"] = p\n        state[\"s\"] = s\n        state[\"w\"] = w\n        state[\"r\"] = r\n        state[\"o\"] = o\n        state[\"g\"] = g\n        state[\"z\"] = z\n        state[\"m\"] = m\n        state[\"u\"] = u\n    state[\"h\"] = h\n    return state\n\n\ndef predict(params, state, ops):\n    xp = ops.np\n    logits = xp.dot(state[\"h\"], params[\"O\"])\n    state[\"logits\"][:] = logits\n    return int(xp.argmax(logits))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 4,
+    "counterexample": {
+     "check": "state_exact",
+     "counted": 4389,
+     "formula": "4388",
+     "point": {
+      "V": 4,
+      "d": 16,
+      "n": 64
+     }
+    },
+    "decided": true,
+    "evidence": "28 points, n in [64, 128, 256, 512, 1024, 2048, 4096], sizes {'V': [4, 8], 'd': [16, 32]}; formula exponent in n 2; slopes in n (measured/formula): 1.8017/1.8017, 1.6906/1.6906, 1.7989/1.7989, 1.6887/1.6887; failed checks: ['state_exact']",
+    "output_tail": "d\": 32}}, {\"formula\": 1.7989, \"lines\": 1.0, \"measured\": 1.7989, \"parameter\": \"n\", \"sizes\": {\"V\": 8, \"d\": 16}}, {\"formula\": 1.6887, \"lines\": 1.0, \"measured\": 1.6887, \"parameter\": \"n\", \"sizes\": {\"V\": 8, \"d\": 32}}, {\"formula\": 0.0007, \"measured\": 0.0007, \"parameter\": \"V\", \"sizes\": {\"d\": 16, \"n\": 4096}}, {\"formula\": 0.0007, \"measured\": 0.0007, \"parameter\": \"V\", \"sizes\": {\"d\": 32, \"n\": 4096}}, {\"formula\": 1.0, \"measured\": 1.0, \"parameter\": \"d\", \"sizes\": {\"V\": 4, \"n\": 4096}}, {\"formula\": 1.0, \"measured\": 1.0, \"parameter\": \"d\", \"sizes\": {\"V\": 8, \"n\": 4096}}], \"status\": \"violated\", \"tolerance\": 0.05}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": null,
+    "source": "def mv(np, W, x):\n    return (W * x[None, :]).sum(axis=1)\n\ndef init(sizes, ops):\n    np = ops.np\n    d = int(sizes[\"d\"])\n    V = int(sizes[\"V\"])\n    known = \"n\" in sizes\n    nmax = int(sizes[\"n\"]) if known else 4096\n    rows = max(nmax, 4096)\n    sq = float(d) ** 0.5\n    sc = 0.1 / sq\n    rounds = []\n    seed = 10\n    for l in range(2):\n        r = {}\n        for name in (\"Wa\", \"Wc\", \"Wp\", \"Wo\", \"U\", \"Vm\"):\n            r[name] = np.normal((d, d), seed, sc)\n            seed += 1\n        rounds.append(r)\n    params = {\"E\": np.normal((V, d), 1, 0.1), \"P\": np.normal((rows, d), 2, 0.1),\n              \"O\": np.normal((d, V), 3, 0.1), \"sq\": sq, \"d\": d, \"V\": V,\n              \"rounds\": rounds, \"known\": known}\n    state = {\"t\": 0, \"buf\": np.zeros((10, d)), \"logits\": np.zeros(V)}\n    if known:\n        state[\"mem\"] = np.zeros((4, nmax, d))\n        state[\"s\"] = np.zeros(nmax)\n        state[\"w\"] = np.zeros(nmax)\n    else:\n        state[\"mem\"] = [np.zeros((0, d)), np.zeros((0, d)), np.zeros((0, d)), np.zeros((0, d))]\n        state[\"s\"] = np.zeros(0)\n        state[\"w\"] = np.zeros(0)\n    return params, state\n\ndef update(params, state, token, ops):\n    np = ops.np\n    t = state[\"t\"]\n    sq = params[\"sq\"]\n    buf = state[\"buf\"]\n    h = params[\"E\"][int(token)] + params[\"P\"][t]\n    buf[0] = h\n    for l in range(2):\n        R = params[\"rounds\"][l]\n        a = mv(np, R[\"Wa\"], h)\n        c = mv(np, R[\"Wc\"], h)\n        p = mv(np, R[\"Wp\"], h)\n        if params[\"known\"]:\n            state[\"mem\"][2 * l][t] = a\n            state[\"mem\"][2 * l + 1][t] = c\n            At = state[\"mem\"][2 * l][:t + 1]\n            Ct = state[\"mem\"][2 * l + 1][:t + 1]\n        else:\n            state[\"mem\"][2 * l] = np.concatenate([state[\"mem\"][2 * l], a[None, :]])\n            state[\"mem\"][2 * l + 1] = np.concatenate([state[\"mem\"][2 * l + 1], c[None, :]])\n            At = state[\"mem\"][2 * l]\n            Ct = state[\"mem\"][2 * l + 1]\n        s = (At * p[None, :]).sum(axis=1) / sq\n        e = np.exp(s)\n        tot = e.sum()\n        w = e / tot\n        r = (Ct * w[:, None]).sum(axis=0)\n        g = h + mv(np, R[\"Wo\"], r)\n        z = np.maximum(mv(np, R[\"Vm\"], g), 0.0)\n        h = g + mv(np, R[\"U\"], z)\n        if params[\"known\"]:\n            state[\"s\"][:t + 1] = s\n            state[\"w\"][:t + 1] = w\n        else:\n            state[\"s\"] = s\n            state[\"w\"] = w\n        buf[1] = a\n        buf[2] = c\n        buf[3] = p\n        buf[4] = r\n        buf[5] = g\n        buf[6] = z\n        buf[7 + l] = h\n    buf[9] = h\n    state[\"t\"] = t + 1\n    return state\n\ndef predict(params, state, ops):\n    np = ops.np\n    h = state[\"buf\"][9]\n    logits = (params[\"O\"] * h[:, None]).sum(axis=0)\n    state[\"logits\"][:] = logits\n    return int(np.argmax(logits))\n",
+    "status": "violated"
+   }
+  ],
+  "O5.a": [
+   {
+    "attempt": 1,
+    "counterexample": {
+     "accuracy": 0.0,
+     "control_accuracy": 0.0,
+     "examples": 3000,
+     "first_error": {
+      "expected": 3,
+      "instance": 0,
+      "position": 4,
+      "predicted": 5
+     },
+     "reason": "below_threshold",
+     "seed": 0,
+     "size": 4,
+     "task": "copy"
+    },
+    "decided": true,
+    "evidence": "copy at L=4 from m=3000 examples: seed 0 accuracy 0.0000 (control 0.0000), seed 1 accuracy 0.0000 (control 0.0000), seed 2 accuracy 0.0000 (control 0.0000); threshold 0.99; observed on the listed sizes: copy L=4 m=3000 seed=0, copy L=4 m=3000 seed=1, copy L=4 m=3000 seed=2",
+    "output_tail": "rol_accuracy\": 0.0, \"empty_control_accuracy\": 0.0, \"first_error\": {\"expected\": 3, \"instance\": 0, \"position\": 4, \"predicted\": 0}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 1, \"state_peak_words\": 4817, \"wrong_control_accuracy\": 0.0}, {\"accuracy\": 0.0, \"control_accuracy\": 0.0, \"empty_control_accuracy\": 0.0, \"first_error\": {\"expected\": 3, \"instance\": 0, \"position\": 4, \"predicted\": 4}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 2, \"state_peak_words\": 4817, \"wrong_control_accuracy\": 0.0}], \"size\": 4, \"status\": \"violated\", \"task\": \"copy\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 3,
+       "instance": 0,
+       "position": 4,
+       "predicted": 5
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 0,
+      "state_peak_words": 4817,
+      "wrong_control_accuracy": 0.0
+     },
+     {
+      "accuracy": 0.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 3,
+       "instance": 0,
+       "position": 4,
+       "predicted": 0
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 1,
+      "state_peak_words": 4817,
+      "wrong_control_accuracy": 0.0
+     },
+     {
+      "accuracy": 0.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 3,
+       "instance": 0,
+       "position": 4,
+       "predicted": 4
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 2,
+      "state_peak_words": 4817,
+      "wrong_control_accuracy": 0.0
+     }
+    ],
+    "source": "def collect(obj, out):\n    if isinstance(obj, bool):\n        return\n    if isinstance(obj, (int, np.integer)):\n        out.append(int(obj))\n        return\n    if isinstance(obj, dict):\n        for v in obj.values():\n            collect(v, out)\n    elif isinstance(obj, (list, tuple)):\n        for v in obj:\n            collect(v, out)\n\nNAMES = ['Wa', 'Wc', 'Wp', 'Wo', 'Vm', 'Um']\n\ndef forward(par, X, T, d):\n    sq = np.sqrt(d)\n    H = par['E'][X] + par['P'][:T][None, :, :]\n    mask = np.triu(np.ones((T, T)), 1) * -1e30\n    cache = []\n    for l in range(2):\n        rp = par['rounds'][l]\n        A = H @ rp['Wa']\n        C = H @ rp['Wc']\n        Q = H @ rp['Wp']\n        S = Q @ A.transpose(0, 2, 1) / sq + mask\n        S = S - S.max(-1, keepdims=True)\n        W = np.exp(S)\n        W = W / W.sum(-1, keepdims=True)\n        R = W @ C\n        G = H + R @ rp['Wo']\n        Z = G @ rp['Vm']\n        M = np.maximum(Z, 0.0)\n        Hn = G + M @ rp['Um']\n        cache.append((H, A, C, Q, W, R, G, Z, M))\n        H = Hn\n    logits = H @ par['O']\n    return H, logits, cache\n\ndef learn(layout, examples, seed):\n    d = 16\n    rng = np.random.default_rng(seed)\n    vals = []\n    collect(layout, vals)\n    maxlen = 1\n    for ex in examples:\n        collect(ex['tokens'], vals)\n        for q in ex['queries']:\n            vals.append(int(q[1]))\n        maxlen = max(maxlen, len(ex['tokens']))\n    if len(vals) == 0:\n        vals = [1]\n    V = max(max(vals) + 1, 2)\n    Tmax = max(64, maxlen)\n    par = {'E': rng.normal(0.0, 0.1, (V, d)), 'P': rng.normal(0.0, 0.1, (Tmax, d)), 'rounds': []}\n    for l in range(2):\n        rp = {}\n        for nm in NAMES:\n            rp[nm] = rng.normal(0.0, 0.1, (d, d))\n        par['rounds'].append(rp)\n    par['O'] = rng.normal(0.0, 0.1, (d, V))\n    if len(examples) > 0:\n        B = len(examples)\n        T = maxlen\n        X = np.zeros((B, T), dtype=np.int64)\n        Y = np.zeros((B, T), dtype=np.int64)\n        Qm = np.zeros((B, T))\n        for b, ex in enumerate(examples):\n            tk = ex['tokens']\n            X[b, :len(tk)] = np.array(tk, dtype=np.int64)\n            for q in ex['queries']:\n                p = min(max(int(q[0]), 0), len(tk) - 1)\n                Y[b, p] = int(q[1])\n                Qm[b, p] += 1.0\n        N = max(Qm.sum(), 1.0)\n        onehotY = np.eye(V)[Y]\n        Xoh = np.eye(V)[X].reshape(-1, V)\n        sq = np.sqrt(d)\n        lr = 0.01\n        for ep in range(50):\n            H2, logits, cache = forward(par, X, T, d)\n            lg = logits - logits.max(-1, keepdims=True)\n            pr = np.exp(lg)\n            pr = pr / pr.sum(-1, keepdims=True)\n            dlog = (pr - onehotY) * Qm[:, :, None] / N\n            gO = H2.reshape(-1, d).T @ dlog.reshape(-1, V)\n            dH = dlog @ par['O'].T\n            grads = [None, None]\n            for l in (1, 0):\n                rp = par['rounds'][l]\n                H, A, C, Q, W, R, G, Z, M = cache[l]\n                g = {}\n                g['Um'] = M.reshape(-1, d).T @ dH.reshape(-1, d)\n                dZ = (dH @ rp['Um'].T) * (Z > 0)\n                g['Vm'] = G.reshape(-1, d).T @ dZ.reshape(-1, d)\n                dG = dH + dZ @ rp['Vm'].T\n                g['Wo'] = R.reshape(-1, d).T @ dG.reshape(-1, d)\n                dR = dG @ rp['Wo'].T\n                dW = dR @ C.transpose(0, 2, 1)\n                dC = W.transpose(0, 2, 1) @ dR\n                dS = W * (dW - (dW * W).sum(-1, keepdims=True)) / sq\n                dQ = dS @ A\n                dA = dS.transpose(0, 2, 1) @ Q\n                Hf = H.reshape(-1, d)\n                g['Wa'] = Hf.T @ dA.reshape(-1, d)\n                g['Wc'] = Hf.T @ dC.reshape(-1, d)\n                g['Wp'] = Hf.T @ dQ.reshape(-1, d)\n                dH = dG + dA @ rp['Wa'].T + dC @ rp['Wc'].T + dQ @ rp['Wp'].T\n                grads[l] = g\n            gE = Xoh.T @ dH.reshape(-1, d)\n            gP = dH.sum(0)\n            par['E'] = par['E'] - lr * gE\n            par['P'][:T] = par['P'][:T] - lr * gP\n            par['O'] = par['O'] - lr * gO\n            for l in range(2):\n                for nm in NAMES:\n                    par['rounds'][l][nm] = par['rounds'][l][nm] - lr * grads[l][nm]\n    out = {'E': par['E'].tolist(), 'P': par['P'].tolist(), 'O': par['O'].tolist(), 'rounds': []}\n    for l in range(2):\n        rr = {}\n        for nm in NAMES:\n            rr[nm] = par['rounds'][l][nm].tolist()\n        out['rounds'].append(rr)\n    return out\n\ndef init(layout, params):\n    par = {'E': np.array(params['E'], dtype=float), 'P': np.array(params['P'], dtype=float), 'O': np.array(params['O'], dtype=float), 'rounds': []}\n    for l in range(2):\n        rr = {}\n        for nm in NAMES:\n            rr[nm] = np.array(params['rounds'][l][nm], dtype=float)\n        par['rounds'].append(rr)\n    d = par['E'].shape[1]\n    return {'par': par, 't': 0, 'A': [np.zeros((0, d)), np.zeros((0, d))], 'C': [np.zeros((0, d)), np.zeros((0, d))], 'h': np.zeros(d)}\n\ndef update(state, token):\n    par = state['par']\n    d = par['E'].shape[1]\n    sq = np.sqrt(d)\n    tok = min(max(int(token), 0), par['E'].shape[0] - 1)\n    t = min(state['t'], par['P'].shape[0] - 1)\n    h = par['E'][tok] + par['P'][t]\n    for l in range(2):\n        rp = par['rounds'][l]\n        a = h @ rp['Wa']\n        c = h @ rp['Wc']\n        p = h @ rp['Wp']\n        state['A'][l] = np.vstack([state['A'][l], a[None, :]])\n        state['C'][l] = np.vstack([state['C'][l], c[None, :]])\n        s = state['A'][l] @ p / sq\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ state['C'][l]\n        g = h + r @ rp['Wo']\n        h = g + np.maximum(g @ rp['Vm'], 0.0) @ rp['Um']\n    state['h'] = h\n    state['t'] = state['t'] + 1\n    return state\n\ndef predict(state):\n    return int(np.argmax(state['h'] @ state['par']['O']))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 2,
+    "counterexample": {
+     "accuracy": 0.004,
+     "control_accuracy": 0.004,
+     "examples": 3000,
+     "first_error": {
+      "expected": 3,
+      "instance": 0,
+      "position": 4,
+      "predicted": 0
+     },
+     "reason": "below_threshold",
+     "seed": 0,
+     "size": 4,
+     "task": "copy"
+    },
+    "decided": true,
+    "evidence": "copy at L=4 from m=3000 examples: seed 0 accuracy 0.0040 (control 0.0040), seed 1 accuracy 0.0000 (control 0.0000), seed 2 accuracy 0.0040 (control 0.0000); threshold 0.99; observed on the listed sizes: copy L=4 m=3000 seed=0, copy L=4 m=3000 seed=1, copy L=4 m=3000 seed=2",
+    "output_tail": "accuracy\": 0.0, \"empty_control_accuracy\": 0.0, \"first_error\": {\"expected\": 2, \"instance\": 0, \"position\": 5, \"predicted\": 4}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 1, \"state_peak_words\": 7889, \"wrong_control_accuracy\": 0.0}, {\"accuracy\": 0.004, \"control_accuracy\": 0.0, \"empty_control_accuracy\": 0.0, \"first_error\": {\"expected\": 3, \"instance\": 0, \"position\": 4, \"predicted\": 2}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 2, \"state_peak_words\": 7889, \"wrong_control_accuracy\": 0.004}], \"size\": 4, \"status\": \"violated\", \"task\": \"copy\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.004,
+      "control_accuracy": 0.004,
+      "empty_control_accuracy": 0.004,
+      "first_error": {
+       "expected": 3,
+       "instance": 0,
+       "position": 4,
+       "predicted": 0
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 0,
+      "state_peak_words": 7889,
+      "wrong_control_accuracy": 0.004
+     },
+     {
+      "accuracy": 0.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 2,
+       "instance": 0,
+       "position": 5,
+       "predicted": 4
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 1,
+      "state_peak_words": 7889,
+      "wrong_control_accuracy": 0.0
+     },
+     {
+      "accuracy": 0.004,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 3,
+       "instance": 0,
+       "position": 4,
+       "predicted": 2
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 2,
+      "state_peak_words": 7889,
+      "wrong_control_accuracy": 0.004
+     }
+    ],
+    "source": "def collect_vocab(layout, examples):\n    vals = [0]\n    for k in layout:\n        v = layout[k]\n        if isinstance(v, bool):\n            continue\n        if isinstance(v, int):\n            vals.append(v)\n        elif isinstance(v, (list, tuple)):\n            for w in v:\n                if isinstance(w, int) and not isinstance(w, bool):\n                    vals.append(w)\n    if 'value_base' in layout and 'V' in layout:\n        vals.append(int(layout['value_base']) + int(layout['V']) - 1)\n    for ex in examples:\n        for tk in ex['tokens']:\n            vals.append(int(tk))\n        for q in ex['queries']:\n            vals.append(int(q[1]))\n    return max(vals) + 1\n\ndef mm(x, W):\n    return (x.reshape(-1, x.shape[-1]) @ W).reshape(x.shape[:-1] + (W.shape[1],))\n\ndef gw(x, dy):\n    return x.reshape(-1, x.shape[-1]).T @ dy.reshape(-1, dy.shape[-1])\n\ndef forward(params, X):\n    B, T = X.shape\n    d = params['E'].shape[1]\n    sq = np.sqrt(d)\n    h = params['E'][X] + params['P'][:T][None, :, :]\n    mask = np.tril(np.ones((T, T))) > 0\n    caches = []\n    for rd in params['rounds']:\n        A = mm(h, rd['Wa'])\n        C = mm(h, rd['Wc'])\n        Pp = mm(h, rd['Wp'])\n        S = np.matmul(Pp, A.transpose(0, 2, 1)) / sq\n        S = np.where(mask[None, :, :], S, -1e300)\n        S = S - S.max(axis=-1, keepdims=True)\n        Wt = np.exp(S)\n        Wt = Wt / Wt.sum(axis=-1, keepdims=True)\n        R = np.matmul(Wt, C)\n        g = h + mm(R, rd['Wo'])\n        z = mm(g, rd['Vm'])\n        u = np.maximum(z, 0.0)\n        hn = g + mm(u, rd['U'])\n        caches.append((h, A, C, Pp, Wt, R, g, z, u))\n        h = hn\n    return h, caches\n\ndef learn(layout, examples, seed):\n    rng = np.random.default_rng(seed)\n    d = 16\n    Vt = collect_vocab(layout, examples)\n    Tmax = 1\n    for ex in examples:\n        Tmax = max(Tmax, len(ex['tokens']))\n    Np = max(256, Tmax)\n    params = {'E': rng.normal(0.0, 0.1, (Vt, d)), 'P': rng.normal(0.0, 0.1, (Np, d)), 'rounds': []}\n    for l in range(2):\n        rd = {}\n        for nm in ['Wa', 'Wc', 'Wp', 'Wo', 'U', 'Vm']:\n            rd[nm] = rng.normal(0.0, 0.1, (d, d))\n        params['rounds'].append(rd)\n    params['O'] = rng.normal(0.0, 0.1, (d, Vt))\n    qbl = []\n    qtl = []\n    qyl = []\n    for i, ex in enumerate(examples):\n        for q in ex['queries']:\n            qbl.append(i)\n            qtl.append(int(q[0]))\n            qyl.append(int(q[1]))\n    if len(examples) == 0 or len(qbl) == 0:\n        return params\n    B = len(examples)\n    X = np.zeros((B, Tmax), dtype=int)\n    for i, ex in enumerate(examples):\n        X[i, :len(ex['tokens'])] = np.array(ex['tokens'], dtype=int)\n    qb = np.array(qbl, dtype=int)\n    qt = np.array(qtl, dtype=int)\n    qy = np.array(qyl, dtype=int)\n    Nq = len(qbl)\n    onehot = np.zeros((Nq, Vt))\n    onehot[np.arange(Nq), qy] = 1.0\n    sq = np.sqrt(d)\n    lr = 0.01\n    Xf = X.reshape(-1)\n    for epoch in range(50):\n        H2, caches = forward(params, X)\n        Hq = H2[qb, qt]\n        logits = Hq @ params['O']\n        logits = logits - logits.max(axis=1, keepdims=True)\n        pr = np.exp(logits)\n        pr = pr / pr.sum(axis=1, keepdims=True)\n        dlog = (pr - onehot) / Nq\n        dO = Hq.T @ dlog\n        dh = np.zeros(H2.shape)\n        np.add.at(dh, (qb, qt), dlog @ params['O'].T)\n        grads = []\n        for li in [1, 0]:\n            rd = params['rounds'][li]\n            h, A, C, Pp, Wt, R, g, z, u = caches[li]\n            gr = {}\n            gr['U'] = gw(u, dh)\n            du = mm(dh, rd['U'].T)\n            dz = du * (z > 0)\n            gr['Vm'] = gw(g, dz)\n            dg = dh + mm(dz, rd['Vm'].T)\n            gr['Wo'] = gw(R, dg)\n            dR = mm(dg, rd['Wo'].T)\n            dW = np.matmul(dR, C.transpose(0, 2, 1))\n            dC = np.matmul(Wt.transpose(0, 2, 1), dR)\n            dS = Wt * (dW - (dW * Wt).sum(axis=-1, keepdims=True))\n            dPp = np.matmul(dS, A) / sq\n            dA = np.matmul(dS.transpose(0, 2, 1), Pp) / sq\n            gr['Wp'] = gw(h, dPp)\n            gr['Wa'] = gw(h, dA)\n            gr['Wc'] = gw(h, dC)\n            dh = dg + mm(dPp, rd['Wp'].T) + mm(dA, rd['Wa'].T) + mm(dC, rd['Wc'].T)\n            grads.append((li, gr))\n        dE = np.zeros(params['E'].shape)\n        np.add.at(dE, Xf, dh.reshape(-1, d))\n        dPpos = dh.sum(axis=0)\n        for li, gr in grads:\n            rd = params['rounds'][li]\n            for nm in gr:\n                rd[nm] = rd[nm] - lr * gr[nm]\n        params['E'] = params['E'] - lr * dE\n        Pn = params['P'].copy()\n        Pn[:Tmax] = Pn[:Tmax] - lr * dPpos\n        params['P'] = Pn\n        params['O'] = params['O'] - lr * dO\n    return params\n\ndef init(layout, params):\n    return {'params': params, 't': 0, 'A': [[], []], 'C': [[], []], 'h': None}\n\ndef update(state, token):\n    params = state['params']\n    E = params['E']\n    Pm = params['P']\n    d = E.shape[1]\n    sq = np.sqrt(d)\n    tok = min(max(int(token), 0), E.shape[0] - 1)\n    t = min(state['t'], Pm.shape[0] - 1)\n    h = E[tok] + Pm[t]\n    for li in range(2):\n        rd = params['rounds'][li]\n        a = h @ rd['Wa']\n        c = h @ rd['Wc']\n        p = h @ rd['Wp']\n        state['A'][li].append(a)\n        state['C'][li].append(c)\n        Am = np.array(state['A'][li])\n        Cm = np.array(state['C'][li])\n        s = Am @ p / sq\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ Cm\n        g = h + r @ rd['Wo']\n        h = g + np.maximum(g @ rd['Vm'], 0.0) @ rd['U']\n    state['h'] = h\n    state['t'] = state['t'] + 1\n    return state\n\ndef predict(state):\n    if state['h'] is None:\n        return 0\n    return int(np.argmax(state['h'] @ state['params']['O']))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 3,
+    "counterexample": {
+     "accuracy": 0.0,
+     "control_accuracy": 0.0,
+     "examples": 3000,
+     "first_error": {
+      "expected": 3,
+      "instance": 0,
+      "position": 4,
+      "predicted": 5
+     },
+     "reason": "below_threshold",
+     "seed": 0,
+     "size": 4,
+     "task": "copy"
+    },
+    "decided": true,
+    "evidence": "copy at L=4 from m=3000 examples: seed 0 accuracy 0.0000 (control 0.0000), seed 1 accuracy 0.0000 (control 0.0000), seed 2 accuracy 0.0000 (control 0.0000); threshold 0.99; observed on the listed sizes: copy L=4 m=3000 seed=0, copy L=4 m=3000 seed=1, copy L=4 m=3000 seed=2",
+    "output_tail": "rol_accuracy\": 0.0, \"empty_control_accuracy\": 0.0, \"first_error\": {\"expected\": 3, \"instance\": 0, \"position\": 4, \"predicted\": 0}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 1, \"state_peak_words\": 4817, \"wrong_control_accuracy\": 0.0}, {\"accuracy\": 0.0, \"control_accuracy\": 0.0, \"empty_control_accuracy\": 0.0, \"first_error\": {\"expected\": 3, \"instance\": 0, \"position\": 4, \"predicted\": 2}, \"passed\": false, \"reason\": \"below_threshold\", \"seed\": 2, \"state_peak_words\": 4817, \"wrong_control_accuracy\": 0.0}], \"size\": 4, \"status\": \"violated\", \"task\": \"copy\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 3,
+       "instance": 0,
+       "position": 4,
+       "predicted": 5
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 0,
+      "state_peak_words": 4817,
+      "wrong_control_accuracy": 0.0
+     },
+     {
+      "accuracy": 0.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 3,
+       "instance": 0,
+       "position": 4,
+       "predicted": 0
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 1,
+      "state_peak_words": 4817,
+      "wrong_control_accuracy": 0.0
+     },
+     {
+      "accuracy": 0.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": {
+       "expected": 3,
+       "instance": 0,
+       "position": 4,
+       "predicted": 2
+      },
+      "passed": false,
+      "reason": "below_threshold",
+      "seed": 2,
+      "state_peak_words": 4817,
+      "wrong_control_accuracy": 0.0
+     }
+    ],
+    "source": "def scan(x, acc):\n    if isinstance(x, bool):\n        return\n    if isinstance(x, int):\n        acc.append(x)\n    elif isinstance(x, dict):\n        for v in x.values():\n            scan(v, acc)\n    elif isinstance(x, (list, tuple)):\n        for v in x:\n            scan(v, acc)\n\ndef mm(x, W):\n    sh = x.shape\n    return (x.reshape(-1, sh[-1]) @ W).reshape(sh[0], sh[1], W.shape[1])\n\ndef learn(layout, examples, seed):\n    d = 16\n    vals = []\n    scan(layout, vals)\n    Tmax = 1\n    for ex in examples:\n        toks = [int(t) for t in ex['tokens']]\n        vals.extend(toks)\n        Tmax = max(Tmax, len(toks))\n        for q in ex['queries']:\n            vals.append(int(q[1]))\n    V = max(vals) + 1 if len(vals) > 0 else 8\n    V = max(V, 2)\n    npos = max(64, Tmax + 1)\n    rng = np.random.default_rng(seed)\n    def nm(a, b):\n        return rng.normal(0.0, 0.1, size=(a, b))\n    E = nm(V, d)\n    P = nm(npos, d)\n    rounds = []\n    for l in range(2):\n        rounds.append([nm(d, d) for k in range(6)])\n    O = nm(d, V)\n    B = len(examples)\n    if B > 0:\n        T = Tmax\n        X = np.zeros((B, T), dtype=int)\n        M = np.zeros((B, T))\n        Y = np.zeros((B, T), dtype=int)\n        for b, ex in enumerate(examples):\n            toks = [int(t) for t in ex['tokens']]\n            X[b, :len(toks)] = toks\n            for q in ex['queries']:\n                pos = int(q[0])\n                if 0 <= pos < T:\n                    M[b, pos] = 1.0\n                    Y[b, pos] = min(max(int(q[1]), 0), V - 1)\n        N = M.sum()\n        if N > 0:\n            Xc = np.clip(X, 0, V - 1)\n            eyeV = np.eye(V)\n            onehotX = eyeV[Xc.reshape(-1)]\n            Yoh = eyeV[Y]\n            causal = np.tril(np.ones((T, T))) > 0\n            s = 1.0 / np.sqrt(d)\n            lr = 0.01\n            for epoch in range(50):\n                h = E[Xc] + P[:T][None, :, :]\n                caches = []\n                for R6 in rounds:\n                    Wa, Wc, Wp, Wo, U, Vm = R6\n                    A = mm(h, Wa)\n                    C = mm(h, Wc)\n                    Pq = mm(h, Wp)\n                    S = np.matmul(Pq, A.transpose(0, 2, 1)) * s\n                    S = np.where(causal[None, :, :], S, -1e30)\n                    S = S - S.max(axis=-1, keepdims=True)\n                    Wt = np.exp(S)\n                    Wt = Wt / Wt.sum(axis=-1, keepdims=True)\n                    R = np.matmul(Wt, C)\n                    g = h + mm(R, Wo)\n                    z = mm(g, Vm)\n                    u = np.maximum(z, 0.0)\n                    hn = g + mm(u, U)\n                    caches.append((h, A, C, Pq, Wt, R, g, z, u))\n                    h = hn\n                logits = mm(h, O)\n                logits = logits - logits.max(axis=-1, keepdims=True)\n                pr = np.exp(logits)\n                pr = pr / pr.sum(axis=-1, keepdims=True)\n                G = (pr - Yoh) * (M[:, :, None] / N)\n                dO = h.reshape(-1, d).T @ G.reshape(-1, V)\n                dh = mm(G, O.T)\n                grads = [None, None]\n                for li in [1, 0]:\n                    Wa, Wc, Wp, Wo, U, Vm = rounds[li]\n                    hp, A, C, Pq, Wt, R, g, z, u = caches[li]\n                    dU = u.reshape(-1, d).T @ dh.reshape(-1, d)\n                    du = mm(dh, U.T)\n                    dz = du * (z > 0)\n                    dVm = g.reshape(-1, d).T @ dz.reshape(-1, d)\n                    dg = dh + mm(dz, Vm.T)\n                    dWo = R.reshape(-1, d).T @ dg.reshape(-1, d)\n                    dR = mm(dg, Wo.T)\n                    dWt = np.matmul(dR, C.transpose(0, 2, 1))\n                    dC = np.matmul(Wt.transpose(0, 2, 1), dR)\n                    dS = Wt * (dWt - (dWt * Wt).sum(axis=-1, keepdims=True))\n                    dPq = np.matmul(dS, A) * s\n                    dA = np.matmul(dS.transpose(0, 2, 1), Pq) * s\n                    hf = hp.reshape(-1, d)\n                    dWa = hf.T @ dA.reshape(-1, d)\n                    dWc = hf.T @ dC.reshape(-1, d)\n                    dWp = hf.T @ dPq.reshape(-1, d)\n                    dh = dg + mm(dA, Wa.T) + mm(dC, Wc.T) + mm(dPq, Wp.T)\n                    grads[li] = [dWa, dWc, dWp, dWo, dU, dVm]\n                dE = onehotX.T @ dh.reshape(-1, d)\n                dP = dh.sum(axis=0)\n                E -= lr * dE\n                P[:T] -= lr * dP\n                O -= lr * dO\n                for li in range(2):\n                    for k in range(6):\n                        rounds[li][k] -= lr * grads[li][k]\n    return {'E': E.tolist(), 'P': P.tolist(), 'O': O.tolist(), 'rounds': [[w.tolist() for w in R6] for R6 in rounds]}\n\ndef init(layout, params):\n    E = np.array(params['E'], dtype=float)\n    P = np.array(params['P'], dtype=float)\n    O = np.array(params['O'], dtype=float)\n    rounds = [[np.array(w, dtype=float) for w in R6] for R6 in params['rounds']]\n    return {'E': E, 'P': P, 'O': O, 'rounds': rounds, 't': 0, 'A': [[], []], 'C': [[], []], 'h': None}\n\ndef update(state, token):\n    E = state['E']\n    P = state['P']\n    V = E.shape[0]\n    d = E.shape[1]\n    x = min(max(int(token), 0), V - 1)\n    pos = min(state['t'], P.shape[0] - 1)\n    h = E[x] + P[pos]\n    s = 1.0 / np.sqrt(d)\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, Vm = state['rounds'][l]\n        a = h @ Wa\n        c = h @ Wc\n        state['A'][l].append(a)\n        state['C'][l].append(c)\n        p = h @ Wp\n        Am = np.array(state['A'][l])\n        Cm = np.array(state['C'][l])\n        sc = (Am @ p) * s\n        sc = sc - sc.max()\n        w = np.exp(sc)\n        w = w / w.sum()\n        r = w @ Cm\n        g = h + r @ Wo\n        h = g + np.maximum(0.0, g @ Vm) @ U\n    state['h'] = h\n    state['t'] = state['t'] + 1\n    return state\n\ndef predict(state):\n    if state['h'] is None:\n        return 0\n    return int(np.argmax(state['h'] @ state['O']))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 4,
+    "counterexample": null,
+    "decided": false,
+    "evidence": "timing probe on 300 examples: learner failed at seed 0: NameError: name 'str' is not defined",
+    "output_tail": "",
+    "prover_fault": true,
+    "reasons": [
+     "timing probe on 300 examples: learner failed at seed 0: NameError: name 'str' is not defined"
+    ],
+    "results": null,
+    "source": "def vocab_size(layout, examples):\n    vals = [1]\n    if isinstance(layout, dict):\n        for k in layout:\n            v = layout[k]\n            if isinstance(v, int):\n                vals.append(int(v))\n            elif isinstance(v, (list, tuple)):\n                for u in v:\n                    if isinstance(u, int):\n                        vals.append(int(u))\n        if 'value_base' in layout and 'V' in layout:\n            vals.append(int(layout['value_base']) + int(layout['V']))\n    for ex in examples:\n        if len(ex['tokens']) > 0:\n            vals.append(int(max(ex['tokens'])))\n        for q in ex['queries']:\n            vals.append(int(q[1]))\n    return max(vals) + 1\n\ndef learn(layout, examples, seed):\n    d = 16\n    rng = np.random.default_rng(seed)\n    V = vocab_size(layout, examples)\n    T = 1\n    for ex in examples:\n        T = max(T, len(ex['tokens']))\n    npos = max(64, T)\n    params = {}\n    params['E'] = rng.normal(0.0, 0.1, (V, d))\n    params['P'] = rng.normal(0.0, 0.1, (npos, d))\n    for l in range(2):\n        for nm in ['Wa', 'Wc', 'Wp', 'Wo', 'U', 'Vm']:\n            params[nm + str(l)] = rng.normal(0.0, 0.1, (d, d))\n    params['O'] = rng.normal(0.0, 0.1, (d, V))\n    if len(examples) == 0:\n        return params\n    B = len(examples)\n    X = np.zeros((B, T), dtype=np.int64)\n    qb = []\n    qt = []\n    qy = []\n    for b, ex in enumerate(examples):\n        tk = ex['tokens']\n        X[b, :len(tk)] = np.array(tk, dtype=np.int64)\n        for q in ex['queries']:\n            pos = int(q[0])\n            if pos < 0 or pos >= len(tk):\n                continue\n            qb.append(b)\n            qt.append(pos)\n            qy.append(int(q[1]))\n    if len(qb) == 0:\n        return params\n    qb = np.array(qb, dtype=np.int64)\n    qt = np.array(qt, dtype=np.int64)\n    qy = np.array(qy, dtype=np.int64)\n    Nq = len(qb)\n    sc = 1.0 / np.sqrt(d)\n    mask = np.triu(np.full((T, T), -1e30), 1)\n    lr = 0.01\n    for epoch in range(50):\n        H = params['E'][X] + params['P'][:T][None, :, :]\n        caches = []\n        for l in range(2):\n            s = str(l)\n            Wa = params['Wa' + s]; Wc = params['Wc' + s]; Wp = params['Wp' + s]\n            Wo = params['Wo' + s]; U = params['U' + s]; Vm = params['Vm' + s]\n            A = H @ Wa\n            C = H @ Wc\n            Q = H @ Wp\n            S = np.matmul(Q, A.transpose(0, 2, 1)) * sc + mask\n            S = S - S.max(axis=-1, keepdims=True)\n            W = np.exp(S)\n            W = W / W.sum(axis=-1, keepdims=True)\n            R = np.matmul(W, C)\n            G = H + R @ Wo\n            Z = G @ Vm\n            M = np.maximum(Z, 0.0)\n            Hn = G + M @ U\n            caches.append((H, A, C, Q, W, R, G, Z, M))\n            H = Hn\n        Hs = H[qb, qt]\n        lg = Hs @ params['O']\n        lg = lg - lg.max(axis=1, keepdims=True)\n        pr = np.exp(lg)\n        pr = pr / pr.sum(axis=1, keepdims=True)\n        pr[np.arange(Nq), qy] -= 1.0\n        dlg = pr / Nq\n        grads = {}\n        grads['O'] = Hs.T @ dlg\n        dH = np.zeros((B, T, d))\n        np.add.at(dH, (qb, qt), dlg @ params['O'].T)\n        for l in [1, 0]:\n            s = str(l)\n            Wa = params['Wa' + s]; Wc = params['Wc' + s]; Wp = params['Wp' + s]\n            Wo = params['Wo' + s]; U = params['U' + s]; Vm = params['Vm' + s]\n            Hp, A, C, Q, W, R, G, Z, M = caches[l]\n            dHf = dH.reshape(-1, d)\n            grads['U' + s] = M.reshape(-1, d).T @ dHf\n            dZ = (dH @ U.T) * (Z > 0)\n            grads['Vm' + s] = G.reshape(-1, d).T @ dZ.reshape(-1, d)\n            dG = dH + dZ @ Vm.T\n            grads['Wo' + s] = R.reshape(-1, d).T @ dG.reshape(-1, d)\n            dR = dG @ Wo.T\n            dW = np.matmul(dR, C.transpose(0, 2, 1))\n            dC = np.matmul(W.transpose(0, 2, 1), dR)\n            dS = W * (dW - (dW * W).sum(axis=-1, keepdims=True)) * sc\n            dQ = np.matmul(dS, A)\n            dA = np.matmul(dS.transpose(0, 2, 1), Q)\n            Hf = Hp.reshape(-1, d)\n            grads['Wp' + s] = Hf.T @ dQ.reshape(-1, d)\n            grads['Wa' + s] = Hf.T @ dA.reshape(-1, d)\n            grads['Wc' + s] = Hf.T @ dC.reshape(-1, d)\n            dH = dG + dQ @ Wp.T + dA @ Wa.T + dC @ Wc.T\n        gE = np.zeros_like(params['E'])\n        np.add.at(gE, X.reshape(-1), dH.reshape(-1, d))\n        grads['E'] = gE\n        gP = np.zeros_like(params['P'])\n        gP[:T] = dH.sum(axis=0)\n        grads['P'] = gP\n        for k in grads:\n            params[k] = params[k] - lr * grads[k]\n    return params\n\ndef init(layout, params):\n    return {'p': params, 'A': [[], []], 'C': [[], []], 't': 0, 'h': None}\n\ndef update(state, token):\n    p = state['p']\n    d = p['E'].shape[1]\n    V = p['E'].shape[0]\n    npos = p['P'].shape[0]\n    tok = int(token)\n    if tok >= V:\n        tok = V - 1\n    if tok < 0:\n        tok = 0\n    t = state['t']\n    h = p['E'][tok] + p['P'][min(t, npos - 1)]\n    sc = 1.0 / np.sqrt(d)\n    for l in range(2):\n        s = str(l)\n        a = h @ p['Wa' + s]\n        c = h @ p['Wc' + s]\n        q = h @ p['Wp' + s]\n        state['A'][l].append(a)\n        state['C'][l].append(c)\n        Am = np.array(state['A'][l])\n        Cm = np.array(state['C'][l])\n        sv = (Am @ q) * sc\n        sv = sv - sv.max()\n        w = np.exp(sv)\n        w = w / w.sum()\n        r = w @ Cm\n        g = h + r @ p['Wo' + s]\n        h = g + np.maximum(g @ p['Vm' + s], 0.0) @ p['U' + s]\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    p = state['p']\n    if state['h'] is None:\n        return 0\n    return int(np.argmax(state['h'] @ p['O']))\n",
+    "status": "unknown"
+   }
+  ],
+  "O7.a": [
+   {
+    "attempt": 1,
+    "counterexample": {
+     "check": "state_words",
+     "declared_state_words": 14144.0,
+     "size": 8,
+     "state_peak_words": 33080,
+     "task": "recall"
+    },
+    "decided": true,
+    "evidence": "recall: K=8 query accuracy 1.0000, K=32 query accuracy 1.0000, K=64 query accuracy 1.0000; threshold 0.99; observed on the listed sizes: K=8, K=32, K=64; peak state words 33080 exceed the declared 4*(3*K+1)*(32*ceiling(log(K+1)/log(2)))+10*(32*ceiling(log(K+1)/log(2)))+2*(3*K+1)+K+6 = 14144 at K=8",
+    "output_tail": "0, \"size\": 8, \"state_peak_words\": 33080}, {\"accuracy\": 1.0, \"declared_state_words\": 76648.0, \"first_error\": null, \"instance_accuracy\": 1.0, \"instances\": 500, \"metric\": \"query\", \"passed\": true, \"queries\": 16000, \"query_accuracy\": 1.0, \"size\": 32, \"state_peak_words\": 175624}, {\"accuracy\": 1.0, \"declared_state_words\": 175624.0, \"first_error\": null, \"instance_accuracy\": 1.0, \"instances\": 500, \"metric\": \"query\", \"passed\": true, \"queries\": 32000, \"query_accuracy\": 1.0, \"size\": 64, \"state_peak_words\": 397704}], \"seed\": 0, \"status\": \"violated\", \"task\": \"recall\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 14144.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": true,
+      "queries": 4000,
+      "query_accuracy": 1.0,
+      "size": 8,
+      "state_peak_words": 33080
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 76648.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": true,
+      "queries": 16000,
+      "query_accuracy": 1.0,
+      "size": 32,
+      "state_peak_words": 175624
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 175624.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": true,
+      "queries": 32000,
+      "query_accuracy": 1.0,
+      "size": 64,
+      "state_peak_words": 397704
+     }
+    ],
+    "source": "PARAMS = {}\n\ndef nbits(K):\n    b = 0\n    while 2 ** b < K + 1:\n        b += 1\n    return b\n\ndef init(layout):\n    K = int(layout['n_keys'])\n    vb = int(layout['value_base'])\n    NV = int(layout['V'])\n    b = nbits(K)\n    d = 32 * b\n    n = 3 * K + 1\n    nv = K + 6\n    KEY = 0\n    PK = b\n    VAL = 2 * b\n    OUT = 2 * b + 4\n    ISV = 2 * b + 8\n    ONE = 2 * b + 9\n    T = 2 * b + 10\n    T2 = 2 * b + 11\n    vocab = max(nv, vb + NV, int(layout.get('QSEP', 0)) + 1, K)\n    E = np.zeros((vocab, d))\n    for k in range(K):\n        for j in range(b):\n            E[k, KEY + j] = 1.0 if (k >> j) & 1 else -1.0\n    for v in range(NV):\n        E[vb + v, VAL + v] = 1.0\n        E[vb + v, ISV] = 1.0\n    P = np.zeros((n, d))\n    for t in range(n):\n        P[t, ONE] = 1.0\n        P[t, T] = float(t)\n        P[t, T2] = float(t) * float(t)\n    s = 30.0 * np.sqrt(d)\n    beta = 30.0 * np.sqrt(d)\n    Wa1 = np.zeros((d, d)); Wc1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wo1 = np.zeros((d, d))\n    Wa1[0, T] = 1.0\n    Wa1[1, T2] = 1.0\n    Wp1[0, T] = 2.0 * s\n    Wp1[0, ONE] = -2.0 * s\n    Wp1[1, ONE] = -s\n    for j in range(b):\n        Wc1[j, KEY + j] = 1.0\n        Wo1[PK + j, j] = 1.0\n    Wa2 = np.zeros((d, d)); Wc2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wo2 = np.zeros((d, d))\n    for j in range(b):\n        Wa2[j, PK + j] = 1.0\n        Wp2[j, KEY + j] = beta\n    Wa2[b, ISV] = 1.0\n    Wp2[b, ONE] = beta\n    for v in range(NV):\n        Wc2[v, VAL + v] = 1.0\n        Wo2[OUT + v, v] = 1.0\n    U = np.zeros((d, d)); Vm = np.zeros((d, d))\n    O = np.zeros((nv, d))\n    for v in range(NV):\n        if vb + v < nv:\n            O[vb + v, OUT + v] = 1.0\n    PARAMS[(4, n, d)] = {'E': E, 'P': P, 'rounds': [(Wa1, Wc1, Wp1, Wo1, U, Vm), (Wa2, Wc2, Wp2, Wo2, U, Vm)], 'O': O, 'd': d}\n    state = {'arena': np.zeros((4, n, d)), 'buf': np.zeros((10, d)), 'sw': np.zeros((2, n)), 'logits': np.zeros(nv)}\n    return state\n\ndef update(state, token):\n    arena = state['arena']\n    buf = state['buf']\n    sw = state['sw']\n    prm = PARAMS[arena.shape]\n    d = prm['d']\n    t = int(buf[9, 0])\n    buf[0] = prm['E'][int(token)] + prm['P'][t]\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, Vm = prm['rounds'][l]\n        A = arena[2 * l]\n        C = arena[2 * l + 1]\n        h = buf[0]\n        buf[1] = Wa @ h\n        buf[2] = Wc @ h\n        buf[3] = Wp @ h\n        A[t] = buf[1]\n        C[t] = buf[2]\n        sw[0, :t + 1] = (A[:t + 1] @ buf[3]) / np.sqrt(d)\n        m = np.max(sw[0, :t + 1])\n        sw[1, :t + 1] = np.exp(sw[0, :t + 1] - m)\n        sw[1, :t + 1] = sw[1, :t + 1] / np.sum(sw[1, :t + 1])\n        buf[4] = sw[1, :t + 1] @ C[:t + 1]\n        buf[5] = buf[0] + Wo @ buf[4]\n        buf[6] = np.maximum(0.0, Vm @ buf[5])\n        buf[0] = buf[5] + U @ buf[6]\n    buf[9, 0] = t + 1\n    return state\n\ndef predict(state):\n    prm = PARAMS[state['arena'].shape]\n    state['logits'][:] = prm['O'] @ state['buf'][0]\n    return int(np.argmax(state['logits']))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 2,
+    "counterexample": null,
+    "decided": false,
+    "evidence": "construction failed: IndexError: index 256 is out of bounds for axis 1 with size 256",
+    "output_tail": "{\"counterexample\": null, \"evidence\": \"construction failed: IndexError: index 256 is out of bounds for axis 1 with size 256\", \"prover_fault\": true, \"status\": \"unknown\", \"tier\": \"executed\"}\n",
+    "prover_fault": true,
+    "reasons": [],
+    "results": null,
+    "source": "MODEL = {}\n\ndef build(layout):\n    K = int(layout['n_keys'])\n    vb = int(layout['value_base'])\n    nv = int(layout['V'])\n    qs = int(layout['QSEP'])\n    Lb = 0\n    while (1 << Lb) < K + 1:\n        Lb += 1\n    d = 32 * Lb\n    n = 3 * K + 1\n    KEY = 0\n    VAL = K\n    ISK = K + nv\n    ISV = ISK + 1\n    CON = ISV + 1\n    POS = CON + 1\n    PK = POS + 1\n    RV = PK + K\n    vocab = max(qs, vb + nv - 1, K - 1) + 1\n    nout = max(K + 6, vocab)\n    E = np.zeros((vocab, d))\n    for tok in range(vocab):\n        if tok < K:\n            E[tok, KEY + tok] = 1.0\n            E[tok, ISK] = 1.0\n        elif vb <= tok < vb + nv:\n            E[tok, VAL + tok - vb] = 1.0\n            E[tok, ISV] = 1.0\n    sq = np.sqrt(d)\n    lam1 = 25.0 * sq\n    lam2 = 50.0 * sq\n    M = 1000.0\n    Wa1 = np.zeros((d, d)); Wc1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wo1 = np.zeros((d, d))\n    Wa1[POS, 0] = 1.0\n    Wa1[ISK, 1] = 1.0\n    Wp1[ISV, 0] = lam1\n    Wp1[ISV, 1] = lam1 * M\n    for j in range(K):\n        Wc1[KEY + j, j] = 1.0\n        Wo1[j, PK + j] = 1.0\n    Wa2 = np.zeros((d, d)); Wc2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wo2 = np.zeros((d, d))\n    for j in range(K):\n        Wa2[PK + j, j] = 1.0\n        Wp2[KEY + j, j] = lam2\n    Wa2[ISV, K] = 1.0\n    Wp2[CON, K] = lam2\n    for j in range(nv):\n        Wc2[VAL + j, j] = 1.0\n        Wo2[j, RV + j] = 1.0\n    U = np.zeros((d, d)); Vm = np.zeros((d, d))\n    O = np.zeros((d, nout))\n    for j in range(nv):\n        O[RV + j, vb + j] = 1.0\n    rounds = [(Wa1, Wc1, Wp1, Wo1, U, Vm), (Wa2, Wc2, Wp2, Wo2, U, Vm)]\n    return {'d': d, 'n': n, 'E': E, 'CON': CON, 'POS': POS, 'rounds': rounds, 'O': O, 'nout': nout, 'vocab': vocab}\n\ndef init(layout):\n    m = build(layout)\n    MODEL.clear()\n    MODEL.update(m)\n    d = m['d']; n = m['n']\n    return {'A1': np.zeros((n, d)), 'C1': np.zeros((n, d)), 'A2': np.zeros((n, d)), 'C2': np.zeros((n, d)), 't': 0, 'out': np.zeros(m['nout'])}\n\ndef update(state, token):\n    m = MODEL\n    d = m['d']\n    t = state['t']\n    tok = int(token)\n    h = np.zeros(d)\n    if 0 <= tok < m['vocab']:\n        h = h + m['E'][tok]\n    h[m['CON']] += 1.0\n    h[m['POS']] += float(t)\n    sq = np.sqrt(d)\n    names = [('A1', 'C1'), ('A2', 'C2')]\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, Vm = m['rounds'][l]\n        A = state[names[l][0]]\n        C = state[names[l][1]]\n        A[t] = h @ Wa\n        C[t] = h @ Wc\n        p = h @ Wp\n        s = (A[:t + 1] @ p) / sq\n        s = s - np.max(s)\n        w = np.exp(s)\n        w = w / np.sum(w)\n        r = w @ C[:t + 1]\n        g = h + r @ Wo\n        h = g + np.maximum(0.0, g @ Vm) @ U\n    state['out'] = h @ m['O']\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    return int(np.argmax(state['out']))\n",
+    "status": "unknown"
+   },
+   {
+    "attempt": 3,
+    "counterexample": null,
+    "decided": false,
+    "evidence": "construction failed: IndexError: index 260 is out of bounds for axis 1 with size 256",
+    "output_tail": "{\"counterexample\": null, \"evidence\": \"construction failed: IndexError: index 260 is out of bounds for axis 1 with size 256\", \"prover_fault\": true, \"status\": \"unknown\", \"tier\": \"executed\"}\n",
+    "prover_fault": true,
+    "reasons": [],
+    "results": null,
+    "source": "PARAMS = {}\n\n\ndef lget(layout, name, default):\n    try:\n        if name in layout:\n            return layout[name]\n    except Exception:\n        pass\n    return default\n\n\ndef build(layout):\n    K = int(lget(layout, 'n_keys', 8))\n    vb = int(lget(layout, 'value_base', K))\n    qsep = int(lget(layout, 'QSEP', vb + 4))\n    kb = int(lget(layout, 'key_base', 0))\n    nv = int(lget(layout, 'n_values', lget(layout, 'V', 4)))\n    if qsep > vb:\n        nv = min(nv, qsep - vb)\n    n = 3 * K + 1\n    d = 32 * int(K).bit_length()\n    nv = max(1, min(nv, d - 2 * K - 4))\n    PRV = K + nv\n    ISK = 2 * K + nv\n    POS = ISK + 1\n    ISV = ISK + 2\n    ONE = ISK + 3\n    Lout = K + 6\n    sd = np.sqrt(d)\n    gam = 50.0\n    beta = gam * 5.0 * (n + 10)\n    alpha = 50.0\n    maxtok = max(kb + K - 1, vb + nv - 1, qsep, 0)\n    E = np.zeros((maxtok + 1, d))\n    E[:, ONE] = 1.0\n    for k in range(K):\n        E[kb + k, k] = 1.0\n        E[kb + k, ISK] = 1.0\n    for v in range(nv):\n        E[vb + v, :] = 0.0\n        E[vb + v, ONE] = 1.0\n        E[vb + v, K + v] = 1.0\n        E[vb + v, ISV] = 1.0\n    Wa = [np.zeros((d, d)), np.zeros((d, d))]\n    Wc = [np.zeros((d, d)), np.zeros((d, d))]\n    Wp = [np.zeros((d, d)), np.zeros((d, d))]\n    Wo = [np.zeros((d, d)), np.zeros((d, d))]\n    U = [np.zeros((d, d)), np.zeros((d, d))]\n    Vm = [np.zeros((d, d)), np.zeros((d, d))]\n    # round 1: bind each position to the most recent key (by position)\n    Wa[0][0, POS] = 1.0\n    Wa[0][1, ISK] = 1.0\n    Wp[0][0, ONE] = gam * sd\n    Wp[0][1, ONE] = beta * sd\n    for k in range(K):\n        Wc[0][k, k] = 1.0\n        Wo[0][PRV + k, k] = 1.0\n    # round 2: probe with own key, match stored previous key on value positions\n    for k in range(K):\n        Wa[1][k, PRV + k] = 1.0\n        Wp[1][k, k] = alpha * sd\n    Wa[1][K, ISV] = 1.0\n    Wp[1][K, ONE] = alpha * sd\n    for v in range(nv):\n        Wc[1][v, K + v] = 1.0\n        Wo[1][K + v, v] = 1.0\n    O = np.zeros((d, Lout))\n    if vb + nv <= Lout:\n        off = 0\n        for v in range(nv):\n            O[K + v, vb + v] = 1.0\n    else:\n        off = vb\n        for v in range(nv):\n            O[K + v, v] = 1.0\n    return {'K': K, 'n': n, 'd': d, 'E': E, 'POS': POS, 'ONE': ONE, 'Wa': Wa, 'Wc': Wc,\n            'Wp': Wp, 'Wo': Wo, 'U': U, 'V': Vm, 'O': O, 'off': off, 'Lout': Lout}\n\n\ndef init(layout):\n    P = build(layout)\n    PARAMS[P['K']] = P\n    n = P['n']\n    d = P['d']\n    return {'A': np.zeros((4, n, d)), 'buf': np.zeros((10, d)),\n            'sw': np.zeros((2, n)), 'logits': np.zeros(P['Lout'])}\n\n\ndef update(state, token):\n    A = state['A']\n    buf = state['buf']\n    sw = state['sw']\n    n = A.shape[1]\n    K = (n - 1) // 3\n    P = PARAMS[K]\n    d = P['d']\n    sd = np.sqrt(d)\n    t = int(round(buf[9, 0]))\n    tok = int(token)\n    E = P['E']\n    if 0 <= tok < E.shape[0]:\n        buf[0] = E[tok]\n    else:\n        buf[0] = 0.0\n        buf[0, P['ONE']] = 1.0\n    buf[0, P['POS']] += float(t)\n    h = buf[0].copy()\n    for l in range(2):\n        a = P['Wa'][l] @ h\n        c = P['Wc'][l] @ h\n        p = P['Wp'][l] @ h\n        buf[1] = a\n        buf[2] = c\n        buf[3] = p\n        if t < n:\n            A[2 * l, t] = a\n            A[2 * l + 1, t] = c\n            rA = A[2 * l, :t + 1]\n            rC = A[2 * l + 1, :t + 1]\n        else:\n            rA = np.vstack([A[2 * l], a[None, :]])\n            rC = np.vstack([A[2 * l + 1], c[None, :]])\n        s = rA @ p / sd\n        s = s - np.max(s)\n        w = np.exp(s)\n        w = w / np.sum(w)\n        if t < n:\n            sw[0, :t + 1] = s\n            sw[1, :t + 1] = w\n        r = w @ rC\n        buf[4] = r\n        g = h + P['Wo'][l] @ r\n        buf[5] = g\n        vg = np.maximum(0.0, P['V'][l] @ g)\n        buf[6] = vg\n        h = g + P['U'][l] @ vg\n        buf[7 + l] = h\n    state['logits'][:] = h @ P['O']\n    buf[9, 0] = float(t + 1)\n    return state\n\n\ndef predict(state):\n    n = state['A'].shape[1]\n    K = (n - 1) // 3\n    P = PARAMS[K]\n    return int(np.argmax(state['logits'])) + int(P['off'])\n",
+    "status": "unknown"
+   },
+   {
+    "attempt": 4,
+    "counterexample": null,
+    "decided": false,
+    "evidence": "construction failed: AssertionError: ",
+    "output_tail": "{\"counterexample\": null, \"evidence\": \"construction failed: AssertionError: \", \"prover_fault\": true, \"status\": \"unknown\", \"tier\": \"executed\"}\n",
+    "prover_fault": true,
+    "reasons": [],
+    "results": null,
+    "source": "PARAMS = {}\n\ndef init(layout):\n    K = int(layout['n_keys'])\n    Vv = int(layout['V'])\n    vb = int(layout['value_base'])\n    qs = int(layout['QSEP'])\n    d = 32 * K.bit_length()\n    n = 3 * K + 1\n    T = max(K - 1, vb + Vv - 1, qs) + 1\n    Vout = max(T, vb + Vv)\n    nb = n.bit_length()\n    M = 2 ** nb\n    TOK = 0\n    PT = T\n    POS = 2 * T\n    PRV = POS + nb\n    VAL = PRV + nb\n    assert VAL + Vv <= d\n    E = np.zeros((T, d))\n    for i in range(T):\n        E[i, TOK + i] = 1.0\n    P = np.zeros((n, d))\n    for t in range(n):\n        q = (t - 1) % M\n        for j in range(nb):\n            P[t, POS + j] = 1.0 if (t >> j) & 1 else -1.0\n            P[t, PRV + j] = 1.0 if (q >> j) & 1 else -1.0\n    sd = np.sqrt(d)\n    b1 = 25.0 * sd\n    b2 = 50.0 * sd\n    Wa1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wc1 = np.zeros((d, d)); Wo1 = np.zeros((d, d))\n    for j in range(nb):\n        Wa1[POS + j, POS + j] = 1.0\n        Wp1[POS + j, PRV + j] = b1\n    for i in range(T):\n        Wc1[TOK + i, TOK + i] = 1.0\n        Wo1[PT + i, TOK + i] = 1.0\n    Wa2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wc2 = np.zeros((d, d)); Wo2 = np.zeros((d, d))\n    for i in range(T):\n        Wa2[TOK + i, PT + i] = 1.0\n        Wp2[TOK + i, TOK + i] = b2\n    for v in range(Vv):\n        Wc2[VAL + v, TOK + vb + v] = 1.0\n        Wo2[VAL + v, VAL + v] = 1.0\n    U1 = np.zeros((d, d)); Vm1 = np.zeros((d, d)); U2 = np.zeros((d, d)); Vm2 = np.zeros((d, d))\n    O = np.zeros((d, Vout))\n    for v in range(Vv):\n        O[VAL + v, vb + v] = 1.0\n    PARAMS.clear()\n    PARAMS.update({'E': E, 'P': P, 'd': d, 'n': n, 'T': T, 'O': O,\n                   'rounds': [(Wa1, Wc1, Wp1, Wo1, U1, Vm1), (Wa2, Wc2, Wp2, Wo2, U2, Vm2)]})\n    state = {\n        'A1': np.zeros((n, d)), 'C1': np.zeros((n, d)),\n        'A2': np.zeros((n, d)), 'C2': np.zeros((n, d)),\n        'h': np.zeros(d), 'g': np.zeros(d), 'a': np.zeros(d), 'c': np.zeros(d),\n        'p': np.zeros(d), 'r': np.zeros(d), 'm': np.zeros(d),\n        'scores': np.zeros(n), 'weights': np.zeros(n),\n        'logits': np.zeros(Vout), 't': 0}\n    return state\n\ndef update(state, token):\n    E = PARAMS['E']; P = PARAMS['P']; d = PARAMS['d']; T = PARAMS['T']\n    t = state['t']\n    h = state['h']\n    tok = int(token)\n    h[:] = P[t]\n    if 0 <= tok < T:\n        h += E[tok]\n    sd = np.sqrt(d)\n    names = [('A1', 'C1'), ('A2', 'C2')]\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, Vm = PARAMS['rounds'][l]\n        A = state[names[l][0]]; C = state[names[l][1]]\n        state['a'][:] = Wa @ h\n        state['c'][:] = Wc @ h\n        state['p'][:] = Wp @ h\n        A[t] = state['a']\n        C[t] = state['c']\n        s = state['scores']\n        w = state['weights']\n        s[:t + 1] = (A[:t + 1] @ state['p']) / sd\n        top = np.max(s[:t + 1])\n        w[:t + 1] = np.exp(s[:t + 1] - top)\n        w[:t + 1] /= np.sum(w[:t + 1])\n        state['r'][:] = w[:t + 1] @ C[:t + 1]\n        state['g'][:] = h + Wo @ state['r']\n        state['m'][:] = np.maximum(0.0, Vm @ state['g'])\n        h[:] = state['g'] + U @ state['m']\n    state['logits'][:] = h @ PARAMS['O']\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    return int(np.argmax(state['logits']))\n",
+    "status": "unknown"
+   }
+  ],
+  "O9.a": [
+   {
+    "attempt": 1,
+    "counterexample": {
+     "accuracy": 0.564,
+     "first_error": {
+      "expected": 9,
+      "instance": 0,
+      "position": 19,
+      "predicted": 8,
+      "size": 4
+     },
+     "seed": 0,
+     "size": 4,
+     "task": "composition",
+     "threshold": 0.99
+    },
+    "decided": true,
+    "evidence": "composition: T=4 query accuracy 0.5640, T=16 query accuracy 0.1770, T=32 query accuracy 0.0906; threshold 0.99; observed on the listed sizes: T=4, T=16, T=32; peak state words 8930 exceed the declared 4*(4*T+3)*(32*ceiling(log(T+1)/log(2)))+10*(32*ceiling(log(T+1)/log(2)))+2*(4*T+3)+T+2 = 8300 at T=4",
+    "output_tail": "cted\": 32, \"size\": 16}, \"instance_accuracy\": 0.0, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 8000, \"query_accuracy\": 0.177, \"size\": 16, \"state_peak_words\": 53282}, {\"accuracy\": 0.090625, \"declared_state_words\": 102824.0, \"first_error\": {\"expected\": 79, \"instance\": 0, \"position\": 131, \"predicted\": 78, \"size\": 32}, \"instance_accuracy\": 0.0, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 16000, \"query_accuracy\": 0.090625, \"size\": 32, \"state_peak_words\": 125378}], \"seed\": 0, \"status\": \"violated\", \"task\": \"composition\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.564,
+      "declared_state_words": 8300.0,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 8,
+       "size": 4
+      },
+      "instance_accuracy": 0.262,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 2000,
+      "query_accuracy": 0.564,
+      "size": 4,
+      "state_peak_words": 8930
+     },
+     {
+      "accuracy": 0.177,
+      "declared_state_words": 44632.0,
+      "first_error": {
+       "expected": 39,
+       "instance": 0,
+       "position": 67,
+       "predicted": 32,
+       "size": 16
+      },
+      "instance_accuracy": 0.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 8000,
+      "query_accuracy": 0.177,
+      "size": 16,
+      "state_peak_words": 53282
+     },
+     {
+      "accuracy": 0.090625,
+      "declared_state_words": 102824.0,
+      "first_error": {
+       "expected": 79,
+       "instance": 0,
+       "position": 131,
+       "predicted": 78,
+       "size": 32
+      },
+      "instance_accuracy": 0.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 16000,
+      "query_accuracy": 0.090625,
+      "size": 32,
+      "state_peak_words": 125378
+     }
+    ],
+    "source": "PARAMS = []\n\ndef poscode(t, K, N):\n    k = np.arange(1, K + 1)\n    ang = 2.0 * np.pi * k * t / N\n    v = np.zeros(2 * K)\n    v[0::2] = np.cos(ang)\n    v[1::2] = np.sin(ang)\n    return v\n\ndef shiftmat(K, N, s):\n    M = np.zeros((2 * K, 2 * K))\n    for k in range(1, K + 1):\n        w = 2.0 * np.pi * k * s / N\n        c = np.cos(w)\n        sn = np.sin(w)\n        i = 2 * (k - 1)\n        M[i, i] = c\n        M[i, i + 1] = sn\n        M[i + 1, i] = -sn\n        M[i + 1, i + 1] = c\n    return M\n\ndef build(layout):\n    T = int(layout['T'])\n    xb = int(layout['x_base']); yb = int(layout['y_base']); zb = int(layout['z_base'])\n    seps = [int(layout['GSEP']), int(layout['FSEP']), int(layout['QSEP'])]\n    d = 32 * int(T).bit_length()\n    XI = 0; YI = T; ZI = 2 * T\n    FX = 3 * T; FY = 3 * T + 1; FZ = 3 * T + 2; FS = 3 * T + 3; ONE = 3 * T + 4; PO = 3 * T + 5\n    nmax = 4 * T + 8\n    N = nmax + (nmax % 2)\n    K = min((d - PO) // 2, N // 2 - 1)\n    nv = max(xb + T, yb + T, zb + T, max(seps) + 1)\n    E = np.zeros((nv, d))\n    for i in range(T):\n        E[xb + i, XI + i] = 1.0; E[xb + i, FX] = 1.0\n        E[yb + i, YI + i] = 1.0; E[yb + i, FY] = 1.0\n        E[zb + i, ZI + i] = 1.0; E[zb + i, FZ] = 1.0\n    for s in seps:\n        E[s, FS] = 1.0\n    E[:, ONE] = 1.0\n    Pos = np.zeros((nmax, d))\n    for t in range(nmax):\n        Pos[t, PO:PO + 2 * K] = poscode(t, K, N)\n    sq = np.sqrt(d)\n    br = 8.0; bb = 8.0; G = 32.0 * K + 100.0; b2 = 50.0; G2 = 200.0\n    P = slice(PO, PO + 2 * K)\n    Wa1 = np.zeros((d, d)); Wa1[P, P] = np.eye(2 * K); Wa1[FY, FY] = 1.0\n    Wp1 = np.zeros((d, d)); Wp1[P, P] = sq * br * shiftmat(K, N, 1)\n    for x in range(T):\n        Wp1[P, XI + x] = sq * bb * (poscode(2 * x + 1, K, N) + poscode(2 * x + 2, K, N))\n        Wp1[FY, XI + x] = sq * G\n    Wc1 = np.zeros((d, d)); Wc1[YI:YI + T, YI:YI + T] = np.eye(T)\n    Wo1 = np.eye(d); U1 = np.zeros((d, d)); V1 = np.zeros((d, d))\n    Wa2 = np.zeros((d, d)); Wa2[YI:YI + T, YI:YI + T] = np.eye(T); Wa2[FZ, FZ] = 1.0\n    Wp2 = np.zeros((d, d)); Wp2[YI:YI + T, YI:YI + T] = sq * b2 * np.eye(T); Wp2[FZ, ONE] = sq * G2\n    Wc2 = np.zeros((d, d)); Wc2[ZI:ZI + T, ZI:ZI + T] = np.eye(T)\n    Wo2 = np.eye(d); U2 = np.zeros((d, d)); V2 = np.zeros((d, d))\n    O = np.zeros((T + 2, d))\n    for i in range(T):\n        O[i, ZI + i] = 1.0\n    return {'d': d, 'E': E, 'Pos': Pos, 'K': K, 'N': N, 'PO': PO,\n            'rounds': [(Wa1, Wc1, Wp1, Wo1, U1, V1), (Wa2, Wc2, Wp2, Wo2, U2, V2)],\n            'O': O, 'T': T, 'zb': zb}\n\ndef init(layout):\n    PARAMS.append(build(layout))\n    idx = len(PARAMS) - 1\n    d = PARAMS[idx]['d']\n    return {'pid': idx, 't': 0, 'A1': np.zeros((0, d)), 'C1': np.zeros((0, d)),\n            'A2': np.zeros((0, d)), 'C2': np.zeros((0, d)), 'h': np.zeros(d)}\n\ndef update(state, token):\n    P = PARAMS[state['pid']]\n    d = P['d']; t = state['t']; tok = int(token)\n    E = P['E']\n    h = np.zeros(d)\n    if 0 <= tok < E.shape[0]:\n        h = h + E[tok]\n    if t < P['Pos'].shape[0]:\n        h = h + P['Pos'][t]\n    else:\n        h[P['PO']:P['PO'] + 2 * P['K']] += poscode(t, P['K'], P['N'])\n    names = [('A1', 'C1'), ('A2', 'C2')]\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, V = P['rounds'][l]\n        a = Wa @ h; c = Wc @ h; p = Wp @ h\n        A = np.vstack([state[names[l][0]], a[None, :]])\n        C = np.vstack([state[names[l][1]], c[None, :]])\n        state[names[l][0]] = A; state[names[l][1]] = C\n        s = A @ p / np.sqrt(d)\n        s = s - s.max()\n        w = np.exp(s); w = w / w.sum()\n        r = w @ C\n        g = h + Wo @ r\n        h = g + U @ np.maximum(0.0, V @ g)\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    P = PARAMS[state['pid']]\n    logits = P['O'] @ state['h']\n    T = P['T']\n    i = int(np.argmax(logits[:T]))\n    return P['zb'] + i\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 2,
+    "counterexample": {
+     "accuracy": 0.564,
+     "first_error": {
+      "expected": 9,
+      "instance": 0,
+      "position": 19,
+      "predicted": 8,
+      "size": 4
+     },
+     "seed": 0,
+     "size": 4,
+     "task": "composition",
+     "threshold": 0.99
+    },
+    "decided": true,
+    "evidence": "composition: T=4 query accuracy 0.5640, T=16 query accuracy 0.1725, T=32 query accuracy 0.0904; threshold 0.99; observed on the listed sizes: T=4, T=16, T=32; peak state words within the declared 4*(4*T+3)*(32*ceiling(log(T+1)/log(2)))+10*(32*ceiling(log(T+1)/log(2)))+2*(4*T+3)+T+2 at every size",
+    "output_tail": "ted\": 32, \"size\": 16}, \"instance_accuracy\": 0.0, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 8000, \"query_accuracy\": 0.1725, \"size\": 16, \"state_peak_words\": 43042}, {\"accuracy\": 0.090375, \"declared_state_words\": 102824.0, \"first_error\": {\"expected\": 79, \"instance\": 0, \"position\": 131, \"predicted\": 78, \"size\": 32}, \"instance_accuracy\": 0.0, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 16000, \"query_accuracy\": 0.090375, \"size\": 32, \"state_peak_words\": 100802}], \"seed\": 0, \"status\": \"violated\", \"task\": \"composition\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.564,
+      "declared_state_words": 8300.0,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 8,
+       "size": 4
+      },
+      "instance_accuracy": 0.262,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 2000,
+      "query_accuracy": 0.564,
+      "size": 4,
+      "state_peak_words": 7394
+     },
+     {
+      "accuracy": 0.1725,
+      "declared_state_words": 44632.0,
+      "first_error": {
+       "expected": 39,
+       "instance": 0,
+       "position": 67,
+       "predicted": 32,
+       "size": 16
+      },
+      "instance_accuracy": 0.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 8000,
+      "query_accuracy": 0.1725,
+      "size": 16,
+      "state_peak_words": 43042
+     },
+     {
+      "accuracy": 0.090375,
+      "declared_state_words": 102824.0,
+      "first_error": {
+       "expected": 79,
+       "instance": 0,
+       "position": 131,
+       "predicted": 78,
+       "size": 32
+      },
+      "instance_accuracy": 0.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 16000,
+      "query_accuracy": 0.090375,
+      "size": 32,
+      "state_peak_words": 100802
+     }
+    ],
+    "source": "PARAMS = {}\n\ndef ceil_log2(m):\n    k = 0\n    while (1 << k) < m:\n        k += 1\n    return k\n\ndef code(t, B):\n    v = np.zeros(B)\n    if t < 0:\n        return v\n    for b in range(B):\n        v[b] = 1.0 if (t >> b) & 1 else -1.0\n    return v\n\ndef build(layout):\n    T = int(layout['T'])\n    xb = int(layout['x_base']); yb = int(layout['y_base']); zb = int(layout['z_base'])\n    seps = [int(layout['GSEP']), int(layout['FSEP']), int(layout['QSEP'])]\n    d = 32 * ceil_log2(T + 1)\n    cap = 4 * T + 3\n    B = ceil_log2(5 * T + 16)\n    iX = 0; iY = T; iZ = 2 * T; iTY = 3 * T; iPC = 3 * T + 1; iPP = iPC + B; iSL = iPP + B; iR = iSL + T\n    need = iR + T\n    if need > d:\n        d = need\n    vocab = max(xb + T, yb + T, zb + T, max(seps) + 1)\n    E = np.zeros((vocab, d))\n    for k in range(T):\n        E[xb + k, iX + k] = 1.0\n        E[yb + k, iY + k] = 1.0\n        E[yb + k, iTY] = 1.0\n        E[zb + k, iZ + k] = 1.0\n    nP = 1 << B\n    Pt = np.zeros((nP, d))\n    for t in range(nP):\n        Pt[t, iPC:iPC + B] = code(t, B)\n        Pt[t, iPP:iPP + B] = code(t - 1, B)\n        if t >= 1:\n            x = (t - 1) // 2\n            if x < T:\n                Pt[t, iSL + x] = 1.0\n    lam = 3.0 * B\n    mu = 3.0 * B\n    G1 = 20.0 * np.sqrt(d)\n    G2 = 40.0 * np.sqrt(d)\n    Wa1 = np.zeros((d, d)); Wc1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wo1 = np.zeros((d, d))\n    for b in range(B):\n        Wa1[iPC + b, iPC + b] = 1.0\n        Wp1[iPC + b, iPP + b] = G1\n    for k in range(T):\n        Wa1[iSL + k, iSL + k] = 1.0\n        Wp1[iSL + k, iX + k] = lam * G1\n        Wp1[iTY, iX + k] = mu * G1\n        Wc1[iY + k, iY + k] = 1.0\n        Wo1[iR + k, iY + k] = 1.0\n    Wa1[iTY, iTY] = 1.0\n    Wa2 = np.zeros((d, d)); Wc2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wo2 = np.zeros((d, d))\n    for k in range(T):\n        Wa2[iR + k, iR + k] = 1.0\n        Wp2[iR + k, iR + k] = G2\n        Wc2[iZ + k, iZ + k] = 1.0\n        Wo2[iZ + k, iZ + k] = 1.0\n    U = np.zeros((d, d)); V = np.zeros((d, d))\n    O = np.zeros((vocab, d))\n    for k in range(T):\n        O[zb + k, iZ + k] = 1.0\n    return {'d': d, 'cap': cap, 'E': E, 'P': Pt, 'nP': nP, 'vocab': vocab,\n            'W': [(Wa1, Wc1, Wp1, Wo1, U, V), (Wa2, Wc2, Wp2, Wo2, U, V)], 'O': O}\n\ndef init(layout):\n    key = (int(layout['T']), int(layout['x_base']), int(layout['y_base']), int(layout['z_base']), int(layout['GSEP']), int(layout['FSEP']), int(layout['QSEP']))\n    if PARAMS.get('key') != key:\n        PARAMS['p'] = build(layout)\n        PARAMS['key'] = key\n    P = PARAMS['p']\n    d = P['d']; cap = P['cap']\n    return {'A1': np.zeros((cap, d)), 'C1': np.zeros((cap, d)), 'A2': np.zeros((cap, d)), 'C2': np.zeros((cap, d)),\n            'h': np.zeros(d), 'n': 0, 't': 0}\n\ndef update(state, token):\n    P = PARAMS['p']\n    d = P['d']; cap = P['cap']\n    t = state['t']; n = state['n']\n    tok = int(token)\n    if 0 <= tok < P['vocab']:\n        h = P['E'][tok] + P['P'][t % P['nP']]\n    else:\n        h = P['P'][t % P['nP']].copy()\n    rounds = (('A1', 'C1'), ('A2', 'C2'))\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, V = P['W'][l]\n        an, cn = rounds[l]\n        a = Wa @ h\n        c = Wc @ h\n        p = Wp @ h\n        A = np.vstack([state[an][:n], a[None, :]])\n        C = np.vstack([state[cn][:n], c[None, :]])\n        s = A @ p / np.sqrt(d)\n        s = s - np.max(s)\n        w = np.exp(s)\n        w = w / np.sum(w)\n        r = w @ C\n        g = h + Wo @ r\n        h = g + U @ np.maximum(0.0, V @ g)\n        if n < cap:\n            state[an][n] = a\n            state[cn][n] = c\n    if n < cap:\n        state['n'] = n + 1\n    state['t'] = t + 1\n    state['h'] = h\n    return state\n\ndef predict(state):\n    P = PARAMS['p']\n    logits = P['O'] @ state['h']\n    return int(np.argmax(logits))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 3,
+    "counterexample": null,
+    "decided": false,
+    "evidence": "construction failed: CandidateError: cannot measure the size of a str in state or params",
+    "output_tail": "{\"counterexample\": null, \"evidence\": \"construction failed: CandidateError: cannot measure the size of a str in state or params\", \"prover_fault\": true, \"status\": \"unknown\", \"tier\": \"executed\"}\n",
+    "prover_fault": true,
+    "reasons": [],
+    "results": null,
+    "source": "CACHE = {}\n\ndef nbits(n):\n    b = 0\n    while (1 << b) < n:\n        b += 1\n    return b\n\ndef lget(layout, names):\n    for nm in names:\n        try:\n            if nm in layout:\n                return int(layout[nm])\n        except Exception:\n            pass\n    return None\n\ndef build_comp(layout):\n    T = int(layout['T']); xb = int(layout['x_base']); yb = int(layout['y_base']); zb = int(layout['z_base'])\n    GS = int(layout['GSEP']); FS = int(layout['FSEP']); QS = int(layout['QSEP'])\n    Vin = max(xb + T, yb + T, zb + T, GS + 1, FS + 1, QS + 1)\n    d = 32 * nbits(T + 1)\n    P = Vin; S1 = Vin + 3; S2 = S1 + T\n    if S2 + T > d:\n        d = S2 + T\n    s = np.sqrt(d); c1 = 50.0; beta = 1000.0; l2 = 60.0\n    W = {}\n    for nm in ('Wa1', 'Wc1', 'Wp1', 'Wa2', 'Wc2', 'Wp2', 'U1', 'V1', 'U2', 'V2'):\n        W[nm] = np.zeros((d, d))\n    W['Wo1'] = np.eye(d); W['Wo2'] = np.eye(d)\n    W['Wa1'][0, P] = 1.0; W['Wa1'][1, P + 1] = 1.0\n    W['Wp1'][0, P] = s * c1; W['Wp1'][0, P + 2] = -s * c1; W['Wp1'][1, P + 2] = -s * c1 / 2.0\n    for k in range(T):\n        W['Wp1'][0, xb + k] += s * c1 * beta * (2.0 + 2.0 * k)\n        W['Wp1'][1, xb + k] += -s * c1 * beta / 2.0\n        W['Wc1'][S1 + k, yb + k] = 1.0\n        W['Wa2'][S1 + k, S1 + k] = 1.0\n        W['Wa2'][P + 2, zb + k] = 1.0\n        W['Wp2'][S1 + k, S1 + k] = s * l2\n        W['Wc2'][S2 + k, zb + k] = 1.0\n    W['Wp2'][P + 2, P + 2] = s * l2\n    O = np.zeros((Vin, d))\n    for k in range(T):\n        O[zb + k, S2 + k] = 1.0\n    W['O'] = O; W['d'] = d; W['Vin'] = Vin; W['P'] = P\n    return W\n\ndef build_bind(layout):\n    nv = int(layout['n_vars']); vb = int(layout['value_base']); nval = int(layout['values']); QS = int(layout['QSEP'])\n    Vin = max(nv, vb + nval, QS + 1)\n    h = lget(layout, ('hops', 'size', 'n_hops'))\n    if h is None:\n        h = max(1, (nv - 2) // 2)\n    d = 32 * nbits(h + 1)\n    P = Vin; PR = Vin + 3; S2 = PR + Vin\n    if S2 + nval > d:\n        d = S2 + nval\n    s = np.sqrt(d); c1 = 50.0; l2 = 60.0\n    W = {}\n    for nm in ('Wa1', 'Wc1', 'Wp1', 'Wa2', 'Wc2', 'Wp2', 'U1', 'V1', 'U2', 'V2'):\n        W[nm] = np.zeros((d, d))\n    W['Wo1'] = np.eye(d); W['Wo2'] = np.eye(d)\n    W['Wa1'][0, P] = 1.0; W['Wa1'][1, P + 1] = 1.0\n    W['Wp1'][0, P] = s * c1; W['Wp1'][0, P + 2] = -s * c1; W['Wp1'][1, P + 2] = -s * c1 / 2.0\n    for k in range(Vin):\n        W['Wc1'][PR + k, k] = 1.0\n    for k in range(nv):\n        W['Wa2'][PR + k, PR + k] = 1.0\n        W['Wp2'][PR + k, k] = s * l2\n    for j in range(nval):\n        W['Wa2'][P + 2, vb + j] = 1.0\n        W['Wc2'][S2 + j, vb + j] = 1.0\n    W['Wp2'][P + 2, P + 2] = s * l2 * 0.5\n    O = np.zeros((Vin, d))\n    for j in range(nval):\n        O[vb + j, S2 + j] = 1.0\n    W['O'] = O; W['d'] = d; W['Vin'] = Vin; W['P'] = P\n    return W\n\ndef init(layout):\n    if 'T' in layout:\n        key = ('comp', int(layout['T']), int(layout['x_base']), int(layout['y_base']), int(layout['z_base']), int(layout['GSEP']), int(layout['FSEP']), int(layout['QSEP']))\n        if key not in CACHE:\n            CACHE[key] = build_comp(layout)\n    else:\n        key = ('bind', int(layout['n_vars']), int(layout['value_base']), int(layout['values']), int(layout['QSEP']), lget(layout, ('hops', 'size', 'n_hops')))\n        if key not in CACHE:\n            CACHE[key] = build_bind(layout)\n    d = CACHE[key]['d']\n    return {'key': key, 't': 0, 'A1': np.zeros((0, d)), 'C1': np.zeros((0, d)), 'A2': np.zeros((0, d)), 'C2': np.zeros((0, d)), 'h': np.zeros(d)}\n\ndef round_step(state, W, h, l):\n    d = W['d']\n    a = W['Wa' + l] @ h\n    c = W['Wc' + l] @ h\n    p = W['Wp' + l] @ h\n    A = np.vstack([state['A' + l], a[None, :]])\n    C = np.vstack([state['C' + l], c[None, :]])\n    state['A' + l] = A\n    state['C' + l] = C\n    sc = (A @ p) / np.sqrt(d)\n    sc = sc - sc.max()\n    w = np.exp(sc)\n    w = w / w.sum()\n    r = w @ C\n    g = h + W['Wo' + l] @ r\n    return g + W['U' + l] @ np.maximum(0.0, W['V' + l] @ g)\n\ndef update(state, token):\n    W = CACHE[state['key']]\n    d = W['d']; P = W['P']; t = state['t']\n    h = np.zeros(d)\n    tok = int(token)\n    if 0 <= tok < W['Vin']:\n        h[tok] = 1.0\n    h[P] = float(t); h[P + 1] = float(t) * float(t); h[P + 2] = 1.0\n    h = round_step(state, W, h, '1')\n    h = round_step(state, W, h, '2')\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    W = CACHE[state['key']]\n    logits = W['O'] @ state['h']\n    return int(np.argmax(logits))\n",
+    "status": "unknown"
+   },
+   {
+    "attempt": 4,
+    "counterexample": {
+     "accuracy": 0.564,
+     "first_error": {
+      "expected": 9,
+      "instance": 0,
+      "position": 19,
+      "predicted": 8,
+      "size": 4
+     },
+     "seed": 0,
+     "size": 4,
+     "task": "composition",
+     "threshold": 0.99
+    },
+    "decided": true,
+    "evidence": "composition: T=4 query accuracy 0.5640, T=16 query accuracy 0.1725, T=32 query accuracy 0.0904; threshold 0.99; observed on the listed sizes: T=4, T=16, T=32; peak state words 8930 exceed the declared 4*(4*T+3)*(32*ceiling(log(T+1)/log(2)))+10*(32*ceiling(log(T+1)/log(2)))+2*(4*T+3)+T+2 = 8300 at T=4",
+    "output_tail": "ted\": 32, \"size\": 16}, \"instance_accuracy\": 0.0, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 8000, \"query_accuracy\": 0.1725, \"size\": 16, \"state_peak_words\": 53282}, {\"accuracy\": 0.090375, \"declared_state_words\": 102824.0, \"first_error\": {\"expected\": 79, \"instance\": 0, \"position\": 131, \"predicted\": 78, \"size\": 32}, \"instance_accuracy\": 0.0, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 16000, \"query_accuracy\": 0.090375, \"size\": 32, \"state_peak_words\": 125378}], \"seed\": 0, \"status\": \"violated\", \"task\": \"composition\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.564,
+      "declared_state_words": 8300.0,
+      "first_error": {
+       "expected": 9,
+       "instance": 0,
+       "position": 19,
+       "predicted": 8,
+       "size": 4
+      },
+      "instance_accuracy": 0.262,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 2000,
+      "query_accuracy": 0.564,
+      "size": 4,
+      "state_peak_words": 8930
+     },
+     {
+      "accuracy": 0.1725,
+      "declared_state_words": 44632.0,
+      "first_error": {
+       "expected": 39,
+       "instance": 0,
+       "position": 67,
+       "predicted": 32,
+       "size": 16
+      },
+      "instance_accuracy": 0.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 8000,
+      "query_accuracy": 0.1725,
+      "size": 16,
+      "state_peak_words": 53282
+     },
+     {
+      "accuracy": 0.090375,
+      "declared_state_words": 102824.0,
+      "first_error": {
+       "expected": 79,
+       "instance": 0,
+       "position": 131,
+       "predicted": 78,
+       "size": 32
+      },
+      "instance_accuracy": 0.0,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 16000,
+      "query_accuracy": 0.090375,
+      "size": 32,
+      "state_peak_words": 125378
+     }
+    ],
+    "source": "PARAMS = []\n\ndef nbits(n):\n    b = 0\n    while (1 << b) < n + 1:\n        b += 1\n    return b\n\ndef pos_table(npos, d, iC, F, slot_fn, iS, iS2):\n    P = np.zeros((npos, d))\n    for t in range(npos):\n        for f in range(F):\n            th = np.pi / (2 ** f)\n            P[t, iC + 2 * f] = np.cos(th * t)\n            P[t, iC + 2 * f + 1] = np.sin(th * t)\n        if slot_fn is not None:\n            s = slot_fn(t)\n            P[t, iS] = s\n            P[t, iS2] = s * s\n    return P\n\ndef rot_block(W, iC, F, scale):\n    for f in range(F):\n        th = np.pi / (2 ** f)\n        c = np.cos(th)\n        s = np.sin(th)\n        i = iC + 2 * f\n        W[i, i] = scale * c\n        W[i, i + 1] = scale * s\n        W[i + 1, i] = -scale * s\n        W[i + 1, i + 1] = scale * c\n\ndef comp_build(layout):\n    T = int(layout['T'])\n    xb = int(layout['x_base']); yb = int(layout['y_base']); zb = int(layout['z_base'])\n    seps = [int(layout[k]) for k in ('GSEP', 'FSEP', 'QSEP') if k in layout]\n    d = 32 * nbits(T)\n    ncap = 4 * T + 3\n    F = nbits(ncap + 8)\n    iS, iS2, iISY, iXV2, iISX, iISZ, iC = 0, 1, 2, 3, 4, 5, 6\n    iCY = iC + 2 * F\n    iCZ = iCY + T\n    iR = iCZ + T\n    iR2 = iR + T\n    while iR2 + T > d and F > 1:\n        F -= 1\n        iCY = iC + 2 * F; iCZ = iCY + T; iR = iCZ + T; iR2 = iR + T\n    nv = max([xb + T, yb + T, zb + T] + [s + 1 for s in seps])\n    E = np.zeros((nv, d))\n    for j in range(T):\n        E[xb + j, iXV2] = 2.0 * j\n        E[xb + j, iISX] = 1.0\n        E[yb + j, iISY] = 1.0\n        E[yb + j, iCY + j] = 1.0\n        E[zb + j, iISZ] = 1.0\n        E[zb + j, iCZ + j] = 1.0\n    far = -(3 * T + 10)\n    def slot(t):\n        if t % 2 == 0 and 2 <= t <= 2 * T:\n            return (t - 2) // 2\n        if t % 2 == 1 and 1 <= t <= 2 * T - 1:\n            return (t - 1) // 2\n        return far\n    P = pos_table(4 * ncap + 64, d, iC, F, slot, iS, iS2)\n    sq = np.sqrt(d)\n    lam = 1000.0 * sq; mu = 20.0 * sq; nu = 40.0 * sq; beta = 5.0\n    Wa1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wc1 = np.zeros((d, d))\n    Wa1[0, iS] = 1.0; Wa1[1, iS2] = 1.0; Wa1[2, iISY] = 1.0\n    for i in range(iC, iC + 2 * F):\n        Wa1[i, i] = 1.0\n    Wp1[0, iXV2] = lam; Wp1[1, iISX] = -lam; Wp1[2, iISX] = lam * beta\n    rot_block(Wp1, iC, F, mu)\n    for j in range(T):\n        Wc1[iR + j, iCY + j] = 1.0\n    Wa2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wc2 = np.zeros((d, d))\n    for j in range(T):\n        Wa2[j, iR + j] = 1.0\n        Wp2[j, iR + j] = nu\n        Wc2[iR2 + j, iCZ + j] = 1.0\n    Wa2[T, iISZ] = 1.0\n    Wp2[T, iISX] = nu\n    O = np.zeros((d, T))\n    for j in range(T):\n        O[iR2 + j, j] = 1.0\n    Z = np.zeros((d, d))\n    return {'d': d, 'E': E, 'P': P, 'Wa': [Wa1, Wa2], 'Wp': [Wp1, Wp2], 'Wc': [Wc1, Wc2],\n            'Wo': [np.eye(d), np.eye(d)], 'U': [Z, Z], 'V': [Z, Z], 'O': O, 'base': zb}\n\ndef bind_build(layout):\n    nvar = int(layout['n_vars']); vb = int(layout['value_base'])\n    nval = int(layout.get('values', 4)); q = int(layout['QSEP'])\n    hops = int(layout['hops']) if 'hops' in layout else max(nvar - 1, 1)\n    d = 32 * nbits(hops)\n    ncap = 3 * hops + 3\n    F = nbits(ncap + 8)\n    iC = 0\n    def lay(F):\n        iCV = iC + 2 * F; iR = iCV + nvar; iISV = iR + nvar; iK = iISV + 1\n        iCVal = iK + 1; iR2 = iCVal + nval\n        return iCV, iR, iISV, iK, iCVal, iR2\n    iCV, iR, iISV, iK, iCVal, iR2 = lay(F)\n    while iR2 + nval > d and F > 1:\n        F -= 1\n        iCV, iR, iISV, iK, iCVal, iR2 = lay(F)\n    nv = max(nvar, vb + nval, q + 1)\n    E = np.zeros((nv, d))\n    E[:, iK] = 1.0\n    for j in range(nvar):\n        E[j, iCV + j] = 1.0\n    for v in range(nval):\n        E[vb + v, iISV] = 1.0\n        E[vb + v, iCVal + v] = 1.0\n    P = pos_table(4 * ncap + 64, d, iC, F, None, 0, 0)\n    sq = np.sqrt(d)\n    mu = 20.0 * sq; nu = 40.0 * sq; kap = 80.0 * sq\n    Wa1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wc1 = np.zeros((d, d))\n    for i in range(iC, iC + 2 * F):\n        Wa1[i, i] = 1.0\n    rot_block(Wp1, iC, F, mu)\n    for j in range(nvar):\n        Wc1[iR + j, iCV + j] = 1.0\n    Wa2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wc2 = np.zeros((d, d))\n    for j in range(nvar):\n        Wa2[j, iR + j] = 1.0\n        Wp2[j, iCV + j] = nu\n    Wa2[nvar, iISV] = 1.0\n    Wp2[nvar, iK] = kap\n    for v in range(nval):\n        Wc2[iR2 + v, iCVal + v] = 1.0\n    O = np.zeros((d, nval))\n    for v in range(nval):\n        O[iR2 + v, v] = 1.0\n    Z = np.zeros((d, d))\n    return {'d': d, 'E': E, 'P': P, 'Wa': [Wa1, Wa2], 'Wp': [Wp1, Wp2], 'Wc': [Wc1, Wc2],\n            'Wo': [np.eye(d), np.eye(d)], 'U': [Z, Z], 'V': [Z, Z], 'O': O, 'base': vb}\n\ndef init(layout):\n    if 'GSEP' in layout:\n        names = ('T', 'x_base', 'y_base', 'z_base', 'GSEP', 'FSEP', 'QSEP')\n        kind = 0\n    else:\n        names = ('n_vars', 'value_base', 'values', 'QSEP', 'hops')\n        kind = 1\n    key = tuple([kind] + [int(layout[k]) if k in layout else -1 for k in names])\n    idx = -1\n    for i in range(len(PARAMS)):\n        if PARAMS[i]['key'] == key:\n            idx = i\n    if idx < 0:\n        M = comp_build(layout) if kind == 0 else bind_build(layout)\n        M['key'] = key\n        PARAMS.append(M)\n        idx = len(PARAMS) - 1\n    d = PARAMS[idx]['d']\n    return [idx, 0, np.zeros((0, d)), np.zeros((0, d)), np.zeros((0, d)), np.zeros((0, d)), np.zeros(d)]\n\ndef update(state, token):\n    M = PARAMS[state[0]]\n    d = M['d']\n    t = state[1]\n    tok = int(token)\n    E = M['E']; P = M['P']\n    h = (E[tok] if 0 <= tok < E.shape[0] else np.zeros(d)) + P[min(t, P.shape[0] - 1)]\n    new = [state[0], t + 1]\n    for l in range(2):\n        a = M['Wa'][l] @ h\n        c = M['Wc'][l] @ h\n        p = M['Wp'][l] @ h\n        A = np.vstack([state[2 + 2 * l], a[None, :]])\n        C = np.vstack([state[3 + 2 * l], c[None, :]])\n        s = (A @ p) / np.sqrt(d)\n        s = s - np.max(s)\n        w = np.exp(s)\n        w = w / np.sum(w)\n        r = w @ C\n        g = h + M['Wo'][l] @ r\n        h = g + M['U'][l] @ np.maximum(0.0, M['V'][l] @ g)\n        new.append(A)\n        new.append(C)\n    new.append(h)\n    return new\n\ndef predict(state):\n    M = PARAMS[state[0]]\n    logits = state[6] @ M['O']\n    return int(M['base'] + int(np.argmax(logits)))\n",
+    "status": "violated"
+   }
+  ],
+  "O9.b": [
+   {
+    "attempt": 1,
+    "counterexample": {
+     "accuracy": 0.606,
+     "first_error": {
+      "expected": 7,
+      "instance": 1,
+      "position": 9,
+      "predicted": 5,
+      "size": 1
+     },
+     "seed": 0,
+     "size": 1,
+     "task": "binding",
+     "threshold": 0.99
+    },
+    "decided": true,
+    "evidence": "binding: hops=1 query accuracy 0.6060, hops=4 query accuracy 0.6110, hops=8 query accuracy 0.6400; threshold 0.99; observed on the listed sizes: hops=1, hops=4, hops=8; peak state words 2882 exceed the declared 4*(3*hops+3)*(32*ceiling(log(hops+1)/log(2)))+10*(32*ceiling(log(hops+1)/log(2)))+2*(3*hops+3)+hops+6 = 1107 at hops=1",
+    "output_tail": "tion\": 22, \"predicted\": 10, \"size\": 4}, \"instance_accuracy\": 0.222, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 1000, \"query_accuracy\": 0.611, \"size\": 4, \"state_peak_words\": 11906}, {\"accuracy\": 0.64, \"declared_state_words\": 15172.0, \"first_error\": {\"expected\": 19, \"instance\": 1, \"position\": 38, \"predicted\": 18, \"size\": 8}, \"instance_accuracy\": 0.28, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 1000, \"query_accuracy\": 0.64, \"size\": 8, \"state_peak_words\": 25122}], \"seed\": 0, \"status\": \"violated\", \"task\": \"binding\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.606,
+      "declared_state_words": 1107.0,
+      "first_error": {
+       "expected": 7,
+       "instance": 1,
+       "position": 9,
+       "predicted": 5,
+       "size": 1
+      },
+      "instance_accuracy": 0.212,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.606,
+      "size": 1,
+      "state_peak_words": 2882
+     },
+     {
+      "accuracy": 0.611,
+      "declared_state_words": 6760.0,
+      "first_error": {
+       "expected": 12,
+       "instance": 0,
+       "position": 22,
+       "predicted": 10,
+       "size": 4
+      },
+      "instance_accuracy": 0.222,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.611,
+      "size": 4,
+      "state_peak_words": 11906
+     },
+     {
+      "accuracy": 0.64,
+      "declared_state_words": 15172.0,
+      "first_error": {
+       "expected": 19,
+       "instance": 1,
+       "position": 38,
+       "predicted": 18,
+       "size": 8
+      },
+      "instance_accuracy": 0.28,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.64,
+      "size": 8,
+      "state_peak_words": 25122
+     }
+    ],
+    "source": "PARAMS = []\n\ndef poscode(t, K, N):\n    k = np.arange(1, K + 1)\n    ang = 2.0 * np.pi * k * t / N\n    v = np.zeros(2 * K)\n    v[0::2] = np.cos(ang)\n    v[1::2] = np.sin(ang)\n    return v\n\ndef shiftmat(K, N, s):\n    M = np.zeros((2 * K, 2 * K))\n    for k in range(1, K + 1):\n        w = 2.0 * np.pi * k * s / N\n        c = np.cos(w)\n        sn = np.sin(w)\n        i = 2 * (k - 1)\n        M[i, i] = c\n        M[i, i + 1] = sn\n        M[i + 1, i] = -sn\n        M[i + 1, i + 1] = c\n    return M\n\ndef build(layout):\n    NV = int(layout['n_vars'])\n    vb = int(layout['value_base'])\n    NVAL = int(layout.get('values', 4))\n    QS = int(layout['QSEP'])\n    varb = int(layout.get('var_base', 0))\n    hops = int(layout.get('hops', NV - 1))\n    if hops < 1:\n        hops = 1\n    d = 32 * int(hops).bit_length()\n    VI = 0; PV = NV; QV = 2 * NV; VA = 3 * NV\n    FV = 3 * NV + NVAL; FA = FV + 1; FQ = FV + 2; ONE = FV + 3; PO = FV + 4\n    nmax = 3 * hops + 9\n    N = nmax + (nmax % 2)\n    K = max(1, min((d - PO) // 2, N // 2 - 1))\n    if PO + 2 * K > d:\n        d = PO + 2 * K\n    nv = max(varb + NV, vb + NVAL, QS + 1)\n    E = np.zeros((nv, d))\n    for i in range(NV):\n        tok = varb + i\n        if tok == QS or (vb <= tok < vb + NVAL):\n            continue\n        E[tok, VI + i] = 1.0; E[tok, FV] = 1.0\n    for i in range(NVAL):\n        E[vb + i, :] = 0.0\n        E[vb + i, VA + i] = 1.0; E[vb + i, FA] = 1.0\n    E[QS, :] = 0.0\n    E[QS, FQ] = 1.0\n    E[:, ONE] = 1.0\n    Pos = np.zeros((nmax, d))\n    for t in range(nmax):\n        Pos[t, PO:PO + 2 * K] = poscode(t, K, N)\n    sq = np.sqrt(d)\n    b = 8.0; G = 3.0 * b * K + 50.0; b2 = 30.0; Gv = 90.0\n    P = slice(PO, PO + 2 * K)\n    Wa1 = np.zeros((d, d)); Wa1[P, P] = np.eye(2 * K); Wa1[FV, FV] = 1.0\n    Wp1 = np.zeros((d, d)); Wp1[P, P] = sq * b * (2.0 * shiftmat(K, N, 1) + shiftmat(K, N, 2)); Wp1[FV, ONE] = sq * G\n    Wc1 = np.zeros((d, d)); Wc1[PV:PV + NV, VI:VI + NV] = np.eye(NV)\n    Wo1 = np.eye(d)\n    V1 = np.zeros((d, d)); U1 = np.zeros((d, d))\n    for k in range(NV):\n        V1[k, PV + k] = 1.0; V1[k, FQ] = 1.0; V1[k, ONE] = -1.0\n        U1[QV + k, k] = 1.0\n    Wa2 = np.zeros((d, d)); Wa2[PV:PV + NV, PV:PV + NV] = np.eye(NV); Wa2[FA, FA] = 1.0\n    Wp2 = np.zeros((d, d))\n    Wp2[PV:PV + NV, VI:VI + NV] = sq * b2 * np.eye(NV)\n    Wp2[PV:PV + NV, QV:QV + NV] = sq * b2 * np.eye(NV)\n    Wp2[FA, ONE] = sq * Gv\n    Wc2 = np.zeros((d, d)); Wc2[VA:VA + NVAL, VA:VA + NVAL] = np.eye(NVAL)\n    Wo2 = np.eye(d); U2 = np.zeros((d, d)); V2 = np.zeros((d, d))\n    O = np.zeros((hops + 6, d))\n    for i in range(min(NVAL, hops + 6)):\n        O[i, VA + i] = 1.0\n    return {'d': d, 'E': E, 'Pos': Pos, 'K': K, 'N': N, 'PO': PO,\n            'rounds': [(Wa1, Wc1, Wp1, Wo1, U1, V1), (Wa2, Wc2, Wp2, Wo2, U2, V2)],\n            'O': O, 'NVAL': NVAL, 'vb': vb}\n\ndef init(layout):\n    PARAMS.append(build(layout))\n    idx = len(PARAMS) - 1\n    d = PARAMS[idx]['d']\n    return {'pid': idx, 't': 0, 'A1': np.zeros((0, d)), 'C1': np.zeros((0, d)),\n            'A2': np.zeros((0, d)), 'C2': np.zeros((0, d)), 'h': np.zeros(d)}\n\ndef update(state, token):\n    P = PARAMS[state['pid']]\n    d = P['d']; t = state['t']; tok = int(token)\n    E = P['E']\n    h = np.zeros(d)\n    if 0 <= tok < E.shape[0]:\n        h = h + E[tok]\n    if t < P['Pos'].shape[0]:\n        h = h + P['Pos'][t]\n    else:\n        h[P['PO']:P['PO'] + 2 * P['K']] += poscode(t, P['K'], P['N'])\n    names = [('A1', 'C1'), ('A2', 'C2')]\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, V = P['rounds'][l]\n        a = Wa @ h; c = Wc @ h; p = Wp @ h\n        A = np.vstack([state[names[l][0]], a[None, :]])\n        C = np.vstack([state[names[l][1]], c[None, :]])\n        state[names[l][0]] = A; state[names[l][1]] = C\n        s = A @ p / np.sqrt(d)\n        s = s - s.max()\n        w = np.exp(s); w = w / w.sum()\n        r = w @ C\n        g = h + Wo @ r\n        h = g + U @ np.maximum(0.0, V @ g)\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    P = PARAMS[state['pid']]\n    logits = P['O'] @ state['h']\n    n = P['NVAL']\n    i = int(np.argmax(logits[:n]))\n    return P['vb'] + i\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 2,
+    "counterexample": {
+     "accuracy": 0.606,
+     "first_error": {
+      "expected": 7,
+      "instance": 1,
+      "position": 9,
+      "predicted": 5,
+      "size": 1
+     },
+     "seed": 0,
+     "size": 1,
+     "task": "binding",
+     "threshold": 0.99
+    },
+    "decided": true,
+    "evidence": "binding: hops=1 query accuracy 0.6060, hops=4 query accuracy 0.6110, hops=8 query accuracy 0.6400; threshold 0.99; observed on the listed sizes: hops=1, hops=4, hops=8; peak state words within the declared 4*(3*hops+3)*(32*ceiling(log(hops+1)/log(2)))+10*(32*ceiling(log(hops+1)/log(2)))+2*(3*hops+3)+hops+6 at every size",
+    "output_tail": "ition\": 22, \"predicted\": 10, \"size\": 4}, \"instance_accuracy\": 0.222, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 1000, \"query_accuracy\": 0.611, \"size\": 4, \"state_peak_words\": 5858}, {\"accuracy\": 0.64, \"declared_state_words\": 15172.0, \"first_error\": {\"expected\": 19, \"instance\": 1, \"position\": 38, \"predicted\": 18, \"size\": 8}, \"instance_accuracy\": 0.28, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 1000, \"query_accuracy\": 0.64, \"size\": 8, \"state_peak_words\": 13954}], \"seed\": 0, \"status\": \"violated\", \"task\": \"binding\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.606,
+      "declared_state_words": 1107.0,
+      "first_error": {
+       "expected": 7,
+       "instance": 1,
+       "position": 9,
+       "predicted": 5,
+       "size": 1
+      },
+      "instance_accuracy": 0.212,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.606,
+      "size": 1,
+      "state_peak_words": 802
+     },
+     {
+      "accuracy": 0.611,
+      "declared_state_words": 6760.0,
+      "first_error": {
+       "expected": 12,
+       "instance": 0,
+       "position": 22,
+       "predicted": 10,
+       "size": 4
+      },
+      "instance_accuracy": 0.222,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.611,
+      "size": 4,
+      "state_peak_words": 5858
+     },
+     {
+      "accuracy": 0.64,
+      "declared_state_words": 15172.0,
+      "first_error": {
+       "expected": 19,
+       "instance": 1,
+       "position": 38,
+       "predicted": 18,
+       "size": 8
+      },
+      "instance_accuracy": 0.28,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.64,
+      "size": 8,
+      "state_peak_words": 13954
+     }
+    ],
+    "source": "PARAMS = {}\n\ndef ceil_log2(m):\n    k = 0\n    while (1 << k) < m:\n        k += 1\n    return k\n\ndef code(t, B):\n    v = np.zeros(B)\n    if t < 0:\n        return v\n    for b in range(B):\n        v[b] = 1.0 if (t >> b) & 1 else -1.0\n    return v\n\ndef build(layout):\n    nv = int(layout['n_vars'])\n    vb = int(layout['value_base'])\n    nval = int(layout['values'])\n    qsep = int(layout['QSEP'])\n    if 'hops' in layout:\n        hops = int(layout['hops'])\n    else:\n        hops = max(1, (nv - 2) // 2)\n    d = 32 * ceil_log2(hops + 1)\n    cap = 3 * hops + 3\n    B = ceil_log2(4 * hops + 16)\n    iV = 0; iL = nv; iR = nv + nval; iPC = iR + nv; iPP = iPC + B\n    need = iPP + B\n    if need > d:\n        d = need\n    vocab = max(nv, vb + nval, qsep + 1)\n    E = np.zeros((vocab, d))\n    for k in range(nv):\n        E[k, iV + k] = 1.0\n    for k in range(nval):\n        E[vb + k, iL + k] = 1.0\n    nP = 1 << B\n    Pt = np.zeros((nP, d))\n    for t in range(nP):\n        Pt[t, iPC:iPC + B] = code(t, B)\n        Pt[t, iPP:iPP + B] = code(t - 1, B)\n    G1 = 20.0 * np.sqrt(d)\n    G2 = 40.0 * np.sqrt(d)\n    Wa1 = np.zeros((d, d)); Wc1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wo1 = np.zeros((d, d))\n    for b in range(B):\n        Wa1[iPC + b, iPC + b] = 1.0\n        Wp1[iPC + b, iPP + b] = G1\n    for k in range(nv):\n        Wc1[iV + k, iV + k] = 1.0\n        Wo1[iR + k, iV + k] = 1.0\n    Wa2 = np.zeros((d, d)); Wc2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wo2 = np.zeros((d, d))\n    for k in range(nv):\n        Wa2[iR + k, iR + k] = 1.0\n        Wp2[iR + k, iV + k] = G2\n    for k in range(nval):\n        Wc2[iL + k, iL + k] = 1.0\n        Wo2[iL + k, iL + k] = 1.0\n    U = np.zeros((d, d)); V = np.zeros((d, d))\n    O = np.zeros((vocab, d))\n    for k in range(nval):\n        O[vb + k, iL + k] = 1.0\n    return {'d': d, 'cap': cap, 'E': E, 'P': Pt, 'nP': nP, 'vocab': vocab,\n            'W': [(Wa1, Wc1, Wp1, Wo1, U, V), (Wa2, Wc2, Wp2, Wo2, U, V)], 'O': O}\n\ndef init(layout):\n    key = (int(layout['n_vars']), int(layout['value_base']), int(layout['values']), int(layout['QSEP']), int(layout['hops']) if 'hops' in layout else -1)\n    if PARAMS.get('key') != key:\n        PARAMS['p'] = build(layout)\n        PARAMS['key'] = key\n    P = PARAMS['p']\n    d = P['d']; cap = P['cap']\n    return {'A1': np.zeros((cap, d)), 'C1': np.zeros((cap, d)), 'A2': np.zeros((cap, d)), 'C2': np.zeros((cap, d)),\n            'h': np.zeros(d), 'n': 0, 't': 0}\n\ndef update(state, token):\n    P = PARAMS['p']\n    d = P['d']; cap = P['cap']\n    t = state['t']; n = state['n']\n    tok = int(token)\n    if 0 <= tok < P['vocab']:\n        h = P['E'][tok] + P['P'][t % P['nP']]\n    else:\n        h = P['P'][t % P['nP']].copy()\n    rounds = (('A1', 'C1'), ('A2', 'C2'))\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, V = P['W'][l]\n        an, cn = rounds[l]\n        a = Wa @ h\n        c = Wc @ h\n        p = Wp @ h\n        A = np.vstack([state[an][:n], a[None, :]])\n        C = np.vstack([state[cn][:n], c[None, :]])\n        s = A @ p / np.sqrt(d)\n        s = s - np.max(s)\n        w = np.exp(s)\n        w = w / np.sum(w)\n        r = w @ C\n        g = h + Wo @ r\n        h = g + U @ np.maximum(0.0, V @ g)\n        if n < cap:\n            state[an][n] = a\n            state[cn][n] = c\n    if n < cap:\n        state['n'] = n + 1\n    state['t'] = t + 1\n    state['h'] = h\n    return state\n\ndef predict(state):\n    P = PARAMS['p']\n    logits = P['O'] @ state['h']\n    return int(np.argmax(logits))\n",
+    "status": "violated"
+   },
+   {
+    "attempt": 3,
+    "counterexample": null,
+    "decided": false,
+    "evidence": "construction failed: CandidateError: cannot measure the size of a str in state or params",
+    "output_tail": "{\"counterexample\": null, \"evidence\": \"construction failed: CandidateError: cannot measure the size of a str in state or params\", \"prover_fault\": true, \"status\": \"unknown\", \"tier\": \"executed\"}\n",
+    "prover_fault": true,
+    "reasons": [],
+    "results": null,
+    "source": "CACHE = {}\n\ndef nbits(n):\n    b = 0\n    while (1 << b) < n:\n        b += 1\n    return b\n\ndef lget(layout, names):\n    for nm in names:\n        try:\n            if nm in layout:\n                return int(layout[nm])\n        except Exception:\n            pass\n    return None\n\ndef build_comp(layout):\n    T = int(layout['T']); xb = int(layout['x_base']); yb = int(layout['y_base']); zb = int(layout['z_base'])\n    GS = int(layout['GSEP']); FS = int(layout['FSEP']); QS = int(layout['QSEP'])\n    Vin = max(xb + T, yb + T, zb + T, GS + 1, FS + 1, QS + 1)\n    d = 32 * nbits(T + 1)\n    P = Vin; S1 = Vin + 3; S2 = S1 + T\n    if S2 + T > d:\n        d = S2 + T\n    s = np.sqrt(d); c1 = 50.0; beta = 1000.0; l2 = 60.0\n    W = {}\n    for nm in ('Wa1', 'Wc1', 'Wp1', 'Wa2', 'Wc2', 'Wp2', 'U1', 'V1', 'U2', 'V2'):\n        W[nm] = np.zeros((d, d))\n    W['Wo1'] = np.eye(d); W['Wo2'] = np.eye(d)\n    W['Wa1'][0, P] = 1.0; W['Wa1'][1, P + 1] = 1.0\n    W['Wp1'][0, P] = s * c1; W['Wp1'][0, P + 2] = -s * c1; W['Wp1'][1, P + 2] = -s * c1 / 2.0\n    for k in range(T):\n        W['Wp1'][0, xb + k] += s * c1 * beta * (2.0 + 2.0 * k)\n        W['Wp1'][1, xb + k] += -s * c1 * beta / 2.0\n        W['Wc1'][S1 + k, yb + k] = 1.0\n        W['Wa2'][S1 + k, S1 + k] = 1.0\n        W['Wa2'][P + 2, zb + k] = 1.0\n        W['Wp2'][S1 + k, S1 + k] = s * l2\n        W['Wc2'][S2 + k, zb + k] = 1.0\n    W['Wp2'][P + 2, P + 2] = s * l2\n    O = np.zeros((Vin, d))\n    for k in range(T):\n        O[zb + k, S2 + k] = 1.0\n    W['O'] = O; W['d'] = d; W['Vin'] = Vin; W['P'] = P\n    return W\n\ndef build_bind(layout):\n    nv = int(layout['n_vars']); vb = int(layout['value_base']); nval = int(layout['values']); QS = int(layout['QSEP'])\n    Vin = max(nv, vb + nval, QS + 1)\n    h = lget(layout, ('hops', 'size', 'n_hops'))\n    if h is None:\n        h = max(1, (nv - 2) // 2)\n    d = 32 * nbits(h + 1)\n    P = Vin; PR = Vin + 3; S2 = PR + Vin\n    if S2 + nval > d:\n        d = S2 + nval\n    s = np.sqrt(d); c1 = 50.0; l2 = 60.0\n    W = {}\n    for nm in ('Wa1', 'Wc1', 'Wp1', 'Wa2', 'Wc2', 'Wp2', 'U1', 'V1', 'U2', 'V2'):\n        W[nm] = np.zeros((d, d))\n    W['Wo1'] = np.eye(d); W['Wo2'] = np.eye(d)\n    W['Wa1'][0, P] = 1.0; W['Wa1'][1, P + 1] = 1.0\n    W['Wp1'][0, P] = s * c1; W['Wp1'][0, P + 2] = -s * c1; W['Wp1'][1, P + 2] = -s * c1 / 2.0\n    for k in range(Vin):\n        W['Wc1'][PR + k, k] = 1.0\n    for k in range(nv):\n        W['Wa2'][PR + k, PR + k] = 1.0\n        W['Wp2'][PR + k, k] = s * l2\n    for j in range(nval):\n        W['Wa2'][P + 2, vb + j] = 1.0\n        W['Wc2'][S2 + j, vb + j] = 1.0\n    W['Wp2'][P + 2, P + 2] = s * l2 * 0.5\n    O = np.zeros((Vin, d))\n    for j in range(nval):\n        O[vb + j, S2 + j] = 1.0\n    W['O'] = O; W['d'] = d; W['Vin'] = Vin; W['P'] = P\n    return W\n\ndef init(layout):\n    if 'T' in layout:\n        key = ('comp', int(layout['T']), int(layout['x_base']), int(layout['y_base']), int(layout['z_base']), int(layout['GSEP']), int(layout['FSEP']), int(layout['QSEP']))\n        if key not in CACHE:\n            CACHE[key] = build_comp(layout)\n    else:\n        key = ('bind', int(layout['n_vars']), int(layout['value_base']), int(layout['values']), int(layout['QSEP']), lget(layout, ('hops', 'size', 'n_hops')))\n        if key not in CACHE:\n            CACHE[key] = build_bind(layout)\n    d = CACHE[key]['d']\n    return {'key': key, 't': 0, 'A1': np.zeros((0, d)), 'C1': np.zeros((0, d)), 'A2': np.zeros((0, d)), 'C2': np.zeros((0, d)), 'h': np.zeros(d)}\n\ndef round_step(state, W, h, l):\n    d = W['d']\n    a = W['Wa' + l] @ h\n    c = W['Wc' + l] @ h\n    p = W['Wp' + l] @ h\n    A = np.vstack([state['A' + l], a[None, :]])\n    C = np.vstack([state['C' + l], c[None, :]])\n    state['A' + l] = A\n    state['C' + l] = C\n    sc = (A @ p) / np.sqrt(d)\n    sc = sc - sc.max()\n    w = np.exp(sc)\n    w = w / w.sum()\n    r = w @ C\n    g = h + W['Wo' + l] @ r\n    return g + W['U' + l] @ np.maximum(0.0, W['V' + l] @ g)\n\ndef update(state, token):\n    W = CACHE[state['key']]\n    d = W['d']; P = W['P']; t = state['t']\n    h = np.zeros(d)\n    tok = int(token)\n    if 0 <= tok < W['Vin']:\n        h[tok] = 1.0\n    h[P] = float(t); h[P + 1] = float(t) * float(t); h[P + 2] = 1.0\n    h = round_step(state, W, h, '1')\n    h = round_step(state, W, h, '2')\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    W = CACHE[state['key']]\n    logits = W['O'] @ state['h']\n    return int(np.argmax(logits))\n",
+    "status": "unknown"
+   },
+   {
+    "attempt": 4,
+    "counterexample": {
+     "accuracy": 0.606,
+     "first_error": {
+      "expected": 7,
+      "instance": 1,
+      "position": 9,
+      "predicted": 5,
+      "size": 1
+     },
+     "seed": 0,
+     "size": 1,
+     "task": "binding",
+     "threshold": 0.99
+    },
+    "decided": true,
+    "evidence": "binding: hops=1 query accuracy 0.6060, hops=4 query accuracy 0.6110, hops=8 query accuracy 0.6400; threshold 0.99; observed on the listed sizes: hops=1, hops=4, hops=8; peak state words 2882 exceed the declared 4*(3*hops+3)*(32*ceiling(log(hops+1)/log(2)))+10*(32*ceiling(log(hops+1)/log(2)))+2*(3*hops+3)+hops+6 = 1107 at hops=1",
+    "output_tail": "tion\": 22, \"predicted\": 10, \"size\": 4}, \"instance_accuracy\": 0.222, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 1000, \"query_accuracy\": 0.611, \"size\": 4, \"state_peak_words\": 11906}, {\"accuracy\": 0.64, \"declared_state_words\": 15172.0, \"first_error\": {\"expected\": 19, \"instance\": 1, \"position\": 38, \"predicted\": 18, \"size\": 8}, \"instance_accuracy\": 0.28, \"instances\": 500, \"metric\": \"query\", \"passed\": false, \"queries\": 1000, \"query_accuracy\": 0.64, \"size\": 8, \"state_peak_words\": 25122}], \"seed\": 0, \"status\": \"violated\", \"task\": \"binding\", \"threshold\": 0.99, \"tier\": \"executed\"}\n",
+    "prover_fault": false,
+    "reasons": [],
+    "results": [
+     {
+      "accuracy": 0.606,
+      "declared_state_words": 1107.0,
+      "first_error": {
+       "expected": 7,
+       "instance": 1,
+       "position": 9,
+       "predicted": 5,
+       "size": 1
+      },
+      "instance_accuracy": 0.212,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.606,
+      "size": 1,
+      "state_peak_words": 2882
+     },
+     {
+      "accuracy": 0.611,
+      "declared_state_words": 6760.0,
+      "first_error": {
+       "expected": 12,
+       "instance": 0,
+       "position": 22,
+       "predicted": 10,
+       "size": 4
+      },
+      "instance_accuracy": 0.222,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.611,
+      "size": 4,
+      "state_peak_words": 11906
+     },
+     {
+      "accuracy": 0.64,
+      "declared_state_words": 15172.0,
+      "first_error": {
+       "expected": 19,
+       "instance": 1,
+       "position": 38,
+       "predicted": 18,
+       "size": 8
+      },
+      "instance_accuracy": 0.28,
+      "instances": 500,
+      "metric": "query",
+      "passed": false,
+      "queries": 1000,
+      "query_accuracy": 0.64,
+      "size": 8,
+      "state_peak_words": 25122
+     }
+    ],
+    "source": "PARAMS = []\n\ndef nbits(n):\n    b = 0\n    while (1 << b) < n + 1:\n        b += 1\n    return b\n\ndef pos_table(npos, d, iC, F, slot_fn, iS, iS2):\n    P = np.zeros((npos, d))\n    for t in range(npos):\n        for f in range(F):\n            th = np.pi / (2 ** f)\n            P[t, iC + 2 * f] = np.cos(th * t)\n            P[t, iC + 2 * f + 1] = np.sin(th * t)\n        if slot_fn is not None:\n            s = slot_fn(t)\n            P[t, iS] = s\n            P[t, iS2] = s * s\n    return P\n\ndef rot_block(W, iC, F, scale):\n    for f in range(F):\n        th = np.pi / (2 ** f)\n        c = np.cos(th)\n        s = np.sin(th)\n        i = iC + 2 * f\n        W[i, i] = scale * c\n        W[i, i + 1] = scale * s\n        W[i + 1, i] = -scale * s\n        W[i + 1, i + 1] = scale * c\n\ndef comp_build(layout):\n    T = int(layout['T'])\n    xb = int(layout['x_base']); yb = int(layout['y_base']); zb = int(layout['z_base'])\n    seps = [int(layout[k]) for k in ('GSEP', 'FSEP', 'QSEP') if k in layout]\n    d = 32 * nbits(T)\n    ncap = 4 * T + 3\n    F = nbits(ncap + 8)\n    iS, iS2, iISY, iXV2, iISX, iISZ, iC = 0, 1, 2, 3, 4, 5, 6\n    iCY = iC + 2 * F\n    iCZ = iCY + T\n    iR = iCZ + T\n    iR2 = iR + T\n    while iR2 + T > d and F > 1:\n        F -= 1\n        iCY = iC + 2 * F; iCZ = iCY + T; iR = iCZ + T; iR2 = iR + T\n    nv = max([xb + T, yb + T, zb + T] + [s + 1 for s in seps])\n    E = np.zeros((nv, d))\n    for j in range(T):\n        E[xb + j, iXV2] = 2.0 * j\n        E[xb + j, iISX] = 1.0\n        E[yb + j, iISY] = 1.0\n        E[yb + j, iCY + j] = 1.0\n        E[zb + j, iISZ] = 1.0\n        E[zb + j, iCZ + j] = 1.0\n    far = -(3 * T + 10)\n    def slot(t):\n        if t % 2 == 0 and 2 <= t <= 2 * T:\n            return (t - 2) // 2\n        if t % 2 == 1 and 1 <= t <= 2 * T - 1:\n            return (t - 1) // 2\n        return far\n    P = pos_table(4 * ncap + 64, d, iC, F, slot, iS, iS2)\n    sq = np.sqrt(d)\n    lam = 1000.0 * sq; mu = 20.0 * sq; nu = 40.0 * sq; beta = 5.0\n    Wa1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wc1 = np.zeros((d, d))\n    Wa1[0, iS] = 1.0; Wa1[1, iS2] = 1.0; Wa1[2, iISY] = 1.0\n    for i in range(iC, iC + 2 * F):\n        Wa1[i, i] = 1.0\n    Wp1[0, iXV2] = lam; Wp1[1, iISX] = -lam; Wp1[2, iISX] = lam * beta\n    rot_block(Wp1, iC, F, mu)\n    for j in range(T):\n        Wc1[iR + j, iCY + j] = 1.0\n    Wa2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wc2 = np.zeros((d, d))\n    for j in range(T):\n        Wa2[j, iR + j] = 1.0\n        Wp2[j, iR + j] = nu\n        Wc2[iR2 + j, iCZ + j] = 1.0\n    Wa2[T, iISZ] = 1.0\n    Wp2[T, iISX] = nu\n    O = np.zeros((d, T))\n    for j in range(T):\n        O[iR2 + j, j] = 1.0\n    Z = np.zeros((d, d))\n    return {'d': d, 'E': E, 'P': P, 'Wa': [Wa1, Wa2], 'Wp': [Wp1, Wp2], 'Wc': [Wc1, Wc2],\n            'Wo': [np.eye(d), np.eye(d)], 'U': [Z, Z], 'V': [Z, Z], 'O': O, 'base': zb}\n\ndef bind_build(layout):\n    nvar = int(layout['n_vars']); vb = int(layout['value_base'])\n    nval = int(layout.get('values', 4)); q = int(layout['QSEP'])\n    hops = int(layout['hops']) if 'hops' in layout else max(nvar - 1, 1)\n    d = 32 * nbits(hops)\n    ncap = 3 * hops + 3\n    F = nbits(ncap + 8)\n    iC = 0\n    def lay(F):\n        iCV = iC + 2 * F; iR = iCV + nvar; iISV = iR + nvar; iK = iISV + 1\n        iCVal = iK + 1; iR2 = iCVal + nval\n        return iCV, iR, iISV, iK, iCVal, iR2\n    iCV, iR, iISV, iK, iCVal, iR2 = lay(F)\n    while iR2 + nval > d and F > 1:\n        F -= 1\n        iCV, iR, iISV, iK, iCVal, iR2 = lay(F)\n    nv = max(nvar, vb + nval, q + 1)\n    E = np.zeros((nv, d))\n    E[:, iK] = 1.0\n    for j in range(nvar):\n        E[j, iCV + j] = 1.0\n    for v in range(nval):\n        E[vb + v, iISV] = 1.0\n        E[vb + v, iCVal + v] = 1.0\n    P = pos_table(4 * ncap + 64, d, iC, F, None, 0, 0)\n    sq = np.sqrt(d)\n    mu = 20.0 * sq; nu = 40.0 * sq; kap = 80.0 * sq\n    Wa1 = np.zeros((d, d)); Wp1 = np.zeros((d, d)); Wc1 = np.zeros((d, d))\n    for i in range(iC, iC + 2 * F):\n        Wa1[i, i] = 1.0\n    rot_block(Wp1, iC, F, mu)\n    for j in range(nvar):\n        Wc1[iR + j, iCV + j] = 1.0\n    Wa2 = np.zeros((d, d)); Wp2 = np.zeros((d, d)); Wc2 = np.zeros((d, d))\n    for j in range(nvar):\n        Wa2[j, iR + j] = 1.0\n        Wp2[j, iCV + j] = nu\n    Wa2[nvar, iISV] = 1.0\n    Wp2[nvar, iK] = kap\n    for v in range(nval):\n        Wc2[iR2 + v, iCVal + v] = 1.0\n    O = np.zeros((d, nval))\n    for v in range(nval):\n        O[iR2 + v, v] = 1.0\n    Z = np.zeros((d, d))\n    return {'d': d, 'E': E, 'P': P, 'Wa': [Wa1, Wa2], 'Wp': [Wp1, Wp2], 'Wc': [Wc1, Wc2],\n            'Wo': [np.eye(d), np.eye(d)], 'U': [Z, Z], 'V': [Z, Z], 'O': O, 'base': vb}\n\ndef init(layout):\n    if 'GSEP' in layout:\n        names = ('T', 'x_base', 'y_base', 'z_base', 'GSEP', 'FSEP', 'QSEP')\n        kind = 0\n    else:\n        names = ('n_vars', 'value_base', 'values', 'QSEP', 'hops')\n        kind = 1\n    key = tuple([kind] + [int(layout[k]) if k in layout else -1 for k in names])\n    idx = -1\n    for i in range(len(PARAMS)):\n        if PARAMS[i]['key'] == key:\n            idx = i\n    if idx < 0:\n        M = comp_build(layout) if kind == 0 else bind_build(layout)\n        M['key'] = key\n        PARAMS.append(M)\n        idx = len(PARAMS) - 1\n    d = PARAMS[idx]['d']\n    return [idx, 0, np.zeros((0, d)), np.zeros((0, d)), np.zeros((0, d)), np.zeros((0, d)), np.zeros(d)]\n\ndef update(state, token):\n    M = PARAMS[state[0]]\n    d = M['d']\n    t = state[1]\n    tok = int(token)\n    E = M['E']; P = M['P']\n    h = (E[tok] if 0 <= tok < E.shape[0] else np.zeros(d)) + P[min(t, P.shape[0] - 1)]\n    new = [state[0], t + 1]\n    for l in range(2):\n        a = M['Wa'][l] @ h\n        c = M['Wc'][l] @ h\n        p = M['Wp'][l] @ h\n        A = np.vstack([state[2 + 2 * l], a[None, :]])\n        C = np.vstack([state[3 + 2 * l], c[None, :]])\n        s = (A @ p) / np.sqrt(d)\n        s = s - np.max(s)\n        w = np.exp(s)\n        w = w / np.sum(w)\n        r = w @ C\n        g = h + M['Wo'][l] @ r\n        h = g + M['U'][l] @ np.maximum(0.0, M['V'][l] @ g)\n        new.append(A)\n        new.append(C)\n    new.append(h)\n    return new\n\ndef predict(state):\n    M = PARAMS[state[0]]\n    logits = state[6] @ M['O']\n    return int(M['base'] + int(np.argmax(logits)))\n",
+    "status": "violated"
+   }
+  ]
+ },
+ "definitions": {
+  "D1": {
+   "kind": "accounting",
+   "text": "Count each scalar addition, subtraction, multiplication, division, exponential, square root, maximum and comparison as one operation; indexing, assignment and allocation cost zero operations. A length-k dot product uses k multiplications and k-1 additions. Dense matrices are evaluated without skipping zero coefficients. Cache sqrt(d) as a model constant. Evaluate the displayed normalized exponentials directly, without a stability shift. Evaluate argmax by V-1 comparisons, choosing the smallest token index in a tie. All six matrices in each round, including U and V, are d by d. Readout is d by V, where V in cost formulas denotes vocabulary size, not the feed-forward matrix."
+  },
+  "D2": {
+   "kind": "accounting",
+   "text": "Inference words count mutable inference storage, excluding fixed model parameters, the input and returned predictions. The reference implementation reserves a 4*n*d-word address/content arena for two rounds, ten d-word vector buffers, two n-word score/weight buffers and a V-word logits buffer. Reserved words count even when unused. Thus the declared allocation is 4*n*d+10*d+2*n+V words. Use binary64 words. The implementation appends rows and evaluates exactly the card's equations; construction and learning checks do not permit a separate algorithm or external store."
+  },
+  "D5": {
+   "kind": "other",
+   "text": "For P2, use exactly the card's two rounds at every size, including dyck and binding sizes that may fail. Set d=32*ceiling(log(size+1)/log(2)). Reserve sufficient positions for at most 2*L+1 tokens for copy, 3*K+1 for recall, 2*depth for dyck, 4*T+3 for composition, and 3*hops+3 for binding. Pad unused positions without scoring them. Output vocabulary allocations are respectively 5, K+6, 4, T+2 and hops+6. State_words includes the arenas in D2 at these token and vocabulary capacities."
+  },
+  "D7": {
+   "kind": "other",
+   "text": "Freeze the unspecified learning conventions as follows: width 16, two rounds, binary64 arithmetic, every trainable matrix initialized independently from N(0,0.1^2), plain gradient descent with learning rate 0.01, 50 full-batch epochs, and next-symbol cross-entropy differentiated through both rounds. Learn E, P and all round and readout matrices; there is no hand-set initialization, curriculum or auxiliary loss. Use optimized batched BLAS contractions, one CPU thread, and seeds 0, 1 and 2. An empty training set leaves the initialized weights unchanged. The nominal forward/backward arithmetic workload is on the order of 10^9 scalar operations per largest training run; the mandatory timing probe determines whether this schedule actually fits the profile cap."
+  }
+ },
+ "provenance": {
+  "note": "sanitized by tmp/fix3/make_fixtures.py: ids, hashes, receipts and paths dropped",
+  "run": "runs/calibration-smoke-20261013T133146Z/k1-run1",
+  "statements_artifact": "card-ca11b001-v1-227b21.json"
+ },
+ "statements": {
+  "O13.a": {
+   "claim_id": "P4.composition",
+   "definitions": [
+    "D2",
+    "D6",
+    "D7"
+   ],
+   "form": "learnability",
+   "spec": {
+    "examples": 4000,
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "size": 4,
+    "task": "composition",
+    "test_count": 500,
+    "threshold": 0.99
+   }
+  },
+  "O4.a": {
+   "claim_id": "P1",
+   "definitions": [
+    "D1",
+    "D2"
+   ],
+   "form": "cost",
+   "spec": {
+    "exponent": 2,
+    "ops": "(4*d+3)*n**2+(24*d**2-3*d+2*d*V)*n",
+    "sizes": {
+     "V": [
+      4,
+      8
+     ],
+     "d": [
+      16,
+      32
+     ]
+    },
+    "state": "4*n*d+10*d+2*n+V"
+   }
+  },
+  "O5.a": {
+   "claim_id": "sample_efficiency.prediction",
+   "definitions": [
+    "D2",
+    "D6",
+    "D7"
+   ],
+   "form": "learnability",
+   "spec": {
+    "examples": 3000,
+    "params": {
+     "D": 4
+    },
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "size": 4,
+    "task": "copy",
+    "test_count": 500,
+    "threshold": 0.99
+   }
+  },
+  "O7.a": {
+   "claim_id": "P2.recall",
+   "definitions": [
+    "D2",
+    "D4",
+    "D5"
+   ],
+   "form": "construction",
+   "spec": {
+    "count": 500,
+    "params": {
+     "V": 4
+    },
+    "sizes": [
+     8,
+     32,
+     64
+    ],
+    "state_words": "4*(3*K+1)*(32*ceiling(log(K+1)/log(2)))+10*(32*ceiling(log(K+1)/log(2)))+2*(3*K+1)+K+6",
+    "task": "recall",
+    "threshold": 0.99
+   }
+  },
+  "O9.a": {
+   "claim_id": "P2.composition",
+   "definitions": [
+    "D2",
+    "D4",
+    "D5"
+   ],
+   "form": "construction",
+   "spec": {
+    "count": 500,
+    "sizes": [
+     4,
+     16,
+     32
+    ],
+    "state_words": "4*(4*T+3)*(32*ceiling(log(T+1)/log(2)))+10*(32*ceiling(log(T+1)/log(2)))+2*(4*T+3)+T+2",
+    "task": "composition",
+    "threshold": 0.99
+   }
+  },
+  "O9.b": {
+   "claim_id": "P2.composition",
+   "definitions": [
+    "D2",
+    "D4",
+    "D5"
+   ],
+   "form": "construction",
+   "spec": {
+    "count": 500,
+    "params": {
+     "values": 4
+    },
+    "sizes": [
+     1,
+     4,
+     8
+    ],
+    "state_words": "4*(3*hops+3)*(32*ceiling(log(hops+1)/log(2)))+10*(32*ceiling(log(hops+1)/log(2)))+2*(3*hops+3)+hops+6",
+    "task": "binding",
+    "threshold": 0.99
+   }
+  }
+ }
+}

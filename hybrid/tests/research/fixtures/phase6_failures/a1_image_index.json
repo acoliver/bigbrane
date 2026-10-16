@@ -1,0 +1,321 @@
+{
+ "provenance": "Phase 6 run phase6-drafts-20261013T0611Z, A1 draft card-009d7129 (gate at ledger line 353). Sanitized: the stored v1 card with its call id zeroed and its verdicts cleared.",
+ "arm": "A1",
+ "seeds": {},
+ "recorded_reason": "gate: arm_structure:A1: image equation 'if x_t != sep and not (c == 2 and len({B[0], B[1], x_t}) == 3): eta = 1/(c+2) if c <= 2 else 1/(c+1); nu = (xi[x_t] - z) / (1 - conj(z)*xi[x_t]); u = eta*nu; z = (u + z) / (1 + conj(z)*u)' is not update[0] of the mechanism ('if x_t == sep: z = 0; c = 0')",
+ "card": {
+  "arm": "A1",
+  "arm_structure": {
+   "closest_known": {
+    "difference": "An SSM update is affine in the state: h_t = A_t h_{t-1} + B_t x_t. Here update[1] is the rational map z <- (u + z)/(1 + conj(z) u) with u = eta (xi - z)/(1 - conj(z) xi). It moves z exactly 2*artanh(eta) hyperbolic units toward xi at every |z|. Only its first-order expansion at z = 0, (1 - eta) z + eta xi + eta(1 - eta) conj(z) xi^2, is a driven linear recurrence. Its fixed point is the Douady-Earle conformal barycenter rather than a weighted sum of inputs. update[2] sets z to an ideal-triangle center, which no linear recurrence produces. The readout is the Poisson kernel at that point, not a linear map of the state.",
+    "family": "ssm"
+   },
+   "image_equation": {
+    "latex": "\\eta_c = \\begin{cases} 1/(c+2) & c \\le 2 \\\\ 1/(c+1) & c \\ge 3 \\end{cases},\\quad \\nu = \\frac{\\xi_{x_t} - z}{1 - \\bar z\\,\\xi_{x_t}},\\quad z \\leftarrow \\frac{\\eta_c \\nu + z}{1 + \\bar z\\,\\eta_c \\nu}\\qquad (x_t \\ne \\mathrm{sep},\\ \\neg[c = 2 \\wedge |\\{B_0,B_1,x_t\\}| = 3])",
+    "mechanism_ref": "update[0]",
+    "plain": "if x_t != sep and not (c == 2 and len({B[0], B[1], x_t}) == 3): eta = 1/(c+2) if c <= 2 else 1/(c+1); nu = (xi[x_t] - z) / (1 - conj(z)*xi[x_t]); u = eta*nu; z = (u + z) / (1 + conj(z)*u)"
+   },
+   "object_map": [
+    {
+     "mechanism_object": "xi",
+     "source_object": "ideal point zeta on the boundary circle of the Poincare disk"
+    },
+    {
+     "mechanism_object": "z",
+     "source_object": "base point w of the geodesic ray"
+    },
+    {
+     "mechanism_object": "eta",
+     "source_object": "hyperbolic arc length s along the ray, entering as tanh(s/2)"
+    },
+    {
+     "mechanism_object": "nu",
+     "source_object": "image phi_w(zeta) of the ideal point under the automorphism moving w to the origin"
+    },
+    {
+     "mechanism_object": "B",
+     "source_object": "vertices of an ideal triangle, whose center is the conformal barycenter of three atoms"
+    },
+    {
+     "mechanism_object": "P",
+     "source_object": "Poisson kernel P(w, zeta), the density of harmonic measure seen from w"
+    }
+   ],
+   "prediction": {
+    "derived_via": "Set the expected displacement of update[1], the image of the geodesic-ray equation, to zero in the chart where z is the origin. This gives E[(xi - z)/(1 - conj(z) xi)] = 0, the Douady-Earle barycenter condition, so z settles at the conformal barycenter of the subtree's arc. readout[0] is the image of the Poisson kernel, i.e. harmonic measure seen from z. Both commute with disk automorphisms, so the subtree's mass is a Mobius invariant: the harmonic measure of an arc seen from its own barycenter. Compute it once in the half-plane limit. The barycenter of uniform measure on [-a, a] is iy with integral of (x^2 - y^2)/(x^2 + y^2) dx = 0, giving a/y = t* = 2 arctan t*. The Cauchy mass on [-a, a] is (2/pi) arctan(t*) = t*/pi = 0.742.",
+    "metric": "mean predictive probability on the subtree's leaves at position 65, averaged over 500 episodes per m (claim: within 0.04 of the value for every m)",
+    "statement": "When the in-context examples are many uniform draws from one subtree, the predictive mass on that subtree converges to t*/pi = 0.742, where t* = 2.3311 solves t = 2 arctan t. The value is the same for every subtree size and depth. A Euclidean mean with the same readout instead drives the mass toward the central leaf as subtrees shrink.",
+    "task": "Few-shot category completion: V = 1024 leaves of a binary taxonomy placed on the circle in depth-first order. Each episode is a separator followed by 64 tokens drawn uniformly from one subtree with m in {8, 16, 32, 64} leaves; read p at position 65.",
+    "value": 0.742
+   },
+   "source_equation": {
+    "latex": "\\gamma_{w,\\zeta}(s) = \\frac{\\tanh(s/2)\\,\\phi_w(\\zeta) + w}{1 + \\bar w\\,\\tanh(s/2)\\,\\phi_w(\\zeta)},\\qquad \\phi_w(\\zeta) = \\frac{\\zeta - w}{1 - \\bar w\\,\\zeta}",
+    "plain": "gamma_{w,zeta}(s) = (tanh(s/2)*phi_w(zeta) + w) / (1 + conj(w)*tanh(s/2)*phi_w(zeta)), with phi_w(zeta) = (zeta - w)/(1 - conj(w)*zeta): the point at hyperbolic distance s from w on the geodesic ray from w toward the ideal point zeta"
+   },
+   "source_field": "Hyperbolic geometry of the Poincare disk (curvature -1): geodesic rays to ideal points, the Douady-Earle conformal barycenter of boundary measures, and the Poisson kernel / harmonic measure"
+  },
+  "claims": {
+   "capabilities": [
+    {
+     "prediction": "The 13 unseen members together receive at least 0.5 of the predictive mass. The half-plane calculation gives 0.57: center at height a*tan(30 deg) above the arc of half-width a, Cauchy mass 0.684 on the subtree, of which the three seen leaves take about 0.11. An exact-match cache gives 0, and a Euclidean running mean of xi with the same readout gives at most 0.2.",
+     "task": "3-shot category completion with unseen members: V = 1024 binary taxonomy in depth-first order. The 3 examples are the two end leaves and one interior leaf of a 16-leaf subtree; predict the next token."
+    },
+    {
+     "prediction": "Mean mass is 0.742 +/- 0.04 for every m. This is the harmonic measure of an arc seen from its own conformal barycenter, t*/pi with t* = 2 arctan t*. It holds with no fitted parameter and no trend in m.",
+     "task": "Stationary category mass: V = 1024 depth-first taxonomy, 64 examples drawn uniformly from a subtree of m in {8, 16, 32, 64} leaves; mass on the subtree at position 65, averaged over 500 episodes per m."
+    },
+    {
+     "prediction": "The mean 3-shot category mass differs by less than 0.05 between the two depths. A version whose first three steps are update[1] with eta = 1/(c+2), i.e. no triangle step, needs about sqrt(3V/m) examples to reach the same mass: about 3 at m = 128 and about 50 at m = 4.",
+     "task": "Depth invariance of 3-shot behavior: the same 3-example episodes as in sample_efficiency, comparing m = 4 (depth 8) with m = 64 (depth 4)."
+    },
+    {
+     "prediction": "At least 90% of subtrees with at least 4 leaves end up contiguous on the circle, and held-out 3-shot category mass is at least 0.6. If gradient descent stalls in a non-laminar seriation, this claim fails while the geometric claims, which use the built-in arrangement, can still hold.",
+     "task": "Learning the arrangement: a 64-leaf binary taxonomy (V = 65 including sep), angles theta initialized uniformly at random, trained with Adam on 2000 meta-training episodes of 3-shot category completion. Test on held-out episodes."
+    },
+    {
+     "prediction": "The core holds one point, so it cannot keep the two categories apart. It predicts their parent arc: mass on the union is at least 0.65, and the mass on the category of the most recent example is no more than 0.6 of the union's mass. Associative recall of key-value pairs is not supported; it stays at chance, because the state is a single concept.",
+     "task": "Capacity limit, two interleaved categories: examples alternate between two disjoint sibling subtrees of 8 leaves each, for 12 examples."
+    }
+   ],
+   "complexity": {
+    "constants_notes": "The state update costs O(1): about 40 real floating-point operations for update[1], or about 60 for the one-time triangle step, independent of n. The O(V) term is the readout normalization over the vocabulary, the same as any output layer. If only a sample or the mass of an arc is needed, the wrapped Cauchy has a closed-form CDF, so with angles kept sorted this drops to O(log V) per token. Memory is V angles plus 4 numbers of in-context state. Nothing grows with n.",
+    "memory": "O(V)",
+    "time_per_token": "O(V)",
+    "total_sequence": "O(n V)"
+   },
+   "sample_efficiency": {
+    "mechanism": "Three distinct examples fix an ideal triangle whose center gives the spanned arc exactly 2/3 of the harmonic measure, by Mobius invariance. The number of shots needed to localize a category therefore does not grow with its depth or with V/m. A Euclidean or count-based learner needs more examples, or never spreads mass onto unseen members.",
+    "prediction": {
+     "metric": "minimum over 1000 episodes of the predictive mass on the category's leaves right after exactly 3 distinct in-context examples (V = 1024 leaves of a binary taxonomy in depth-first order on the circle; category sizes m in {4, 8, 16, 32, 64}; examples drawn uniformly from the category)",
+     "statement": "For every category size from 4 to 64 leaves (depths 4 to 8 of the tree), the mass on the category after 3 shots is at least 0.65 in every episode. This is the 2/3 harmonic-measure bound minus a discretization margin. The mean mass differs by less than 0.05 between m = 4 and m = 64, so the number of shots needed is constant in depth rather than growing as log(V/m) or sqrt(V/m).",
+     "value": 0.65
+    }
+   }
+  },
+  "core_idea": "Tokens are ideal points on the boundary circle of the Poincare disk, laid out so that every subtree of a hierarchy is an arc; an in-context concept is one interior point z that the shown examples move along geodesics, so that z tracks their Douady-Earle conformal barycenter; the Poisson kernel at z then spreads prediction over the arc the examples span, with the same share at every depth of the hierarchy.",
+  "created_by_call": "call-000000000000",
+  "extensions": [
+   {
+    "description": "One circle holds one laminar family of arcs. To represent several taxonomies, give each token an angle in D disks, keep one concept point per disk updated by the same equations, and multiply the D Poisson kernels in the readout.",
+    "equations": [
+     {
+      "latex": "p_v \\propto \\prod_{j=1}^{D} \\frac{1-|z_j|^2}{|z_j-\\xi_{j,v}|^2}",
+      "plain": "p[v] proportional to product over j of (1 - abs(z[j])**2)/abs(z[j] - xi[j][v])**2"
+     }
+    ],
+    "name": "Product of disks for cross-cutting categories"
+   },
+   {
+    "description": "For hierarchically nested sequences, keep a stack of concept points: push a fresh point at a learned open marker and pop at a close marker. Each segment then gets its own conformal barycenter, and segment boundaries become learned.",
+    "name": "Nested segments"
+   },
+   {
+    "description": "Raise the Poisson kernel to a learned power kappa to sharpen or widen prediction. This breaks the exact 2/3 and 0.742 constants, so it is excluded from the claims.",
+    "name": "Learned kernel exponent"
+   },
+   {
+    "description": "Tokens on S^{d-1}, concept in B^d, readout ((1-|z|^2)/|z-xi|^2)^{d-1}, which is the Poisson kernel of the d-ball. The barycenter and triangle-center logic generalizes to the d-ball barycenter, without the closed-form three-point solution.",
+    "name": "Higher-dimensional ball"
+   }
+  ],
+  "falsifiers": [
+   "With the depth-first arrangement and V = 1024, the predictive mass on the category after exactly 3 distinct examples falls below 0.6 in more than 5% of episodes, for any category size between 4 and 64. That would contradict the harmonic-measure bound the core rests on.",
+   "After 64 uniform examples from a subtree, the mean category mass differs from 0.742 by more than 0.05, or changes by more than 0.05 between m = 8 and m = 64. That would show the streaming update does not track the conformal barycenter, or that the Mobius invariance does not carry over to the discrete vocabulary.",
+   "Replacing update[1] and update[2] by a Euclidean running mean z = mean of xi over the examples, with the same readout and arrangement, gives unseen members of a 16-leaf category equal or larger total mass after 3 examples. The hyperbolic correspondence would then add nothing.",
+   "Learned angles theta from 2000 meta-training episodes on a 64-leaf taxonomy leave fewer than 75% of subtrees with at least 4 leaves contiguous. The learned variant would then not recover the arc structure the core needs."
+  ],
+  "id": "card-009d7129",
+  "known_relatives": [
+   {
+    "claimed_difference": "The full update is a rational, Mobius-conjugated map that moves z exactly 2*artanh(eta) hyperbolic units toward xi at any |z|. Its fixed point is the Douady-Earle conformal barycenter, not a weighted mean. update[2] places z at an ideal-triangle center, which no linear recurrence produces. These nonlinear parts are what yield the depth-invariant 2/3 and 0.742 constants.",
+    "name": "State-space models and driven linear recurrences (S4, Mamba, LRU)",
+    "relation": "The first-order expansion of update[1] at z = 0 is (1 - eta) z + eta xi + eta(1 - eta) conj(z) xi^2. That is a driven recurrence, linear in (z, conj(z)), with an input-dependent coefficient."
+   },
+   {
+    "claimed_difference": "A Euclidean mean of boundary points of an arc of half-angle a sits at depth about a^2/6. That is far too close to the circle for small arcs, so the readout collapses onto the central seen token. The conformal barycenter sits at depth proportional to a, and the predictive arc matches the span of the examples. A count cache gives unseen members zero mass.",
+    "name": "Running mean / unigram cache language model",
+    "relation": "Both summarize in-context occurrences without storing them, and both predict tokens similar to those seen."
+   },
+   {
+    "claimed_difference": "Here the estimator is the whole in-context learner over a vocabulary whose hierarchy is coded as a laminar family of boundary arcs. It is started exactly by the ideal-triangle center rather than by a cold start. The claims concern category generalization across depths, not estimation of a location parameter.",
+    "name": "Online maximum likelihood for the wrapped Cauchy distribution (Mobius-equivariant Cauchy family)",
+    "relation": "For c >= 3, update[1] is approximately a Newton step on the wrapped-Cauchy log-likelihood, and readout[0] is that distribution."
+   },
+   {
+    "claimed_difference": "There is no recurrent weight matrix and no gate. The step is a fixed geodesic move toward the token's ideal point with a schedule set by the count. The state is one 2D point, and its meaning (concept location and width) is fixed by the geometry rather than learned.",
+    "name": "Hyperbolic RNN / hyperbolic GRU (Mobius gyrovector recurrences)",
+    "relation": "Both keep a recurrent state in the Poincare disk updated with Mobius operations."
+   },
+   {
+    "claimed_difference": "There is no key-to-value map to regress and no matrix state. The in-context object is one point whose likelihood is an unconditional distribution over the vocabulary, so the delta-rule signature S += beta (v - S k) k^T does not appear.",
+    "name": "Delta rule / test-time training",
+    "relation": "Both change an in-context state by a gradient-like step per token."
+   },
+   {
+    "claimed_difference": "There is no hypothesis space or prior over nodes. Generalization width comes from harmonic measure at the conformal barycenter, and gives a fixed 2/3 mass on the spanned arc after three examples at any depth.",
+    "name": "Bayesian concept learning with the size principle",
+    "relation": "Both prefer the smallest hierarchy node that covers the examples."
+   }
+  ],
+  "lens": "hyperbolic_geometry",
+  "mechanism": {
+   "learning": {
+    "description": "The only learned parameters are the V boundary angles theta, with xi[v] = exp(1j*theta[v]). They are trained offline by gradient descent on next-token log loss over meta-training episodes: a separator followed by members of one category of a training taxonomy. Gradients are backpropagated through update[1], update[2] and readout[0], all of which are smooth in theta away from coincident tokens. Because the readout spreads mass over an arc around z, the loss is lowest when co-category tokens are adjacent on the circle. The gradient therefore pushes theta toward a circular seriation in which every category is an arc, a laminar family of arcs. Equivalently, theta can be set by hand from a known tree in depth-first leaf order, which is the built-in variant used for the geometric claims. No other parameter exists: the step sizes, the triangle center and the kernel exponent are fixed by the geometry. In the learning equations below, lr is the learning rate and p_t is readout[0] at position t.",
+    "equations": [
+     {
+      "latex": "L = -\\sum_t \\log p_t[x_{t+1}],\\qquad \\theta \\leftarrow \\theta - \\mathrm{lr}\\,\\nabla_\\theta L",
+      "name": "meta-training loss and step",
+      "plain": "L = -sum_t log(p_t[x_{t+1}]); theta = theta - lr * dL/dtheta (backprop through update[1], update[2], readout[0])"
+     }
+    ],
+    "few_shot_argument": "Take three distinct shown members a, b, q of a category. They are three ideal points, and update[2] puts z at the center of their ideal triangle. That is the unique point from which the disk automorphism nu -> (nu - z)/(1 - conj(z) nu) sends a, b, q to three points 120 degrees apart. Harmonic measure is invariant under that automorphism, and readout[0] is harmonic measure. Hence the arc running from one outer example through the middle one to the other outer example receives exactly 2/3 of the predictive mass in the continuous limit, whether that arc is a quarter of the circle or 1/1000 of it. Every category is an arc, so the spanned arc lies inside the category. At least 2/3 of the mass therefore lands on category members, including the unseen members between the examples, after three shots at any depth of the hierarchy. No parameter is fitted in context; the geometry does the generalizing. Each later example takes a step of size 1/(c+1) in the chart where z is the origin. This is the Newton step for the wrapped-Cauchy likelihood when the earlier examples are balanced around z, so z converges to the conformal barycenter of all examples."
+   },
+   "readout": [
+    {
+     "latex": "P_v = \\frac{1-|z|^2}{|z-\\xi_v|^2},\\qquad p_v = \\frac{P_v}{\\sum_{u=0}^{V-1} P_u}",
+     "name": "Poisson kernel (harmonic measure seen from z)",
+     "plain": "P[v] = (1 - abs(z)**2) / abs(z - xi[v])**2 for v in 0..V-1; p[v] = P[v] / sum(P)"
+    }
+   ],
+   "state": [
+    {
+     "meaning": "Ideal point of each token on the boundary circle. xi[v] = exp(1j*theta[v]) with learned angles theta in R^V. V is the vocabulary size, including one reserved separator id sep that resets the concept. Subtrees of a hierarchy are meant to occupy contiguous arcs.",
+     "name": "xi",
+     "shape": [
+      "V"
+     ],
+     "type": "learned parameter block: complex unit-modulus vector"
+    },
+    {
+     "meaning": "The in-context concept. Its direction z/abs(z) says where on the circle the concept lies. Its hyperbolic depth 2*artanh(abs(z)) sets how narrow the concept is, since predictive width scales as about 1 - abs(z).",
+     "name": "z",
+     "shape": [
+      1
+     ],
+     "type": "complex number with abs(z) < 1 (point of the Poincare disk, curvature -1)"
+    },
+    {
+     "meaning": "Number of example tokens seen since the last separator. It sets the step size eta and triggers the ideal-triangle step.",
+     "name": "c",
+     "shape": [
+      1
+     ],
+     "type": "non-negative integer"
+    },
+    {
+     "meaning": "The first two example tokens after a separator, kept so that the third distinct example can form an ideal triangle.",
+     "name": "B",
+     "shape": [
+      2
+     ],
+     "type": "integer token ids"
+    },
+    {
+     "meaning": "Input token at position t of the stream.",
+     "name": "x_t",
+     "shape": [
+      1
+     ],
+     "type": "integer token id in 0..V-1"
+    },
+    {
+     "meaning": "Predicted distribution over the next token, produced by readout[0] from z. P[v] is its unnormalized Poisson-kernel weight.",
+     "name": "p",
+     "shape": [
+      "V"
+     ],
+     "type": "probability vector"
+    }
+   ],
+   "update": [
+    {
+     "latex": "x_t = \\mathrm{sep} \\Rightarrow z \\leftarrow 0,\\; c \\leftarrow 0",
+     "name": "reset at separator",
+     "plain": "if x_t == sep: z = 0; c = 0"
+    },
+    {
+     "latex": "\\eta_c = \\begin{cases} 1/(c+2) & c \\le 2 \\\\ 1/(c+1) & c \\ge 3 \\end{cases},\\quad \\nu = \\frac{\\xi_{x_t} - z}{1 - \\bar z\\,\\xi_{x_t}},\\quad z \\leftarrow \\frac{\\eta_c \\nu + z}{1 + \\bar z\\,\\eta_c \\nu}\\qquad (x_t \\ne \\mathrm{sep},\\ \\neg[c = 2 \\wedge |\\{B_0,B_1,x_t\\}| = 3])",
+     "name": "geodesic step toward the token's ideal point",
+     "plain": "if x_t != sep and not (c == 2 and len({B[0], B[1], x_t}) == 3): eta = 1/(c+2) if c <= 2 else 1/(c+1); nu = (xi[x_t] - z) / (1 - conj(z)*xi[x_t]); u = eta*nu; z = (u + z) / (1 + conj(z)*u)"
+    },
+    {
+     "latex": "a=\\xi_{B_0},\\ b=\\xi_{B_1},\\ q=\\xi_{x_t},\\quad z \\leftarrow \\frac{s\\,a\\,(q-b) - b\\,(q-a)}{s\\,(q-b) - (q-a)},\\ s \\in \\{e^{i\\pi/3}, e^{-i\\pi/3}\\} \\text{ chosen so that } |z|<1 \\qquad (x_t \\ne \\mathrm{sep},\\ c = 2,\\ |\\{B_0,B_1,x_t\\}| = 3)",
+     "name": "ideal-triangle center (exact conformal barycenter of three atoms)",
+     "plain": "if x_t != sep and c == 2 and len({B[0], B[1], x_t}) == 3: a = xi[B[0]]; b = xi[B[1]]; q = xi[x_t]; for s in (exp(1j*pi/3), exp(-1j*pi/3)): cand = (s*a*(q - b) - b*(q - a)) / (s*(q - b) - (q - a)); z = the cand with abs(cand) < 1"
+    },
+    {
+     "latex": "x_t \\ne \\mathrm{sep} \\Rightarrow (c<2 \\Rightarrow B_c \\leftarrow x_t),\\; c \\leftarrow c+1",
+     "name": "buffer and count",
+     "plain": "if x_t != sep: if c < 2: B[c] = x_t; c = c + 1"
+    }
+   ]
+  },
+  "references": [
+   {
+    "source_id": "2202.13852",
+    "why": "Source of the premise that hierarchies embed in negatively curved space with exponential room toward the boundary. I took the reading of leaves as boundary (ideal) directions and of general concepts as points nearer the center, and the Poincare-disk operations (Mobius addition, geodesics) used in hyperbolic graph learning."
+   },
+   {
+    "source_id": "1903.07307",
+    "why": "Hyperbolic embeddings of hierarchies can live in a low-dimensional subspace. I took this to its extreme: a single hierarchy is coded in the 2D disk by boundary order alone. Higher-dimensional and product variants are moved to extensions."
+   },
+   {
+    "source_id": "W4401863650",
+    "why": "Its Lipschitz analysis shows Mobius layers becoming unstable as feature norms approach the boundary. The core avoids this: every update is an isometry-conjugated step whose hyperbolic displacement is bounded by 2*artanh(eta) whatever |z| is, and the readout depends on z only through Mobius-invariant harmonic measure."
+   }
+  ],
+  "source_transplant": {
+   "change": "Tokens become ideal points, and an in-context concept becomes the base point. Each token moves the base point along its geodesic ray by an arc length s with tanh(s/2) = eta_c, a Robbins-Monro/Newton schedule, so the base point tracks the conformal barycenter of the examples. The third distinct example jumps the base point to the center of the ideal triangle, which is the closed-form barycenter of three atoms. The Poisson kernel is used as the next-token distribution. The ideal-point angles are learned by backpropagation.",
+   "object": "The geodesic ray from a base point to an ideal point of the Poincare disk, written with the disk automorphism phi_w(zeta) = (zeta - w)/(1 - conj(w) zeta). Taken with it: the Douady-Earle conformal barycenter of a boundary measure (the zero of the integral of phi_w over the measure) and the Poisson kernel, i.e. harmonic measure, (1 - |w|^2)/|w - zeta|^2.",
+   "source_ids": [
+    "2202.13852",
+    "W4401863650",
+    "1903.07307"
+   ]
+  },
+  "status": {
+   "stage": "S0",
+   "verdicts": {}
+  },
+  "summary": "The vocabulary sits on the boundary circle of the Poincare disk as learned ideal points xi[v]. A hierarchy is encoded by order alone: each subtree is a contiguous arc. The in-context state is one complex number z in the disk, a counter c and a two-slot buffer B.\n\nUpdates:\n- Each example token moves z along the hyperbolic geodesic ray toward its ideal point. The step size is fixed in hyperbolic units, 2*artanh(eta_c).\n- The third distinct example instead sets z, in closed form, to the center of the ideal triangle spanned by the three examples. That center is the exact Douady-Earle conformal barycenter of three atoms.\n- Later steps use eta = 1/(c+1). These are approximate Newton steps toward the barycenter of all examples, i.e. the maximum-likelihood point of the wrapped Cauchy family.\n\nReadout: the Poisson kernel P(z, xi[v]), which is harmonic measure seen from z.\n\nWhat the map preserves: equivariance under the disk automorphism group PSU(1,1). The geodesic step, the triangle center and the Poisson kernel all commute with Mobius maps. Harmonic measure is Mobius-invariant. Two results follow:\n- After three distinct examples, the arc they span receives exactly 2/3 of the predictive mass in the continuous limit, whether that arc is half the circle or a thousandth of it.\n- At stationarity, a subtree receives t*/pi = 0.742 of the mass (t* = 2 arctan t*), independent of its size or depth.\n\nWhat the map does not preserve: the reset point z = 0 and the first two steps single out the origin, and the discrete vocabulary breaks the continuous symmetry at the scale of one leaf spacing. The model is a narrow in-context category learner with O(1) state per token. It generalizes to unseen members lying between the examples, which an exact-match cache cannot do. It also avoids the collapse onto the central token that a Euclidean running mean shows.",
+  "title": "Conformal Barycenter Concepts: few-shot categories as one point of the Poincare disk, pulled along geodesics toward ideal-point tokens and read through the Poisson kernel",
+  "toy_example": {
+   "description": "Eight tokens at angles 2*pi*v/8 on the circle, so tokens 0..3 form one subtree arc. The episode shows tokens 0, 2, 1. After tokens 0 and 2 (two geodesic steps, eta = 1/2 then 1/3), z = (40+27i)/137 and the unseen token 1 between them is the most probable next token. Token 1 then completes an ideal triangle, and update[2] puts z at its center 0.614*exp(i*pi/4). Readout: tokens 0..2 receive 0.796 of the mass.",
+   "expected": {
+    "argmax_after_2": 1,
+    "mass_0_2_after_3": 0.796,
+    "p_after_2": [
+     0.203,
+     0.253,
+     0.15,
+     0.087,
+     0.064,
+     0.06,
+     0.072,
+     0.111
+    ],
+    "p_after_3": [
+     0.147,
+     0.502,
+     0.147,
+     0.054,
+     0.033,
+     0.029,
+     0.033,
+     0.054
+    ],
+    "z_after_2": [
+     0.292,
+     0.1971
+    ],
+    "z_after_3": [
+     0.4342,
+     0.4342
+    ]
+   },
+   "python": "import numpy as np, json\nV = 8\nxi = np.exp(1j*2*np.pi*np.arange(V)/V)\ndef step(z, x, eta):\n    nu = (xi[x]-z)/(1-np.conj(z)*xi[x])\n    u = eta*nu\n    return (u+z)/(1+np.conj(z)*u)\ndef center(a, b, q):\n    for s in (np.exp(1j*np.pi/3), np.exp(-1j*np.pi/3)):\n        cand = (s*a*(q-b)-b*(q-a))/(s*(q-b)-(q-a))\n        if abs(cand) < 1:\n            return cand\ndef readout(z):\n    P = (1-abs(z)**2)/np.abs(z-xi)**2\n    return P/P.sum()\nz = 0j; c = 0; B = []\nfor x in [0, 2, 1]:\n    if c == 2 and len(set(B+[x])) == 3:\n        z = center(xi[B[0]], xi[B[1]], xi[x])\n    else:\n        eta = 1.0/(c+2) if c <= 2 else 1.0/(c+1)\n        z = step(z, x, eta)\n    if c < 2:\n        B.append(x)\n    c += 1\n    if c == 2:\n        z2 = z; p2 = readout(z)\np3 = readout(z)\nprint(json.dumps({\"z_after_2\": [round(float(z2.real),4), round(float(z2.imag),4)], \"p_after_2\": [round(float(v),3) for v in p2], \"argmax_after_2\": int(np.argmax(p2)), \"z_after_3\": [round(float(z.real),4), round(float(z.imag),4)], \"p_after_3\": [round(float(v),3) for v in p3], \"mass_0_2_after_3\": round(float(p3[:3].sum()),3)}))\n"
+  },
+  "version": 1,
+  "parent_ids": []
+ }
+}

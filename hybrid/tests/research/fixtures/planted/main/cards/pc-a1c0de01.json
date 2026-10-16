@@ -1,0 +1,86 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Rank-one ledger of paired symbols",
+  "summary": "Each symbol writes the outer product of two projections into a square ledger, and a later symbol reads the ledger with a dot product against its own projection.",
+  "core_idea": "A square ledger built from outer products of symbol projections and read by dot products.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "velarin",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Square ledger holding the sum of outer products of the projections of every symbol read."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "velarin_t = velarin_(t-1) + outer(a(x_t), b(x_t))",
+        "plain": "velarin_t = velarin_(t-1) + outer(a(x_t), b(x_t))"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = dot(velarin_t, c(x_t))",
+        "plain": "y_t = dot(velarin_t, c(x_t))"
+      }
+    ],
+    "learning": {
+      "description": "The projections a, b and c are fixed random matrices.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(d^2)",
+      "memory": "O(d^2)",
+      "total_sequence": "O(n d^2)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "One write suffices to read a pair back."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "pair retrieval",
+        "prediction": "Accuracy >= 0.9 with four stored pairs."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Sums of outer products appear in many retrieval schemes.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Accuracy below 0.5 with four stored pairs.",
+    "The ledger norm shrinks after a write."
+  ],
+  "toy_example": {
+    "description": "One rank-one write and its trace.",
+    "python": "import json\na = [1.0, 2.0]\nb = [0.5, -1.0]\nm = [[a[i] * b[j] for j in range(2)] for i in range(2)]\nprint(json.dumps({'trace': m[0][0] + m[1][1], 'corner': m[0][1]}))\n",
+    "expected": {
+      "trace": -1.5,
+      "corner": -1.0
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

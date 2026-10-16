@@ -1,0 +1,616 @@
+{
+ "card_id": "card-ca11b002",
+ "card_version": 1,
+ "claims": [
+  {
+   "id": "complexity.time_per_token",
+   "text": "complexity time_per_token: Theta(d^2 + d V)"
+  },
+  {
+   "id": "complexity.memory",
+   "text": "complexity memory: Theta(d)"
+  },
+  {
+   "id": "complexity.total_sequence",
+   "text": "complexity total_sequence: Theta(n d^2 + n d V)"
+  },
+  {
+   "id": "sample_efficiency.prediction",
+   "text": "sample efficiency prediction: From random weights, 1500 copy examples at L = 4 over 4 symbols give per-string accuracy 0.99. (metric: examples_to_copy_L4; value: 1500)"
+  },
+  {
+   "id": "capability.1",
+   "text": "capability 1: task: copy a string after a separator prediction: Exact copying with hand-set weights when L log2 D is below the bits of the store (d numbers at 32 bits); beyond that no setting copies every string."
+  },
+  {
+   "id": "capability.2",
+   "text": "capability 2: task: associative recall of K pairs prediction: Exact recall with hand-set weights when K log2 V is below the bits of the store; the store width d is chosen for the listed K."
+  },
+  {
+   "id": "capability.3",
+   "text": "capability 3: task: two-type bracket nesting prediction: The legal closer is predicted exactly up to the listed depths by keeping the open brackets as a counter-like code in the store; fixed precision bounds the depth."
+  },
+  {
+   "id": "capability.4",
+   "text": "capability 4: task: two-hop lookup and chained assignments prediction: Tables given in context are held in the store and composed at the query; exact at the listed sizes when the store is wide enough."
+  },
+  {
+   "id": "P1",
+   "text": "profile P1: exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n"
+  },
+  {
+   "id": "P2.copy",
+   "text": "profile P2.copy: construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words"
+  },
+  {
+   "id": "P2.recall",
+   "text": "profile P2.recall: construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words"
+  },
+  {
+   "id": "P2.nesting",
+   "text": "profile P2.nesting: construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words"
+  },
+  {
+   "id": "P2.composition",
+   "text": "profile P2.composition: construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words"
+  },
+  {
+   "id": "P3",
+   "text": "profile P3: derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2"
+  },
+  {
+   "id": "P4.copy",
+   "text": "profile P4.copy: toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds"
+  },
+  {
+   "id": "P4.recall",
+   "text": "profile P4.recall: toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+  },
+  {
+   "id": "P4.nesting",
+   "text": "profile P4.nesting: toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+  },
+  {
+   "id": "P4.composition",
+   "text": "profile P4.composition: toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+  },
+  {
+   "id": "P5",
+   "text": "profile P5: information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws"
+  }
+ ],
+ "definitions": [
+  {
+   "id": "D1",
+   "kind": "accounting",
+   "sha256": "7ebbd359af3d43d794a06709628f5b6583c32d1a9056d3d84e89d1251c0860a7",
+   "text": "Count scalar multiplication, addition, subtraction, division, negation, exp, tanh, and comparison as one operation each. Indexing, assignment, embedding lookup, concatenation views, and loop control are not counted. A length-q dot product uses q multiplications and q-1 additions; adding a bias uses one addition. Evaluate sigmoid as 1/(1+exp(-x)), costing four operations. The unbiased readout uses V length-d dot products and V-1 argmax comparisons. Do not fuse operations."
+  },
+  {
+   "id": "D2",
+   "kind": "accounting",
+   "sha256": "2a87c52dd2bc4c022a34c4075cf4b1ce9d91fef938e2d07d546602ba5de692ba",
+   "text": "Recurrent state words count mutable values retained across token boundaries, excluding parameters and transient feedforward workspace. Both s and y are retained, giving 2d words, each at 32-bit precision. This convention does not identify the store s alone with the complete information bottleneck."
+  },
+  {
+   "id": "D3",
+   "kind": "other",
+   "sha256": "5695f66636ea4bcab723bb2149ebd8808a15f4075c5a04bd7be4ac0af009d0bb",
+   "text": "For the profile tests choose width d=16 and zero initial s and y. Implement exactly the card's embeddings, gates, candidate, store update, release, and linear argmax readout, without external recurrent memory or a task-specific decoder. Parameters and numerical values use IEEE-754 binary32, round-to-nearest ties-to-even; exp and tanh are correctly rounded. Break readout ties by lowest symbol index. Width 16 is a frozen test configuration, not a width specified by the card."
+  },
+  {
+   "id": "D4",
+   "kind": "sampling",
+   "sha256": "ec163cb7d866e8a1bf692a08ddadff8f4dfe148eb16b2fdce4c1e7ea533ab8d2",
+   "text": "Copy uses four ordinary symbols, a separator, and an output-clock symbol. Sample independent uniform length-L strings. Feed the string and separator, then obtain L predictions using output-clock tokens, without feeding target answers. Score complete-string correctness. Hand-set parameters may depend on L but not on the sampled string."
+  },
+  {
+   "id": "D5",
+   "kind": "sampling",
+   "sha256": "98b492c5a25ae617b1efbf21933bddc9d05459483b2429c54af41135b915b24e",
+   "text": "Recall uses public keys 0 through K-1 and four possible values. Sample values independently uniformly, present pairs in key order with explicit delimiters, then query every key once in a uniformly shuffled order. Score each predicted value. Do not supply target answers. Parameters may depend on K but not on the sampled table."
+  },
+  {
+   "id": "D6",
+   "kind": "sampling",
+   "sha256": "5e10813dc10959bf25a28c4c0ddafa8c620e7c8c0767bf946d13caecec379846",
+   "text": "At depth h, sample h independent uniform opening-bracket types from two types. Feed those openings and request all h closers in reverse stack order using query-clock tokens, not target closers. Score correctness of the entire closer sequence."
+  },
+  {
+   "id": "D7",
+   "kind": "sampling",
+   "sha256": "fbb401ecce29504260a9ac44d9284dc9718a46d43a2d292b622ff5048be1f2d6",
+   "text": "Composition samples independent uniform maps f and g from a T-element set to itself, presents both full tables in argument order with labels and delimiters, and queries every argument once for f(g(x)). Binding presents a chain of hops fresh variable-to-variable assignments ending in a uniform value from four symbols, in dependency order, then queries the initial variable. Score per-query correctness."
+  },
+  {
+   "id": "D8",
+   "kind": "evaluation",
+   "sha256": "b1623b1c2ae2219ce59c3f6adb3b429d8e4bb7c92eafdfbc7f1fbf8cb0817c17",
+   "text": "Construction counts refer to independent contexts at each listed size. Enforce the recurrent-state budget and D3 mechanism restrictions. Copy and dyck use complete-sequence scores; recall, composition, and binding use per-query scores. Finite sampled tests establish observations, not universal exactness."
+  },
+  {
+   "id": "D9",
+   "kind": "other",
+   "sha256": "ea05357b2d92d85e3676b7c72bdaaafbb50b2212f61fbef958f4082dbd07e192",
+   "text": "For the copy learning experiment initialize each matrix and offset independently from Normal(0,0.1 squared), reset recurrent state to zero per example, and generate 1500 independent uniform length-four strings. Use plain stochastic gradient descent with learning rate 0.01, batch size one, and one pass, without clipping, regularization, or pretraining. Train next-symbol cross-entropy through time on the input-separator-output sequence. Differentiate the real-valued displayed equations and round updated parameters to binary32. Evaluate autonomous copying on all 256 strings. Seeds control initialization and example generation. These optimizer choices are frozen experimental conventions, not reported hyperparameters from the card."
+  },
+  {
+   "id": "D10",
+   "kind": "notation",
+   "sha256": "f13a8f5bc137e4e59e405281db4dcaf6d640208124aab8df04eea9963a438ad4",
+   "text": "For P3 represent complete width-16 retained binary32 state bit patterns by Fin(2^1024), and length-513 four-symbol strings by Fin(4^513). A deterministic continuation after the separator is a decoder on those states. Arbitrary encoders and decoders enlarge the mechanism class; no reachability assumption is made."
+  }
+ ],
+ "dropped": [],
+ "first_problems": [
+  "O10 statement 1: learnability: unknown params ['batch_size', 'd', 'epochs', 'learning_rate', 'optimizer'] for task copy",
+  "O11 statement 1: learnability: unknown params ['batch_size', 'd', 'epochs', 'learning_rate', 'optimizer'] for task copy",
+  "profile slots with no obligation: ['P4.recall', 'P4.nesting', 'P4.composition', 'P5'] (every slot must be stated; an unstated slot leaves the card unproven)"
+ ],
+ "fixer_calls": [
+  "call-000000000000",
+  "call-000000000000"
+ ],
+ "fixer_model": "gpt-6.1-sol",
+ "not_formalized": [
+  {
+   "claim_id": "capability.1",
+   "why": "The store-only capacity threshold does not specify how the additional retained y vector is treated, and substituting a complete-state bound or sampled construction would not formalize the claimed universal existence and converse."
+  },
+  {
+   "claim_id": "capability.2",
+   "why": "The card gives no listed K-dependent widths or complete key protocol, and a fixed-width sampled construction does not settle universal exact recall under the stated store-capacity condition."
+  },
+  {
+   "claim_id": "capability.3",
+   "why": "The card supplies no listed depths, counter-like encoding, or precise precision-dependent depth bound to freeze for its exactness assertion."
+  },
+  {
+   "claim_id": "capability.4",
+   "why": "The listed sizes and sufficient-width condition are unspecified, so replacing them with fixed-width sampled tests would change the claim."
+  },
+  {
+   "claim_id": "P4.recall",
+   "why": "The required card-stated recall example count is absent, and using the copy-specific 1500 or another invented count would violate the requirement to freeze the card's own numbers."
+  },
+  {
+   "claim_id": "P4.nesting",
+   "why": "The required card-stated bracket example count is absent, so no faithful learnability statement can populate this slot."
+  },
+  {
+   "claim_id": "P4.composition",
+   "why": "Neither composition nor binding has a card-stated training example count, so populating either alternative would invent a substantive sample-efficiency claim."
+  },
+  {
+   "claim_id": "P5",
+   "why": "The card does not specify the hypothesis class, prior information, information per example, or three required P4 example counts, so a complete conservation statement with the card's numbers cannot be supplied without inventing substantive assumptions."
+  }
+ ],
+ "obligations": [
+  {
+   "claim_id": "complexity.time_per_token",
+   "claim_quote": "Theta(d^2 + d V)",
+   "definitions": [
+    "D1",
+    "D2"
+   ],
+   "discharges": [],
+   "id": "O1",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "cost",
+     "id": "O1.a",
+     "sha256": "d618989150d8846f68103a8b5d323e5ac38c193596fcd75df9cda1cd73b31fc5",
+     "spec": {
+      "exponent": 1,
+      "ops": "n*(16*d**2 + 2*d*V + 18*d - 1)",
+      "sizes": {
+       "V": [
+        4,
+        16
+       ],
+       "d": [
+        8,
+        16
+       ]
+      },
+      "state": "2*d"
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "complexity.memory",
+   "claim_quote": "Theta(d)",
+   "definitions": [
+    "D1",
+    "D2"
+   ],
+   "discharges": [],
+   "id": "O2",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "cost",
+     "id": "O2.a",
+     "sha256": "d618989150d8846f68103a8b5d323e5ac38c193596fcd75df9cda1cd73b31fc5",
+     "spec": {
+      "exponent": 1,
+      "ops": "n*(16*d**2 + 2*d*V + 18*d - 1)",
+      "sizes": {
+       "V": [
+        4,
+        16
+       ],
+       "d": [
+        8,
+        16
+       ]
+      },
+      "state": "2*d"
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "complexity.total_sequence",
+   "claim_quote": "Theta(n d^2 + n d V)",
+   "definitions": [
+    "D1",
+    "D2"
+   ],
+   "discharges": [],
+   "id": "O3",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "cost",
+     "id": "O3.a",
+     "sha256": "d618989150d8846f68103a8b5d323e5ac38c193596fcd75df9cda1cd73b31fc5",
+     "spec": {
+      "exponent": 1,
+      "ops": "n*(16*d**2 + 2*d*V + 18*d - 1)",
+      "sizes": {
+       "V": [
+        4,
+        16
+       ],
+       "d": [
+        8,
+        16
+       ]
+      },
+      "state": "2*d"
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "P1",
+   "claim_quote": "exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n",
+   "definitions": [
+    "D1",
+    "D2"
+   ],
+   "discharges": [],
+   "id": "O4",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "cost",
+     "id": "O4.a",
+     "sha256": "d618989150d8846f68103a8b5d323e5ac38c193596fcd75df9cda1cd73b31fc5",
+     "spec": {
+      "exponent": 1,
+      "ops": "n*(16*d**2 + 2*d*V + 18*d - 1)",
+      "sizes": {
+       "V": [
+        4,
+        16
+       ],
+       "d": [
+        8,
+        16
+       ]
+      },
+      "state": "2*d"
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "P2.copy",
+   "claim_quote": "construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words",
+   "definitions": [
+    "D2",
+    "D3",
+    "D4",
+    "D8"
+   ],
+   "discharges": [],
+   "id": "O5",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "construction",
+     "id": "O5.a",
+     "sha256": "ef422be4a39cf9274377b6b9529e99c54bd4499a4e1885a4c3e5c981f8055363",
+     "spec": {
+      "count": 500,
+      "params": {
+       "D": 4,
+       "d": 16,
+       "precision_bits": 32
+      },
+      "sizes": [
+       8,
+       32,
+       64
+      ],
+      "state_words": "32",
+      "task": "copy",
+      "threshold": 0.99
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "P2.recall",
+   "claim_quote": "construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words",
+   "definitions": [
+    "D2",
+    "D3",
+    "D5",
+    "D8"
+   ],
+   "discharges": [],
+   "id": "O6",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "construction",
+     "id": "O6.a",
+     "sha256": "6d7e32e05e86a352e1a507d29a87d0b2b015d24e7493cedc194738cbae518199",
+     "spec": {
+      "count": 500,
+      "params": {
+       "V": 4,
+       "d": 16,
+       "precision_bits": 32
+      },
+      "sizes": [
+       8,
+       32,
+       64
+      ],
+      "state_words": "32",
+      "task": "recall",
+      "threshold": 0.99
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "P2.nesting",
+   "claim_quote": "construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words",
+   "definitions": [
+    "D2",
+    "D3",
+    "D6",
+    "D8"
+   ],
+   "discharges": [],
+   "id": "O7",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "construction",
+     "id": "O7.a",
+     "sha256": "8c5918e8809295147101ca3ce438d25c00917f017bb25a629bce8b8267f66341",
+     "spec": {
+      "count": 500,
+      "params": {
+       "bracket_types": 2,
+       "d": 16,
+       "precision_bits": 32
+      },
+      "sizes": [
+       2,
+       4,
+       8,
+       16
+      ],
+      "state_words": "32",
+      "task": "dyck",
+      "threshold": 0.99
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "P2.composition",
+   "claim_quote": "construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words",
+   "definitions": [
+    "D2",
+    "D3",
+    "D7",
+    "D8"
+   ],
+   "discharges": [],
+   "id": "O8",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "construction",
+     "id": "O8.a",
+     "sha256": "26f1c1e51824d9895cb74805f2301c934255d7d3e30f2dd169e02d1b363a5b74",
+     "spec": {
+      "count": 500,
+      "params": {
+       "d": 16,
+       "precision_bits": 32
+      },
+      "sizes": [
+       4,
+       16,
+       32
+      ],
+      "state_words": "32",
+      "task": "composition",
+      "threshold": 0.99
+     }
+    },
+    {
+     "bound": null,
+     "form": "construction",
+     "id": "O8.b",
+     "sha256": "cf529713974af46bd77766bdeefdbda2e0fd2e51406931af0485cd5ed18ed6dd",
+     "spec": {
+      "count": 500,
+      "params": {
+       "d": 16,
+       "precision_bits": 32,
+       "value_alphabet": 4
+      },
+      "sizes": [
+       1,
+       4,
+       8
+      ],
+      "state_words": "32",
+      "task": "binding",
+      "threshold": 0.99
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "P3",
+   "claim_quote": "derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2",
+   "definitions": [
+    "D2",
+    "D3",
+    "D4",
+    "D10"
+   ],
+   "discharges": [],
+   "id": "O9",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "lean",
+     "id": "O9.a",
+     "sha256": "e315fd2a3ae49b38975ec852a75ff76e1e5dfaea0f3019cf51a672b55e228d04",
+     "spec": "import Mathlib\n\ndef Claim : Prop :=\n  ∀ (encode : Fin (4 ^ 513) → Fin (2 ^ 1024))\n    (decode : Fin (2 ^ 1024) → Fin (4 ^ 513)),\n    let successes := Finset.univ.filter (fun x => decode (encode x) = x)\n    successes.card ≤ 2 ^ 1024 ∧\n      100 * successes.card < 99 * (4 ^ 513)\n"
+    }
+   ]
+  },
+  {
+   "claim_id": "sample_efficiency.prediction",
+   "claim_quote": "From random weights, 1500 copy examples at L = 4 over 4 symbols give per-string accuracy 0.99.",
+   "definitions": [
+    "D2",
+    "D3",
+    "D4",
+    "D9"
+   ],
+   "discharges": [],
+   "id": "O10",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "learnability",
+     "id": "O10.a",
+     "sha256": "6d2d027a64a83b19fd5972c35dd9493f3b839239237e1c7600d44fef4ba58745",
+     "spec": {
+      "examples": 1500,
+      "params": {
+       "D": 4
+      },
+      "seeds": [
+       0,
+       1,
+       2
+      ],
+      "size": 4,
+      "task": "copy",
+      "test_count": 256,
+      "threshold": 0.99
+     }
+    }
+   ]
+  },
+  {
+   "claim_id": "P4.copy",
+   "claim_quote": "toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds",
+   "definitions": [
+    "D2",
+    "D3",
+    "D4",
+    "D9"
+   ],
+   "discharges": [],
+   "id": "O11",
+   "premises": [],
+   "statements": [
+    {
+     "bound": null,
+     "form": "learnability",
+     "id": "O11.a",
+     "sha256": "6d2d027a64a83b19fd5972c35dd9493f3b839239237e1c7600d44fef4ba58745",
+     "spec": {
+      "examples": 1500,
+      "params": {
+       "D": 4
+      },
+      "seeds": [
+       0,
+       1,
+       2
+      ],
+      "size": 4,
+      "task": "copy",
+      "test_count": 256,
+      "threshold": 0.99
+     }
+    }
+   ]
+  }
+ ],
+ "premises": [],
+ "profile": {
+  "limits": [
+   {
+    "resources": "At d=16 the complete retained state has 1024 bits. Exact copying of a length-513 four-symbol string needs at least 1026 bits; the next width with sufficient raw capacity in the two-vector layout is d=17, without asserting computational sufficiency.",
+    "size": 513,
+    "task": "copy",
+    "why": "There are 4^513 strings and at most 2^1024 retained states, so uniform complete-string accuracy is at most 1/4. Length 513 is the first length excluded by this cardinality bound at threshold 0.99; this does not assert solvability at all smaller lengths."
+   }
+  ],
+  "slots": [
+   "P1",
+   "P2.copy",
+   "P2.recall",
+   "P2.nesting",
+   "P2.composition",
+   "P3",
+   "P4.copy",
+   "P4.recall",
+   "P4.nesting",
+   "P4.composition",
+   "P5"
+  ],
+  "version": "phase4-2026-10-13"
+ }
+}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Run {{ run_id }}</h1>
+<table>
+  <tr><th>Started</th><td>{{ summary.started or "-" }}</td></tr>
+  <tr><th>Finished</th><td>{{ summary.finished or "-" }}</td></tr>
+  <tr><th>Cards</th><td class="num">{{ summary.cards | length }}</td></tr>
+  <tr><th>Model calls</th><td class="num">{{ summary.calls_total }}</td></tr>
+  <tr><th>Input + output tokens</th><td class="num">{{ summary.tokens_total }}</td></tr>
+  <tr><th>Ledger events</th><td class="num">{{ summary.ledger_events }}</td></tr>
+</table>
+
+<h2>Cards per stage reached</h2>
+{% if summary.stage_counts %}
+<table>
+  <tr><th>Stage</th><th class="num">Cards</th></tr>
+  {% for stage, count in summary.stage_counts.items() %}
+  <tr><td>{{ stage }}</td><td class="num">{{ count }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">No cards yet.</p>{% endif %}
+
+<h2>Verdicts</h2>
+{% if summary.verdict_counts %}
+<table>
+  <tr><th>Stage</th><th>Verdict</th><th class="num">Count</th></tr>
+  {% for (stage, verdict), count in summary.verdict_counts %}
+  <tr><td>{{ stage }}</td><td>{{ verdict }}</td><td class="num">{{ count }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">No verdicts recorded.</p>{% endif %}
+
+<h2>Creativity</h2>
+{% set tb = summary.creativity.textbook %}
+<p>S2 reduction critic: is the core idea a textbook construction from its source field applied without modification?
+Recorded, not gated.</p>
+<table>
+  <tr><th>Textbook transplant</th><td class="num">{{ tb.transplant | length }}</td></tr>
+  <tr><th>Modified</th><td class="num">{{ tb.modified | length }}</td></tr>
+  <tr><th>Not assessed (no S2 critic yet)</th><td class="num">{{ tb.not_assessed | length }}</td></tr>
+</table>
+{% if summary.creativity.textbook_by_model %}
+<table>
+  <tr><th>Explorer model</th><th class="num">Transplant</th><th class="num">Modified</th></tr>
+  {% for model, counts in summary.creativity.textbook_by_model.items() %}
+  <tr><td>{{ model }}</td><td class="num">{{ counts.get("transplant", 0) }}</td><td class="num">{{ counts.get("modified", 0) }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h3>Lenses per stage</h3>
+{% if summary.creativity.lens_stage %}
+<table>
+  <tr><th>Stage</th><th>Lenses (cards with a verdict at that stage)</th></tr>
+  {% for stage, lenses in summary.creativity.lens_stage.items() %}
+  <tr><td>{{ stage }}</td><td>{% for lens, count in lenses.items() %}{{ lens }} {{ count }}{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">No verdicts recorded.</p>{% endif %}
+<p>Core size (latest versions): state objects mean {{ summary.creativity.core_size.state_objects.mean }},
+max {{ summary.creativity.core_size.state_objects.max }}; update equations mean
+{{ summary.creativity.core_size.update_equations.mean }}, max {{ summary.creativity.core_size.update_equations.max }}.</p>
+
+<h2>Reductions and escapes</h2>
+{% set esc = summary.escapes %}
+<p>Known families that S2 reduced cards to (reduces_to_known verdicts, from the latest reduction critic of each card).</p>
+{% if esc.reduces_to %}
+<table>
+  <tr><th>Known family</th><th class="num">Cards</th></tr>
+  {% for name, count in esc.reduces_to.items() %}
+  <tr><td>{{ name }}</td><td class="num">{{ count }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">No card reduced to a known family.</p>{% endif %}
+<p>Escape tasks: {{ esc.requested }} requested, {{ esc.skipped }} skipped, {{ esc.lineage | length }} created.
+Lineage on the <a href="{{ root }}lineage.html">lineage page</a>.</p>
+
+{% if summary.budgets %}
+{% set bud = summary.budgets %}
+<h2>Loop budgets and stalls</h2>
+{% if bud.caps %}
+<p>Per idea (cards with the same mechanism signature share these): {{ bud.caps.idea.model_calls }} model calls;
+revision loops {% for name, cap in bud.caps.loops.items() %}{{ name }} {{ cap }}{% if not loop.last %}, {% endif %}{% endfor %}.
+Per lineage: {{ bud.caps.lineage.ideas }} ideas, {{ bud.caps.lineage.model_calls }} model calls.
+{% if bud.caps.prior and bud.caps.prior.records %}Counts include {{ bud.caps.prior.records }} outcome-store record(s) of earlier runs.{% endif %}</p>
+{% endif %}
+<table>
+  <tr><th>Lineage</th><th class="num">Ideas</th><th class="num">Model calls</th><th>Cards</th></tr>
+  {% for row in bud.lineages %}
+  <tr><td>{{ row.lineage_id }}</td><td class="num">{{ row.ideas }} of {{ row.ideas_cap }}</td><td class="num">{{ row.calls }}</td>
+    <td>{% for card_id in row.cards %}{% set c = bud.cards[card_id] %}<a href="{{ root }}dossiers/{{ card_id }}.html">{{ card_id }}</a>{% if not c.admitted %} (refused){% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>
+  {% endfor %}
+</table>
+<p>Loop stops: {{ bud.stalls }} stall(s), {{ bud.budget_stops }} budget stop(s); escapes skipped {{ bud.skipped.escape_skipped }},
+mutations skipped {{ bud.skipped.mutation_skipped }}.</p>
+{% if bud.stops %}
+<table>
+  <tr><th>Card</th><th>Stage</th><th>Kill code</th><th>Effect</th><th>Detail</th></tr>
+  {% for stop in bud.stops %}
+  <tr><td><a href="{{ root }}dossiers/{{ stop.card_id }}.html">{{ stop.card_id }}</a></td><td>{{ stop.stage }}</td><td>{{ stop.kill_code }}</td>
+    <td>{% if stop.terminal %}ended the card{% else %}the gate decided after it{% endif %}</td><td>{{ stop.detail }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% if bud.repairs_rejected %}
+<p>Repairs rejected without running checks (they changed something their failures did not name):</p>
+<table>
+  <tr><th>Card</th><th>Stage</th><th>Loop</th><th>Round</th><th>Touched</th></tr>
+  {% for r in bud.repairs_rejected %}
+  <tr><td><a href="{{ root }}dossiers/{{ r.card_id }}.html">{{ r.card_id }}</a></td><td>{{ r.stage }}</td><td>{{ r.loop }}</td><td>{{ r.round_id }}</td><td>{{ r.outside | join(", ") }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endif %}
+
+{% if file_problems %}
+<h2>File problems</h2>
+<ul>{% for problem in file_problems %}<li class="problem">{{ problem }}</li>{% endfor %}</ul>
+{% endif %}
+{% endblock %}

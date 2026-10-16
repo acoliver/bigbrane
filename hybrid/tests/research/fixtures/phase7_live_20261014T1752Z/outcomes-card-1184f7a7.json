@@ -1,0 +1,585 @@
+{
+ "records": [
+  {
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "card_id": "card-1184f7a7",
+    "card_path": "run-20261010T181300Z/cards/card-1184f7a7/v8.json",
+    "card_sha256": "0f61f1db9ee829580eb0ce45460c96ae88d66e71f266f5c12b0180edad8a8639",
+    "card_version": 8,
+    "causes": [
+     {
+      "code": "reduces_to_known:linear_attention",
+      "detail": "reduced to linear_attention: The update is an additive A = I diagonal state written with a shifted-key times value product.",
+      "evidence": [
+       {
+        "kind": "reduction_critic",
+        "ref": "run-20261010T181300Z/artifacts/reduction_critic/card-1184f7a7-v7-f2ff96.json",
+        "sha256": "a1d5d6465a84046a698f2e11b7a8dfe50d479deba8b576e4af0d07b257df7fe7"
+       },
+       {
+        "kind": "prior_art",
+        "ref": "run-20261010T181300Z/artifacts/prior_art/card-1184f7a7-v7-628c1a.json",
+        "sha256": "835dbeab4c11c6429072ae7e417ac4463448acd54c21a9b45cceb41d8376f2d6"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-e1ed2520ec4d"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-241817f97b2e"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-578710b279a0"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-23105c209131"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261010T181300Z/job-f6d75f7df59b"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Each adjacent token pair is treated as a double-exposure hologram. The phase-normalized sum of the pairs' cross-power spectra (their HRR circular correlations) is applied to the current token. A rule that acts as a group translation on a phasor embedding then adds up coherently over k demonstrations, while unrelated pairs add up only as a random walk. This splits the HRR capacity law into an unbounded per-rule law and the usual d/log V per-item law.",
+    "cost": {
+     "executor_jobs": 4,
+     "model_calls": 8,
+     "tokens": 171104
+    },
+    "definitions": [],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "reduction_critic",
+      "ref": "run-20261010T181300Z/artifacts/reduction_critic/card-1184f7a7-v7-f2ff96.json",
+      "sha256": "a1d5d6465a84046a698f2e11b7a8dfe50d479deba8b576e4af0d07b257df7fe7"
+     },
+     {
+      "kind": "prior_art",
+      "ref": "run-20261010T181300Z/artifacts/prior_art/card-1184f7a7-v7-628c1a.json",
+      "sha256": "835dbeab4c11c6429072ae7e417ac4463448acd54c21a9b45cceb41d8376f2d6"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-e1ed2520ec4d"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-241817f97b2e"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-578710b279a0"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-23105c209131"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261010T181300Z/job-f6d75f7df59b"
+     }
+    ],
+    "kill_codes": [
+     "reduces_to_known:linear_attention"
+    ],
+    "kill_detail": "reduced to linear_attention: The update is an additive A = I diagonal state written with a shifted-key times value product.",
+    "legacy": true,
+    "lens": "holographic_reduced_representations",
+    "lineage_id": "card-1184f7a7",
+    "mechanism_signature": {
+     "signature": "sig-421616f3354d2f5f",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write",
+       "no_training"
+      ],
+      "read": [
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "V"
+       ],
+       [
+        1
+       ],
+       [
+        "d"
+       ],
+       [
+        "d"
+       ],
+       [
+        "V"
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "bilinear_product",
+       "complex_conjugate",
+       "convolution_or_transform",
+       "count_increment",
+       "elementwise_product",
+       "exponential_weighting",
+       "outer_product_write",
+       "sum_reduction",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:bilinear_product",
+      "w:complex_conjugate",
+      "w:convolution_or_transform",
+      "w:count_increment",
+      "w:elementwise_product",
+      "w:exponential_weighting",
+      "w:outer_product_write",
+      "w:sum_reduction",
+      "w:threshold_branch",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "l:no_training",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "premises",
+     "definitions",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": null,
+    "operator": "new",
+    "outcome": "dead",
+    "override": false,
+    "parent_ids": [],
+    "premises": [],
+    "run": "run-20261010T181300Z",
+    "source_run": null,
+    "stage_verdicts": {
+     "S0": {
+      "by_calls": [
+       "call-9dc813042ada"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-ff8f801a at TF-IDF cosine 0.171 (threshold 0.6)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-f672bb41fa5b",
+       "job-5de52fc73877"
+      ],
+      "reasons": [
+       "gate: passed with 7 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: missing_definition (mechanism.state[0] (Theta, Walsh special case) and claims.capabilities[1].task): The Walsh phase Theta_{v,w} = pi*popcount(v AND w) uses popcount, which is never defined; the card should state it is the number of set bits in the bitwise AND.",
+       "residual: notation_clash (claims.capabilities[0].task and mechanism.update[3] (s_t(y)) and claims.capabilities[1].prediction): The letter s denotes the rule shift in {1, ..., 63} and also the holographic score s_t(y) and s(y); the same symbol carries two different objects in one card.",
+       "residual: notation_clash (claims.capabilities[2].prediction and claims.capabilities[0].prediction): The letter k is the number of demonstrations in the shift task and also the number of key-value bindings in k_half(d), and the few-shot argument reuses m and Z for unrelated-pair counts and sums, so the notation should be separated per task.",
+       "residual: underspecified_step (mechanism.update[2] (phase-only normalization) and mechanism.learning.description): The equation Rhat = R / (|R| + 1e-9) has gradient of order 1/eps = 1e9 at R = 0, which occurs at t = 1 and at every zero frequency, so the statement that gradients flow through the normalization needs a specified treatment at R = 0.",
+       "residual: underspecified_step (claims.capabilities[4].prediction (derivation step 1)): The claim 'zero loss on unseen queries for shift 1' cannot hold for softmax cross-entropy at finite beta, so the derivation should state the condition it actually needs, such as correct argmax with a margin."
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-e1ed2520ec4d",
+       "call-241817f97b2e",
+       "call-578710b279a0",
+       "call-23105c209131",
+       "job-f6d75f7df59b"
+      ],
+      "reasons": [
+       "prior art: prior_art_undertested. Close prior work exists on both sides. HRR and circular-correlation models (W3198090350, W2949972983) share the algebra, and phase-only correlation (W2319342335, W4296526289) shares the normalized cross-power estimator. Nothing found applies phase-only correlation of successive tokens to in-context rule induction. The closest in-context work (W4389326242, W4313...",
+       "textbook transplant: yes (recorded, not gated): The core is ensemble-averaged phase-only correlation (Kuglin-Hines phase correlation, with the ensemble correlation averaging used in PIV): sum the cross-power spectra, normalize to unit modulus, and read the inverse transform at a displacement. With lattice or Walsh phases, s_t(y) is exactly the PO",
+       "reduction claim linear_attention (verified): numeric check confirms equivalence (max_abs_diff 2.6645352591003757e-15)",
+       "gate: update rule reduces to linear_attention: Per token t, set the following. - Key k_t = conj(E_{x_{t-1}}). This is the previous token's code, as in the H3 shift-SSM. - Value v_t = E_{x_t}. - Feature map phi = identity on unit-modulus complex features E_v = exp(i Theta_v). - State S_t = R_t, kept only on the diagonal. The usual outer-product write S_t = S_{t-1} + phi(k_t) v_t^T becomes the di..."
+      ],
+      "verdict": "reduces_to_known"
+     }
+    },
+    "summary": "The model embeds every token as a unit-modulus phasor vector E_v = exp(i Theta_v) of length d. This is a Fourier-domain HRR vector. The input is a token sequence x_1, ..., x_n.\n\nFor each adjacent pair (x_{t-1}, x_t), the model adds the cross-power spectrum conj(E_{x_{t-1}}) * E_{x_t} to one complex d-vector R_t, starting from R_1 = 0. In the spatial domain this cross-power spectrum is the circular correlation of the two token codes. Correlation-based holographic particle image velocimetry (PIV) uses the same operation: the correlation of two exposures of many particles peaks at their common displacement.\n\nSuppose a rule f moves every token by the same phasor rho, so that E_{f(v)} = rho * E_v (a group translation in the embedding). Then every demonstration contributes exactly rho, and after k demonstrations the rule part of R is k*rho. Pairs that do not instance the rule contribute unit phasors with random phases. After m such pairs these sum to a random walk of norm about sqrt(m).\n\nThe readout normalizes R per frequency to unit modulus. This is phase-only correlation: a consensus over frequencies whose scale depends neither on n nor on how many unrelated tokens dilute the context. The readout applies the normalized vector to the current token and scores every candidate next token by its overlap with the result. At t = 1 there is no pair yet, so the score is 0 and the prediction is the prior.\n\nAs a consequence:\n- A translation rule is applied correctly to query items never seen in context.\n- The estimate only sharpens as demonstrations accumulate, with no per-item capacity limit.\n- Confidence in the rule stays high under heavy distractor dilution as long as k is well above sqrt(m).\n- Arbitrary bindings that are not translations fall back to ordinary HRR associative recall, with capacity of order d / ln V.\n\nThe set of rules that generalize is exactly the abelian group of permutations that the learned phases turn into Hadamard multiplications. This gives sharp positive and negative predictions. The state is O(d), and the cost per token is O(d) plus the output layer.",
+    "terminal_stage": "S2",
+    "title": "Holographic Displacement Interrogation: in-context rules as coherent correlation peaks",
+    "written_by": "backfill"
+   },
+   "record_id": "oc-f651755dd25e",
+   "seq": 10
+  },
+  {
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": {
+     "admitted": true,
+     "idea_key": "sig-421616f3354d2f5f",
+     "joined": "signature",
+     "lineage_id": "card-1184f7a7",
+     "loops": {
+      "refinement": 3
+     },
+     "model_calls": 12,
+     "stops": [
+      {
+       "kill_code": "budget:refinement",
+       "loop": "refinement",
+       "reason": "budget",
+       "stage": "R",
+       "terminal": false
+      }
+     ]
+    },
+    "card_id": "card-1184f7a7",
+    "card_path": "phase7-live-20261014T1752Z/cards/card-1184f7a7/v8.json",
+    "card_sha256": "f0c46f93d6c8553eeb9f6db000070e95c860db43ca7faad0fee0551ba6e66eb1",
+    "card_version": 8,
+    "causes": [
+     {
+      "code": "excluded_family:linear_attention",
+      "detail": "excluded_family:linear_attention: the update rule reduces to linear_attention (check verified), which is in the out-of-scope family Linear attention and outer-product memories (families.toml, decision D8); a LEARNING_RULE: difference does not apply: Diagonal (elementwise / FHRR) linear attention with tied phasor features. Key phi(k_t) = conj(E_{x_{t-1}}), value v_t = E_{x_t}, and the outer product is replaced by its diagonal (the Hadamard product). So S_t = S_{t-1} + phi(k_t) ⊙ v_t is exactly R_t = R_{t-1} + conj(E_{x_{t-1}}) ⊙ E_{x_t}: no decay, A = I, d complex state entries. The key is t...",
+      "evidence": [
+       {
+        "kind": "reduction_critic",
+        "ref": "phase7-live-20261014T1752Z/artifacts/reduction_critic/card-1184f7a7-v7-ad6658.json",
+        "sha256": "ab8735e7a4d0bc04cf9cfa7b20de58c4798ceee7f61be57f006c28cc6313129c"
+       },
+       {
+        "kind": "prior_art",
+        "ref": "phase7-live-20261014T1752Z/artifacts/prior_art/card-1184f7a7-v7-bd7927.json",
+        "sha256": "4d1656bc637a84bcc9bb13ce1e7bdd6966835a355a4d99547be3bc7a924d337f"
+       },
+       {
+        "kind": "call",
+        "ref": "phase7-live-20261014T1752Z/call-91cd11b27be9"
+       },
+       {
+        "kind": "call",
+        "ref": "phase7-live-20261014T1752Z/call-d3aab86f60a9"
+       },
+       {
+        "kind": "call",
+        "ref": "phase7-live-20261014T1752Z/call-3059bd26809f"
+       },
+       {
+        "kind": "call",
+        "ref": "phase7-live-20261014T1752Z/call-59b96f96a4c4"
+       },
+       {
+        "kind": "job",
+        "ref": "phase7-live-20261014T1752Z/job-bedbbe3d7d47"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Each adjacent token pair is treated as a double-exposure hologram. The phase-normalized sum of the pairs' cross-power spectra (their HRR circular correlations) is applied to the current token. A rule that acts as a group translation on a phasor embedding then adds up coherently over k demonstrations, while unrelated pairs add up only as a random walk. This splits the HRR capacity law into an unbounded per-rule law and the usual d/log V per-item law.",
+    "cost": {
+     "executor_jobs": 3,
+     "model_calls": 12,
+     "tokens": 377688
+    },
+    "definitions": [
+     {
+      "added_by": "dialogue",
+      "id": "D1",
+      "kind": "other",
+      "text": "Numerics: all claims and the toy example are evaluated in IEEE float64 (complex128), with E = np.exp(1j*Theta). Phase normalization uses Rhat = R/(|R| + 1e-9) with no other zero tolerance. A frequency whose exact value is 0 but which carries a rounding residue delta has |Rhat| <= delta/1e-9 and adds at most delta/(1e-9 d) to any score. Exact-arithmetic statements (exact zeros, exact ties, exact scores) are claimed up to this perturbation."
+     },
+     {
+      "added_by": "dialogue",
+      "id": "D2",
+      "kind": "other",
+      "text": "Training conventions (capability 5):\n- beta = exp(lambda_beta), with lambda_beta initialized to ln 8; Theta i.i.d. uniform on [0, 2 pi) per seed; u = 0.\n- Loss: mean next-token cross-entropy over all positions t = 1..n-1 of each episode and over the episodes of a batch.\n- Adam with lr = 0.03, beta1 = 0.9, beta2 = 0.999, eps = 1e-8; constant learning rate; no weight decay; no gradient clipping.\n- Batch of 50; 5000 episodes generated once per seed and reshuffled each epoch; 2000 steps; no early stopping; float64; 5 seeds."
+     },
+     {
+      "added_by": "dialogue",
+      "id": "D3",
+      "kind": "sampling",
+      "text": "Episode samplers:\n- Distinct sampler: a_1, ..., a_{k+1} drawn uniformly without replacement, so the query is unseen. It is used for shift tasks with k <= 32, for the XOR task (domain k in {3, ..., 63}), for the permutation and training tasks, and for the k = 1 and k = 3 sample-efficiency setting.\n- i.i.d. sampler: a_j i.i.d. uniform on {0, ..., 63}, used for shift tasks with k > 32.\n- Dilution sampler: the i.i.d. sampler with L = 9 i.i.d. uniform filler tokens inserted after each b_j.\n- Binding sampler (capability 3): for each episode a fresh Theta (V x d) is drawn i.i.d. uniform on [0, 2 pi). Keys key_1, ..., key_k are drawn uniformly without replacement from {0, ..., 63}, with k in {1, ..., 64}. Values val_1, ..., val_k are i.i.d. uniform on {0, ..., 63}, independent of the keys; a value may equal a key or another value. J is uniform on {1, ..., k}, independent of everything else; key* = key_J and the correct answer is val_J. 1000 episodes per (d, k).\n- Held-out sampler (capability 5 test): 1000 test episodes per seed, drawn from a random stream independent of the training data. In each episode s is drawn independently and uniformly from {5, ..., 15} (not a balanced allocation), and a_1, ..., a_5 uniformly without replacement from Z_16, with rule b = a + s mod 16 and format a_1 b_1 ... a_4 b_4 a_5. The in-distribution comparison uses 1000 fresh episodes per seed from the same sampler with s drawn i.i.d. uniform on {1, 2, 3}. Shift 4 is not used.\n- Rule parameters: s is uniform in {1, ..., 63} (or {1, 2, 3} for training on Z_16), c is uniform in {1, ..., 63}, and the permutation of capability 4 is uniform over all 64! permutations, drawn fresh per episode."
+     },
+     {
+      "added_by": "dialogue",
+      "id": "D4",
+      "kind": "evaluation",
+      "text": "Accuracy is the fraction of episodes in which argmax_y p(y) at the query position equals the rule's image of the query, with exact ties broken uniformly at random. Mean probability on the correct token is averaged over episodes. Multi-seed results are the mean of per-seed values; each per-seed accuracy is averaged over all of that seed's test episodes (for capability 5, shifts are weighted by their sampled frequency).\n\nk_half(d): let acc_d(k) be the accuracy for k = 1, ..., 64, and k* the smallest k with acc_d(k) < 0.5.\n- If k* >= 2, k_half = (k* - 1) + (acc_d(k* - 1) - 0.5)/(acc_d(k* - 1) - acc_d(k*)).\n- If k* = 1, k_half is left-censored ('<= 1').\n- If no such k exists, k_half is right-censored ('> 64').\nThe ratio k_half(128)/k_half(64) is defined only when both are uncensored; if either is censored, the ratio prediction of capability 3 counts as refuted."
+     },
+     {
+      "added_by": "dialogue",
+      "id": "D5",
+      "kind": "notation",
+      "text": "Notation:\n- Lattice phases: Theta_{v,w} = 2 pi w v / d with d = V.\n- Walsh phases: Theta_{v,w} = pi popcount(v AND w), so chi_w(v) = (-1)^{popcount(v AND w)} and w . v denotes the GF(2) inner product.\n- A displacement is x_s - x_{s-1} mod V (lattice) or x_s XOR x_{s-1} (Walsh).\n- k is the number of rule demonstrations, and m is the number of context pairs that do not instance the rule.\n- zeta_{w,j} is the unit phasor at frequency w of the j-th unrelated pair, and Z_w is their sum.\n- G_Theta is the set of permutations f of {0, ..., V-1} for which some unit vector rho_f in C^d satisfies E_{f(v)} = rho_f * E_v for all v (the rules that accumulate exactly coherently).\n- mu(Theta) = max over v != y of |(1/d) Re sum_w E_{v,w} conj(E_{y,w})| is the largest off-diagonal code overlap. It is 0 for lattice and Walsh phases (orthogonal rows), about sqrt(2 ln V / d) for i.i.d. uniform random phases, and near 1 when two codes nearly coincide.\n- q_w = e^{i err_w} where R_w != 0 and q_w = 0 where R_w = 0, so that Rhat_w = q_w rho_w."
+     },
+     {
+      "added_by": "dialogue",
+      "id": "D6",
+      "kind": "accounting",
+      "text": "Inference cost (streaming, one sequence) is counted in complex multiply-adds and moduli per token. Per-sequence memory counts only R_t (d complex numbers). The shared parameters Theta, u and beta are excluded from per-sequence memory. The output layer over V tokens is counted in time_per_token."
+     },
+     {
+      "added_by": "dialogue",
+      "id": "D7",
+      "kind": "accounting",
+      "text": "Training cost (parallel cumulative-sum procedure, reverse-mode differentiation) is counted per optimizer step on a batch of B episodes of length n.\n- Time: O(B n d V) forward, dominated by the dense (B n x d) by (d x V) score product, plus O(B n d) for pair terms, cumulative sum and normalization, and O(V d) to form E. The backward pass is the same order, and the Adam update is O(V d + V).\n- Peak memory: O(B n (d + V) + V d). This covers all n prefix states R_t, |R_t| and Rhat_t * E_{x_t} (O(B n d) complex numbers each), the B n x V logits and softmax outputs, and E, the parameters and two Adam moment buffers.\nThese figures are separate from, and not included in, the inference accounting of D6."
+     }
+    ],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "reduction_critic",
+      "ref": "phase7-live-20261014T1752Z/artifacts/reduction_critic/card-1184f7a7-v7-ad6658.json",
+      "sha256": "ab8735e7a4d0bc04cf9cfa7b20de58c4798ceee7f61be57f006c28cc6313129c"
+     },
+     {
+      "kind": "prior_art",
+      "ref": "phase7-live-20261014T1752Z/artifacts/prior_art/card-1184f7a7-v7-bd7927.json",
+      "sha256": "4d1656bc637a84bcc9bb13ce1e7bdd6966835a355a4d99547be3bc7a924d337f"
+     },
+     {
+      "kind": "call",
+      "ref": "phase7-live-20261014T1752Z/call-91cd11b27be9"
+     },
+     {
+      "kind": "call",
+      "ref": "phase7-live-20261014T1752Z/call-d3aab86f60a9"
+     },
+     {
+      "kind": "call",
+      "ref": "phase7-live-20261014T1752Z/call-3059bd26809f"
+     },
+     {
+      "kind": "call",
+      "ref": "phase7-live-20261014T1752Z/call-59b96f96a4c4"
+     },
+     {
+      "kind": "job",
+      "ref": "phase7-live-20261014T1752Z/job-bedbbe3d7d47"
+     }
+    ],
+    "kill_codes": [
+     "excluded_family:linear_attention"
+    ],
+    "kill_detail": "excluded_family:linear_attention: the update rule reduces to linear_attention (check verified), which is in the out-of-scope family Linear attention and outer-product memories (families.toml, decision D8); a LEARNING_RULE: difference does not apply: Diagonal (elementwise / FHRR) linear attention with tied phasor features. Key phi(k_t) = conj(E_{x_{t-1}}), value v_t = E_{x_t}, and the outer product is replaced by its diagonal (the Hadamard product). So S_t = S_{t-1} + phi(k_t) ⊙ v_t is exactly R_t = R_{t-1} + conj(E_{x_{t-1}}) ⊙ E_{x_t}: no decay, A = I, d complex state entries. The key is t...",
+    "legacy": true,
+    "lens": "holographic_reduced_representations",
+    "lineage_id": "card-1184f7a7",
+    "mechanism_signature": {
+     "signature": "sig-421616f3354d2f5f",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write",
+       "no_training"
+      ],
+      "read": [
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "V"
+       ],
+       [
+        1
+       ],
+       [
+        "d"
+       ],
+       [
+        "d"
+       ],
+       [
+        "V"
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "bilinear_product",
+       "complex_conjugate",
+       "convolution_or_transform",
+       "count_increment",
+       "elementwise_product",
+       "exponential_weighting",
+       "outer_product_write",
+       "sum_reduction",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:bilinear_product",
+      "w:complex_conjugate",
+      "w:convolution_or_transform",
+      "w:count_increment",
+      "w:elementwise_product",
+      "w:exponential_weighting",
+      "w:outer_product_write",
+      "w:sum_reduction",
+      "w:threshold_branch",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "l:no_training",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": null,
+    "operator": "new",
+    "outcome": "dead",
+    "override": false,
+    "parent_ids": [],
+    "premises": [
+     {
+      "added_by": "dialogue",
+      "basis": "stated by the proposer in the refinement dialogue; nothing has checked it yet",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "A1",
+      "kind": "other",
+      "measurement_plan": {
+       "accept_if": "All three quantities are at most 0.01 for every applicable w, for both samplers.",
+       "data": "200 episodes from the i.i.d. sampler at k = 1000 and 200 episodes from the dilution sampler (k = 1000, L = 9), with s uniform in {1, ..., 63}.",
+       "measure": "For each w in {1, ..., 63}, three quantities: the empirical |mean zeta_w|; for w not in {0, 32}, the empirical |mean zeta_w^2|; and the empirical |mean zeta_{w,j} conj(zeta_{w,j+1})| over consecutive unrelated pairs.",
+       "procedure": "Generate the episodes and list every adjacent pair that is not a rule demonstration. Compute its displacement delta and zeta_w = exp(2 pi i w delta / 64). Average the three quantities over all unrelated pairs of all episodes (about 2e5 to 2e6 samples per sampler)."
+      },
+      "status": "open",
+      "testable_by": "code",
+      "text": "Under the i.i.d. sampler (k > 32) and the dilution sampler with lattice phases (V = d = 64), the unrelated-pair displacements are i.i.d. uniform on Z_64. Hence at every w != 0 the phasors zeta_{w,j} are independent with E zeta_w = 0 (N1, N2), and at every w not in {0, 32} also E zeta_w^2 = 0 (N3).",
+      "used_by": [],
+      "why_needed": "The Hoeffding bound and the sqrt(m/2)/k phase-error formula in few_shot_argument, used for the k = 100 and k = 1000 predictions and for the dilution prediction (mean probability >= 0.9) in capability 1."
+     },
+     {
+      "added_by": "dialogue",
+      "basis": "stated by the proposer in the refinement dialogue; nothing has checked it yet",
+      "citation": null,
+      "does_work": false,
+      "evidence": null,
+      "id": "A2",
+      "kind": "other",
+      "measurement_plan": {
+       "accept_if": "max_w |mean zeta_w| <= 0.03, and every covariance modulus <= 0.05.",
+       "data": "10^5 episodes from the distinct sampler at k = 10, V = d = 64, s uniform in {1, ..., 63}.",
+       "measure": "For each w in {1, ..., 63}: the empirical |mean zeta_w| and the empirical modulus of the covariance between zeta_w of unrelated pairs j and j' for all j != j'.",
+       "procedure": "Compute zeta_{w,j} = exp(2 pi i w (a_{j+1} - b_j)/64) for j = 1..10. Estimate the means and the pairwise covariances over episodes."
+      },
+      "status": "open",
+      "testable_by": "code",
+      "text": "Under the distinct sampler (k <= 32) with lattice phases, N1 and N2 fail only at order 1/V. Each unrelated displacement is uniform on the 63 residues other than -s, so |E zeta_w| = 1/63 for w != 0. The covariance between zeta_w of any two distinct unrelated pairs has modulus at most 0.02.",
+      "used_by": [],
+      "why_needed": "It justifies using the few-shot argument as a guide (not a proof) for the k <= 32 predictions: k = 3 in sample efficiency, k in {3, 10} in capability 1, and capability 5. Those predictions are tested directly as empirical claims."
+     }
+    ],
+    "run": "phase7-live-20261014T1752Z",
+    "source_run": null,
+    "stage_verdicts": {
+     "R": {
+      "by_calls": [
+       "call-24ed5751cfc5",
+       "call-ce4304537a37",
+       "call-de910d5f29f1",
+       "call-eba5f3df97a2",
+       "call-bb72dfd21f3c",
+       "call-422957069b77",
+       "job-9239adcd2112"
+      ],
+      "reasons": [
+       "dialogue ended: budget:refinement after 3 challenger round(s), 3 of 3 revision(s) accepted",
+       "core size 11 -> 11 (limit 13)",
+       "assumption list: 7 definition(s), 2 premise(s), added_by dialogue",
+       "the last revision used the last round and was not shown to the challenger again",
+       "toy example reproduced 4 expected value(s)"
+      ],
+      "verdict": "pass"
+     },
+     "S0": {
+      "by_calls": [
+       "call-b81104436c60"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-46dbb349 at TF-IDF cosine 0.192 (threshold 0.6)",
+       "live check: copied from run-20261010T181300Z/cards/card-1184f7a7/v8.json (no model call drafted it in this run)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-18ee057db13e",
+       "job-24c1d576f488"
+      ],
+      "reasons": [
+       "gate: entry check passed; 5 fixable finding(s) go to the refinement dialogue",
+       "residual: underspecified_step (mechanism.update[2] / mechanism.state Rhat_t): The state says Rhat is 0 where R is exactly 0, but the plain form R/(abs(R)+1e-9) gives small nonzero values when floating-point cancellation leaves a tiny residual, so the claims' \"R_w = 0\" switch-off (XOR and toy cases) needs an explicit tolerance.",
+       "residual: underspecified_step (claims.capabilities[4].task): The training recipe does not say how beta is kept positive (\"learned positive scalar\"), how the loss is averaged over positions and batch, or how u is initialized, so the Adam run cannot be reproduced without guessing.",
+       "residual: vague_secondary_claim (claims.capabilities[2].prediction): The thresholds \"at least 0.75 at k = 4\" and \"at most 0.3 at k = 32\" are not derived from k_half of about pi d/(8 ln V), and the ratio window [1.5, 2.5] is asserted rather than shown to follow from the stated law.",
+       "residual: notation_clash (mechanism.state beta shape): beta has shape [1] but is used as a scalar in \"beta * s_t(y)\"; the shape should be written as a scalar.",
+       "residual: notation_clash (mechanism.update / claims.capabilities[1]): The frequency index is \"omega\" in the LaTeX but \"w\" in the plain text, and \"w\" also indexes Walsh characters chi_w, which makes the notation inconsistent."
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-91cd11b27be9",
+       "call-d3aab86f60a9",
+       "call-3059bd26809f",
+       "call-59b96f96a4c4",
+       "job-bedbbe3d7d47"
+      ],
+      "reasons": [
+       "prior art: prior_art_undertested. The core estimator (circular correlation binding, phase-only normalization of a cross-spectrum, and readout by holographic overlap) has close precedent in HRR/FHRR memory work (2109.02157, 1510.04935, 2305.19534) and in phase-only correlation for displacement estimation (W2043192795). Diagonal linear-attention and linear-RNN state models (2212.00768) share the...",
+       "own history: 0 exact signature match(es), 0 near: none",
+       "textbook transplant: yes (recorded, not gated): The construction is ensemble phase-only correlation (Kuglin-Hines phase correlation / ensemble-averaged PIV correlation): sum the cross-power spectra of many matched pairs, normalize each frequency to unit modulus, and read the correlation surface. The card's s(y) is exactly that surface evaluated a",
+       "reduction claim linear_attention (verified): numeric check confirms equivalence (max_abs_diff 3.552713678800501e-15)",
+       "gate: excluded_family:linear_attention: the update rule reduces to linear_attention (check verified), which is in the out-of-scope family Linear attention and outer-product memories (families.toml, decision D8); a LEARNING_RULE: difference does not apply: Diagonal (elementwise / FHRR) linear attention with tied phasor features. Key phi(k_t) = conj(E_{x_{t-1}}), value v_t = E_{x_t}, and the oute..."
+      ],
+      "verdict": "reduces_to_known"
+     }
+    },
+    "summary": "The model embeds every token as a unit-modulus phasor vector E_v = exp(i Theta_v) of length d. This is a Fourier-domain HRR vector. The input is a token sequence x_1, ..., x_n.\n\nFor each adjacent pair (x_{t-1}, x_t), the model adds the cross-power spectrum conj(E_{x_{t-1}}) * E_{x_t} to one complex d-vector R_t, starting from R_1 = 0. In the spatial domain this cross-power spectrum is the circular correlation of the two token codes. Correlation-based holographic particle image velocimetry (PIV) uses the same operation: the correlation of two exposures of many particles peaks at their common displacement.\n\nSuppose a rule f moves every token by the same phasor rho, so that E_{f(v)} = rho * E_v (a group translation in the embedding). Then every demonstration contributes exactly rho, and after k demonstrations the rule part of R is k*rho. Pairs that do not instance the rule contribute unit phasors with zero-mean phase. After m such independent pairs these sum to a random walk of norm about sqrt(m).\n\nThe readout normalizes R per frequency to unit modulus. This is phase-only correlation: a consensus over frequencies whose scale depends neither on n nor on how many unrelated tokens dilute the context. The readout applies the normalized vector to the current token and scores every candidate next token by its overlap with the result. At t = 1 there is no pair yet, so the score is 0 and the prediction is the prior.\n\nAs a consequence:\n- A translation rule is applied correctly to query items never seen in context.\n- The estimate only sharpens as demonstrations accumulate, with no per-item capacity limit.\n- Confidence in the rule stays high under heavy distractor dilution as long as k is well above sqrt(m).\n- Arbitrary key-value bindings fall back to ordinary HRR associative recall, with capacity of order d / ln V.\n\nThe rules that accumulate exactly coherently form the set G_Theta of permutations that the phases turn into Hadamard multiplications. G_Theta is an abelian group whenever the codes are distinct; it is exactly the cyclic shifts for lattice phases and exactly the XOR masks for Walsh phases. How well a wrong token is suppressed depends on the largest off-diagonal code overlap mu(Theta) (D5). This overlap is 0 for lattice and Walsh phases, so their sidelobes come only from phase error. Negative predictions are stated only for the two tested cases outside G_Theta: arbitrary bindings and uniformly random permutations. The state is O(d), and the cost per token is O(d) plus the output layer.",
+    "terminal_stage": "S2",
+    "title": "Holographic Displacement Interrogation: in-context rules as coherent correlation peaks",
+    "written_by": "orchestrator"
+   },
+   "record_id": "oc-aa9f18460a6c",
+   "seq": 291
+  }
+ ],
+ "source": "results/phase7-live-20261014T1752Z/outcomes-copy/outcomes.jsonl (records of card-1184f7a7; seq 1-290 are the copy of results/outcomes, 291+ were written by the live run)"
+}

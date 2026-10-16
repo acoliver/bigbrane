@@ -1,0 +1,85 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Pointer tree of nested spans",
+  "summary": "Each opening symbol creates a node whose pointer goes to the enclosing node; a closer returns to the parent node, and the readout names the closer of the current node.",
+  "core_idea": "Grow a pointer tree of open spans and predict the closer of the current node.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "lumbard",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Pointer tree of open spans; each node points at its enclosing node."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "lumbard_t = new node with pointer to lumbard_(t-1) if x_t opens, else parent node",
+        "plain": "lumbard_t = new node with pointer to lumbard_(t-1) if x_t opens, else parent node"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = closer(node lumbard_t)",
+        "plain": "y_t = closer(node lumbard_t)"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is trained.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(n)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "Predicts the right closer after one example."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "span closing",
+        "prediction": "Predicts the legal closer at any depth."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Pointer trees are standard.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A legal closer is mispredicted.",
+    "A node loses its parent pointer."
+  ],
+  "toy_example": {
+    "description": "One return to the parent.",
+    "python": "import json\nparent = {1: 0, 2: 1}\nnode = 2\nnode = parent[node]\nprint(json.dumps({'node': node}))\n",
+    "expected": {
+      "node": 1
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

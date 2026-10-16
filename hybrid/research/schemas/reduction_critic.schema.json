@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/reduction_critic.schema.json",
+  "title": "Reduction critic output (S2)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reduces_to", "mapping", "confidence", "difference_if_any", "radical_enough", "why",
+               "textbook_transplant", "textbook_why"],
+  "properties": {
+    "reduces_to": {
+      "enum": [
+        "none", "rnn", "lstm_gru", "linear_attention", "ssm", "hopfield_or_kernel_memory",
+        "transformer_variant", "moe", "bitnet_or_quantized", "partitioned_or_windowed_attention",
+        "lcm_concept_model", "other_known"
+      ]
+    },
+    "mapping": {"type": ["string", "null"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "difference_if_any": {"type": "string"},
+    "radical_enough": {"type": "boolean"},
+    "why": {"type": "string", "minLength": 1},
+    "textbook_transplant": {
+      "type": "boolean",
+      "description": "True when the core idea is a textbook construction from its source field applied without modification. Recorded, not gated."
+    },
+    "textbook_why": {"type": "string", "minLength": 1},
+    "comparators": {
+      "description": "FIX-12: the known forms the numeric check compares with the card, declared before the check is written. The check reports each one under its id; the host decides from the transformation types whether a comparison counts for the base family.",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "base_family", "base_form", "update", "read", "transformations", "parameter_mapping",
+                     "limit_only"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$"},
+          "base_family": {
+            "enum": [
+              "rnn", "lstm_gru", "linear_attention", "ssm", "hopfield_or_kernel_memory", "transformer_variant",
+              "moe", "bitnet_or_quantized", "partitioned_or_windowed_attention", "lcm_concept_model", "other_known"
+            ]
+          },
+          "base_form": {"type": "string", "minLength": 1},
+          "update": {"type": "string", "minLength": 1},
+          "read": {"type": "string", "minLength": 1},
+          "transformations": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type", "what"],
+              "properties": {
+                "type": {
+                  "enum": ["normalizer", "gate", "feature_map", "change_of_basis", "lifted_state", "sparsity",
+                           "transformed_input", "multi_read", "other"]
+                },
+                "what": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "parameter_mapping": {"type": "string", "minLength": 1},
+          "limit_only": {"type": "boolean"}
+        }
+      }
+    }
+  },
+  "if": {"properties": {"reduces_to": {"const": "none"}}},
+  "then": {"properties": {"mapping": {"type": ["string", "null"]}, "comparators": {"maxItems": 0}}},
+  "else": {"required": ["comparators"],
+           "properties": {"mapping": {"type": "string", "minLength": 1}, "comparators": {"minItems": 1}}}
+}

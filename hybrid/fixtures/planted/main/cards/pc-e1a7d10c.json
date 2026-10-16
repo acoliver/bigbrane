@@ -1,0 +1,156 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Composite terms named by short collision-free codes",
+  "summary": "Every term built from the context, including a composite term such as f applied to g of a symbol, receives a code of a fixed small number of bits. Codes never collide and terms that denote the same symbol share a code, so a two-step table chain is answered by decoding one code. A plain address list with a depth counter serves the other tasks.",
+  "core_idea": "Name every term by an O(1)-bit collision-free code shared by terms that denote the same symbol, and answer chained tables by decoding the code of the composite term.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "A",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Address list: C rows of (address symbol, stored symbol), C = 64."
+      },
+      {
+        "name": "n_A",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Rows of A in use."
+      },
+      {
+        "name": "h",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Waiting left symbol of an incoming pair, or empty."
+      },
+      {
+        "name": "lvl",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket level counter used with the rows of A as a push-down region."
+      },
+      {
+        "name": "kappa",
+        "type": "integer",
+        "shape": [
+          "b"
+        ],
+        "meaning": "The code register: kappa(tau) is the b-bit code of term tau; b is a fixed constant (b = 8 here) independent of the context size."
+      },
+      {
+        "name": "D",
+        "type": "integer map",
+        "shape": [
+          "2^b"
+        ],
+        "meaning": "Decoder from a code to the output symbol, filled by tallying."
+      }
+    ],
+    "update": [
+      {
+        "latex": "h=\\varnothing \\Rightarrow h \\leftarrow x_t;\\; \\text{else } A_{n_A} \\leftarrow (h, x_t),\\; n_A \\leftarrow n_A + 1,\\; h \\leftarrow \\varnothing",
+        "plain": "pairs are appended to the address list A",
+        "name": "append pair"
+      },
+      {
+        "latex": "\\kappa_t = \\mathrm{code}\\big(f(g(x_t))\\big)",
+        "plain": "at a probe x_t the composite term f(g(x_t)) formed from the tables in context is given its code, a hash of the term; equal denotations get equal codes and distinct ones never share a code",
+        "name": "term code"
+      },
+      {
+        "latex": "x_t \\text{ opener} \\Rightarrow lvl \\leftarrow lvl + 1,\\; A_{lvl} \\leftarrow (lvl, x_t);\\; x_t \\text{ closer} \\Rightarrow lvl \\leftarrow lvl - 1",
+        "plain": "brackets use the first rows of A as a push-down region indexed by lvl",
+        "name": "bracket level"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\hat{y}_t = D[\\kappa_t] \\text{ for table chains};\\; \\hat{y}_t = D'[A[\\text{row of } x_t]_1] \\text{ otherwise}",
+        "plain": "a table-chain probe is answered by decoding its code; other probes read the row whose address is x_t (or row lvl for brackets) and map the stored symbol through the learned map D'"
+      }
+    ],
+    "learning": {
+      "description": "D and D' are majority maps fitted by a tally over m training items; the routing between code decoding, address reading and the push-down region is picked by best training accuracy.",
+      "few_shot_argument": "Each code identifies its denotation, so D needs one sighting per output symbol: m = 16 items of 32 probes each cover all 32 symbols at T = 32."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(C)",
+      "memory": "O(C + 2^b)",
+      "total_sequence": "O(n C)",
+      "constants_notes": "Appending is O(1); an address read scans at most C rows; the code is a fixed b-bit word, so decoding is one access."
+    },
+    "sample_efficiency": {
+      "mechanism": "Collision-free codes make the decoder a one-sighting map.",
+      "prediction": {
+        "metric": "examples_to_composition_T32",
+        "value": 16,
+        "statement": "From m = 16 training items of two-hop composition with T = 32, the per-query accuracy is at least 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "two-hop composition",
+        "prediction": "f(g(x)) at T = 4, 16, 32 with accuracy 1.0, decoding one b-bit code per probe."
+      },
+      {
+        "task": "variable binding",
+        "prediction": "Chains of 1, 4, 8 hops by repeated address reads (C = 64)."
+      },
+      {
+        "task": "associative recall and copy",
+        "prediction": "Exact at K = 8, 32, 64 and L = 8, 32, 64 with C = 64 rows (2C + 2^b + 3 words)."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Exact closers at depth 2, 4, 8, 16 from the push-down rows."
+      },
+      {
+        "task": "limit",
+        "prediction": "The limit is a storage count: C slots of two words cannot hold more than C pairs, so at C = 64 an instance with 65 or more distinct pairs loses one of them."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Two composite terms with different denotations that receive the same b-bit code.",
+    "16 training items at T = 32 after which the composition accuracy is below 0.99."
+  ],
+  "toy_example": {
+    "description": "T = 3 tables; codes are the denoted symbols; decoder is the identity.",
+    "python": "import json\ng = {0: 2, 1: 0, 2: 1}\nf = {0: 7, 1: 8, 2: 6}\ncode = {x: f[g[x]] for x in g}\nprint(json.dumps({\"codes\": [code[0], code[1], code[2]], \"distinct\": len(set(code.values()))}))\n",
+    "expected": {
+      "codes": [
+        6,
+        7,
+        8
+      ],
+      "distinct": 3
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

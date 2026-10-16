@@ -1,0 +1,105 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Several parallel readers of a sliding window with a distance penalty in the exponent",
+  "summary": "The last W symbols each keep an address and a content per reader. R readers, each with its own projections of width d/R, weight the windowed contents by the exponential of a scaled probe-address match minus a reader-specific penalty proportional to the distance back. The readers' normalized outputs are concatenated and projected.",
+  "core_idea": "Let R parallel readers each take an exponentially weighted, normalized mean over the last W contents, with scores equal to a scaled match minus a linear distance penalty.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Q",
+        "type": "ring buffer of real vectors",
+        "shape": [
+          "W",
+          "2d"
+        ],
+        "meaning": "The addresses and contents of the last W symbols for all R readers; the oldest entry is dropped when a new one arrives."
+      }
+    ],
+    "update": [
+      {
+        "name": "append",
+        "latex": "a^{r}_t = W^{r}_a e_t,\\; c^{r}_t = W^{r}_c e_t",
+        "plain": "for reader r = 1..R: a^r_t = W^r_a e_t and c^r_t = W^r_c e_t, each of width d/R; push them into the window and drop the entry from position t - W"
+      }
+    ],
+    "readout": [
+      {
+        "name": "scores",
+        "latex": "\\omega^{r}_{t,i} = \\exp\\left(\\frac{b^{r}_t \\cdot a^{r}_i}{\\sqrt{d/R}} - m_r (t - i)\\right),\\; t - W < i \\le t",
+        "plain": "omega^r_(t,i) = exp(b^r_t . a^r_i / sqrt(d/R) - m_r (t - i)) for the W positions in the window, probe b^r_t = W^r_b e_t, fixed slope m_r = 2^(-r)"
+      },
+      {
+        "name": "readers",
+        "latex": "y^{r}_t = \\frac{\\sum_i \\omega^{r}_{t,i} c^{r}_i}{\\sum_j \\omega^{r}_{t,j}},\\; y_t = W_o [y^{1}_t; \\ldots; y^{R}_t]",
+        "plain": "y^r_t = sum_i omega^r_(t,i) c^r_i / sum_j omega^r_(t,j); y_t = W_o concatenation of the R readers"
+      },
+      {
+        "name": "symbol",
+        "latex": "\\hat{x}_{t+1} = \\arg\\max_v (O y_t)_v",
+        "plain": "next symbol scores O y_t over the V symbols"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence.",
+      "few_shot_argument": "No structure for few examples; about 1500 training sequences are needed for recall of 4 pairs within the window."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(W d + d^2 + d V)",
+      "memory": "Theta(W d)",
+      "total_sequence": "Theta(n W d + n d^2 + n d V)",
+      "constants_notes": "Each reader matches W addresses of width d/R, so the window read costs W d per symbol over all readers; the buffer holds 2 W d numbers."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 1500,
+        "statement": "From random weights, 1500 training sequences of 4 pairs over 16 symbols, all inside the window, give recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact with hand-set weights when all K pairs lie inside the last W symbols; pairs older than W are lost."
+      },
+      {
+        "task": "copy a string after a separator",
+        "prediction": "Exact for 2L + 1 <= W with hand-set position matching; impossible when the string has left the window."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A pair written more than W symbols before its probe is recalled above chance.",
+    "The counted operations grow faster than linearly in n at fixed W."
+  ],
+  "toy_example": {
+    "description": "One reader with W = 3 and slope 0.5 over a window of three entries.",
+    "python": "import json, math\nA = [[1.0, 0.0], [1.0, 0.0], [0.0, 1.0]]\nCv = [1.0, 2.0, 3.0]\nb = [1.0, 0.0]\nt = 3\nm = 0.5\nw = [math.exp((b[0] * A[i][0] + b[1] * A[i][1]) / math.sqrt(2.0) - m * (t - (i + 1))) for i in range(3)]\ny = sum(w[i] * Cv[i] for i in range(3)) / sum(w)\nprint(json.dumps({\"read\": round(y, 6), \"weights\": [round(v / sum(w), 6) for v in w]}))\n",
+    "expected": {
+      "read": 2.085309,
+      "weights": [
+        0.250688,
+        0.413315,
+        0.335997
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

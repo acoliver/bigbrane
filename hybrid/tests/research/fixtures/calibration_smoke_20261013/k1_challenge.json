@@ -1,0 +1,3165 @@
+{
+ "card": {
+  "claims": {
+   "capabilities": [
+    {
+     "prediction": "With hand-set weights the probe at output step i matches the address written at input position i, so every string is copied exactly at every listed length when d grows with the log of the length.",
+     "task": "copy a string after a separator"
+    },
+    {
+     "prediction": "With hand-set weights the first round binds each item to the one before it and the second retrieves the item stored after the matching one; per-query accuracy 1.0 at every listed K.",
+     "task": "associative recall of K pairs"
+    },
+    {
+     "prediction": "The legal closing bracket is predicted exactly up to depth D when the number of rounds grows with D; with two fixed rounds and fixed precision the error does not vanish for all depths as the length grows.",
+     "task": "two-type bracket nesting"
+    },
+    {
+     "prediction": "The first round retrieves g(x) and the second retrieves f at that point, so f(g(x)) is answered exactly; chained assignments need one round per link.",
+     "task": "two-hop lookup and chained assignments"
+    },
+    {
+     "prediction": "With a fixed number of rounds and fixed precision, no setting of the weights decides the parity of every binary string as the length grows.",
+     "task": "parity of a long binary string"
+    }
+   ],
+   "complexity": {
+    "constants_notes": "Per round at position t: three d by d products, t probe-address products of d terms, t exponentials and a weighted sum of t contents; two rounds. The store holds two rows of d numbers per position per round.",
+    "memory": "Theta(n d)",
+    "time_per_token": "Theta(t d + d^2)",
+    "total_sequence": "Theta(n^2 d + n d^2)"
+   },
+   "sample_efficiency": {
+    "mechanism": "Gradient descent on the next-symbol loss, with no structure for few examples. Example counts m this card states for its learning rule at the solvable cases, each reaching 0.99 on three seeds: 3000 for copying at L = 4, 3000 for recall at K = 4, 1500 for bracket nesting at depth 2 and 4000 for two-hop lookup at table size 4. Information account for each count: the rule to identify is which earlier position or stored item the answer reads, at most 8 bits (log2 |H| = 8 for the hypothesis class of such read-out rules); the mechanism supplies no prior bits for these tasks; each example carries 2 bits of answer.",
+    "prediction": {
+     "metric": "examples_to_copy_L4",
+     "statement": "From random weights, gradient descent on 3000 copy examples at L = 4 over 4 symbols reaches per-string accuracy 0.99.",
+     "value": 3000
+    }
+   }
+  },
+  "core_idea": "Retrieve from every earlier position by content, with exponential score weights, in a fixed number of stacked rounds.",
+  "created_by_call": "call-ca11b0000000",
+  "falsifiers": [
+   "A hand-set configuration with two rounds fails to copy strings of length 8 over 4 symbols.",
+   "The counted operations of the reference code grow more slowly than n^2 at fixed d."
+  ],
+  "id": "card-ca11b001",
+  "known_relatives": [
+   {
+    "claimed_difference": "No difference from earlier work is claimed.",
+    "name": "not assessed",
+    "relation": "This card does not compare its mechanism with others."
+   }
+  ],
+  "lens": "neutral",
+  "mechanism": {
+   "learning": {
+    "description": "Every matrix (E, P, W_a, W_c, W_p, W_o, U, V, O) is learned by gradient descent on the cross-entropy of the next symbol, computed through both rounds.",
+    "few_shot_argument": "Nothing in the mechanism is specific to few examples; it learns a rule such as copying at L = 4 from about 3000 examples, which is the number this card states."
+   },
+   "readout": [
+    {
+     "latex": "\\hat{y}_t = \\arg\\max_v (h^2_t O)_v",
+     "name": "readout",
+     "plain": "y_hat = argmax(h2 O) over the V symbols"
+    }
+   ],
+   "state": [
+    {
+     "meaning": "Address vectors written by every position read so far, one row per position, kept separately for each round l = 1, 2.",
+     "name": "A_l",
+     "shape": [
+      "t",
+      "d"
+     ],
+     "type": "real matrix"
+    },
+    {
+     "meaning": "Content vectors written by every position read so far, one row per position, kept separately for each round l = 1, 2.",
+     "name": "C_l",
+     "shape": [
+      "t",
+      "d"
+     ],
+     "type": "real matrix"
+    },
+    {
+     "meaning": "Working vector of the current position; each round rewrites it.",
+     "name": "h",
+     "shape": [
+      "d"
+     ],
+     "type": "real vector"
+    }
+   ],
+   "update": [
+    {
+     "latex": "h^0_t = E[x_t] + P[t]",
+     "name": "embed",
+     "plain": "h0_t = E[x_t] + P[t], a symbol table row plus a position table row"
+    },
+    {
+     "latex": "a^l_t = W^l_a h^{l-1}_t,\\; c^l_t = W^l_c h^{l-1}_t",
+     "name": "write",
+     "plain": "a_t = W_a h, c_t = W_c h, appended as new rows of A_l and C_l"
+    },
+    {
+     "latex": "w_i = \\frac{\\exp(p^l_t \\cdot a^l_i/\\sqrt{d})}{\\sum_{j \\le t} \\exp(p^l_t \\cdot a^l_j/\\sqrt{d})},\\; r^l_t = \\sum_{i \\le t} w_i c^l_i,\\; p^l_t = W^l_p h^{l-1}_t",
+     "name": "retrieve",
+     "plain": "p = W_p h; w_i = exp(p . a_i / sqrt(d)) / sum_j exp(p . a_j / sqrt(d)) over stored rows; r = sum_i w_i c_i"
+    },
+    {
+     "latex": "g = h^{l-1}_t + W^l_o r^l_t,\\; h^l_t = g + U^l \\max(0, V^l g)",
+     "name": "mix",
+     "plain": "g = h + W_o r; h_new = g + U max(0, V g), for each round l = 1, 2"
+    }
+   ]
+  },
+  "parent_ids": [],
+  "references": [],
+  "status": {
+   "stage": "S0",
+   "verdicts": {}
+  },
+  "summary": "Every position writes an address vector and a content vector into a growing store. A probe vector computed from the current position scores every stored address, the scores are turned into weights by normalized exponentials, and the weighted sum of contents is mixed back into the position's working vector. Two such rounds are stacked and the last working vector is read out.",
+  "title": "Two rounds of weighted retrieval over stored pairs",
+  "toy_example": {
+   "description": "One retrieval step over three stored pairs with a probe along the first address.",
+   "expected": {
+    "read_0": 1.456943144,
+    "read_1": 0.571761427,
+    "weight_0": 0.485647715
+   },
+   "python": "import json, math\nd = 2\naddresses = [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]\ncontents = [[2.0, 0.0], [0.0, 3.0], [1.0, 1.0]]\nprobe = [4.0, 0.0]\nscores = [sum(p * a for p, a in zip(probe, row)) / math.sqrt(d) for row in addresses]\ntop = max(scores)\nweights = [math.exp(s - top) for s in scores]\ntotal = sum(weights)\nweights = [w / total for w in weights]\nread = [sum(w * row[j] for w, row in zip(weights, contents)) for j in range(d)]\nprint(json.dumps({\"weight_0\": round(weights[0], 9), \"read_0\": round(read[0], 9), \"read_1\": round(read[1], 9)},\n                 sort_keys=True))\n"
+  },
+  "version": 1
+ },
+ "m_checks": {
+  "O1.a": {
+   "artifact": "recorded-O1.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": null,
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "form": "lean",
+   "statement_id": "O1.a",
+   "status": "pass",
+   "text": "theorem claim_holds : Claim := by\n  intro v hv\n  refine ⟨1, 20 + 2*(v:ℝ), by norm_num, by positivity, ?_⟩\n  intro t d ht hd\n  have ht1 : 1 ≤ t := ht\n  have hd1 : 1 ≤ d := hd\n  have hv1 : 1 ≤ v := hv\n  have hT : (1:ℝ) ≤ (t:ℝ) := by exact_mod_cast ht1\n  have hD : (1:ℝ) ≤ (d:ℝ) := by exact_mod_cast hd1\n  have hW : (1:ℝ) ≤ (v:ℝ) := by exact_mod_cast hv1\n  have h0T : (0:ℝ) ≤ (t:ℝ) := by linarith\n  have h0D : (0:ℝ) ≤ (d:ℝ) := by linarith\n  have h0W : (0:ℝ) ≤ (v:ℝ) := by linarith\n  have a1 : 0 ≤ (t:ℝ)*((d:ℝ)-1) := mul_nonneg h0T (by linarith)\n  have a2 : 0 ≤ (d:ℝ)*((d:ℝ)-1) := mul_nonneg h0D (by linarith)\n  have a3 : 0 ≤ (v:ℝ)*((d:ℝ)*((d:ℝ)-1)) := mul_nonneg h0W a2\n  have a4' : 0 ≤ (d:ℝ)*(d:ℝ)-1 := by nlinarith\n  have a4 : 0 ≤ (v:ℝ)*((d:ℝ)*(d:ℝ)-1) := mul_nonneg h0W a4'\n  have a6 : 0 ≤ (t:ℝ)*(d:ℝ) := mul_nonneg h0T h0D\n  have a5 : 0 ≤ (v:ℝ)*((t:ℝ)*(d:ℝ)) := mul_nonneg h0W a6\n  have a7 : 0 ≤ (d:ℝ)*(v:ℝ) := mul_nonneg h0D h0W\n  have a8 : 0 ≤ (d:ℝ)*(d:ℝ) := mul_nonneg h0D h0D\n  constructor <;> nlinarith [a1, a2, a3, a4, a5, a6, a7, a8]",
+   "tier": "lean"
+  },
+  "O10.a": {
+   "artifact": "recorded-O10.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "recipe": {
+     "batch_size": 64,
+     "beta1": 0.9,
+     "beta2": 0.98,
+     "d": 64,
+     "epochs": 150,
+     "eps": 1e-08,
+     "grad_clip": 1.0,
+     "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+     "loss": "next-symbol cross-entropy at query positions, through both rounds",
+     "lr": 0.003,
+     "optimizer": "adam",
+     "schedule": "linear warmup then cosine decay to 0.1*lr",
+     "warmup_steps": 200
+    },
+    "results": [
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.002,
+      "empty_control_accuracy": 0.004,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 150,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 0,
+      "state_peak_words": 53185,
+      "wrong_control_accuracy": 0.002
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.004,
+      "empty_control_accuracy": 0.008,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 150,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 1,
+      "state_peak_words": 53185,
+      "wrong_control_accuracy": 0.004
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 150,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 2,
+      "state_peak_words": 53185,
+      "wrong_control_accuracy": 0.0
+     }
+    ]
+   },
+   "evidence": "copy at L=4 from m=3000 examples: seed 0 accuracy 1.0000 (control 0.0020), seed 1 accuracy 1.0000 (control 0.0040), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"batch_size\": 64, \"beta1\": 0.9, \"beta2\": 0.98, \"d\": 64, \"epochs\": 150, \"eps\": 1e-08, \"grad_clip\": 1.0, \"init\": \"normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)\", \"loss\": \"next-symbol cross-entropy at query positions, through both rounds\", \"lr\": 0.003, \"optimizer\": \"adam\", \"schedule\": \"linear warmup then cosine decay to 0.1*lr\", \"warmup_steps\": 200} applied to the true data and both controls; observed on the listed sizes: copy L=4 m=3000 seed=0, copy L=4 m=3000 seed=1, copy L=4 m=3000 seed=2",
+   "form": "learnability",
+   "statement_id": "O10.a",
+   "status": "discharged",
+   "text": "RECIPE = {\"d\": 64, \"init\": \"normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)\", \"optimizer\": \"adam\", \"lr\": 0.003, \"beta1\": 0.9, \"beta2\": 0.98, \"eps\": 1e-08, \"warmup_steps\": 200, \"schedule\": \"linear warmup then cosine decay to 0.1*lr\", \"epochs\": 150, \"batch_size\": 64, \"grad_clip\": 1.0, \"loss\": \"next-symbol cross-entropy at query positions, through both rounds\"}\n\nRK = [[\"Wa1\", \"Wc1\", \"Wp1\", \"Wo1\", \"V1\", \"U1\"], [\"Wa2\", \"Wc2\", \"Wp2\", \"Wo2\", \"V2\", \"U2\"]]\n\ndef make_params(vocab, T, d, rng):\n    s = 1.0 / np.sqrt(d)\n    p = {\"E\": rng.normal(0.0, 1.0, (vocab, d)), \"P\": rng.normal(0.0, 1.0, (T, d)), \"O\": rng.normal(0.0, s, (d, vocab))}\n    for keys in RK:\n        p[keys[0]] = rng.normal(0.0, s, (d, d))\n        p[keys[1]] = rng.normal(0.0, s, (d, d))\n        p[keys[2]] = rng.normal(0.0, s, (d, d))\n        p[keys[3]] = rng.normal(0.0, s, (d, d))\n        p[keys[4]] = rng.normal(0.0, np.sqrt(2.0 / d), (d, d))\n        p[keys[5]] = rng.normal(0.0, 0.5 * s, (d, d))\n    return p\n\ndef round_fwd(h, W, mask, scale):\n    B, T, d = h.shape\n    hf = h.reshape(B * T, d)\n    a = (hf @ W[0]).reshape(B, T, d)\n    c = (hf @ W[1]).reshape(B, T, d)\n    q = (hf @ W[2]).reshape(B, T, d)\n    S = np.matmul(q, a.transpose(0, 2, 1)) * scale + mask[:T, :T]\n    S = S - S.max(-1, keepdims=True)\n    Ex = np.exp(S)\n    Wt = Ex / Ex.sum(-1, keepdims=True)\n    r = np.matmul(Wt, c)\n    rf = r.reshape(B * T, d)\n    g = hf + rf @ W[3]\n    z = g @ W[4]\n    m = np.maximum(z, 0.0)\n    out = g + m @ W[5]\n    return out.reshape(B, T, d), [hf, a, c, q, Wt, rf, g, z, m]\n\ndef round_bwd(dout, W, cache, scale):\n    hf, a, c, q, Wt, rf, g, z, m = cache\n    B, T, d = a.shape\n    do = dout.reshape(B * T, d)\n    dU = m.T @ do\n    dz = (do @ W[5].T) * (z > 0)\n    dV = g.T @ dz\n    dg = do + dz @ W[4].T\n    dWo = rf.T @ dg\n    dr = (dg @ W[3].T).reshape(B, T, d)\n    dWt = np.matmul(dr, c.transpose(0, 2, 1))\n    dc = np.matmul(Wt.transpose(0, 2, 1), dr)\n    dS = Wt * (dWt - (dWt * Wt).sum(-1, keepdims=True)) * scale\n    dq = np.matmul(dS, a).reshape(B * T, d)\n    da = np.matmul(dS.transpose(0, 2, 1), q).reshape(B * T, d)\n    dcf = dc.reshape(B * T, d)\n    dWa = hf.T @ da\n    dWc = hf.T @ dcf\n    dWp = hf.T @ dq\n    dh = dg + da @ W[0].T + dcf @ W[1].T + dq @ W[2].T\n    return dh.reshape(B, T, d), [dWa, dWc, dWp, dWo, dV, dU]\n\ndef learn(layout, examples, seed):\n    rng = np.random.default_rng(1000 + seed)\n    d = int(RECIPE[\"d\"])\n    vocab = int(layout[\"vocab\"])\n    n = len(examples)\n    Tdata = 1\n    for ex in examples:\n        Tdata = max(Tdata, len(ex[\"tokens\"]))\n    Tpos = max(Tdata, 4 * int(layout[\"size\"]) + 4)\n    params = make_params(vocab, Tpos, d, rng)\n    if n == 0:\n        return params\n    X = np.zeros((n, Tdata), dtype=np.int64)\n    Y = np.zeros((n, Tdata), dtype=np.int64)\n    M = np.zeros((n, Tdata))\n    Ln = np.zeros(n, dtype=np.int64)\n    for i, ex in enumerate(examples):\n        tk = ex[\"tokens\"]\n        Ln[i] = len(tk)\n        X[i, :len(tk)] = np.array(tk, dtype=np.int64)\n        for qa in ex[\"queries\"]:\n            Y[i, int(qa[0])] = int(qa[1])\n            M[i, int(qa[0])] = 1.0\n    scale = 1.0 / np.sqrt(d)\n    mask = np.triu(np.full((Tpos, Tpos), -1e9), 1)\n    eye = np.eye(vocab)\n    bs = int(RECIPE[\"batch_size\"])\n    spe = (n + bs - 1) // bs\n    total = int(RECIPE[\"epochs\"]) * spe\n    lr0 = float(RECIPE[\"lr\"])\n    b1 = float(RECIPE[\"beta1\"])\n    b2 = float(RECIPE[\"beta2\"])\n    eps = float(RECIPE[\"eps\"])\n    warm = float(RECIPE[\"warmup_steps\"])\n    clip = float(RECIPE[\"grad_clip\"])\n    names = list(params.keys())\n    mom = {}\n    vel = {}\n    for k in names:\n        mom[k] = np.zeros_like(params[k])\n        vel[k] = np.zeros_like(params[k])\n    step = 0\n    for ep in range(int(RECIPE[\"epochs\"])):\n        perm = rng.permutation(n)\n        for b in range(spe):\n            idx = perm[b * bs:(b + 1) * bs]\n            Tb = int(Ln[idx].max())\n            Xb = X[idx, :Tb]\n            Yb = Y[idx, :Tb]\n            Mb = M[idx, :Tb]\n            B = Xb.shape[0]\n            h0 = params[\"E\"][Xb] + params[\"P\"][:Tb][None, :, :]\n            W1 = [params[k] for k in RK[0]]\n            W2 = [params[k] for k in RK[1]]\n            h1, c1 = round_fwd(h0, W1, mask, scale)\n            h2, c2 = round_fwd(h1, W2, mask, scale)\n            h2f = h2.reshape(B * Tb, d)\n            logits = h2f @ params[\"O\"]\n            logits = logits - logits.max(-1, keepdims=True)\n            pr = np.exp(logits)\n            pr = pr / pr.sum(-1, keepdims=True)\n            Mf = Mb.reshape(-1)\n            Nq = max(Mf.sum(), 1.0)\n            dlog = (pr - eye[Yb.reshape(-1)]) * (Mf[:, None] / Nq)\n            grads = {}\n            grads[\"O\"] = h2f.T @ dlog\n            dh2 = (dlog @ params[\"O\"].T).reshape(B, Tb, d)\n            dh1, g2 = round_bwd(dh2, W2, c2, scale)\n            dh0, g1 = round_bwd(dh1, W1, c1, scale)\n            for j in range(6):\n                grads[RK[0][j]] = g1[j]\n                grads[RK[1][j]] = g2[j]\n            dh0f = dh0.reshape(B * Tb, d)\n            grads[\"E\"] = eye[Xb.reshape(-1)].T @ dh0f\n            dP = np.zeros_like(params[\"P\"])\n            dP[:Tb] = dh0.sum(0)\n            grads[\"P\"] = dP\n            gn = 0.0\n            for k in names:\n                gn = gn + float((grads[k] * grads[k]).sum())\n            gn = np.sqrt(gn)\n            fac = min(1.0, clip / (gn + 1e-6))\n            step += 1\n            lr = lr0 * min(1.0, step / warm) * (0.1 + 0.9 * 0.5 * (1.0 + np.cos(np.pi * step / total)))\n            bc1 = 1.0 - b1 ** step\n            bc2 = 1.0 - b2 ** step\n            for k in names:\n                gk = grads[k] * fac\n                mom[k] = b1 * mom[k] + (1.0 - b1) * gk\n                vel[k] = b2 * vel[k] + (1.0 - b2) * gk * gk\n                params[k] = params[k] - lr * (mom[k] / bc1) / (np.sqrt(vel[k] / bc2) + eps)\n    return params\n\ndef init(layout, params):\n    return {\"p\": params, \"t\": 0, \"A\": [[], []], \"C\": [[], []], \"h\": None}\n\ndef update(state, token):\n    p = state[\"p\"]\n    d = p[\"E\"].shape[1]\n    scale = 1.0 / np.sqrt(d)\n    t = min(state[\"t\"], p[\"P\"].shape[0] - 1)\n    h = p[\"E\"][int(token)] + p[\"P\"][t]\n    for l in range(2):\n        W = [p[k] for k in RK[l]]\n        a = h @ W[0]\n        c = h @ W[1]\n        q = h @ W[2]\n        state[\"A\"][l].append(a)\n        state[\"C\"][l].append(c)\n        A = np.array(state[\"A\"][l])\n        C = np.array(state[\"C\"][l])\n        s = (A @ q) * scale\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ C\n        g = h + r @ W[3]\n        h = g + np.maximum(g @ W[4], 0.0) @ W[5]\n    state[\"h\"] = h\n    state[\"t\"] = state[\"t\"] + 1\n    return state\n\ndef predict(state):\n    return int(np.argmax(state[\"h\"] @ state[\"p\"][\"O\"]))\n",
+   "tier": "executed"
+  },
+  "O11.a": {
+   "artifact": "recorded-O11.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "recipe": {
+     "batch_size": 64,
+     "betas": [
+      0.9,
+      0.98
+     ],
+     "dtype": "float32",
+     "epochs": 200,
+     "eps": 1e-08,
+     "grad_clip_norm": 1.0,
+     "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+     "learning_rate": 0.003,
+     "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds (round-2 output computed only where the loss reads it)",
+     "optimizer": "AdamW",
+     "schedule": "linear warmup then cosine decay to 0.05 of peak",
+     "warmup_steps": 200,
+     "weight_decay": 0.01,
+     "width_d": 64
+    },
+    "results": [
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0415,
+      "empty_control_accuracy": 0.0415,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "betas": [
+        0.9,
+        0.98
+       ],
+       "dtype": "float32",
+       "epochs": 200,
+       "eps": 1e-08,
+       "grad_clip_norm": 1.0,
+       "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+       "learning_rate": 0.003,
+       "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds (round-2 output computed only where the loss reads it)",
+       "optimizer": "AdamW",
+       "schedule": "linear warmup then cosine decay to 0.05 of peak",
+       "warmup_steps": 200,
+       "weight_decay": 0.01,
+       "width_d": 64
+      },
+      "seed": 0,
+      "state_peak_words": 58754,
+      "wrong_control_accuracy": 0.061
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.036,
+      "empty_control_accuracy": 0.036,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "betas": [
+        0.9,
+        0.98
+       ],
+       "dtype": "float32",
+       "epochs": 200,
+       "eps": 1e-08,
+       "grad_clip_norm": 1.0,
+       "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+       "learning_rate": 0.003,
+       "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds (round-2 output computed only where the loss reads it)",
+       "optimizer": "AdamW",
+       "schedule": "linear warmup then cosine decay to 0.05 of peak",
+       "warmup_steps": 200,
+       "weight_decay": 0.01,
+       "width_d": 64
+      },
+      "seed": 1,
+      "state_peak_words": 58754,
+      "wrong_control_accuracy": 0.0645
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0445,
+      "empty_control_accuracy": 0.0445,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "betas": [
+        0.9,
+        0.98
+       ],
+       "dtype": "float32",
+       "epochs": 200,
+       "eps": 1e-08,
+       "grad_clip_norm": 1.0,
+       "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+       "learning_rate": 0.003,
+       "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds (round-2 output computed only where the loss reads it)",
+       "optimizer": "AdamW",
+       "schedule": "linear warmup then cosine decay to 0.05 of peak",
+       "warmup_steps": 200,
+       "weight_decay": 0.01,
+       "width_d": 64
+      },
+      "seed": 2,
+      "state_peak_words": 58754,
+      "wrong_control_accuracy": 0.0675
+     }
+    ]
+   },
+   "evidence": "recall at K=4 from m=3000 examples: seed 0 accuracy 1.0000 (control 0.0415), seed 1 accuracy 1.0000 (control 0.0360), seed 2 accuracy 1.0000 (control 0.0445); threshold 0.99; recipe {\"batch_size\": 64, \"betas\": [0.9, 0.98], \"dtype\": \"float32\", \"epochs\": 200, \"eps\": 1e-08, \"grad_clip_norm\": 1.0, \"initialization\": \"Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)\", \"learning_rate\": 0.003, \"loss\": \"next-symbol cross-entropy at the query positions, back-propagated through both rounds (round-2 output computed only where the loss reads it)\", \"optimizer\": \"AdamW\", \"schedule\": \"linear warmup then cosine decay to 0.05 of peak\", \"warmup_steps\": 200, \"weight_decay\": 0.01, \"width_d\": 64} applied to the true data and both controls; observed on the listed sizes: recall K=4 m=3000 seed=0, recall K=4 m=3000 seed=1, recall K=4 m=3000 seed=2",
+   "form": "learnability",
+   "statement_id": "O11.a",
+   "status": "discharged",
+   "text": "RECIPE = {\n    'width_d': 64,\n    'initialization': 'Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)',\n    'optimizer': 'AdamW',\n    'learning_rate': 0.003,\n    'betas': [0.9, 0.98],\n    'eps': 1e-08,\n    'weight_decay': 0.01,\n    'warmup_steps': 200,\n    'schedule': 'linear warmup then cosine decay to 0.05 of peak',\n    'grad_clip_norm': 1.0,\n    'epochs': 200,\n    'batch_size': 64,\n    'loss': 'next-symbol cross-entropy at the query positions, back-propagated through both rounds (round-2 output computed only where the loss reads it)',\n    'dtype': 'float32'\n}\n\n\ndef make_params(V, L, d, rng):\n    s = 1.0 / np.sqrt(d)\n    p = {}\n    p['E'] = (rng.standard_normal((V, d)) * 0.7).astype(np.float32)\n    p['P'] = (rng.standard_normal((L, d)) * 0.7).astype(np.float32)\n    for l in ['1', '2']:\n        p['Wa' + l] = (rng.standard_normal((d, d)) * s).astype(np.float32)\n        p['Wc' + l] = (rng.standard_normal((d, d)) * s).astype(np.float32)\n        p['Wp' + l] = (rng.standard_normal((d, d)) * s).astype(np.float32)\n        p['Wo' + l] = (rng.standard_normal((d, d)) * (0.5 * s)).astype(np.float32)\n        p['V' + l] = (rng.standard_normal((d, d)) * s).astype(np.float32)\n        p['U' + l] = (rng.standard_normal((d, d)) * (0.5 * s)).astype(np.float32)\n    p['O'] = (rng.standard_normal((d, V)) * s).astype(np.float32)\n    return p\n\n\ndef mm(x, w):\n    sh = x.shape\n    return (x.reshape(-1, sh[-1]) @ w).reshape(sh[:-1] + (w.shape[1],))\n\n\ndef gw(x, g):\n    return x.reshape(-1, x.shape[-1]).T @ g.reshape(-1, g.shape[-1])\n\n\ndef grads(p, X, Y, qs, mask1, mask2, d, V):\n    Bn, L = X.shape\n    sc = np.float32(1.0 / np.sqrt(d))\n    h0 = p['E'][X] + p['P'][:L][None]\n    A1 = mm(h0, p['Wa1'])\n    C1 = mm(h0, p['Wc1'])\n    P1 = mm(h0, p['Wp1'])\n    S1 = (P1 @ A1.transpose(0, 2, 1)) * sc + mask1\n    S1 = S1 - S1.max(-1, keepdims=True)\n    W1 = np.exp(S1)\n    W1 = W1 / W1.sum(-1, keepdims=True)\n    R1 = W1 @ C1\n    G1 = h0 + mm(R1, p['Wo1'])\n    Z1 = mm(G1, p['V1'])\n    M1 = np.maximum(Z1, 0)\n    h1 = G1 + mm(M1, p['U1'])\n    A2 = mm(h1, p['Wa2'])\n    C2 = mm(h1, p['Wc2'])\n    hq = h1[:, qs]\n    P2 = mm(hq, p['Wp2'])\n    S2 = (P2 @ A2.transpose(0, 2, 1)) * sc + mask2\n    S2 = S2 - S2.max(-1, keepdims=True)\n    W2 = np.exp(S2)\n    W2 = W2 / W2.sum(-1, keepdims=True)\n    R2 = W2 @ C2\n    G2 = hq + mm(R2, p['Wo2'])\n    Z2 = mm(G2, p['V2'])\n    M2 = np.maximum(Z2, 0)\n    h2 = G2 + mm(M2, p['U2'])\n    lg = mm(h2, p['O'])\n    lg = lg - lg.max(-1, keepdims=True)\n    pr = np.exp(lg)\n    pr = pr / pr.sum(-1, keepdims=True)\n    valid = (Y >= 0)\n    nv = max(1, int(valid.sum()))\n    Yc = np.where(valid, Y, 0)\n    oh = (Yc[..., None] == np.arange(V)[None, None, :]).astype(np.float32)\n    dlog = (pr - oh) * (valid[..., None].astype(np.float32) / np.float32(nv))\n    g = {}\n    g['O'] = gw(h2, dlog)\n    dh2 = mm(dlog, p['O'].T)\n    g['U2'] = gw(M2, dh2)\n    dZ2 = mm(dh2, p['U2'].T) * (Z2 > 0)\n    g['V2'] = gw(G2, dZ2)\n    dG2 = dh2 + mm(dZ2, p['V2'].T)\n    g['Wo2'] = gw(R2, dG2)\n    dR2 = mm(dG2, p['Wo2'].T)\n    dhq = dG2\n    dW2 = dR2 @ C2.transpose(0, 2, 1)\n    dC2 = W2.transpose(0, 2, 1) @ dR2\n    dS2 = W2 * (dW2 - (dW2 * W2).sum(-1, keepdims=True)) * sc\n    dP2 = dS2 @ A2\n    dA2 = dS2.transpose(0, 2, 1) @ P2\n    g['Wp2'] = gw(hq, dP2)\n    dhq = dhq + mm(dP2, p['Wp2'].T)\n    g['Wa2'] = gw(h1, dA2)\n    g['Wc2'] = gw(h1, dC2)\n    dh1 = mm(dA2, p['Wa2'].T) + mm(dC2, p['Wc2'].T)\n    dh1[:, qs] += dhq\n    g['U1'] = gw(M1, dh1)\n    dZ1 = mm(dh1, p['U1'].T) * (Z1 > 0)\n    g['V1'] = gw(G1, dZ1)\n    dG1 = dh1 + mm(dZ1, p['V1'].T)\n    g['Wo1'] = gw(R1, dG1)\n    dR1 = mm(dG1, p['Wo1'].T)\n    dW1 = dR1 @ C1.transpose(0, 2, 1)\n    dC1 = W1.transpose(0, 2, 1) @ dR1\n    dS1 = W1 * (dW1 - (dW1 * W1).sum(-1, keepdims=True)) * sc\n    dP1 = dS1 @ A1\n    dA1 = dS1.transpose(0, 2, 1) @ P1\n    g['Wp1'] = gw(h0, dP1)\n    g['Wa1'] = gw(h0, dA1)\n    g['Wc1'] = gw(h0, dC1)\n    dh0 = dG1 + mm(dP1, p['Wp1'].T) + mm(dA1, p['Wa1'].T) + mm(dC1, p['Wc1'].T)\n    ohx = (X.reshape(-1)[:, None] == np.arange(V)[None, :]).astype(np.float32)\n    g['E'] = ohx.T @ dh0.reshape(-1, d)\n    gP = np.zeros_like(p['P'])\n    gP[:L] = dh0.sum(0)\n    g['P'] = gP\n    return g\n\n\ndef learn(layout, examples, seed):\n    V = int(layout['vocab'])\n    d = int(RECIPE['width_d'])\n    rng = np.random.default_rng(seed)\n    n = len(examples)\n    lens = [len(ex['tokens']) for ex in examples]\n    Lp = max(lens + [5 * int(layout.get('size', 0)) + 3]) + 8\n    p = make_params(V, Lp, d, rng)\n    if n == 0:\n        return p\n    L = max(lens)\n    X = np.zeros((n, L), dtype=np.int64)\n    qd = {}\n    for i in range(n):\n        tk = examples[i]['tokens']\n        X[i, :len(tk)] = np.array(tk, dtype=np.int64)\n        for q in examples[i]['queries']:\n            qd[int(q[0])] = 1\n    keys = sorted(qd.keys())\n    if len(keys) == 0:\n        return p\n    qs = np.array(keys, dtype=np.int64)\n    K = len(keys)\n    kidx = {}\n    for k in range(K):\n        kidx[keys[k]] = k\n    Y = -np.ones((n, K), dtype=np.int64)\n    for i in range(n):\n        for q in examples[i]['queries']:\n            a = int(q[1])\n            if a >= 0 and a < V:\n                Y[i, kidx[int(q[0])]] = a\n    mask1 = np.triu(np.ones((L, L), dtype=np.float32), 1) * np.float32(-1e9)\n    mask2 = (np.arange(L)[None, :] > qs[:, None]).astype(np.float32) * np.float32(-1e9)\n    names = list(p.keys())\n    m1 = {}\n    m2 = {}\n    for k in names:\n        m1[k] = np.zeros_like(p[k])\n        m2[k] = np.zeros_like(p[k])\n    B = int(RECIPE['batch_size'])\n    E = int(RECIPE['epochs'])\n    peak = float(RECIPE['learning_rate'])\n    beta1 = float(RECIPE['betas'][0])\n    beta2 = float(RECIPE['betas'][1])\n    eps = float(RECIPE['eps'])\n    wd = float(RECIPE['weight_decay'])\n    warm = float(RECIPE['warmup_steps'])\n    clip = float(RECIPE['grad_clip_norm'])\n    spe = (n + B - 1) // B\n    total = float(E * spe)\n    step = 0\n    for ep in range(E):\n        perm = rng.permutation(n)\n        for b0 in range(0, n, B):\n            idx = perm[b0:b0 + B]\n            g = grads(p, X[idx], Y[idx], qs, mask1, mask2, d, V)\n            step += 1\n            prog = min(1.0, step / total)\n            lr = float(peak * min(1.0, step / warm) * (0.05 + 0.95 * 0.5 * (1.0 + float(np.cos(np.pi * prog)))))\n            gn = float(np.sqrt(sum([float(np.sum(g[k] * g[k])) for k in names])))\n            cf = float(min(1.0, clip / (gn + 1e-6)))\n            b1c = float(1.0 - beta1 ** step)\n            b2c = float(1.0 - beta2 ** step)\n            for k in names:\n                gk = g[k] * np.float32(cf)\n                m1[k] = beta1 * m1[k] + (1.0 - beta1) * gk\n                m2[k] = beta2 * m2[k] + (1.0 - beta2) * (gk * gk)\n                upd = (m1[k] / b1c) / (np.sqrt(m2[k] / b2c) + eps)\n                p[k] = (p[k] * np.float32(1.0 - lr * wd) - np.float32(lr) * upd).astype(np.float32)\n    return p\n\n\ndef init(layout, params):\n    d = params['E'].shape[1]\n    return {'p': params, 'd': d, 't': 0, 'A1': [], 'C1': [], 'A2': [], 'C2': [], 'h': None}\n\n\ndef update(state, token):\n    p = state['p']\n    d = state['d']\n    t = state['t']\n    prow = p['P'][min(t, p['P'].shape[0] - 1)]\n    h = p['E'][int(token)] + prow\n    sc = 1.0 / np.sqrt(d)\n    for l in ['1', '2']:\n        a = h @ p['Wa' + l]\n        c = h @ p['Wc' + l]\n        q = h @ p['Wp' + l]\n        state['A' + l].append(a)\n        state['C' + l].append(c)\n        A = np.array(state['A' + l])\n        C = np.array(state['C' + l])\n        s = (A @ q) * sc\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ C\n        gv = h + r @ p['Wo' + l]\n        h = gv + np.maximum(gv @ p['V' + l], 0) @ p['U' + l]\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\n\ndef predict(state):\n    lg = state['h'] @ state['p']['O']\n    return int(np.argmax(lg))\n",
+   "tier": "executed"
+  },
+  "O12.a": {
+   "artifact": "recorded-O12.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "recipe": {
+     "batch_size": 64,
+     "beta1": 0.9,
+     "beta2": 0.98,
+     "d": 64,
+     "epochs": 300,
+     "eps": 1e-08,
+     "grad_clip": 1.0,
+     "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+     "loss": "next-symbol cross-entropy at query positions, through both rounds",
+     "lr": 0.003,
+     "optimizer": "adam",
+     "schedule": "linear warmup then cosine decay to 0.1*lr",
+     "warmup_steps": 200
+    },
+    "results": [
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 300,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 0,
+      "state_peak_words": 52545,
+      "wrong_control_accuracy": 0.0
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 300,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 1,
+      "state_peak_words": 52545,
+      "wrong_control_accuracy": 0.0
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.052,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 300,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 2,
+      "state_peak_words": 52545,
+      "wrong_control_accuracy": 0.0
+     }
+    ]
+   },
+   "evidence": "dyck at depth=2 from m=1500 examples: seed 0 accuracy 1.0000 (control 0.0000), seed 1 accuracy 1.0000 (control 0.0000), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"batch_size\": 64, \"beta1\": 0.9, \"beta2\": 0.98, \"d\": 64, \"epochs\": 300, \"eps\": 1e-08, \"grad_clip\": 1.0, \"init\": \"normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)\", \"loss\": \"next-symbol cross-entropy at query positions, through both rounds\", \"lr\": 0.003, \"optimizer\": \"adam\", \"schedule\": \"linear warmup then cosine decay to 0.1*lr\", \"warmup_steps\": 200} applied to the true data and both controls; observed on the listed sizes: dyck depth=2 m=1500 seed=0, dyck depth=2 m=1500 seed=1, dyck depth=2 m=1500 seed=2",
+   "form": "learnability",
+   "statement_id": "O12.a",
+   "status": "discharged",
+   "text": "RECIPE = {\"d\": 64, \"init\": \"normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)\", \"optimizer\": \"adam\", \"lr\": 0.003, \"beta1\": 0.9, \"beta2\": 0.98, \"eps\": 1e-08, \"warmup_steps\": 200, \"schedule\": \"linear warmup then cosine decay to 0.1*lr\", \"epochs\": 300, \"batch_size\": 64, \"grad_clip\": 1.0, \"loss\": \"next-symbol cross-entropy at query positions, through both rounds\"}\n\nRK = [[\"Wa1\", \"Wc1\", \"Wp1\", \"Wo1\", \"V1\", \"U1\"], [\"Wa2\", \"Wc2\", \"Wp2\", \"Wo2\", \"V2\", \"U2\"]]\n\ndef make_params(vocab, T, d, rng):\n    s = 1.0 / np.sqrt(d)\n    p = {\"E\": rng.normal(0.0, 1.0, (vocab, d)), \"P\": rng.normal(0.0, 1.0, (T, d)), \"O\": rng.normal(0.0, s, (d, vocab))}\n    for keys in RK:\n        p[keys[0]] = rng.normal(0.0, s, (d, d))\n        p[keys[1]] = rng.normal(0.0, s, (d, d))\n        p[keys[2]] = rng.normal(0.0, s, (d, d))\n        p[keys[3]] = rng.normal(0.0, s, (d, d))\n        p[keys[4]] = rng.normal(0.0, np.sqrt(2.0 / d), (d, d))\n        p[keys[5]] = rng.normal(0.0, 0.5 * s, (d, d))\n    return p\n\ndef round_fwd(h, W, mask, scale):\n    B, T, d = h.shape\n    hf = h.reshape(B * T, d)\n    a = (hf @ W[0]).reshape(B, T, d)\n    c = (hf @ W[1]).reshape(B, T, d)\n    q = (hf @ W[2]).reshape(B, T, d)\n    S = np.matmul(q, a.transpose(0, 2, 1)) * scale + mask[:T, :T]\n    S = S - S.max(-1, keepdims=True)\n    Ex = np.exp(S)\n    Wt = Ex / Ex.sum(-1, keepdims=True)\n    r = np.matmul(Wt, c)\n    rf = r.reshape(B * T, d)\n    g = hf + rf @ W[3]\n    z = g @ W[4]\n    m = np.maximum(z, 0.0)\n    out = g + m @ W[5]\n    return out.reshape(B, T, d), [hf, a, c, q, Wt, rf, g, z, m]\n\ndef round_bwd(dout, W, cache, scale):\n    hf, a, c, q, Wt, rf, g, z, m = cache\n    B, T, d = a.shape\n    do = dout.reshape(B * T, d)\n    dU = m.T @ do\n    dz = (do @ W[5].T) * (z > 0)\n    dV = g.T @ dz\n    dg = do + dz @ W[4].T\n    dWo = rf.T @ dg\n    dr = (dg @ W[3].T).reshape(B, T, d)\n    dWt = np.matmul(dr, c.transpose(0, 2, 1))\n    dc = np.matmul(Wt.transpose(0, 2, 1), dr)\n    dS = Wt * (dWt - (dWt * Wt).sum(-1, keepdims=True)) * scale\n    dq = np.matmul(dS, a).reshape(B * T, d)\n    da = np.matmul(dS.transpose(0, 2, 1), q).reshape(B * T, d)\n    dcf = dc.reshape(B * T, d)\n    dWa = hf.T @ da\n    dWc = hf.T @ dcf\n    dWp = hf.T @ dq\n    dh = dg + da @ W[0].T + dcf @ W[1].T + dq @ W[2].T\n    return dh.reshape(B, T, d), [dWa, dWc, dWp, dWo, dV, dU]\n\ndef learn(layout, examples, seed):\n    rng = np.random.default_rng(1000 + seed)\n    d = int(RECIPE[\"d\"])\n    vocab = int(layout[\"vocab\"])\n    n = len(examples)\n    Tdata = 1\n    for ex in examples:\n        Tdata = max(Tdata, len(ex[\"tokens\"]))\n    Tpos = max(Tdata, 4 * int(layout[\"size\"]) + 4)\n    params = make_params(vocab, Tpos, d, rng)\n    if n == 0:\n        return params\n    X = np.zeros((n, Tdata), dtype=np.int64)\n    Y = np.zeros((n, Tdata), dtype=np.int64)\n    M = np.zeros((n, Tdata))\n    Ln = np.zeros(n, dtype=np.int64)\n    for i, ex in enumerate(examples):\n        tk = ex[\"tokens\"]\n        Ln[i] = len(tk)\n        X[i, :len(tk)] = np.array(tk, dtype=np.int64)\n        for qa in ex[\"queries\"]:\n            Y[i, int(qa[0])] = int(qa[1])\n            M[i, int(qa[0])] = 1.0\n    scale = 1.0 / np.sqrt(d)\n    mask = np.triu(np.full((Tpos, Tpos), -1e9), 1)\n    eye = np.eye(vocab)\n    bs = int(RECIPE[\"batch_size\"])\n    spe = (n + bs - 1) // bs\n    total = int(RECIPE[\"epochs\"]) * spe\n    lr0 = float(RECIPE[\"lr\"])\n    b1 = float(RECIPE[\"beta1\"])\n    b2 = float(RECIPE[\"beta2\"])\n    eps = float(RECIPE[\"eps\"])\n    warm = float(RECIPE[\"warmup_steps\"])\n    clip = float(RECIPE[\"grad_clip\"])\n    names = list(params.keys())\n    mom = {}\n    vel = {}\n    for k in names:\n        mom[k] = np.zeros_like(params[k])\n        vel[k] = np.zeros_like(params[k])\n    step = 0\n    for ep in range(int(RECIPE[\"epochs\"])):\n        perm = rng.permutation(n)\n        for b in range(spe):\n            idx = perm[b * bs:(b + 1) * bs]\n            Tb = int(Ln[idx].max())\n            Xb = X[idx, :Tb]\n            Yb = Y[idx, :Tb]\n            Mb = M[idx, :Tb]\n            B = Xb.shape[0]\n            h0 = params[\"E\"][Xb] + params[\"P\"][:Tb][None, :, :]\n            W1 = [params[k] for k in RK[0]]\n            W2 = [params[k] for k in RK[1]]\n            h1, c1 = round_fwd(h0, W1, mask, scale)\n            h2, c2 = round_fwd(h1, W2, mask, scale)\n            h2f = h2.reshape(B * Tb, d)\n            logits = h2f @ params[\"O\"]\n            logits = logits - logits.max(-1, keepdims=True)\n            pr = np.exp(logits)\n            pr = pr / pr.sum(-1, keepdims=True)\n            Mf = Mb.reshape(-1)\n            Nq = max(Mf.sum(), 1.0)\n            dlog = (pr - eye[Yb.reshape(-1)]) * (Mf[:, None] / Nq)\n            grads = {}\n            grads[\"O\"] = h2f.T @ dlog\n            dh2 = (dlog @ params[\"O\"].T).reshape(B, Tb, d)\n            dh1, g2 = round_bwd(dh2, W2, c2, scale)\n            dh0, g1 = round_bwd(dh1, W1, c1, scale)\n            for j in range(6):\n                grads[RK[0][j]] = g1[j]\n                grads[RK[1][j]] = g2[j]\n            dh0f = dh0.reshape(B * Tb, d)\n            grads[\"E\"] = eye[Xb.reshape(-1)].T @ dh0f\n            dP = np.zeros_like(params[\"P\"])\n            dP[:Tb] = dh0.sum(0)\n            grads[\"P\"] = dP\n            gn = 0.0\n            for k in names:\n                gn = gn + float((grads[k] * grads[k]).sum())\n            gn = np.sqrt(gn)\n            fac = min(1.0, clip / (gn + 1e-6))\n            step += 1\n            lr = lr0 * min(1.0, step / warm) * (0.1 + 0.9 * 0.5 * (1.0 + np.cos(np.pi * step / total)))\n            bc1 = 1.0 - b1 ** step\n            bc2 = 1.0 - b2 ** step\n            for k in names:\n                gk = grads[k] * fac\n                mom[k] = b1 * mom[k] + (1.0 - b1) * gk\n                vel[k] = b2 * vel[k] + (1.0 - b2) * gk * gk\n                params[k] = params[k] - lr * (mom[k] / bc1) / (np.sqrt(vel[k] / bc2) + eps)\n    return params\n\ndef init(layout, params):\n    return {\"p\": params, \"t\": 0, \"A\": [[], []], \"C\": [[], []], \"h\": None}\n\ndef update(state, token):\n    p = state[\"p\"]\n    d = p[\"E\"].shape[1]\n    scale = 1.0 / np.sqrt(d)\n    t = min(state[\"t\"], p[\"P\"].shape[0] - 1)\n    h = p[\"E\"][int(token)] + p[\"P\"][t]\n    for l in range(2):\n        W = [p[k] for k in RK[l]]\n        a = h @ W[0]\n        c = h @ W[1]\n        q = h @ W[2]\n        state[\"A\"][l].append(a)\n        state[\"C\"][l].append(c)\n        A = np.array(state[\"A\"][l])\n        C = np.array(state[\"C\"][l])\n        s = (A @ q) * scale\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ C\n        g = h + r @ W[3]\n        h = g + np.maximum(g @ W[4], 0.0) @ W[5]\n    state[\"h\"] = h\n    state[\"t\"] = state[\"t\"] + 1\n    return state\n\ndef predict(state):\n    return int(np.argmax(state[\"h\"] @ state[\"p\"][\"O\"]))\n",
+   "tier": "executed"
+  },
+  "O13.a": {
+   "artifact": "recorded-O13.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "recipe": {
+     "batch_size": 200,
+     "betas": [
+      0.9,
+      0.98
+     ],
+     "dtype": "float32",
+     "epochs": 280,
+     "eps": 1e-08,
+     "grad_clip_norm": 1.0,
+     "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+     "learning_rate": 0.002,
+     "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds",
+     "optimizer": "AdamW",
+     "schedule": "linear warmup then cosine decay to 0.05 of peak",
+     "warmup_steps": 300,
+     "weight_decay": 0.05,
+     "width_d": 64
+    },
+    "results": [
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0505,
+      "empty_control_accuracy": 0.0505,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 200,
+       "betas": [
+        0.9,
+        0.98
+       ],
+       "dtype": "float32",
+       "epochs": 280,
+       "eps": 1e-08,
+       "grad_clip_norm": 1.0,
+       "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+       "learning_rate": 0.002,
+       "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds",
+       "optimizer": "AdamW",
+       "schedule": "linear warmup then cosine decay to 0.05 of peak",
+       "warmup_steps": 300,
+       "weight_decay": 0.05,
+       "width_d": 64
+      },
+      "seed": 0,
+      "state_peak_words": 59010,
+      "wrong_control_accuracy": 0.2355
+     },
+     {
+      "accuracy": 0.9965,
+      "control_accuracy": 0.144,
+      "empty_control_accuracy": 0.144,
+      "first_error": {
+       "expected": 9,
+       "instance": 93,
+       "position": 19,
+       "predicted": 10,
+       "tokens": [
+        12,
+        1,
+        4,
+        0,
+        5,
+        3,
+        4,
+        2,
+        5,
+        13,
+        7,
+        9,
+        5,
+        9,
+        4,
+        10,
+        6,
+        9,
+        14,
+        2,
+        3,
+        1,
+        0
+       ],
+       "tokens_total": 23
+      },
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 200,
+       "betas": [
+        0.9,
+        0.98
+       ],
+       "dtype": "float32",
+       "epochs": 280,
+       "eps": 1e-08,
+       "grad_clip_norm": 1.0,
+       "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+       "learning_rate": 0.002,
+       "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds",
+       "optimizer": "AdamW",
+       "schedule": "linear warmup then cosine decay to 0.05 of peak",
+       "warmup_steps": 300,
+       "weight_decay": 0.05,
+       "width_d": 64
+      },
+      "seed": 1,
+      "state_peak_words": 59010,
+      "wrong_control_accuracy": 0.2615
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0695,
+      "empty_control_accuracy": 0.0695,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 200,
+       "betas": [
+        0.9,
+        0.98
+       ],
+       "dtype": "float32",
+       "epochs": 280,
+       "eps": 1e-08,
+       "grad_clip_norm": 1.0,
+       "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+       "learning_rate": 0.002,
+       "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds",
+       "optimizer": "AdamW",
+       "schedule": "linear warmup then cosine decay to 0.05 of peak",
+       "warmup_steps": 300,
+       "weight_decay": 0.05,
+       "width_d": 64
+      },
+      "seed": 2,
+      "state_peak_words": 59010,
+      "wrong_control_accuracy": 0.247
+     }
+    ]
+   },
+   "evidence": "composition at T=4 from m=4000 examples: seed 0 accuracy 1.0000 (control 0.0505), seed 1 accuracy 0.9965 (control 0.1440), seed 2 accuracy 1.0000 (control 0.0695); threshold 0.99; recipe {\"batch_size\": 200, \"betas\": [0.9, 0.98], \"dtype\": \"float32\", \"epochs\": 280, \"eps\": 1e-08, \"grad_clip_norm\": 1.0, \"initialization\": \"Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)\", \"learning_rate\": 0.002, \"loss\": \"next-symbol cross-entropy at the query positions, back-propagated through both rounds\", \"optimizer\": \"AdamW\", \"schedule\": \"linear warmup then cosine decay to 0.05 of peak\", \"warmup_steps\": 300, \"weight_decay\": 0.05, \"width_d\": 64} applied to the true data and both controls; observed on the listed sizes: composition T=4 m=4000 seed=0, composition T=4 m=4000 seed=1, composition T=4 m=4000 seed=2",
+   "form": "learnability",
+   "statement_id": "O13.a",
+   "status": "discharged",
+   "text": "RECIPE = {\n    'width_d': 64,\n    'initialization': 'Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)',\n    'optimizer': 'AdamW',\n    'learning_rate': 0.002,\n    'betas': [0.9, 0.98],\n    'eps': 1e-08,\n    'weight_decay': 0.05,\n    'warmup_steps': 300,\n    'schedule': 'linear warmup then cosine decay to 0.05 of peak',\n    'grad_clip_norm': 1.0,\n    'epochs': 280,\n    'batch_size': 200,\n    'loss': 'next-symbol cross-entropy at the query positions, back-propagated through both rounds',\n    'dtype': 'float32'\n}\n\n\ndef make_params(V, L, d, rng):\n    s = 1.0 / np.sqrt(d)\n    p = {}\n    p['E'] = (rng.standard_normal((V, d)) * 0.7).astype(np.float32)\n    p['P'] = (rng.standard_normal((L, d)) * 0.7).astype(np.float32)\n    for l in ['1', '2']:\n        p['Wa' + l] = (rng.standard_normal((d, d)) * s).astype(np.float32)\n        p['Wc' + l] = (rng.standard_normal((d, d)) * s).astype(np.float32)\n        p['Wp' + l] = (rng.standard_normal((d, d)) * s).astype(np.float32)\n        p['Wo' + l] = (rng.standard_normal((d, d)) * (0.5 * s)).astype(np.float32)\n        p['V' + l] = (rng.standard_normal((d, d)) * s).astype(np.float32)\n        p['U' + l] = (rng.standard_normal((d, d)) * (0.5 * s)).astype(np.float32)\n    p['O'] = (rng.standard_normal((d, V)) * s).astype(np.float32)\n    return p\n\n\ndef mm(x, w):\n    sh = x.shape\n    return (x.reshape(-1, sh[-1]) @ w).reshape(sh[:-1] + (w.shape[1],))\n\n\ndef gw(x, g):\n    return x.reshape(-1, x.shape[-1]).T @ g.reshape(-1, g.shape[-1])\n\n\ndef grads(p, X, Y, qs, mask1, mask2, d, V):\n    Bn, L = X.shape\n    sc = np.float32(1.0 / np.sqrt(d))\n    h0 = p['E'][X] + p['P'][:L][None]\n    A1 = mm(h0, p['Wa1'])\n    C1 = mm(h0, p['Wc1'])\n    P1 = mm(h0, p['Wp1'])\n    S1 = (P1 @ A1.transpose(0, 2, 1)) * sc + mask1\n    S1 = S1 - S1.max(-1, keepdims=True)\n    W1 = np.exp(S1)\n    W1 = W1 / W1.sum(-1, keepdims=True)\n    R1 = W1 @ C1\n    G1 = h0 + mm(R1, p['Wo1'])\n    Z1 = mm(G1, p['V1'])\n    M1 = np.maximum(Z1, 0)\n    h1 = G1 + mm(M1, p['U1'])\n    A2 = mm(h1, p['Wa2'])\n    C2 = mm(h1, p['Wc2'])\n    hq = h1[:, qs]\n    P2 = mm(hq, p['Wp2'])\n    S2 = (P2 @ A2.transpose(0, 2, 1)) * sc + mask2\n    S2 = S2 - S2.max(-1, keepdims=True)\n    W2 = np.exp(S2)\n    W2 = W2 / W2.sum(-1, keepdims=True)\n    R2 = W2 @ C2\n    G2 = hq + mm(R2, p['Wo2'])\n    Z2 = mm(G2, p['V2'])\n    M2 = np.maximum(Z2, 0)\n    h2 = G2 + mm(M2, p['U2'])\n    lg = mm(h2, p['O'])\n    lg = lg - lg.max(-1, keepdims=True)\n    pr = np.exp(lg)\n    pr = pr / pr.sum(-1, keepdims=True)\n    valid = (Y >= 0)\n    nv = max(1, int(valid.sum()))\n    Yc = np.where(valid, Y, 0)\n    oh = (Yc[..., None] == np.arange(V)[None, None, :]).astype(np.float32)\n    dlog = (pr - oh) * (valid[..., None].astype(np.float32) / np.float32(nv))\n    g = {}\n    g['O'] = gw(h2, dlog)\n    dh2 = mm(dlog, p['O'].T)\n    g['U2'] = gw(M2, dh2)\n    dZ2 = mm(dh2, p['U2'].T) * (Z2 > 0)\n    g['V2'] = gw(G2, dZ2)\n    dG2 = dh2 + mm(dZ2, p['V2'].T)\n    g['Wo2'] = gw(R2, dG2)\n    dR2 = mm(dG2, p['Wo2'].T)\n    dhq = dG2\n    dW2 = dR2 @ C2.transpose(0, 2, 1)\n    dC2 = W2.transpose(0, 2, 1) @ dR2\n    dS2 = W2 * (dW2 - (dW2 * W2).sum(-1, keepdims=True)) * sc\n    dP2 = dS2 @ A2\n    dA2 = dS2.transpose(0, 2, 1) @ P2\n    g['Wp2'] = gw(hq, dP2)\n    dhq = dhq + mm(dP2, p['Wp2'].T)\n    g['Wa2'] = gw(h1, dA2)\n    g['Wc2'] = gw(h1, dC2)\n    dh1 = mm(dA2, p['Wa2'].T) + mm(dC2, p['Wc2'].T)\n    dh1[:, qs] += dhq\n    g['U1'] = gw(M1, dh1)\n    dZ1 = mm(dh1, p['U1'].T) * (Z1 > 0)\n    g['V1'] = gw(G1, dZ1)\n    dG1 = dh1 + mm(dZ1, p['V1'].T)\n    g['Wo1'] = gw(R1, dG1)\n    dR1 = mm(dG1, p['Wo1'].T)\n    dW1 = dR1 @ C1.transpose(0, 2, 1)\n    dC1 = W1.transpose(0, 2, 1) @ dR1\n    dS1 = W1 * (dW1 - (dW1 * W1).sum(-1, keepdims=True)) * sc\n    dP1 = dS1 @ A1\n    dA1 = dS1.transpose(0, 2, 1) @ P1\n    g['Wp1'] = gw(h0, dP1)\n    g['Wa1'] = gw(h0, dA1)\n    g['Wc1'] = gw(h0, dC1)\n    dh0 = dG1 + mm(dP1, p['Wp1'].T) + mm(dA1, p['Wa1'].T) + mm(dC1, p['Wc1'].T)\n    ohx = (X.reshape(-1)[:, None] == np.arange(V)[None, :]).astype(np.float32)\n    g['E'] = ohx.T @ dh0.reshape(-1, d)\n    gP = np.zeros_like(p['P'])\n    gP[:L] = dh0.sum(0)\n    g['P'] = gP\n    return g\n\n\ndef learn(layout, examples, seed):\n    V = int(layout['vocab'])\n    d = int(RECIPE['width_d'])\n    rng = np.random.default_rng(seed)\n    n = len(examples)\n    lens = [len(ex['tokens']) for ex in examples]\n    Lp = max(lens + [5 * int(layout.get('size', 0)) + 3]) + 8\n    p = make_params(V, Lp, d, rng)\n    if n == 0:\n        return p\n    L = max(lens)\n    X = np.zeros((n, L), dtype=np.int64)\n    qd = {}\n    for i in range(n):\n        tk = examples[i]['tokens']\n        X[i, :len(tk)] = np.array(tk, dtype=np.int64)\n        for q in examples[i]['queries']:\n            qd[int(q[0])] = 1\n    keys = sorted(qd.keys())\n    if len(keys) == 0:\n        return p\n    qs = np.array(keys, dtype=np.int64)\n    K = len(keys)\n    kidx = {}\n    for k in range(K):\n        kidx[keys[k]] = k\n    Y = -np.ones((n, K), dtype=np.int64)\n    for i in range(n):\n        for q in examples[i]['queries']:\n            a = int(q[1])\n            if a >= 0 and a < V:\n                Y[i, kidx[int(q[0])]] = a\n    mask1 = np.triu(np.ones((L, L), dtype=np.float32), 1) * np.float32(-1e9)\n    mask2 = (np.arange(L)[None, :] > qs[:, None]).astype(np.float32) * np.float32(-1e9)\n    names = list(p.keys())\n    m1 = {}\n    m2 = {}\n    for k in names:\n        m1[k] = np.zeros_like(p[k])\n        m2[k] = np.zeros_like(p[k])\n    B = int(RECIPE['batch_size'])\n    E = int(RECIPE['epochs'])\n    peak = float(RECIPE['learning_rate'])\n    beta1 = float(RECIPE['betas'][0])\n    beta2 = float(RECIPE['betas'][1])\n    eps = float(RECIPE['eps'])\n    wd = float(RECIPE['weight_decay'])\n    warm = float(RECIPE['warmup_steps'])\n    clip = float(RECIPE['grad_clip_norm'])\n    spe = (n + B - 1) // B\n    total = float(E * spe)\n    step = 0\n    for ep in range(E):\n        perm = rng.permutation(n)\n        for b0 in range(0, n, B):\n            idx = perm[b0:b0 + B]\n            g = grads(p, X[idx], Y[idx], qs, mask1, mask2, d, V)\n            step += 1\n            prog = min(1.0, step / total)\n            lr = float(peak * min(1.0, step / warm) * (0.05 + 0.95 * 0.5 * (1.0 + float(np.cos(np.pi * prog)))))\n            gn = float(np.sqrt(sum([float(np.sum(g[k] * g[k])) for k in names])))\n            cf = float(min(1.0, clip / (gn + 1e-6)))\n            b1c = float(1.0 - beta1 ** step)\n            b2c = float(1.0 - beta2 ** step)\n            for k in names:\n                gk = g[k] * np.float32(cf)\n                m1[k] = beta1 * m1[k] + (1.0 - beta1) * gk\n                m2[k] = beta2 * m2[k] + (1.0 - beta2) * (gk * gk)\n                upd = (m1[k] / b1c) / (np.sqrt(m2[k] / b2c) + eps)\n                p[k] = (p[k] * np.float32(1.0 - lr * wd) - np.float32(lr) * upd).astype(np.float32)\n    return p\n\n\ndef init(layout, params):\n    d = params['E'].shape[1]\n    return {'p': params, 'd': d, 't': 0, 'A1': [], 'C1': [], 'A2': [], 'C2': [], 'h': None}\n\n\ndef update(state, token):\n    p = state['p']\n    d = state['d']\n    t = state['t']\n    prow = p['P'][min(t, p['P'].shape[0] - 1)]\n    h = p['E'][int(token)] + prow\n    sc = 1.0 / np.sqrt(d)\n    for l in ['1', '2']:\n        a = h @ p['Wa' + l]\n        c = h @ p['Wc' + l]\n        q = h @ p['Wp' + l]\n        state['A' + l].append(a)\n        state['C' + l].append(c)\n        A = np.array(state['A' + l])\n        C = np.array(state['C' + l])\n        s = (A @ q) * sc\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ C\n        gv = h + r @ p['Wo' + l]\n        h = gv + np.maximum(gv @ p['V' + l], 0) @ p['U' + l]\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\n\ndef predict(state):\n    lg = state['h'] @ state['p']['O']\n    return int(np.argmax(lg))\n",
+   "tier": "executed"
+  },
+  "O14.a": {
+   "artifact": "recorded-O14.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "checks": [
+     {
+      "bound": {
+       "error_lower_bound": 0.0,
+       "max_accuracy": 1.0
+      },
+      "claim": {
+       "D": 4,
+       "L": 64,
+       "accuracy": 1.0,
+       "state_bits": 4202528
+      },
+      "counterexample": null,
+      "evidence": "claimed accuracy 1.0 is within the bound 1",
+      "law": "copy",
+      "status": "discharged"
+     },
+     {
+      "bound": {
+       "error_lower_bound": 0.0,
+       "max_accuracy": 1.0
+      },
+      "claim": {
+       "accuracy": 1.0,
+       "depth": 16,
+       "state_bits": 14687264
+      },
+      "counterexample": null,
+      "evidence": "claimed accuracy 1.0 is within the bound 1",
+      "law": "dyck",
+      "status": "discharged"
+     },
+     {
+      "bound": {
+       "required_bits": 256.0
+      },
+      "claim": {
+       "K": 64,
+       "V": 16,
+       "accuracy": 1.0,
+       "state_bits": 6332448
+      },
+      "counterexample": null,
+      "evidence": "6332448 bits of state meet the 256 bits recall of K=64 over V=16 needs at accuracy 1.0",
+      "law": "associative_recall",
+      "status": "discharged"
+     },
+     {
+      "bound": {
+       "required_examples": 4
+      },
+      "claim": {
+       "bits_per_example": 2,
+       "error": 0.0,
+       "examples": 3000,
+       "log2_H": 8,
+       "prior_bits": 0
+      },
+      "counterexample": null,
+      "evidence": "3000 examples meet the 4 the hypothesis count requires",
+      "law": "sample",
+      "status": "discharged"
+     },
+     {
+      "bound": {
+       "required_examples": 4
+      },
+      "claim": {
+       "bits_per_example": 2,
+       "error": 0.0,
+       "examples": 3000,
+       "log2_H": 8,
+       "prior_bits": 0
+      },
+      "counterexample": null,
+      "evidence": "3000 examples meet the 4 the hypothesis count requires",
+      "law": "sample",
+      "status": "discharged"
+     },
+     {
+      "bound": {
+       "required_examples": 4
+      },
+      "claim": {
+       "bits_per_example": 2,
+       "error": 0.0,
+       "examples": 1500,
+       "log2_H": 8,
+       "prior_bits": 0
+      },
+      "counterexample": null,
+      "evidence": "1500 examples meet the 4 the hypothesis count requires",
+      "law": "sample",
+      "status": "discharged"
+     },
+     {
+      "bound": {
+       "required_examples": 4
+      },
+      "claim": {
+       "bits_per_example": 2,
+       "error": 0.0,
+       "examples": 4000,
+       "log2_H": 8,
+       "prior_bits": 0
+      },
+      "counterexample": null,
+      "evidence": "4000 examples meet the 4 the hypothesis count requires",
+      "law": "sample",
+      "status": "discharged"
+     }
+    ]
+   },
+   "evidence": "copy: discharged: claimed accuracy 1.0 is within the bound 1; dyck: discharged: claimed accuracy 1.0 is within the bound 1; associative_recall: discharged: 6332448 bits of state meet the 256 bits recall of K=64 over V=16 needs at accuracy 1.0; sample: discharged: 3000 examples meet the 4 the hypothesis count requires; sample: discharged: 3000 examples meet the 4 the hypothesis count requires; sample: discharged: 1500 examples meet the 4 the hypothesis count requires; sample: discharged: 4000 examples meet the 4 the hypothesis count requires",
+   "form": "conservation",
+   "statement_id": "O14.a",
+   "status": "discharged",
+   "text": null,
+   "tier": "executed"
+  },
+  "O15.a": {
+   "artifact": "recorded-O15.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": null,
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms []",
+   "form": "lean",
+   "statement_id": "O15.a",
+   "status": "pass",
+   "text": "theorem claim_holds : Claim := by\n  intro v hv read\n  exact (read (List.replicate v (⟨0, hv⟩ : Fin v))).isLt.ne",
+   "tier": "lean"
+  },
+  "O2.a": {
+   "artifact": "recorded-O2.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": null,
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "form": "lean",
+   "statement_id": "O2.a",
+   "status": "pass",
+   "text": "theorem claim_holds : Claim := by\n  refine ⟨1, 6, by norm_num, by norm_num, ?_⟩\n  intro n d hn hd\n  have hn1 : 1 ≤ n := hn\n  have hd1 : 1 ≤ d := hd\n  have hN : (1:ℝ) ≤ (n:ℝ) := by exact_mod_cast hn1\n  have hD : (1:ℝ) ≤ (d:ℝ) := by exact_mod_cast hd1\n  have b1 : 0 ≤ ((n:ℝ)-1)*(d:ℝ) := mul_nonneg (by linarith) (by linarith)\n  have b2 : 0 ≤ ((n:ℝ)-1)*((d:ℝ)-1) := mul_nonneg (by linarith) (by linarith)\n  have b3 : 0 ≤ (n:ℝ)*(d:ℝ) := mul_nonneg (by linarith) (by linarith)\n  constructor <;> nlinarith [b1, b2, b3]",
+   "tier": "lean"
+  },
+  "O3.a": {
+   "artifact": "recorded-O3.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": null,
+   "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+   "form": "lean",
+   "statement_id": "O3.a",
+   "status": "pass",
+   "text": "theorem claim_holds : Claim := by\n  intro v hv\n  refine ⟨1, 30 + 2*(v:ℝ), by norm_num, by positivity, ?_⟩\n  intro n d hn hd\n  have hn1 : 1 ≤ n := hn\n  have hd1 : 1 ≤ d := hd\n  have hv1 : 1 ≤ v := hv\n  have hN : (1:ℝ) ≤ (n:ℝ) := by exact_mod_cast hn1\n  have hD : (1:ℝ) ≤ (d:ℝ) := by exact_mod_cast hd1\n  have hW : (1:ℝ) ≤ (v:ℝ) := by exact_mod_cast hv1\n  have h0N : (0:ℝ) ≤ (n:ℝ) := by linarith\n  have h0D : (0:ℝ) ≤ (d:ℝ) := by linarith\n  have h0W : (0:ℝ) ≤ (v:ℝ) := by linarith\n  have dd : 0 ≤ (d:ℝ)*((d:ℝ)-1) := mul_nonneg h0D (by linarith)\n  have dd1 : 0 ≤ (d:ℝ)*(d:ℝ)-1 := by nlinarith\n  have b1 : 0 ≤ (n:ℝ)*((d:ℝ)*((d:ℝ)-1)) := mul_nonneg h0N dd\n  have b2 : 0 ≤ (n:ℝ)*((n:ℝ)*((d:ℝ)-1)) := mul_nonneg h0N (mul_nonneg h0N (by linarith))\n  have b3 : 0 ≤ (n:ℝ)*((d:ℝ)*(d:ℝ)-1) := mul_nonneg h0N dd1\n  have b4 : 0 ≤ (v:ℝ)*((n:ℝ)*((d:ℝ)*((d:ℝ)-1))) := mul_nonneg h0W b1\n  have b5 : 0 ≤ (v:ℝ)*((n:ℝ)*((d:ℝ)*(d:ℝ)-1)) := mul_nonneg h0W b3\n  have c1 : 0 ≤ (n:ℝ)*(d:ℝ) := mul_nonneg h0N h0D\n  have c2 : 0 ≤ (n:ℝ)*(n:ℝ) := mul_nonneg h0N h0N\n  have c3 : 0 ≤ (n:ℝ)*((d:ℝ)*(d:ℝ)) := mul_nonneg h0N (mul_nonneg h0D h0D)\n  have c4 : 0 ≤ (n:ℝ)*((n:ℝ)*(d:ℝ)) := mul_nonneg h0N c1\n  have c5 : 0 ≤ (v:ℝ)*((n:ℝ)*(d:ℝ)) := mul_nonneg h0W c1\n  have c6 : 0 ≤ (n:ℝ)*((v:ℝ)-1) := mul_nonneg h0N (by linarith)\n  have c7 : 0 ≤ (v:ℝ)*((n:ℝ)*((n:ℝ)*(d:ℝ))) := mul_nonneg h0W c4\n  have c8 : 0 ≤ (v:ℝ)*((n:ℝ)*((d:ℝ)*(d:ℝ))) := mul_nonneg h0W c3\n  unfold total\n  constructor <;> nlinarith [b1, b2, b3, b4, b5, c1, c2, c3, c4, c5, c6, c7, c8]",
+   "tier": "lean"
+  },
+  "O4.a": {
+   "artifact": "recorded-O4.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "failed_checks": {}
+   },
+   "evidence": "28 points, n in [64, 128, 256, 512, 1024, 2048, 4096], sizes {'V': [4, 16], 'd': [16, 32]}; formula exponent in n 2; slopes in n (measured/formula): 1.8041/1.8041, 1.6923/1.6923, 1.7958/1.7958, 1.6869/1.6869; all checks pass",
+   "form": "cost",
+   "statement_id": "O4.a",
+   "status": "discharged",
+   "text": "def init(sizes, ops):\n    d = int(sizes['d'])\n    V = int(sizes['V'])\n    sc = 0.1\n    params = {'d': d, 'V': V}\n    params['E'] = ops.np.normal((V, d), 1, sc)\n    params['P0'] = ops.np.zeros((d,))\n    params['O'] = ops.np.normal((d, V), 2, sc)\n    rounds = []\n    for l in range(2):\n        base = 10 * (l + 1)\n        rounds.append({\n            'Wa': ops.np.normal((d, d), base + 1, sc),\n            'Wc': ops.np.normal((d, d), base + 2, sc),\n            'Wp': ops.np.normal((d, d), base + 3, sc),\n            'Wo': ops.np.normal((d, d), base + 4, sc),\n            'U': ops.np.normal((d, d), base + 5, sc),\n            'Vf': ops.np.normal((d, d), base + 6, sc),\n        })\n    params['rounds'] = rounds\n    state = {\n        't': 0,\n        'h': ops.np.zeros((d,)),\n        'A0': ops.np.zeros((0, d)),\n        'C0': ops.np.zeros((0, d)),\n        'A1': ops.np.zeros((0, d)),\n        'C1': ops.np.zeros((0, d)),\n    }\n    return params, state\n\n\ndef update(params, state, token, ops):\n    d = params['d']\n    h = ops.np.add(params['E'][int(token)], params['P0'])\n    keys = [('A0', 'C0'), ('A1', 'C1')]\n    new_state = {'t': state['t'] + 1}\n    for l in range(2):\n        R = params['rounds'][l]\n        ka, kc = keys[l]\n        a = R['Wa'] @ h\n        c = R['Wc'] @ h\n        p = R['Wp'] @ h\n        A = ops.np.concatenate([state[ka], a.reshape(1, d)], axis=0)\n        C = ops.np.concatenate([state[kc], c.reshape(1, d)], axis=0)\n        new_state[ka] = A\n        new_state[kc] = C\n        s = ops.np.sqrt(float(d))\n        scores = A @ p\n        scores = ops.np.divide(scores, s)\n        e = ops.np.exp(scores)\n        tot = ops.np.sum(e)\n        w = ops.np.divide(e, tot)\n        r = w @ C\n        g = ops.np.add(h, R['Wo'] @ r)\n        z = ops.np.maximum(R['Vf'] @ g, 0.0)\n        h = ops.np.add(g, R['U'] @ z)\n    new_state['h'] = h\n    return new_state\n\n\ndef predict(params, state, ops):\n    logits = state['h'] @ params['O']\n    return int(ops.np.argmax(logits))\n",
+   "tier": "executed"
+  },
+  "O5.a": {
+   "artifact": "recorded-O5.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 10401.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "instance",
+      "passed": true,
+      "queries": 1600,
+      "query_accuracy": 1.0,
+      "size": 8,
+      "state_peak_words": 10401
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 57569.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "instance",
+      "passed": true,
+      "queries": 6400,
+      "query_accuracy": 1.0,
+      "size": 32,
+      "state_peak_words": 57569
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 131329.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "instance",
+      "passed": true,
+      "queries": 12800,
+      "query_accuracy": 1.0,
+      "size": 64,
+      "state_peak_words": 131329
+     }
+    ]
+   },
+   "evidence": "copy: L=8 instance accuracy 1.0000, L=32 instance accuracy 1.0000, L=64 instance accuracy 1.0000; threshold 0.99; observed on the listed sizes: L=8, L=32, L=64; peak state words within the declared (8*L+1)*32*ceiling(log(2*L+1)/log(2))+1 at every size",
+   "form": "construction",
+   "statement_id": "O5.a",
+   "status": "discharged",
+   "text": "PARAMS = {}\n\ndef make_round(d):\n    z = lambda: np.zeros((d, d), dtype=np.float32)\n    return {'Wa': z(), 'Wc': z(), 'Wp': z(), 'Wo': z(), 'U': z(), 'V': z()}\n\ndef init(layout):\n    L = int(layout['size'])\n    Vv = int(layout['vocab'])\n    N = 2 * L\n    nb = int(np.ceil(np.log(N + 1) / np.log(2)))\n    d = 32 * nb\n    od = 8 + 2 * nb\n    E = np.zeros((Vv, d), dtype=np.float32)\n    for v in range(Vv):\n        E[v, v] = 1.0\n    P = np.zeros((N, d), dtype=np.float32)\n    for t in range(N):\n        for k in range(nb):\n            P[t, 8 + k] = 1.0 if (t >> k) & 1 else -1.0\n        if t >= L:\n            u = t - L\n            for k in range(nb):\n                P[t, 8 + nb + k] = 1.0 if (u >> k) & 1 else -1.0\n    s = np.float32(20.0 * np.sqrt(d))\n    r1 = make_round(d)\n    for k in range(nb):\n        r1['Wa'][8 + k, 8 + k] = s\n        r1['Wp'][8 + k, 8 + nb + k] = 1.0\n    for v in range(Vv):\n        r1['Wc'][od + v, v] = 1.0\n        r1['Wo'][od + v, od + v] = 1.0\n    r2 = make_round(d)\n    O = np.zeros((d, Vv), dtype=np.float32)\n    for v in range(Vv):\n        O[od + v, v] = 1.0\n    PARAMS.clear()\n    PARAMS.update({'E': E, 'P': P, 'rounds': [r1, r2], 'O': O, 'd': d, 'sq': np.float32(np.sqrt(d))})\n    return {'A1': np.zeros((0, d), dtype=np.float32), 'C1': np.zeros((0, d), dtype=np.float32),\n            'A2': np.zeros((0, d), dtype=np.float32), 'C2': np.zeros((0, d), dtype=np.float32),\n            'h': np.zeros(d, dtype=np.float32), 't': 0}\n\ndef update(state, token):\n    t = state['t']\n    h = (PARAMS['E'][int(token)] + PARAMS['P'][t]).astype(np.float32)\n    sq = PARAMS['sq']\n    for l, R in enumerate(PARAMS['rounds']):\n        ka = 'A%d' % (l + 1)\n        kc = 'C%d' % (l + 1)\n        a = (R['Wa'] @ h).astype(np.float32)\n        c = (R['Wc'] @ h).astype(np.float32)\n        A = np.vstack([state[ka], a[None, :]]).astype(np.float32)\n        C = np.vstack([state[kc], c[None, :]]).astype(np.float32)\n        state[ka] = A\n        state[kc] = C\n        p = (R['Wp'] @ h).astype(np.float32)\n        sc = ((A @ p) / sq).astype(np.float32)\n        e = np.exp(sc - sc.max()).astype(np.float32)\n        w = (e / e.sum()).astype(np.float32)\n        r = (w @ C).astype(np.float32)\n        g = (h + R['Wo'] @ r).astype(np.float32)\n        h = (g + R['U'] @ np.maximum(np.float32(0), R['V'] @ g)).astype(np.float32)\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    y = state['h'] @ PARAMS['O']\n    return int(np.argmax(y))\n",
+   "tier": "executed"
+  },
+  "O6.a": {
+   "artifact": "recorded-O6.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 16161.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 1600,
+      "query_accuracy": 1.0,
+      "size": 8,
+      "state_peak_words": 16161
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 87137.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 6400,
+      "query_accuracy": 1.0,
+      "size": 32,
+      "state_peak_words": 87137
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 197889.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 12800,
+      "query_accuracy": 1.0,
+      "size": 64,
+      "state_peak_words": 197889
+     }
+    ]
+   },
+   "evidence": "recall: K=8 query accuracy 1.0000, K=32 query accuracy 1.0000, K=64 query accuracy 1.0000; threshold 0.99; observed on the listed sizes: K=8, K=32, K=64; peak state words within the declared (4*(3*K+1)+1)*32*ceiling(log(3*K+2)/log(2))+1 at every size",
+   "form": "construction",
+   "statement_id": "O6.a",
+   "status": "discharged",
+   "text": "PARAMS = {}\n\ndef init(layout):\n    K = int(layout['size']); nk = int(layout['n_keys']); kb = int(layout['key_base'])\n    vb = int(layout['value_base']); V = int(layout['V']); vocab = int(layout['vocab'])\n    N = 3 * K + 1\n    d = 32 * int(N).bit_length()\n    b = max(1, int(nk - 1).bit_length())\n    ONE = 0; T = 1; T2 = 2; KC = 3; PK = KC + b; VAL = PK + b; RV = VAL + V\n    f = np.float32\n    E = np.zeros((vocab, d), dtype=f)\n    for k in range(nk):\n        for j in range(b):\n            E[kb + k, KC + j] = 1.0 if (k >> j) & 1 else -1.0\n    for v in range(V):\n        E[vb + v, VAL + v] = 1.0\n    P = np.zeros((N + 2, d), dtype=f)\n    for t in range(N + 2):\n        P[t, ONE] = 1.0; P[t, T] = float(t); P[t, T2] = float(t * t)\n    lam1 = 1000.0; lam2 = 400.0\n    Wa1 = np.zeros((d, d), dtype=f); Wp1 = np.zeros((d, d), dtype=f); Wc1 = np.zeros((d, d), dtype=f)\n    Wa1[0, T] = 1.0; Wa1[1, T2] = 1.0\n    Wp1[0, T] = 2.0 * lam1; Wp1[0, ONE] = -2.0 * lam1; Wp1[1, ONE] = -lam1\n    for j in range(b):\n        Wc1[PK + j, KC + j] = 1.0\n    Wa2 = np.zeros((d, d), dtype=f); Wp2 = np.zeros((d, d), dtype=f); Wc2 = np.zeros((d, d), dtype=f)\n    for j in range(b):\n        Wa2[j, PK + j] = 1.0\n        Wp2[j, KC + j] = lam2\n    for v in range(V):\n        Wc2[RV + v, VAL + v] = 1.0\n    Wo = np.eye(d, dtype=f)\n    Z = np.zeros((d, d), dtype=f)\n    O = np.zeros((d, vocab), dtype=f)\n    for v in range(V):\n        O[RV + v, vb + v] = 1.0\n    PARAMS.clear()\n    PARAMS.update({'E': E, 'P': P, 'd': d, 'sq': np.float32(np.sqrt(d)),\n                   'rounds': [(Wa1, Wc1, Wp1, Wo, Z, Z), (Wa2, Wc2, Wp2, Wo, Z, Z)], 'O': O})\n    e = np.zeros((0, d), dtype=f)\n    return {'A1': e.copy(), 'C1': e.copy(), 'A2': e.copy(), 'C2': e.copy(),\n            'h': np.zeros(d, dtype=f), 't': 0}\n\ndef update(state, token):\n    f = np.float32\n    t = int(state['t'])\n    P = PARAMS['P']\n    tt = min(t, P.shape[0] - 1)\n    h = (PARAMS['E'][int(token)] + P[tt]).astype(f)\n    sq = PARAMS['sq']\n    names = [('A1', 'C1'), ('A2', 'C2')]\n    new = {}\n    for l in range(2):\n        Wa, Wc, Wp, Wo, U, Vm = PARAMS['rounds'][l]\n        a = (Wa @ h).astype(f); c = (Wc @ h).astype(f); p = (Wp @ h).astype(f)\n        A = np.vstack([state[names[l][0]], a[None, :]]).astype(f)\n        C = np.vstack([state[names[l][1]], c[None, :]]).astype(f)\n        s = ((A @ p).astype(f) / sq).astype(f)\n        s = s - np.max(s)\n        w = np.exp(s).astype(f)\n        w = (w / np.sum(w, dtype=f)).astype(f)\n        r = (w @ C).astype(f)\n        g = (h + (Wo @ r).astype(f)).astype(f)\n        h = (g + (U @ np.maximum(f(0.0), (Vm @ g).astype(f))).astype(f)).astype(f)\n        new[names[l][0]] = A; new[names[l][1]] = C\n    new['h'] = h\n    new['t'] = t + 1\n    return new\n\ndef predict(state):\n    logits = (state['h'] @ PARAMS['O']).astype(np.float32)\n    return int(np.argmax(logits))\n",
+   "tier": "executed"
+  },
+  "O7.a": {
+   "artifact": "recorded-O7.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 4225.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "instance",
+      "passed": true,
+      "queries": 1400,
+      "query_accuracy": 1.0,
+      "size": 2,
+      "state_peak_words": 4225
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 20641.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "instance",
+      "passed": true,
+      "queries": 2772,
+      "query_accuracy": 1.0,
+      "size": 4,
+      "state_peak_words": 20641
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 98497.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "instance",
+      "passed": true,
+      "queries": 5628,
+      "query_accuracy": 1.0,
+      "size": 8,
+      "state_peak_words": 98497
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 458977.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "instance",
+      "passed": true,
+      "queries": 11720,
+      "query_accuracy": 1.0,
+      "size": 16,
+      "state_peak_words": 458977
+     }
+    ]
+   },
+   "evidence": "dyck: depth=2 instance accuracy 1.0000, depth=4 instance accuracy 1.0000, depth=8 instance accuracy 1.0000, depth=16 instance accuracy 1.0000; threshold 0.99; observed on the listed sizes: depth=2, depth=4, depth=8, depth=16; peak state words within the declared (8*depth**2+1)*32*ceiling(log(4*depth+1)/log(2))+1 at every size",
+   "form": "construction",
+   "statement_id": "O7.a",
+   "status": "discharged",
+   "text": "PARAMS = {}\n\ndef build(depth, N, d):\n    f = np.float32\n    L = depth\n    SG = 5 + N\n    RD = SG + 1\n    OH = RD + 1\n    OUT = OH + depth + 1\n    E = np.zeros((4, d))\n    for x in range(4):\n        E[x, x] = 1.0\n        E[x, 4] = 1.0\n        E[x, SG] = 1.0 if x < 2 else -1.0\n    P = np.zeros((N, d))\n    for t in range(N):\n        P[t, 5 + t] = 1.0\n    Wa = [np.zeros((d, d)) for l in range(L)]\n    Wc = [np.zeros((d, d)) for l in range(L)]\n    Wp = [np.zeros((d, d)) for l in range(L)]\n    Wo = [np.zeros((d, d)) for l in range(L)]\n    V = [np.zeros((1, d)) for l in range(L)]\n    U = [np.zeros((d, 1)) for l in range(L)]\n    # round 1: uniform retrieval of the bracket sign gives depth/(t+1)\n    Wc[0][0, SG] = 1.0\n    Wo[0][RD, 0] = 1.0\n    K = depth + 1\n    H = N * K * 2\n    V0 = np.zeros((H, d))\n    U0 = np.zeros((d, H))\n    M = 2.0\n    for tau in range(N):\n        for k in range(1, K + 1):\n            for b in range(2):\n                j = (tau * K + (k - 1)) * 2 + b\n                thr = (k - 0.75) if b == 0 else (k - 0.25)\n                V0[j, RD] = 1.0\n                V0[j, 5 + tau] = M\n                V0[j, 4] = -M - thr / (tau + 1.0)\n                sgn = 1.0 if b == 0 else -1.0\n                val = sgn * 2.0 * (tau + 1.0)\n                U0[OH + k - 1, j] += val\n                if k >= 2:\n                    U0[OH + k - 2, j] -= val\n    V[0] = V0\n    U[0] = U0\n    # round 2: probe matches depth one-hot, prefers open brackets, then recency\n    sq = np.sqrt(float(d))\n    beta, gamma, delta = 1000.0, 400.0, 5.0\n    for k in range(1, K + 1):\n        Wa[1][k - 1, OH + k - 1] = 1.0\n        Wp[1][k - 1, OH + k - 1] = beta * sq\n    Wa[1][K, 0] = 1.0\n    Wa[1][K, 1] = 1.0\n    Wp[1][K, 4] = gamma * sq\n    for tau in range(N):\n        Wa[1][K + 1, 5 + tau] = float(tau)\n    Wp[1][K + 1, 4] = delta * sq\n    Wc[1][0, 0] = 1.0\n    Wc[1][0, 1] = -1.0\n    Wo[1][OUT, 0] = 1.0\n    O = np.zeros((d, 4))\n    O[OUT, 2] = 1.0\n    O[OUT, 3] = -1.0\n    O[4, 0] = -10.0\n    O[4, 1] = -10.0\n    return {'L': L, 'N': N, 'E': E.astype(f), 'P': P.astype(f),\n            'Wa': [m.astype(f) for m in Wa], 'Wc': [m.astype(f) for m in Wc],\n            'Wp': [m.astype(f) for m in Wp], 'Wo': [m.astype(f) for m in Wo],\n            'V': [m.astype(f) for m in V], 'U': [m.astype(f) for m in U],\n            'O': O.astype(f), 'sq': f(sq)}\n\ndef init(layout):\n    depth = int(layout['size'])\n    N = 4 * depth\n    d = 32 * int(N).bit_length()\n    if d not in PARAMS:\n        PARAMS[d] = build(depth, N, d)\n    L = depth\n    return {'A': np.zeros((L, N, d), np.float32), 'C': np.zeros((L, N, d), np.float32),\n            'h': np.zeros(d, np.float32), 't': 0}\n\ndef update(state, token):\n    pr = PARAMS[state['h'].shape[0]]\n    t = state['t']\n    x = int(token)\n    A = state['A']\n    C = state['C']\n    h = pr['E'][x] + pr['P'][t]\n    zero = np.float32(0.0)\n    for l in range(pr['L']):\n        a = pr['Wa'][l] @ h\n        c = pr['Wc'][l] @ h\n        p = pr['Wp'][l] @ h\n        A[l, t] = a\n        C[l, t] = c\n        s = (A[l, :t + 1] @ p) / pr['sq']\n        s = s - s.max()\n        e = np.exp(s)\n        w = e / e.sum()\n        r = w @ C[l, :t + 1]\n        g = h + pr['Wo'][l] @ r\n        h = g + pr['U'][l] @ np.maximum(pr['V'][l] @ g, zero)\n    state['h'] = h.astype(np.float32)\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    pr = PARAMS[state['h'].shape[0]]\n    logits = state['h'] @ pr['O']\n    return int(np.argmax(logits))\n",
+   "tier": "executed"
+  },
+  "O8.a": {
+   "artifact": "recorded-O8.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 14881.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 800,
+      "query_accuracy": 1.0,
+      "size": 4,
+      "state_peak_words": 14881
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 74593.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 3200,
+      "query_accuracy": 1.0,
+      "size": 16,
+      "state_peak_words": 74593
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 167169.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 6400,
+      "query_accuracy": 1.0,
+      "size": 32,
+      "state_peak_words": 167169
+     }
+    ]
+   },
+   "evidence": "composition: T=4 query accuracy 1.0000, T=16 query accuracy 1.0000, T=32 query accuracy 1.0000; threshold 0.99; observed on the listed sizes: T=4, T=16, T=32; peak state words within the declared (4*(5*T+3)+1)*32*ceiling(log(5*T+4)/log(2))+1 at every size",
+   "form": "construction",
+   "statement_id": "O8.a",
+   "status": "discharged",
+   "text": "PARAMS = {}\n\ndef zeros(*s):\n    return np.zeros(s, dtype=np.float32)\n\ndef width(N):\n    return 32 * int(np.ceil(np.log(N + 1) / np.log(2)))\n\ndef pos_table(N, d):\n    P = zeros(N, d)\n    for t in range(N):\n        P[t, 1] = t\n        P[t, 2] = t * t\n    return P\n\ndef prev_round(d, mu, sq):\n    Wa = zeros(d, d)\n    Wp = zeros(d, d)\n    Wa[0, 1] = 1.0\n    Wa[1, 2] = 1.0\n    Wp[0, 1] = 2.0 * mu * sq\n    Wp[0, 0] = -2.0 * mu * sq\n    Wp[1, 0] = -mu * sq\n    return Wa, Wp\n\ndef build(layout):\n    T = layout['T']\n    Vv = layout['vocab']\n    xb = layout['x_base']\n    yb = layout['y_base']\n    zb = layout['z_base']\n    N = 5 * T + 3\n    d = width(N)\n    sq = float(np.sqrt(d))\n    mu = 30.0\n    lam = 40.0\n    M = 100.0\n    B, ISY, ISZ, ZV, ANS = 0, 3, 4, 5, 6\n    XC = 7\n    YC = 7 + T\n    PX = 7 + 2 * T\n    PY = 7 + 3 * T\n    E = zeros(Vv, d)\n    for v in range(Vv):\n        E[v, B] = 1.0\n    for k in range(T):\n        E[xb + k, XC + k] = 1.0\n        E[yb + k, YC + k] = 1.0\n        E[yb + k, ISY] = 1.0\n        E[zb + k, ISZ] = 1.0\n        E[zb + k, ZV] = float(k)\n    P = pos_table(N, d)\n    Wa1, Wp1 = prev_round(d, mu, sq)\n    Wc1 = zeros(d, d)\n    Wo1 = zeros(d, d)\n    V1 = zeros(d, d)\n    U1 = zeros(d, d)\n    for k in range(T):\n        Wc1[k, XC + k] = 1.0\n        Wc1[T + k, YC + k] = 1.0\n        Wo1[PX + k, k] = 1.0\n        Wo1[PY + k, T + k] = 1.0\n        V1[k, PX + k] = 1.0\n        U1[PX + k, k] = -1.0\n        V1[T + k, PX + k] = 1.0\n        V1[T + k, ISY] = 1.0\n        V1[T + k, B] = -1.0\n        U1[PX + k, T + k] = 1.0\n        V1[2 * T + k, PY + k] = 1.0\n        U1[PY + k, 2 * T + k] = -1.0\n        V1[3 * T + k, ZV] = 1.0\n        V1[3 * T + k, PY + k] = M\n        V1[3 * T + k, ISZ] = M\n        V1[3 * T + k, B] = -2.0 * M\n        U1[PY + k, 3 * T + k] = 1.0\n    Wa2 = zeros(d, d)\n    Wp2 = zeros(d, d)\n    Wc2 = zeros(d, d)\n    Wo2 = zeros(d, d)\n    V2 = zeros(d, d)\n    U2 = zeros(d, d)\n    for k in range(T):\n        Wa2[k, PX + k] = 1.0\n        Wp2[k, XC + k] = lam * sq\n        Wc2[k, YC + k] = 1.0\n        Wc2[T + k, PY + k] = 1.0\n        Wo2[PX + k, k] = float(T + 1)\n        Wo2[PY + k, T + k] = float(T + 1)\n        V2[k, PY + k] = 1.0\n        V2[k, PX + k] = M\n        V2[k, B] = -M\n        U2[ANS, k] = 1.0\n    Wa2[T, ISZ] = 1.0\n    Wp2[T, B] = lam * sq\n    O = zeros(d, Vv)\n    for v in range(Vv):\n        O[B, v] = -1.0e6\n    for m in range(T):\n        O[B, zb + m] = -float(m * m)\n        O[ANS, zb + m] = 2.0 * m\n    layers = [(Wa1, Wc1, Wp1, Wo1, V1, U1), (Wa2, Wc2, Wp2, Wo2, V2, U2)]\n    return {'E': E, 'P': P, 'O': O, 'd': d, 'sq': np.float32(sq), 'layers': layers}\n\ndef init(layout):\n    key = layout['size']\n    if key not in PARAMS:\n        PARAMS[key] = build(layout)\n    PARAMS['cur'] = PARAMS[key]\n    prm = PARAMS['cur']\n    d = prm['d']\n    L = len(prm['layers'])\n    return {'A': [zeros(0, d) for i in range(L)], 'C': [zeros(0, d) for i in range(L)], 'h': zeros(d), 't': 0}\n\ndef update(state, token):\n    prm = PARAMS['cur']\n    t = state['t']\n    h = (prm['E'][token] + prm['P'][t]).astype(np.float32)\n    newA = []\n    newC = []\n    for l in range(len(prm['layers'])):\n        Wa, Wc, Wp, Wo, V, U = prm['layers'][l]\n        a = Wa @ h\n        c = Wc @ h\n        p = Wp @ h\n        A = np.concatenate([state['A'][l], a[None, :]], axis=0)\n        C = np.concatenate([state['C'][l], c[None, :]], axis=0)\n        s = (A @ p) / prm['sq']\n        s = s - np.max(s)\n        w = np.exp(s)\n        w = w / np.sum(w)\n        r = w @ C\n        g = h + Wo @ r\n        h = (g + U @ np.maximum(V @ g, np.float32(0))).astype(np.float32)\n        newA.append(A)\n        newC.append(C)\n    return {'A': newA, 'C': newC, 'h': h, 't': t + 1}\n\ndef predict(state):\n    prm = PARAMS['cur']\n    logits = state['h'] @ prm['O']\n    return int(np.argmax(logits))\n",
+   "tier": "executed"
+  },
+  "O8.b": {
+   "artifact": "recorded-O8.b",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "results": [
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 5761.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 400,
+      "query_accuracy": 1.0,
+      "size": 1,
+      "state_peak_words": 5761
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 36961.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 400,
+      "query_accuracy": 1.0,
+      "size": 4,
+      "state_peak_words": 36961
+     },
+     {
+      "accuracy": 1.0,
+      "declared_state_words": 134977.0,
+      "first_error": null,
+      "instance_accuracy": 1.0,
+      "instances": 200,
+      "metric": "query",
+      "passed": true,
+      "queries": 400,
+      "query_accuracy": 1.0,
+      "size": 8,
+      "state_peak_words": 134977
+     }
+    ]
+   },
+   "evidence": "binding: hops=1 query accuracy 1.0000, hops=4 query accuracy 1.0000, hops=8 query accuracy 1.0000; threshold 0.99; observed on the listed sizes: hops=1, hops=4, hops=8; peak state words within the declared (2*(hops+1)*(4*hops+7)+1)*32*ceiling(log(4*hops+8)/log(2))+1 at every size",
+   "form": "construction",
+   "statement_id": "O8.b",
+   "status": "discharged",
+   "text": "PARAMS = {}\n\ndef zeros(*s):\n    return np.zeros(s, dtype=np.float32)\n\ndef width(N):\n    return 32 * int(np.ceil(np.log(N + 1) / np.log(2)))\n\ndef build(layout):\n    hops = layout['size']\n    nv = layout['n_vars']\n    vb = layout['var_base']\n    cb = layout['value_base']\n    nval = layout['values']\n    Vv = layout['vocab']\n    N = 4 * hops + 7\n    d = width(N)\n    sq = float(np.sqrt(d))\n    mu = 30.0\n    lam = 40.0\n    M = 100.0\n    B, ISV, CV, ANS, ISR = 0, 3, 4, 5, 6\n    TV = 7\n    Q = 7 + nv\n    PV = 7 + 2 * nv\n    NEW = 7 + 3 * nv\n    SL = 7 + 4 * nv\n    E = zeros(Vv, d)\n    for v in range(Vv):\n        E[v, B] = 1.0\n    for k in range(nv):\n        E[vb + k, TV + k] = 1.0\n        E[vb + k, Q + k] = 1.0\n    for m in range(nval):\n        E[cb + m, ISV] = 1.0\n        E[cb + m, CV] = float(m)\n    P = zeros(N, d)\n    for t in range(N):\n        P[t, 1] = t\n        P[t, 2] = t * t\n        if t % 2 == 1 and t < 4 * hops + 4:\n            P[t, ISR] = 1.0\n    Wa1 = zeros(d, d)\n    Wp1 = zeros(d, d)\n    Wa1[0, 1] = 1.0\n    Wa1[1, 2] = 1.0\n    Wp1[0, 1] = 2.0 * mu * sq\n    Wp1[0, 0] = -2.0 * mu * sq\n    Wp1[1, 0] = -mu * sq\n    Wc1 = zeros(d, d)\n    Wo1 = zeros(d, d)\n    V1 = zeros(d, d)\n    U1 = zeros(d, d)\n    for k in range(nv):\n        Wc1[k, TV + k] = 1.0\n        Wo1[PV + k, k] = 1.0\n        V1[k, PV + k] = 1.0\n        U1[PV + k, k] = -1.0\n        V1[nv + k, PV + k] = 1.0\n        V1[nv + k, ISR] = 1.0\n        V1[nv + k, B] = -1.0\n        U1[PV + k, nv + k] = 1.0\n        V1[2 * nv + k, CV] = 1.0\n        V1[2 * nv + k, PV + k] = M\n        V1[2 * nv + k, ISV] = M\n        V1[2 * nv + k, B] = -2.0 * M\n        U1[SL + k, 2 * nv + k] = 1.0\n    layers = [(Wa1, Wc1, Wp1, Wo1, V1, U1)]\n    for i in range(hops - 1):\n        Wa = zeros(d, d)\n        Wp = zeros(d, d)\n        Wc = zeros(d, d)\n        Wo = zeros(d, d)\n        V = zeros(d, d)\n        U = zeros(d, d)\n        for k in range(nv):\n            Wa[k, PV + k] = 1.0\n            Wp[k, Q + k] = lam * sq\n            Wc[k, TV + k] = 1.0\n            Wo[NEW + k, k] = 1.0\n            V[k, Q + k] = 1.0\n            U[Q + k, k] = -1.0\n            V[nv + k, NEW + k] = 1.0\n            U[Q + k, nv + k] = 1.0\n            U[NEW + k, nv + k] = -1.0\n        layers.append((Wa, Wc, Wp, Wo, V, U))\n    Wa = zeros(d, d)\n    Wp = zeros(d, d)\n    Wc = zeros(d, d)\n    Wo = zeros(d, d)\n    V = zeros(d, d)\n    U = zeros(d, d)\n    for k in range(nv):\n        Wa[k, PV + k] = 1.0\n        Wp[k, Q + k] = lam * sq\n        Wc[k, TV + k] = 1.0\n        Wc[nv + k, SL + k] = 1.0\n        Wo[NEW + k, k] = 3.0\n        Wo[SL + k, nv + k] = 3.0\n        V[k, SL + k] = 1.0\n        V[k, NEW + k] = M\n        V[k, B] = -M\n        U[ANS, k] = 1.0\n    Wa[nv, ISV] = 1.0\n    Wp[nv, B] = lam * sq\n    layers.append((Wa, Wc, Wp, Wo, V, U))\n    O = zeros(d, Vv)\n    for v in range(Vv):\n        O[B, v] = -1.0e6\n    for m in range(nval):\n        O[B, cb + m] = -float(m * m)\n        O[ANS, cb + m] = 2.0 * m\n    return {'E': E, 'P': P, 'O': O, 'd': d, 'sq': np.float32(sq), 'layers': layers}\n\ndef init(layout):\n    key = layout['size']\n    if key not in PARAMS:\n        PARAMS[key] = build(layout)\n    PARAMS['cur'] = PARAMS[key]\n    prm = PARAMS['cur']\n    d = prm['d']\n    L = len(prm['layers'])\n    return {'A': [zeros(0, d) for i in range(L)], 'C': [zeros(0, d) for i in range(L)], 'h': zeros(d), 't': 0}\n\ndef update(state, token):\n    prm = PARAMS['cur']\n    t = state['t']\n    h = (prm['E'][token] + prm['P'][t]).astype(np.float32)\n    newA = []\n    newC = []\n    for l in range(len(prm['layers'])):\n        Wa, Wc, Wp, Wo, V, U = prm['layers'][l]\n        a = Wa @ h\n        c = Wc @ h\n        p = Wp @ h\n        A = np.concatenate([state['A'][l], a[None, :]], axis=0)\n        C = np.concatenate([state['C'][l], c[None, :]], axis=0)\n        s = (A @ p) / prm['sq']\n        s = s - np.max(s)\n        w = np.exp(s)\n        w = w / np.sum(w)\n        r = w @ C\n        g = h + Wo @ r\n        h = (g + U @ np.maximum(V @ g, np.float32(0))).astype(np.float32)\n        newA.append(A)\n        newC.append(C)\n    return {'A': newA, 'C': newC, 'h': h, 't': t + 1}\n\ndef predict(state):\n    prm = PARAMS['cur']\n    logits = state['h'] @ prm['O']\n    return int(np.argmax(logits))\n",
+   "tier": "executed"
+  },
+  "O9.a": {
+   "artifact": "recorded-O9.a",
+   "bound": null,
+   "counterexample": null,
+   "decided": true,
+   "details": {
+    "recipe": {
+     "batch_size": 64,
+     "beta1": 0.9,
+     "beta2": 0.98,
+     "d": 64,
+     "epochs": 150,
+     "eps": 1e-08,
+     "grad_clip": 1.0,
+     "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+     "loss": "next-symbol cross-entropy at query positions, through both rounds",
+     "lr": 0.003,
+     "optimizer": "adam",
+     "schedule": "linear warmup then cosine decay to 0.1*lr",
+     "warmup_steps": 200
+    },
+    "results": [
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.002,
+      "empty_control_accuracy": 0.004,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 150,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 0,
+      "state_peak_words": 53185,
+      "wrong_control_accuracy": 0.002
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.004,
+      "empty_control_accuracy": 0.008,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 150,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 1,
+      "state_peak_words": 53185,
+      "wrong_control_accuracy": 0.004
+     },
+     {
+      "accuracy": 1.0,
+      "control_accuracy": 0.0,
+      "empty_control_accuracy": 0.0,
+      "first_error": null,
+      "passed": true,
+      "reason": null,
+      "recipe": {
+       "batch_size": 64,
+       "beta1": 0.9,
+       "beta2": 0.98,
+       "d": 64,
+       "epochs": 150,
+       "eps": 1e-08,
+       "grad_clip": 1.0,
+       "init": "normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)",
+       "loss": "next-symbol cross-entropy at query positions, through both rounds",
+       "lr": 0.003,
+       "optimizer": "adam",
+       "schedule": "linear warmup then cosine decay to 0.1*lr",
+       "warmup_steps": 200
+      },
+      "seed": 2,
+      "state_peak_words": 53185,
+      "wrong_control_accuracy": 0.0
+     }
+    ]
+   },
+   "evidence": "copy at L=4 from m=3000 examples: seed 0 accuracy 1.0000 (control 0.0020), seed 1 accuracy 1.0000 (control 0.0040), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"batch_size\": 64, \"beta1\": 0.9, \"beta2\": 0.98, \"d\": 64, \"epochs\": 150, \"eps\": 1e-08, \"grad_clip\": 1.0, \"init\": \"normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)\", \"loss\": \"next-symbol cross-entropy at query positions, through both rounds\", \"lr\": 0.003, \"optimizer\": \"adam\", \"schedule\": \"linear warmup then cosine decay to 0.1*lr\", \"warmup_steps\": 200} applied to the true data and both controls; observed on the listed sizes: copy L=4 m=3000 seed=0, copy L=4 m=3000 seed=1, copy L=4 m=3000 seed=2",
+   "form": "learnability",
+   "statement_id": "O9.a",
+   "status": "discharged",
+   "text": "RECIPE = {\"d\": 64, \"init\": \"normal: E,P std 1; Wa,Wc,Wp,Wo,O std 1/sqrt(d); V std sqrt(2/d); U std 0.5/sqrt(d)\", \"optimizer\": \"adam\", \"lr\": 0.003, \"beta1\": 0.9, \"beta2\": 0.98, \"eps\": 1e-08, \"warmup_steps\": 200, \"schedule\": \"linear warmup then cosine decay to 0.1*lr\", \"epochs\": 150, \"batch_size\": 64, \"grad_clip\": 1.0, \"loss\": \"next-symbol cross-entropy at query positions, through both rounds\"}\n\nRK = [[\"Wa1\", \"Wc1\", \"Wp1\", \"Wo1\", \"V1\", \"U1\"], [\"Wa2\", \"Wc2\", \"Wp2\", \"Wo2\", \"V2\", \"U2\"]]\n\ndef make_params(vocab, T, d, rng):\n    s = 1.0 / np.sqrt(d)\n    p = {\"E\": rng.normal(0.0, 1.0, (vocab, d)), \"P\": rng.normal(0.0, 1.0, (T, d)), \"O\": rng.normal(0.0, s, (d, vocab))}\n    for keys in RK:\n        p[keys[0]] = rng.normal(0.0, s, (d, d))\n        p[keys[1]] = rng.normal(0.0, s, (d, d))\n        p[keys[2]] = rng.normal(0.0, s, (d, d))\n        p[keys[3]] = rng.normal(0.0, s, (d, d))\n        p[keys[4]] = rng.normal(0.0, np.sqrt(2.0 / d), (d, d))\n        p[keys[5]] = rng.normal(0.0, 0.5 * s, (d, d))\n    return p\n\ndef round_fwd(h, W, mask, scale):\n    B, T, d = h.shape\n    hf = h.reshape(B * T, d)\n    a = (hf @ W[0]).reshape(B, T, d)\n    c = (hf @ W[1]).reshape(B, T, d)\n    q = (hf @ W[2]).reshape(B, T, d)\n    S = np.matmul(q, a.transpose(0, 2, 1)) * scale + mask[:T, :T]\n    S = S - S.max(-1, keepdims=True)\n    Ex = np.exp(S)\n    Wt = Ex / Ex.sum(-1, keepdims=True)\n    r = np.matmul(Wt, c)\n    rf = r.reshape(B * T, d)\n    g = hf + rf @ W[3]\n    z = g @ W[4]\n    m = np.maximum(z, 0.0)\n    out = g + m @ W[5]\n    return out.reshape(B, T, d), [hf, a, c, q, Wt, rf, g, z, m]\n\ndef round_bwd(dout, W, cache, scale):\n    hf, a, c, q, Wt, rf, g, z, m = cache\n    B, T, d = a.shape\n    do = dout.reshape(B * T, d)\n    dU = m.T @ do\n    dz = (do @ W[5].T) * (z > 0)\n    dV = g.T @ dz\n    dg = do + dz @ W[4].T\n    dWo = rf.T @ dg\n    dr = (dg @ W[3].T).reshape(B, T, d)\n    dWt = np.matmul(dr, c.transpose(0, 2, 1))\n    dc = np.matmul(Wt.transpose(0, 2, 1), dr)\n    dS = Wt * (dWt - (dWt * Wt).sum(-1, keepdims=True)) * scale\n    dq = np.matmul(dS, a).reshape(B * T, d)\n    da = np.matmul(dS.transpose(0, 2, 1), q).reshape(B * T, d)\n    dcf = dc.reshape(B * T, d)\n    dWa = hf.T @ da\n    dWc = hf.T @ dcf\n    dWp = hf.T @ dq\n    dh = dg + da @ W[0].T + dcf @ W[1].T + dq @ W[2].T\n    return dh.reshape(B, T, d), [dWa, dWc, dWp, dWo, dV, dU]\n\ndef learn(layout, examples, seed):\n    rng = np.random.default_rng(1000 + seed)\n    d = int(RECIPE[\"d\"])\n    vocab = int(layout[\"vocab\"])\n    n = len(examples)\n    Tdata = 1\n    for ex in examples:\n        Tdata = max(Tdata, len(ex[\"tokens\"]))\n    Tpos = max(Tdata, 4 * int(layout[\"size\"]) + 4)\n    params = make_params(vocab, Tpos, d, rng)\n    if n == 0:\n        return params\n    X = np.zeros((n, Tdata), dtype=np.int64)\n    Y = np.zeros((n, Tdata), dtype=np.int64)\n    M = np.zeros((n, Tdata))\n    Ln = np.zeros(n, dtype=np.int64)\n    for i, ex in enumerate(examples):\n        tk = ex[\"tokens\"]\n        Ln[i] = len(tk)\n        X[i, :len(tk)] = np.array(tk, dtype=np.int64)\n        for qa in ex[\"queries\"]:\n            Y[i, int(qa[0])] = int(qa[1])\n            M[i, int(qa[0])] = 1.0\n    scale = 1.0 / np.sqrt(d)\n    mask = np.triu(np.full((Tpos, Tpos), -1e9), 1)\n    eye = np.eye(vocab)\n    bs = int(RECIPE[\"batch_size\"])\n    spe = (n + bs - 1) // bs\n    total = int(RECIPE[\"epochs\"]) * spe\n    lr0 = float(RECIPE[\"lr\"])\n    b1 = float(RECIPE[\"beta1\"])\n    b2 = float(RECIPE[\"beta2\"])\n    eps = float(RECIPE[\"eps\"])\n    warm = float(RECIPE[\"warmup_steps\"])\n    clip = float(RECIPE[\"grad_clip\"])\n    names = list(params.keys())\n    mom = {}\n    vel = {}\n    for k in names:\n        mom[k] = np.zeros_like(params[k])\n        vel[k] = np.zeros_like(params[k])\n    step = 0\n    for ep in range(int(RECIPE[\"epochs\"])):\n        perm = rng.permutation(n)\n        for b in range(spe):\n            idx = perm[b * bs:(b + 1) * bs]\n            Tb = int(Ln[idx].max())\n            Xb = X[idx, :Tb]\n            Yb = Y[idx, :Tb]\n            Mb = M[idx, :Tb]\n            B = Xb.shape[0]\n            h0 = params[\"E\"][Xb] + params[\"P\"][:Tb][None, :, :]\n            W1 = [params[k] for k in RK[0]]\n            W2 = [params[k] for k in RK[1]]\n            h1, c1 = round_fwd(h0, W1, mask, scale)\n            h2, c2 = round_fwd(h1, W2, mask, scale)\n            h2f = h2.reshape(B * Tb, d)\n            logits = h2f @ params[\"O\"]\n            logits = logits - logits.max(-1, keepdims=True)\n            pr = np.exp(logits)\n            pr = pr / pr.sum(-1, keepdims=True)\n            Mf = Mb.reshape(-1)\n            Nq = max(Mf.sum(), 1.0)\n            dlog = (pr - eye[Yb.reshape(-1)]) * (Mf[:, None] / Nq)\n            grads = {}\n            grads[\"O\"] = h2f.T @ dlog\n            dh2 = (dlog @ params[\"O\"].T).reshape(B, Tb, d)\n            dh1, g2 = round_bwd(dh2, W2, c2, scale)\n            dh0, g1 = round_bwd(dh1, W1, c1, scale)\n            for j in range(6):\n                grads[RK[0][j]] = g1[j]\n                grads[RK[1][j]] = g2[j]\n            dh0f = dh0.reshape(B * Tb, d)\n            grads[\"E\"] = eye[Xb.reshape(-1)].T @ dh0f\n            dP = np.zeros_like(params[\"P\"])\n            dP[:Tb] = dh0.sum(0)\n            grads[\"P\"] = dP\n            gn = 0.0\n            for k in names:\n                gn = gn + float((grads[k] * grads[k]).sum())\n            gn = np.sqrt(gn)\n            fac = min(1.0, clip / (gn + 1e-6))\n            step += 1\n            lr = lr0 * min(1.0, step / warm) * (0.1 + 0.9 * 0.5 * (1.0 + np.cos(np.pi * step / total)))\n            bc1 = 1.0 - b1 ** step\n            bc2 = 1.0 - b2 ** step\n            for k in names:\n                gk = grads[k] * fac\n                mom[k] = b1 * mom[k] + (1.0 - b1) * gk\n                vel[k] = b2 * vel[k] + (1.0 - b2) * gk * gk\n                params[k] = params[k] - lr * (mom[k] / bc1) / (np.sqrt(vel[k] / bc2) + eps)\n    return params\n\ndef init(layout, params):\n    return {\"p\": params, \"t\": 0, \"A\": [[], []], \"C\": [[], []], \"h\": None}\n\ndef update(state, token):\n    p = state[\"p\"]\n    d = p[\"E\"].shape[1]\n    scale = 1.0 / np.sqrt(d)\n    t = min(state[\"t\"], p[\"P\"].shape[0] - 1)\n    h = p[\"E\"][int(token)] + p[\"P\"][t]\n    for l in range(2):\n        W = [p[k] for k in RK[l]]\n        a = h @ W[0]\n        c = h @ W[1]\n        q = h @ W[2]\n        state[\"A\"][l].append(a)\n        state[\"C\"][l].append(c)\n        A = np.array(state[\"A\"][l])\n        C = np.array(state[\"C\"][l])\n        s = (A @ q) * scale\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ C\n        g = h + r @ W[3]\n        h = g + np.maximum(g @ W[4], 0.0) @ W[5]\n    state[\"h\"] = h\n    state[\"t\"] = state[\"t\"] + 1\n    return state\n\ndef predict(state):\n    return int(np.argmax(state[\"h\"] @ state[\"p\"][\"O\"]))\n",
+   "tier": "executed"
+  }
+ },
+ "m_claims": [
+  {
+   "claim_id": "complexity.time_per_token",
+   "label": "lean-proven",
+   "phrase": "proven",
+   "status": "proven"
+  },
+  {
+   "claim_id": "complexity.memory",
+   "label": "lean-proven",
+   "phrase": "proven",
+   "status": "proven"
+  },
+  {
+   "claim_id": "complexity.total_sequence",
+   "label": "lean-proven",
+   "phrase": "proven",
+   "status": "proven"
+  },
+  {
+   "claim_id": "sample_efficiency.prediction",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: copy size=4 m=3000 seed=0, copy size=4 m=3000 seed=1, copy size=4 m=3000 seed=2",
+   "status": "observed"
+  },
+  {
+   "claim_id": "capability.1",
+   "label": "argued (prose only)",
+   "phrase": "argued in prose only; does not satisfy an obligation",
+   "status": "not_formalized"
+  },
+  {
+   "claim_id": "capability.2",
+   "label": "argued (prose only)",
+   "phrase": "argued in prose only; does not satisfy an obligation",
+   "status": "not_formalized"
+  },
+  {
+   "claim_id": "capability.3",
+   "label": "argued (prose only)",
+   "phrase": "argued in prose only; does not satisfy an obligation",
+   "status": "not_formalized"
+  },
+  {
+   "claim_id": "capability.4",
+   "label": "argued (prose only)",
+   "phrase": "argued in prose only; does not satisfy an obligation",
+   "status": "not_formalized"
+  },
+  {
+   "claim_id": "capability.5",
+   "label": "argued (prose only)",
+   "phrase": "argued in prose only; does not satisfy an obligation",
+   "status": "not_formalized"
+  },
+  {
+   "claim_id": "P1",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: n=64, n=128, n=256, n=512, n=1024, n=2048, n=4096",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P2.copy",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: copy size=8, copy size=32, copy size=64",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P2.recall",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: recall size=8, recall size=32, recall size=64",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P2.nesting",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: dyck size=2, dyck size=4, dyck size=8, dyck size=16",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P2.composition",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: binding size=1, binding size=4, binding size=8",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P3",
+   "label": "lean-proven",
+   "phrase": "proven",
+   "status": "proven"
+  },
+  {
+   "claim_id": "P4.copy",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: copy size=4 m=3000 seed=0, copy size=4 m=3000 seed=1, copy size=4 m=3000 seed=2",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P4.recall",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: recall size=4 m=3000 seed=0, recall size=4 m=3000 seed=1, recall size=4 m=3000 seed=2",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P4.nesting",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: dyck size=2 m=1500 seed=0, dyck size=2 m=1500 seed=1, dyck size=2 m=1500 seed=2",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P4.composition",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: composition size=4 m=4000 seed=0, composition size=4 m=4000 seed=1, composition size=4 m=4000 seed=2",
+   "status": "observed"
+  },
+  {
+   "claim_id": "P5",
+   "label": "executed-on-examples",
+   "phrase": "observed on the listed sizes: copy L=64, recall K=64, dyck depth=16, sample examples=3000, sample examples=3000, sample examples=1500, sample examples=4000",
+   "status": "observed"
+  }
+ ],
+ "m_models": {
+  "prover": [
+   "claude-opus-5-5"
+  ],
+  "statement_fixer": [
+   "gpt-6.1-sol"
+  ]
+ },
+ "record": {
+  "card_id": "card-ca11b001",
+  "claims": [
+   {
+    "id": "complexity.time_per_token",
+    "text": "complexity time_per_token: Theta(t d + d^2)"
+   },
+   {
+    "id": "complexity.memory",
+    "text": "complexity memory: Theta(n d)"
+   },
+   {
+    "id": "complexity.total_sequence",
+    "text": "complexity total_sequence: Theta(n^2 d + n d^2)"
+   },
+   {
+    "id": "sample_efficiency.prediction",
+    "text": "sample efficiency prediction: From random weights, gradient descent on 3000 copy examples at L = 4 over 4 symbols reaches per-string accuracy 0.99. (metric: examples_to_copy_L4; value: 3000)"
+   },
+   {
+    "id": "capability.1",
+    "text": "capability 1: task: copy a string after a separator prediction: With hand-set weights the probe at output step i matches the address written at input position i, so every string is copied exactly at every listed length when d grows with the log of the length."
+   },
+   {
+    "id": "capability.2",
+    "text": "capability 2: task: associative recall of K pairs prediction: With hand-set weights the first round binds each item to the one before it and the second retrieves the item stored after the matching one; per-query accuracy 1.0 at every listed K."
+   },
+   {
+    "id": "capability.3",
+    "text": "capability 3: task: two-type bracket nesting prediction: The legal closing bracket is predicted exactly up to depth D when the number of rounds grows with D; with two fixed rounds and fixed precision the error does not vanish for all depths as the length grows."
+   },
+   {
+    "id": "capability.4",
+    "text": "capability 4: task: two-hop lookup and chained assignments prediction: The first round retrieves g(x) and the second retrieves f at that point, so f(g(x)) is answered exactly; chained assignments need one round per link."
+   },
+   {
+    "id": "capability.5",
+    "text": "capability 5: task: parity of a long binary string prediction: With a fixed number of rounds and fixed precision, no setting of the weights decides the parity of every binary string as the length grows."
+   },
+   {
+    "id": "P1",
+    "text": "profile P1: exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n"
+   },
+   {
+    "id": "P2.copy",
+    "text": "profile P2.copy: construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words"
+   },
+   {
+    "id": "P2.recall",
+    "text": "profile P2.recall: construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words"
+   },
+   {
+    "id": "P2.nesting",
+    "text": "profile P2.nesting: construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words"
+   },
+   {
+    "id": "P2.composition",
+    "text": "profile P2.composition: construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words"
+   },
+   {
+    "id": "P3",
+    "text": "profile P3: derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2"
+   },
+   {
+    "id": "P4.copy",
+    "text": "profile P4.copy: toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds"
+   },
+   {
+    "id": "P4.recall",
+    "text": "profile P4.recall: toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+   },
+   {
+    "id": "P4.nesting",
+    "text": "profile P4.nesting: toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+   },
+   {
+    "id": "P4.composition",
+    "text": "profile P4.composition: toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds"
+   },
+   {
+    "id": "P5",
+    "text": "profile P5: information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws"
+   }
+  ],
+  "definitions": [
+   {
+    "id": "D1",
+    "kind": "accounting",
+    "sha256": "8be12b814237fd61149de51d0405344bda8663ceb2a6fe5aa028e586a4e7d11d",
+    "text": "For the cost reference, all six matrix-vector products in each round, all probe-address products, the weighted-content product, and the readout use @. U and the feed-forward matrix V are d by d. Softmax is evaluated directly as scores divided by sqrt(d), exp, sum, and division, without maximum subtraction. sqrt(d) is evaluated once per round per token with the counted sqrt operation. ReLU uses counted maximum with zero. Readout, including argmax, is executed once per token. Initialization is excluded. The vocabulary size is denoted V in cost formulas, distinct from the feed-forward matrix named V in the card."
+   },
+   {
+    "id": "D2",
+    "kind": "accounting",
+    "sha256": "11ddeaaafb0f11efa2cf5d7e1df1bf6efb3155b1b3645b2bd1481cee8fd90deb",
+    "text": "Persistent inference state consists of the address and content stores for every round, the current final working vector of d words, and one position counter. Temporary intermediate arrays are not retained in state between updates. Parameters are excluded from state. For the cost reference only, the position table has every row zero, so accessing P[t] needs no growing parameter allocation. This reference parameter choice does not restrict construction or learning witnesses."
+   },
+   {
+    "id": "D3",
+    "kind": "sampling",
+    "sha256": "09052c746455bd36d0b2bdaa75f9e813895b3ca43d7833bc2e6b1271bcb16e34",
+    "text": "Construction and learnability tasks use the supplied TASK CONTRACT generators, layouts, token orders, query positions, self-fed copy continuation, and accuracy metrics. Construction tests use 200 instances per size. Recall uses V=16 and the contract's default key universe; copy uses D=4; binding uses values=8. Dyck capacity is assessed at maximum stream length 4*depth, even when an individual stream is shorter."
+   },
+   {
+    "id": "D4",
+    "kind": "other",
+    "sha256": "46301d36d92eb50251274ef1bfb1ee0cd802aaff1bec847eb39620b1d6cfbb6c",
+    "text": "Hand-set construction witnesses retain the card's embedding, causal normalized-exponential retrieval, residual mixing, ReLU sublayer, and argmax readout. Width is d=32*ceiling(log(N+1)/log(2)), where N is the maximum contract stream length for the layout. Copy, recall and composition use two rounds. Dyck uses depth rounds. Binding uses hops+1 rounds, counting the terminal constant assignment as a link. Each round has its own parameters and stores. These resource conventions do not assert that a successful witness exists."
+   },
+   {
+    "id": "D5",
+    "kind": "evaluation",
+    "sha256": "20a5d56da817c3857c8025c759657110e1ee0312dc294478fa92ee73c8054dfb",
+    "text": "Argmax ties choose the smallest symbol id. Hand-set construction inference uses binary32 stored numbers, including parameters and store entries; intermediate numerical operations follow binary32 arithmetic. A state word contributes 32 bits to conservation accounting."
+   },
+   {
+    "id": "D6",
+    "kind": "other",
+    "sha256": "c7b75bebfa7fd90f83d284493e2c6fe3cd9192a0d3d1d644f196499443009e7d",
+    "text": "The learnability model is the card's two-round architecture, with every listed matrix and embedding and position table trainable through next-symbol cross-entropy. Both feed-forward matrices are square d by d. The prover may choose an integer learning width d from 8 through 256 and declare it in its RECIPE. Position tables cover the finite task contract's maximum training and testing length. Training uses gradient descent; random initialization distribution, learning rate, passes and batch size are chosen by the prover within the supplied budget. No hand-set task solution is provided."
+   },
+   {
+    "id": "D7",
+    "kind": "evaluation",
+    "sha256": "da2af02f6b0f2d426498500a373a8e0fe25392753bc1bc04e474f14e0479f375",
+    "text": "Each learnability check uses seeds 0, 1 and 2, 500 test instances per seed, and threshold 0.99. The supplied P4 training budget, deciding replay, timing-probe rule, no-example control and randomized-answer control are mandatory. The same model class, learning implementation and declared RECIPE are applied to true data and both controls. True-data accuracy must reach the threshold on each seed, and both controls must satisfy the profile's data-dependence checks."
+   },
+   {
+    "id": "D8",
+    "kind": "notation",
+    "sha256": "461dcbf6a26e3e35fbce082b3607ff3d29a714f4ce5e93bd1cccb4721ba83c55",
+    "text": "Theta is interpreted jointly in positive integer sequence position or length and positive integer width d, for each fixed positive vocabulary size V; constants may depend on V but not on position, length or width. The specified counted per-token function is 12*d^2+4*t*d+8*t+7*d+d*V+V-1 and the total is its sum over t=1 through n. These specifications are checked against the reference implementation by P1."
+   },
+   {
+    "id": "D9",
+    "kind": "evaluation",
+    "sha256": "6dd6fe0422a1e4fb09307b0daf5f84990dc5d2450feed9126ddc128d179514d2",
+    "text": "The P3 task family is exact unary length reporting with one final output token: feed n repetitions of input symbol 0 and require the final predicted token's numeric id to equal n. The vocabulary is fixed to ids 0 through V-1 with V positive, as in the card's V-column argmax readout. No multi-token numerical encoding is permitted in this task. The derivation quantifies over every function from token lists to a vocabulary token, thus including every weight setting of the card's mechanism regardless of width, rounds or store size. This is a vocabulary-output limit, not a parity or nesting limit."
+   }
+  ],
+  "not_formalized": [
+   {
+    "claim_id": "capability.1",
+    "why": "The conjunction includes an undefined internal probe-address 'matches' relation and an unspecified logarithmic width law, so a finite output construction alone would not formalize its full content."
+   },
+   {
+    "claim_id": "capability.2",
+    "why": "The claimed internal binding and retrieval relations are not operationally specified, and output accuracy alone would omit those separate assertions."
+   },
+   {
+    "claim_id": "capability.3",
+    "why": "The asymptotic nonvanishing-error assertion does not specify a precision protocol, input distribution or error quantifier, so it cannot be matched by the finite positive construction."
+   },
+   {
+    "claim_id": "capability.4",
+    "why": "The internal exact-retrieval assertions and the necessity of one round per link lack definitions sufficient to distinguish them from merely correct output."
+   },
+   {
+    "claim_id": "capability.5",
+    "why": "The card does not specify fixed-precision arithmetic, positional table representation or parameter uniformity over unbounded lengths sufficiently to state its universal parity impossibility without adding substantive hypotheses."
+   }
+  ],
+  "obligations": [
+   {
+    "claim_id": "complexity.time_per_token",
+    "claim_quote": "Theta(t d + d^2)",
+    "definitions": [
+     "D1",
+     "D8"
+    ],
+    "discharges": [],
+    "id": "O1",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O1.a",
+      "spec": "import Mathlib\ndef Claim : Prop := ∀ v : ℕ, 0 < v → ∃ c C : ℝ, 0 < c ∧ 0 < C ∧ ∀ t d : ℕ, 0 < t → 0 < d → c * ((t : ℝ)*d+(d : ℝ)^2) ≤ 12*(d : ℝ)^2+4*t*d+8*t+7*d+d*v+v-1 ∧ 12*(d : ℝ)^2+4*t*d+8*t+7*d+d*v+v-1 ≤ C * ((t : ℝ)*d+(d : ℝ)^2)"
+     }
+    ]
+   },
+   {
+    "claim_id": "complexity.memory",
+    "claim_quote": "Theta(n d)",
+    "definitions": [
+     "D2",
+     "D8"
+    ],
+    "discharges": [],
+    "id": "O2",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O2.a",
+      "spec": "import Mathlib\ndef Claim : Prop := ∃ c C : ℝ, 0 < c ∧ 0 < C ∧ ∀ n d : ℕ, 0 < n → 0 < d → c*((n : ℝ)*d) ≤ 4*(n : ℝ)*d+d+1 ∧ 4*(n : ℝ)*d+d+1 ≤ C*((n : ℝ)*d)"
+     }
+    ]
+   },
+   {
+    "claim_id": "complexity.total_sequence",
+    "claim_quote": "Theta(n^2 d + n d^2)",
+    "definitions": [
+     "D1",
+     "D8"
+    ],
+    "discharges": [],
+    "id": "O3",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O3.a",
+      "spec": "import Mathlib\ndef total (n d v : ℝ) : ℝ := 12*n*d^2+2*d*n*(n+1)+4*n*(n+1)+7*n*d+n*d*v+n*(v-1)\ndef Claim : Prop := ∀ v : ℕ, 0 < v → ∃ c C : ℝ, 0 < c ∧ 0 < C ∧ ∀ n d : ℕ, 0 < n → 0 < d → c*((n : ℝ)^2*d+n*(d : ℝ)^2) ≤ total n d v ∧ total n d v ≤ C*((n : ℝ)^2*d+n*(d : ℝ)^2)"
+     }
+    ]
+   },
+   {
+    "claim_id": "P1",
+    "claim_quote": "exact cost: symbolic formulas for the total counted operations over n tokens and the peak inference state words, in n and the card's own size parameters, equal the operations and state counted when the card's reference code runs at several sequence lengths, with the claimed exponent in n",
+    "definitions": [
+     "D1",
+     "D2"
+    ],
+    "discharges": [],
+    "id": "O4",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "cost",
+      "id": "O4.a",
+      "spec": {
+       "exponent": 2,
+       "ops": "12*n*d**2 + 2*d*n*(n+1) + 4*n*(n+1) + 7*n*d + n*d*V + n*(V-1)",
+       "sizes": {
+        "V": [
+         4,
+         16
+        ],
+        "d": [
+         16,
+         32
+        ]
+       },
+       "state": "4*n*d+d+1"
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.copy",
+    "claim_quote": "construction, copy: a hand-set configuration of the mechanism, with no learning, reproduces a uniform string after a separator with per-string accuracy at least 0.99 at every length L in 8, 32, 64, using at most its declared state words",
+    "definitions": [
+     "D2",
+     "D3",
+     "D4",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O5",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O5.a",
+      "spec": {
+       "count": 200,
+       "params": {
+        "D": 4
+       },
+       "sizes": [
+        8,
+        32,
+        64
+       ],
+       "state_words": "(8*L+1)*32*ceiling(log(2*L+1)/log(2))+1",
+       "task": "copy",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 4,
+        "tokens": "2*L",
+        "width": "32*ceiling(log(2*L+1)/log(2))"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.recall",
+    "claim_quote": "construction, associative recall: a hand-set configuration reads K key-value pairs, then answers every key once with per-query accuracy at least 0.99 at every K in 8, 32, 64, using at most its declared state words",
+    "definitions": [
+     "D2",
+     "D3",
+     "D4",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O6",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O6.a",
+      "spec": {
+       "count": 200,
+       "params": {
+        "V": 16
+       },
+       "sizes": [
+        8,
+        32,
+        64
+       ],
+       "state_words": "(4*(3*K+1)+1)*32*ceiling(log(3*K+2)/log(2))+1",
+       "task": "recall",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 4,
+        "tokens": "3*K+1",
+        "width": "32*ceiling(log(3*K+2)/log(2))"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.nesting",
+    "claim_quote": "construction, nesting: a hand-set configuration predicts the legal closing bracket of two-type balanced bracket prefixes with per-sequence accuracy at least 0.99 at every depth in 2, 4, 8, 16, using at most its declared state words",
+    "definitions": [
+     "D2",
+     "D3",
+     "D4",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O7",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O7.a",
+      "spec": {
+       "count": 200,
+       "sizes": [
+        2,
+        4,
+        8,
+        16
+       ],
+       "state_words": "(8*depth**2+1)*32*ceiling(log(4*depth+1)/log(2))+1",
+       "task": "dyck",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 2,
+        "tokens": "4*depth",
+        "width": "depth*32*ceiling(log(4*depth+1)/log(2))"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P2.composition",
+    "claim_quote": "construction, composition: a hand-set configuration answers f(g(x)) for tables f and g given in context with per-query accuracy at least 0.99 at every table size in 4, 16, 32, and resolves chained variable assignments at every chain length in 1, 4, 8, using at most its declared state words",
+    "definitions": [
+     "D2",
+     "D3",
+     "D4",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O8",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O8.a",
+      "spec": {
+       "count": 200,
+       "sizes": [
+        4,
+        16,
+        32
+       ],
+       "state_words": "(4*(5*T+3)+1)*32*ceiling(log(5*T+4)/log(2))+1",
+       "task": "composition",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 4,
+        "tokens": "5*T+3",
+        "width": "32*ceiling(log(5*T+4)/log(2))"
+       }
+      }
+     },
+     {
+      "bound": null,
+      "form": "construction",
+      "id": "O8.b",
+      "spec": {
+       "count": 200,
+       "params": {
+        "values": 8
+       },
+       "sizes": [
+        1,
+        4,
+        8
+       ],
+       "state_words": "(2*(hops+1)*(4*hops+7)+1)*32*ceiling(log(4*hops+8)/log(2))+1",
+       "task": "binding",
+       "threshold": 0.99,
+       "token_store": {
+        "arrays": 2,
+        "tokens": "4*hops+7",
+        "width": "(hops+1)*32*ceiling(log(4*hops+8)/log(2))"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "sample_efficiency.prediction",
+    "claim_quote": "From random weights, gradient descent on 3000 copy examples at L = 4 over 4 symbols reaches per-string accuracy 0.99.",
+    "definitions": [
+     "D3",
+     "D6",
+     "D7"
+    ],
+    "discharges": [],
+    "id": "O9",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O9.a",
+      "spec": {
+       "examples": 3000,
+       "params": {
+        "D": 4
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 4,
+       "task": "copy",
+       "test_count": 500,
+       "threshold": 0.99
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.copy",
+    "claim_quote": "toy learnability, copy: from its initial state, using only its own learning rule, the mechanism learns the copy task at L at most 4 from the stated number of examples m, reaching 0.99 on three seeds",
+    "definitions": [
+     "D3",
+     "D6",
+     "D7"
+    ],
+    "discharges": [],
+    "id": "O10",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O10.a",
+      "spec": {
+       "examples": 3000,
+       "params": {
+        "D": 4
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 4,
+       "task": "copy",
+       "test_count": 500,
+       "threshold": 0.99
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.recall",
+    "claim_quote": "toy learnability, recall: the mechanism learns associative recall at K at most 4 from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+    "definitions": [
+     "D3",
+     "D6",
+     "D7"
+    ],
+    "discharges": [],
+    "id": "O11",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O11.a",
+      "spec": {
+       "examples": 3000,
+       "params": {
+        "V": 16
+       },
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 4,
+       "task": "recall",
+       "test_count": 500,
+       "threshold": 0.99
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.nesting",
+    "claim_quote": "toy learnability, nesting: the mechanism learns the bracket task at depth at most 2 from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+    "definitions": [
+     "D3",
+     "D6",
+     "D7"
+    ],
+    "discharges": [],
+    "id": "O12",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O12.a",
+      "spec": {
+       "examples": 1500,
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 2,
+       "task": "dyck",
+       "test_count": 500,
+       "threshold": 0.99
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P4.composition",
+    "claim_quote": "toy learnability, composition: the mechanism learns two-hop lookup at table size at most 4, or variable binding at chain length at most 2, from the stated m examples with its own learning rule, reaching 0.99 on three seeds",
+    "definitions": [
+     "D3",
+     "D6",
+     "D7"
+    ],
+    "discharges": [],
+    "id": "O13",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "learnability",
+      "id": "O13.a",
+      "spec": {
+       "examples": 4000,
+       "seeds": [
+        0,
+        1,
+        2
+       ],
+       "size": 4,
+       "task": "composition",
+       "test_count": 500,
+       "threshold": 0.99
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P5",
+    "claim_quote": "information bounds: the card's state bits against the bits the P2 tasks need at the sizes P2 covers, and the stated example counts m against the bits needed to identify the target rule, pass the conservation laws",
+    "definitions": [
+     "D2",
+     "D3",
+     "D4",
+     "D5"
+    ],
+    "discharges": [],
+    "id": "O14",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "conservation",
+      "id": "O14.a",
+      "spec": {
+       "copy": [
+        {
+         "D": 4,
+         "L": 64,
+         "accuracy": 1.0,
+         "state_bits": 4202528
+        }
+       ],
+       "dyck": [
+        {
+         "accuracy": 1.0,
+         "depth": 16,
+         "state_bits": 14687264
+        }
+       ],
+       "recall": [
+        {
+         "K": 64,
+         "V": 16,
+         "accuracy": 1.0,
+         "state_bits": 6332448
+        }
+       ],
+       "sample": [
+        {
+         "bits_per_example": 2,
+         "examples": 3000,
+         "log2_H": 8,
+         "prior_bits": 0,
+         "task": "copy"
+        },
+        {
+         "bits_per_example": 2,
+         "examples": 3000,
+         "log2_H": 8,
+         "prior_bits": 0,
+         "task": "recall"
+        },
+        {
+         "bits_per_example": 2,
+         "examples": 1500,
+         "log2_H": 8,
+         "prior_bits": 0,
+         "task": "dyck"
+        },
+        {
+         "bits_per_example": 2,
+         "examples": 4000,
+         "log2_H": 8,
+         "prior_bits": 0,
+         "task": "composition"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "claim_id": "P3",
+    "claim_quote": "derived limit: at least one task family the mechanism cannot solve within its resources, with a derivation checked by Lean, SymPy or Z3, and consistent with the constructions of P2",
+    "definitions": [
+     "D9"
+    ],
+    "discharges": [],
+    "id": "O15",
+    "premises": [],
+    "statements": [
+     {
+      "bound": null,
+      "form": "lean",
+      "id": "O15.a",
+      "spec": "import Mathlib\ndef Claim : Prop := ∀ (v : ℕ) (hv : 0 < v), ∀ read : List (Fin v) → Fin v, (read (List.replicate v (⟨0, hv⟩ : Fin v))).val ≠ v"
+     }
+    ]
+   }
+  ],
+  "premises": [],
+  "profile": {
+   "limits": [
+    {
+     "resources": "Exact unary length reporting in one output token requires a vocabulary containing the numeric target id; at input length V this requires at least V+1 output columns instead of the fixed V columns, regardless of width, rounds or growing store.",
+     "size": null,
+     "task": "other",
+     "why": "For V repetitions of input symbol 0 the target id is V, whereas every argmax output of the card's fixed V-column readout has id strictly below V; the Lean statement covers all possible readout functions and therefore all weight settings. This distinct task family imposes no contradictory limit on the P2 tasks."
+    }
+   ],
+   "slots": [
+    "P1",
+    "P2.copy",
+    "P2.recall",
+    "P2.nesting",
+    "P2.composition",
+    "P3",
+    "P4.copy",
+    "P4.recall",
+    "P4.nesting",
+    "P4.composition",
+    "P5"
+   ],
+   "version": "phase4-2026-10-13"
+  }
+ },
+ "recorded_c": {
+  "claims": {
+   "P1": "observed",
+   "P2.composition": "conditional",
+   "P2.copy": "conditional",
+   "P2.nesting": "conditional",
+   "P2.recall": "conditional",
+   "P3": "blocked",
+   "P4.composition": "conditional",
+   "P4.copy": "conditional",
+   "P4.nesting": "conditional",
+   "P4.recall": "conditional",
+   "P5": "conditional",
+   "capability.1": "not_formalized",
+   "capability.2": "not_formalized",
+   "capability.3": "not_formalized",
+   "capability.4": "not_formalized",
+   "capability.5": "not_formalized",
+   "complexity.memory": "proven",
+   "complexity.time_per_token": "proven",
+   "complexity.total_sequence": "proven",
+   "sample_efficiency.prediction": "conditional"
+  },
+  "conservation": {
+   "evidence": "numbers not backed by card quotes: ['Hand-set construction inference uses binary32 stored numbers, including parameters and store entries; intermediate numerical operations follow binary32 arithmetic. A state word contributes 32 bits to conservation accounting.', '(8*L+1)*32*ceiling(log(2*L+1)/log(2))+1', '(4*(3*K+1)+1)*32*ceiling(log(3*K+2)/log(2))+1', '(8*depth**2+1)*32*ceiling(log(4*depth+1)/log(2))+1']",
+   "ran": false
+  },
+  "kill_codes": [
+   "statement_mismatch"
+  ],
+  "mismatched": [
+   "O15.a"
+  ],
+  "new_edges": [
+   {
+    "obligation_id": "O5",
+    "premise_id": "C1"
+   },
+   {
+    "obligation_id": "O6",
+    "premise_id": "C2"
+   },
+   {
+    "obligation_id": "O7",
+    "premise_id": "C3"
+   },
+   {
+    "obligation_id": "O8",
+    "premise_id": "C4"
+   },
+   {
+    "obligation_id": "O9",
+    "premise_id": "C5"
+   },
+   {
+    "obligation_id": "O10",
+    "premise_id": "C5"
+   },
+   {
+    "obligation_id": "O11",
+    "premise_id": "C6"
+   },
+   {
+    "obligation_id": "O12",
+    "premise_id": "C7"
+   },
+   {
+    "obligation_id": "O13",
+    "premise_id": "C8"
+   },
+   {
+    "obligation_id": "O14",
+    "premise_id": "C9"
+   },
+   {
+    "obligation_id": "O7",
+    "premise_id": "C10"
+   },
+   {
+    "obligation_id": "O14",
+    "premise_id": "C11"
+   }
+  ],
+  "new_premises": [
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C1",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component Hand-set copy position-address table works as the card says (no a measured cost in a check that held)",
+    "why_needed": "The construction encodes both absolute position and the target copy position in P; it exists in an executed construction but its cost was not measured by a cost statement."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C2",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component Recall predecessor binding and content lookup works as the card says (no a measured cost in a check that held)",
+    "why_needed": "The executed witness defines quadratic position scores for predecessor retrieval and binary key codes for the second lookup, without a task-specific cost check."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C3",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component Dyck depth decoder and recency retrieval works as the card says (no a measured cost in a check that held)",
+    "why_needed": "The executed source defines a position-conditioned depth decoder, but its first feed-forward layer has hidden width H=8*depth*(depth+1), not the required square d-by-d matrices."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C4",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component Composition binding tables and answer decoder works as the card says (no a measured cost in a check that held)",
+    "why_needed": "The witness actually binds predecessors in round one and combines a queried g row with f-table contents in round two, so success alone does not establish the card's stated round-by-round explanation."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C5",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component Random initialization and gradient-based training works as the card says (no a measured cost in a check that held)",
+    "why_needed": "An executed copy learner exists, using Adam, clipping and a learning-rate schedule; its success establishes the particular recipe rather than an unspecified generic gradient-descent guarantee."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C6",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component Recall training procedure works as the card says (no a measured cost in a check that held)",
+    "why_needed": "The executed learner supplies an AdamW recipe and query-position loss rather than a precomputed retrieval oracle."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C7",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component Bracket training procedure works as the card says (no a measured cost in a check that held)",
+    "why_needed": "The executed learner supports only the finite depth-two learning claim, not the asymptotic fixed-round nesting limitation."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C8",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component Composition training procedure works as the card says (no a measured cost in a check that held)",
+    "why_needed": "The executed recipe exists and reaches the stated finite-task threshold, with no measured training-cost claim."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C9",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "component 256-rule hypothesis class works as the card says (no runnable code in a check that held)",
+    "why_needed": "No executed source enumerates this class or proves that it contains the rules learned by the unrestricted trainable architecture."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C10",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "The rectangular feed-forward depth decoder in the O7.a witness can be replaced by square d-by-d feed-forward matrices at the declared width while retaining the tested bracket predictions.",
+    "why_needed": "At depth 16 the source uses H=2176 hidden units with d=224, so the executed success is not a witness for the frozen square-matrix architecture without an unprovided replacement construction."
+   },
+   {
+    "added_by": "challenger",
+    "citation": null,
+    "does_work": true,
+    "id": "C11",
+    "kind": "other",
+    "measurement_plan": null,
+    "testable_by": "code",
+    "text": "The answer-readout rules relevant to all four sample-information calculations belong to a hypothesis class with at most 256 elements.",
+    "why_needed": "The conservation check accepts log2_H=8 as input but neither defines the class nor derives this bound from the trainable model."
+   }
+  ],
+  "verdict": "fail"
+ },
+ "replies": {
+  "backtranslate": {
+   "translations": [
+    {
+     "plain": "For every positive integer vocabulary size v, there exist positive real constants c and C (which may depend on v) such that for all positive integers t and d, the real-valued per-token operation count 12d² + 4td + 8t + 7d + dv + v − 1 satisfies c(td + d²) ≤ 12d² + 4td + 8t + 7d + dv + v − 1 ≤ C(td + d²).",
+     "statement_id": "O1.a"
+    },
+    {
+     "plain": "There exist positive real constants c and C such that for all positive integers n and d, the expression 4nd + d + 1 satisfies c(nd) ≤ 4nd + d + 1 ≤ C(nd).",
+     "statement_id": "O2.a"
+    },
+    {
+     "plain": "For every positive integer vocabulary size v, there exist positive real constants c and C (which may depend on v) such that for all positive integers n and d, the total operation count 12nd² + 2dn(n+1) + 4n(n+1) + 7nd + ndv + n(v−1) satisfies c(n²d + nd²) ≤ 12nd² + 2dn(n+1) + 4n(n+1) + 7nd + ndv + n(v−1) ≤ C(n²d + nd²).",
+     "statement_id": "O3.a"
+    },
+    {
+     "plain": "Specifies a cost model where the operation count formula is 12nd² + 2dn(n+1) + 4n(n+1) + 7nd + ndV + n(V−1) and the persistent inference state size formula is 4nd + d + 1. Measurements are taken at vocabulary sizes V ∈ {4, 16} and widths d ∈ {16, 32}, with an exponent parameter of 2.",
+     "statement_id": "O4.a"
+    },
+    {
+     "plain": "Specifies a construction task for copy with parameter D=4. It tests 200 instances at sequence lengths L ∈ {8, 32, 64}, requiring an accuracy threshold of 0.99. The token store uses 4 arrays, stores 2L tokens per array, and has width 32⌈log₂(2L+1)⌉. The total state words required are (8L+1)·32⌈log₂(2L+1)⌉ + 1.",
+     "statement_id": "O5.a"
+    },
+    {
+     "plain": "Specifies a construction task for recall with vocabulary size V=16. It tests 200 instances at sizes K ∈ {8, 32, 64}, requiring an accuracy threshold of 0.99. The token store uses 4 arrays, stores 3K+1 tokens per array, and has width 32⌈log₂(3K+2)⌉. The total state words required are (4(3K+1)+1)·32⌈log₂(3K+2)⌉ + 1.",
+     "statement_id": "O6.a"
+    },
+    {
+     "plain": "Specifies a construction task for dyck. It tests 200 instances at depths depth ∈ {2, 4, 8, 16}, requiring an accuracy threshold of 0.99. The token store uses 2 arrays, stores 4·depth tokens per array, and has width depth·32⌈log₂(4·depth+1)⌉. The total state words required are (8·depth²+1)·32⌈log₂(4·depth+1)⌉ + 1.",
+     "statement_id": "O7.a"
+    },
+    {
+     "plain": "Specifies a construction task for composition. It tests 200 instances at sizes T ∈ {4, 16, 32}, requiring an accuracy threshold of 0.99. The token store uses 4 arrays, stores 5T+3 tokens per array, and has width 32⌈log₂(5T+4)⌉. The total state words required are (4(5T+3)+1)·32⌈log₂(5T+4)⌉ + 1.",
+     "statement_id": "O8.a"
+    },
+    {
+     "plain": "Specifies a construction task for binding with values=8. It tests 200 instances at hops ∈ {1, 4, 8}, requiring an accuracy threshold of 0.99. The token store uses 2 arrays, stores 4·hops+7 tokens per array, and has width (hops+1)·32⌈log₂(4·hops+8)⌉. The total state words required are (2(hops+1)(4·hops+7)+1)·32⌈log₂(4·hops+8)⌉ + 1.",
+     "statement_id": "O8.b"
+    },
+    {
+     "plain": "Specifies a learnability experiment for the copy task with parameter D=4. It uses 3000 training examples at size 4, evaluated on random seeds [0, 1, 2] with 500 test instances per seed. The required accuracy threshold is 0.99.",
+     "statement_id": "O9.a"
+    },
+    {
+     "plain": "Specifies a learnability experiment for the copy task with parameter D=4. It uses 3000 training examples at size 4, evaluated on random seeds [0, 1, 2] with 500 test instances per seed. The required accuracy threshold is 0.99.",
+     "statement_id": "O10.a"
+    },
+    {
+     "plain": "Specifies a learnability experiment for the recall task with vocabulary size V=16. It uses 3000 training examples at size 4, evaluated on random seeds [0, 1, 2] with 500 test instances per seed. The required accuracy threshold is 0.99.",
+     "statement_id": "O11.a"
+    },
+    {
+     "plain": "Specifies a learnability experiment for the dyck task. It uses 1500 training examples at size (depth) 2, evaluated on random seeds [0, 1, 2] with 500 test instances per seed. The required accuracy threshold is 0.99.",
+     "statement_id": "O12.a"
+    },
+    {
+     "plain": "Specifies a learnability experiment for the composition task. It uses 4000 training examples at size 4, evaluated on random seeds [0, 1, 2] with 500 test instances per seed. The required accuracy threshold is 0.99.",
+     "statement_id": "O13.a"
+    },
+    {
+     "plain": "Asserts conservation of state bits for specific task configurations achieving perfect accuracy (1.0). For copy with D=4 and L=64, the state requires 4,202,528 bits. For dyck with depth=16, it requires 14,687,264 bits. For recall with K=64 and V=16, it requires 6,332,448 bits. The sampling data for copy, recall, dyck, and composition uses 2 bits per example with the specified number of examples (3000, 3000, 1500, 4000 respectively), a hypothesis space log-size of 8, and zero prior bits.",
+     "statement_id": "O14.a"
+    },
+    {
+     "plain": "For every positive integer vocabulary size v, and for every function read mapping lists of tokens from Fin v to a token in Fin v, applying read to a list of length v consisting entirely of the token 0 yields a result whose numeric value is not equal to v. Since Fin v only contains values strictly less than v, this asserts trivially that no function (including any neural network weight setting) can output an out-of-vocabulary symbol id v.",
+     "statement_id": "O15.a"
+    }
+   ]
+  },
+  "challenger": {
+   "citations": [],
+   "components": [
+    {
+     "function": "update",
+     "name": "Cost-reference address and content stores",
+     "quote": "The store holds two rows of d numbers per position per round.",
+     "statement_id": "O4.a",
+     "used_by": [
+      "O1",
+      "O2",
+      "O3",
+      "O4"
+     ],
+     "why": "The executed cost reference defines and measures the growing stores and retrieval operations, although its zero position table is not a task-solving construction."
+    },
+    {
+     "function": "init",
+     "name": "Hand-set copy position-address table",
+     "quote": "With hand-set weights the probe at output step i matches the address written at input position i",
+     "statement_id": "O5.a",
+     "used_by": [
+      "O5"
+     ],
+     "why": "The construction encodes both absolute position and the target copy position in P; it exists in an executed construction but its cost was not measured by a cost statement."
+    },
+    {
+     "function": "init",
+     "name": "Recall predecessor binding and content lookup",
+     "quote": "the first round binds each item to the one before it and the second retrieves the item stored after the matching one",
+     "statement_id": "O6.a",
+     "used_by": [
+      "O6"
+     ],
+     "why": "The executed witness defines quadratic position scores for predecessor retrieval and binary key codes for the second lookup, without a task-specific cost check."
+    },
+    {
+     "function": "build",
+     "name": "Dyck depth decoder and recency retrieval",
+     "quote": "The legal closing bracket is predicted exactly up to depth D when the number of rounds grows with D",
+     "statement_id": "O7.a",
+     "used_by": [
+      "O7"
+     ],
+     "why": "The executed source defines a position-conditioned depth decoder, but its first feed-forward layer has hidden width H=8*depth*(depth+1), not the required square d-by-d matrices."
+    },
+    {
+     "function": "build",
+     "name": "Composition binding tables and answer decoder",
+     "quote": "The first round retrieves g(x) and the second retrieves f at that point, so f(g(x)) is answered exactly",
+     "statement_id": "O8.a",
+     "used_by": [
+      "O8"
+     ],
+     "why": "The witness actually binds predecessors in round one and combines a queried g row with f-table contents in round two, so success alone does not establish the card's stated round-by-round explanation."
+    },
+    {
+     "function": "learn",
+     "name": "Random initialization and gradient-based training",
+     "quote": "Every matrix (E, P, W_a, W_c, W_p, W_o, U, V, O) is learned by gradient descent on the cross-entropy of the next symbol, computed through both rounds.",
+     "statement_id": "O10.a",
+     "used_by": [
+      "O9",
+      "O10"
+     ],
+     "why": "An executed copy learner exists, using Adam, clipping and a learning-rate schedule; its success establishes the particular recipe rather than an unspecified generic gradient-descent guarantee."
+    },
+    {
+     "function": "learn",
+     "name": "Recall training procedure",
+     "quote": "3000 for recall at K = 4",
+     "statement_id": "O11.a",
+     "used_by": [
+      "O11"
+     ],
+     "why": "The executed learner supplies an AdamW recipe and query-position loss rather than a precomputed retrieval oracle."
+    },
+    {
+     "function": "learn",
+     "name": "Bracket training procedure",
+     "quote": "1500 for bracket nesting at depth 2",
+     "statement_id": "O12.a",
+     "used_by": [
+      "O12"
+     ],
+     "why": "The executed learner supports only the finite depth-two learning claim, not the asymptotic fixed-round nesting limitation."
+    },
+    {
+     "function": "learn",
+     "name": "Composition training procedure",
+     "quote": "4000 for two-hop lookup at table size 4",
+     "statement_id": "O13.a",
+     "used_by": [
+      "O13"
+     ],
+     "why": "The executed recipe exists and reaches the stated finite-task threshold, with no measured training-cost claim."
+    },
+    {
+     "function": null,
+     "name": "256-rule hypothesis class",
+     "quote": "log2 |H| = 8 for the hypothesis class of such read-out rules",
+     "statement_id": null,
+     "used_by": [
+      "O14"
+     ],
+     "why": "No executed source enumerates this class or proves that it contains the rules learned by the unrestricted trainable architecture."
+    }
+   ],
+   "conservation": {
+    "claims": {
+     "copy": [
+      {
+       "D": 4,
+       "L": 64,
+       "accuracy": 1.0,
+       "state_bits": 4202528
+      }
+     ],
+     "dyck": [
+      {
+       "accuracy": 1.0,
+       "depth": 16,
+       "state_bits": 14687264
+      }
+     ],
+     "recall": [
+      {
+       "K": 64,
+       "V": 16,
+       "accuracy": 1.0,
+       "state_bits": 6332448
+      }
+     ],
+     "sample": [
+      {
+       "bits_per_example": 2,
+       "examples": 3000,
+       "log2_H": 8,
+       "prior_bits": 0
+      },
+      {
+       "bits_per_example": 2,
+       "examples": 3000,
+       "log2_H": 8,
+       "prior_bits": 0
+      },
+      {
+       "bits_per_example": 2,
+       "examples": 1500,
+       "log2_H": 8,
+       "prior_bits": 0
+      },
+      {
+       "bits_per_example": 2,
+       "examples": 4000,
+       "log2_H": 8,
+       "prior_bits": 0
+      }
+     ]
+    },
+    "quotes": [
+     "With hand-set weights the probe at output step i matches the address written at input position i, so every string is copied exactly at every listed length when d grows with the log of the length.",
+     "With hand-set weights the first round binds each item to the one before it and the second retrieves the item stored after the matching one; per-query accuracy 1.0 at every listed K.",
+     "The legal closing bracket is predicted exactly up to depth D when the number of rounds grows with D; with two fixed rounds and fixed precision the error does not vanish for all depths as the length grows.",
+     "Hand-set construction inference uses binary32 stored numbers, including parameters and store entries; intermediate numerical operations follow binary32 arithmetic. A state word contributes 32 bits to conservation accounting.",
+     "(8*L+1)*32*ceiling(log(2*L+1)/log(2))+1",
+     "(4*(3*K+1)+1)*32*ceiling(log(3*K+2)/log(2))+1",
+     "(8*depth**2+1)*32*ceiling(log(4*depth+1)/log(2))+1",
+     "Example counts m this card states for its learning rule at the solvable cases, each reaching 0.99 on three seeds: 3000 for copying at L = 4, 3000 for recall at K = 4, 1500 for bracket nesting at depth 2 and 4000 for two-hop lookup at table size 4.",
+     "Information account for each count: the rule to identify is which earlier position or stored item the answer reads, at most 8 bits (log2 |H| = 8 for the hypothesis class of such read-out rules); the mechanism supplies no prior bits for these tasks; each example carries 2 bits of answer."
+    ],
+    "why": "The declared state capacities comfortably satisfy these necessary information bounds, but passing conservation proves neither construction correctness nor learnability; the sample calculation additionally assumes an unproved 256-element hypothesis class."
+   },
+   "counterexample_searches": [],
+   "magic_x": [],
+   "new_edges": [],
+   "new_premises": [
+    {
+     "kind": "other",
+     "text": "The rectangular feed-forward depth decoder in the O7.a witness can be replaced by square d-by-d feed-forward matrices at the declared width while retaining the tested bracket predictions.",
+     "used_by": [
+      "O7"
+     ],
+     "why_needed": "At depth 16 the source uses H=2176 hidden units with d=224, so the executed success is not a witness for the frozen square-matrix architecture without an unprovided replacement construction."
+    },
+    {
+     "kind": "other",
+     "text": "The answer-readout rules relevant to all four sample-information calculations belong to a hypothesis class with at most 256 elements.",
+     "used_by": [
+      "O14"
+     ],
+     "why_needed": "The conservation check accepts log2_H=8 as input but neither defines the class nor derives this bound from the trainable model."
+    }
+   ]
+  },
+  "compare": {
+   "definitions": [
+    {
+     "definition_id": "D1",
+     "verdict": "convention",
+     "why": "Fixes accounting conventions for counting operations and matrix dimensions, a protocol choice for the cost model."
+    },
+    {
+     "definition_id": "D2",
+     "verdict": "convention",
+     "why": "Defines what counts as persistent inference state and excludes parameters/temporaries, a protocol choice."
+    },
+    {
+     "definition_id": "D3",
+     "verdict": "convention",
+     "why": "Specifies task generators, layouts, and test instance counts, a protocol choice for evaluation."
+    },
+    {
+     "definition_id": "D4",
+     "verdict": "convention",
+     "why": "Sets resource conventions and architecture details for hand-set witnesses, not asserting existence or capability."
+    },
+    {
+     "definition_id": "D5",
+     "verdict": "convention",
+     "why": "Fixes argmax tie-breaking and arithmetic precision, a protocol choice for evaluation."
+    },
+    {
+     "definition_id": "D6",
+     "verdict": "convention",
+     "why": "Specifies the trainable architecture and learning rule for the prover, a protocol choice."
+    },
+    {
+     "definition_id": "D7",
+     "verdict": "convention",
+     "why": "Fixes seeds, test counts, and thresholds for learnability checks, a protocol choice."
+    },
+    {
+     "definition_id": "D8",
+     "verdict": "convention",
+     "why": "Defines how asymptotic notation is applied to the counted functions, a notational choice."
+    },
+    {
+     "definition_id": "D9",
+     "verdict": "convention",
+     "why": "Defines the exact task and output constraints for the P3 slot, a protocol choice for what constitutes a derived limit."
+    }
+   ],
+   "premises": [
+    {
+     "implies": [],
+     "premise_id": "C1",
+     "why": "Describes component behavior without restating the asymptotic or capability claims."
+    },
+    {
+     "implies": [],
+     "premise_id": "C2",
+     "why": "Describes component behavior without restating the asymptotic or capability claims."
+    },
+    {
+     "implies": [],
+     "premise_id": "C3",
+     "why": "Describes component behavior without restating the asymptotic or capability claims."
+    },
+    {
+     "implies": [],
+     "premise_id": "C4",
+     "why": "Describes component behavior without restating the asymptotic or capability claims."
+    },
+    {
+     "implies": [],
+     "premise_id": "C5",
+     "why": "Describes execution details of a specific recipe without restating the generic gradient-descent guarantee."
+    },
+    {
+     "implies": [],
+     "premise_id": "C6",
+     "why": "Describes execution details of a specific recipe without restating the generic training guarantee."
+    },
+    {
+     "implies": [],
+     "premise_id": "C7",
+     "why": "Describes execution details of a specific recipe without restating the asymptotic limitation claim."
+    },
+    {
+     "implies": [],
+     "premise_id": "C8",
+     "why": "Describes execution details of a specific recipe without restating the training guarantee."
+    },
+    {
+     "implies": [],
+     "premise_id": "C9",
+     "why": "Describes a hypothesis class assumption without restating the conservation claim."
+    },
+    {
+     "implies": [],
+     "premise_id": "C10",
+     "why": "Describes a potential architectural replacement without restating the capability claim."
+    },
+    {
+     "implies": [],
+     "premise_id": "C11",
+     "why": "Describes a hypothesis class size assumption without restating the conservation claim."
+    }
+   ],
+   "statements": [
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Polynomial coefficients 12,4,8,7 match backtranslation and claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Positive integers/reals for v, t, d match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "td + d² matches claim's Theta(t d + d^2).",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "0 < v, 0 < t, 0 < d match claim's positive integer domain.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "c(...) ≤ expr ≤ C(...) matches Theta definition.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "∀v, ∃c,C, ∀t,d order and scope match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O1.a",
+     "why": "Formal statement exactly captures the Theta bound and quantifier structure of the claim."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Coefficients 4,1 match backtranslation.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Positive integers/reals for n, d match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "nd matches claim's Theta(n d).",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "0 < n, 0 < d match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "c(...) ≤ expr ≤ C(...) matches Theta definition.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "∃c,C, ∀n,d order matches claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O2.a",
+     "why": "Formal statement exactly captures the Theta bound and quantifier structure of the claim."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Polynomial coefficients match backtranslation.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Positive integers/reals for v, n, d match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "n²d + nd² matches claim's Theta(n^2 d + n d^2).",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "0 < v, 0 < n, 0 < d match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "c(...) ≤ expr ≤ C(...) matches Theta definition.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "∀v, ∃c,C, ∀n,d order matches claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O3.a",
+     "why": "Formal statement exactly captures the Theta bound and quantifier structure of the claim."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Cost form parameters match claim's request.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Cost form parameters match claim's request.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Cost form parameters match claim's request.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Cost form parameters match claim's request.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Cost form parameters match claim's request.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Cost form parameters match claim's request.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O4.a",
+     "why": "Cost form provides the exact symbolic formulas and tested sizes requested by P1."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O5.a",
+     "why": "Construction form exactly matches P2.copy task, sizes, threshold, and state formula."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O6.a",
+     "why": "Construction form exactly matches P2.recall task, sizes, threshold, and state formula."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O7.a",
+     "why": "Construction form exactly matches P2.nesting task, sizes, threshold, and state formula."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O8.a",
+     "why": "Construction form exactly matches P2.composition two-hop lookup task, sizes, threshold, and state formula."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Construction parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O8.b",
+     "why": "Construction form exactly matches P2.composition binding task, sizes, threshold, and state formula."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O9.a",
+     "why": "Learnability form exactly matches sample efficiency prediction task, size, examples, and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O10.a",
+     "why": "Learnability form exactly matches P4.copy task, size, examples, and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O11.a",
+     "why": "Learnability form exactly matches P4.recall task, size, examples, and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O12.a",
+     "why": "Learnability form exactly matches P4.nesting task, size, examples, and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Learnability parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O13.a",
+     "why": "Learnability form exactly matches P4.composition two-hop lookup task, size, examples, and threshold."
+    },
+    {
+     "direction": "match",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "Conservation parameters match claim.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Conservation parameters match claim.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "Conservation parameters match claim.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "Conservation parameters match claim.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "Conservation parameters match claim.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Conservation parameters match claim.",
+       "verdict": "same"
+      }
+     },
+     "statement_id": "O14.a",
+     "why": "Conservation form provides exact state bits and sample bits for P5 tasks as requested."
+    },
+    {
+     "direction": "different",
+     "predicate": null,
+     "rubric": {
+      "constants": {
+       "note": "No extra constants introduced.",
+       "verdict": "same"
+      },
+      "domains": {
+       "note": "Positive integers for v match claim context.",
+       "verdict": "same"
+      },
+      "exponents": {
+       "note": "N/A for this form.",
+       "verdict": "same"
+      },
+      "hypotheses": {
+       "note": "0 < v matches claim context.",
+       "verdict": "same"
+      },
+      "inequality_direction": {
+       "note": "N/A for this form.",
+       "verdict": "same"
+      },
+      "quantifiers": {
+       "note": "Claim asks for existence of a task family; formal asserts universal vocabulary bound.",
+       "verdict": "differs"
+      }
+     },
+     "statement_id": "O15.a",
+     "why": "The formal statement proves a trivial vocabulary-output limit for all read functions, whereas the claim asks for a non-trivial resource-limited task family consistent with P2 constructions."
+    }
+   ]
+  }
+ },
+ "source": "runs/calibration-smoke-20261013T170308Z/k1-run1 (sanitized by tmp/fix4/make_fixtures.py)"
+}

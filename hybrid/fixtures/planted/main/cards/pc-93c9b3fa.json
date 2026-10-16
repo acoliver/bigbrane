@@ -1,0 +1,150 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Entry list kept in order of closeness to the newest address",
+  "summary": "Written pairs are kept in a list. After each symbol the whole list is re-sorted by the absolute difference between each entry's address code and the newest code, newest first among equals, so that a probe can be answered from the front of the list after one more ordering pass. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Keep every written pair in a list re-sorted after each symbol by closeness of its address code to the newest code, and answer a probe from the front after ordering by closeness to the probe.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Ls",
+        "type": "ordered list of entries",
+        "shape": [
+          "n",
+          3
+        ],
+        "meaning": "Every written pair as (code a_i, item y_i, arrival index i), in the current order; it grows with the number of writes."
+      },
+      {
+        "name": "bw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket word of open types, innermost in the lowest bit, 20 bits."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase."
+      }
+    ],
+    "update": [
+      {
+        "name": "insert",
+        "latex": "Ls \\leftarrow Ls \\cup \\{(a_t, y_t, t)\\}",
+        "plain": "insert the new entry (a_t, y_t, t), where a_t is the address code kappa(z_t) in 0..255: the position counter for string symbols, the identity for pair addresses, 128 + identity for the second table and y_t = 2 id(item) + lambda_t"
+      },
+      {
+        "name": "reorder",
+        "latex": "Ls \\leftarrow \\mathrm{sort}\\bigl(Ls;\\ |a_i - a_t| \\text{ ascending},\\ i \\text{ descending}\\bigr)",
+        "plain": "sort the whole list by |a_i - a_t| ascending, ties by arrival index descending"
+      },
+      {
+        "name": "bracket word",
+        "latex": "bw \\leftarrow 2\\,bw + b,\\quad bw \\leftarrow \\lfloor bw/2 \\rfloor",
+        "plain": "an opener of type b: bw = 2 bw + b; a closer: bw = floor(bw / 2)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "front",
+        "latex": "\\hat{y} = y_{\\mathrm{front}(\\mathrm{sort}(Ls;\\ |a_i - a| ,\\ -i))} \\text{ if its code is } a",
+        "plain": "order the list by |a_i - a| ascending and arrival descending for the probe code a; if the front entry has code a its item is the answer"
+      },
+      {
+        "name": "chains and two hops",
+        "latex": "a \\leftarrow \\lfloor \\hat{y}/2 \\rfloor \\text{ while the flag is } 0",
+        "plain": "chained assignments probe again with the named variable while the flag is 0, at most 8 times; f(g(x)) probes 128 + id(x), then the result"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = bw \\bmod 2",
+        "plain": "the legal closer has the type in the lowest bit of bw"
+      }
+    ],
+    "learning": {
+      "description": "The episode format is found by search: the candidate role assignments of the symbols in m example episodes are enumerated and the first one that reproduces every example answer is kept.",
+      "few_shot_argument": "Each example answer removes every role assignment that would have produced another answer; m = 5 example episodes per task leave the true assignment in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(log n)",
+      "memory": "Theta(n)",
+      "total_sequence": "Theta(n log n)",
+      "constants_notes": "After the previous symbol the list is already ordered by closeness to the previous code, and moving the reference from one code to the next only displaces entries near the two codes, so each reordering costs one bisection and a constant number of moves; the front is read in constant time. The list holds three words per write."
+    },
+    "sample_efficiency": {
+      "mechanism": "Search over role assignments consistent with m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 5,
+        "statement": "With m = 5 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction: symbol i goes in under code i; after the separator the probes 1..L return the copy; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "The front entry for a probe code is its newest entry; exact at K = 8, 32 and 64."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "Bracket word: exact closer prediction at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Table g under 128 + id and table f under id; two probes; exact at sizes 4, 16 and 32. At most 8 chained probes; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "Bracket stacks deeper than the 20-bit word cannot all be told apart: exact closer prediction fails at every depth D > 20."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The role search learns every small case from m = 5 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The front entry for a probe code is older than another entry with the same code.",
+    "Counted operations per symbol grow faster than log n."
+  ],
+  "toy_example": {
+    "description": "Five inserts with re-sorting and two probes.",
+    "python": "import json\nLs = []\ndef insert(a, y, t):\n    global Ls\n    Ls.append((a, y, t))\n    Ls = sorted(Ls, key=lambda e: (abs(e[0] - a), -e[2]))\ndef probe(a):\n    head = sorted(Ls, key=lambda e: (abs(e[0] - a), -e[2]))[0]\n    return head[1] if head[0] == a else None\nfor t, (a, y) in enumerate([(3, 11), (9, 4), (3, 6), (17, 2), (8, 5)]):\n    insert(a, y, t)\nprint(json.dumps({\"order_codes\": [e[0] for e in Ls], \"probe_3\": probe(3), \"probe_10\": probe(10)}))\n",
+    "expected": {
+      "order_codes": [
+        8,
+        9,
+        3,
+        3,
+        17
+      ],
+      "probe_3": 6,
+      "probe_10": null
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

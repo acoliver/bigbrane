@@ -1,0 +1,102 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Elementwise interpolation between a carried vector and a fresh candidate",
+  "summary": "A carried vector is updated at each symbol by mixing it, coordinate by coordinate, with a fresh candidate computed from the symbol alone. The mixing weights are a squashed linear function of the symbol, so the symbol decides how much of each coordinate is kept. There is no dependence of the mixing on the carried vector.",
+  "core_idea": "Carry a vector that is mixed per coordinate with a symbol-only candidate under symbol-dependent retention weights, giving an input-dependent diagonal linear recurrence.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "h",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Carried vector; each coordinate is a running mixture of earlier candidates with symbol-dependent retention."
+      }
+    ],
+    "update": [
+      {
+        "name": "retention",
+        "latex": "f_t = \\sigma(W_f x_t + b_f),\\; u_t = W_u x_t",
+        "plain": "retention weights f_t = sigmoid(W_f x_t + b_f) in (0,1)^d and candidate u_t = W_u x_t, both from the symbol embedding x_t = E[s_t] only"
+      },
+      {
+        "name": "mix",
+        "latex": "h_t = f_t \\odot h_{t-1} + (1 - f_t) \\odot u_t",
+        "plain": "h_t = f_t * h_(t-1) + (1 - f_t) * u_t, elementwise"
+      }
+    ],
+    "readout": [
+      {
+        "name": "output",
+        "latex": "y_t = W_o h_t",
+        "plain": "y_t = W_o h_t"
+      },
+      {
+        "name": "symbol",
+        "latex": "\\hat{s}_{t+1} = \\arg\\max_v (O y_t)_v",
+        "plain": "next symbol scores O y_t over the V symbols"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence. Because the mixing does not read h, training can run all positions in parallel with a prefix scan.",
+      "few_shot_argument": "No structure for few examples; about 5000 training sequences are needed for copying at L = 4."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d^2 + d V)",
+      "memory": "Theta(d)",
+      "total_sequence": "Theta(n d^2 + n d V)",
+      "constants_notes": "Two d by d input projections, d elementwise mixes and the output map per symbol; the carried state is d numbers."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_copy_L4",
+        "value": 5000,
+        "statement": "From random weights, 5000 copy examples at L = 4 over 4 symbols give per-string accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "Exact with hand-set weights only when L log2 D is below the bits of the d carried numbers."
+      },
+      {
+        "task": "parity of a bit string",
+        "prediction": "Not solvable at any length above 2 with this mixing alone, because each coordinate is a monotone combination of candidates."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A hand-set configuration computes the parity of 8-bit strings exactly.",
+    "The counted operations grow faster than linearly in n at fixed d and V."
+  ],
+  "toy_example": {
+    "description": "Two coordinates over three symbols.",
+    "python": "import json, math\ndef sig(z):\n    return 1.0 / (1.0 + math.exp(-z))\nh = [0.0, 0.0]\nfor x in [1.0, -2.0, 0.5]:\n    f = [sig(2.0 * x), sig(-1.0 * x + 0.5)]\n    u = [x, 3.0 * x]\n    h = [f[i] * h[i] + (1.0 - f[i]) * u[i] for i in range(2)]\nprint(json.dumps({\"carried\": [round(v, 6) for v in h]}))\n",
+    "expected": {
+      "carried": [
+        -1.299781,
+        1.385287
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

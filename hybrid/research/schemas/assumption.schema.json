@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/assumption.schema.json",
+  "title": "One premise of a card's premise ledger (DISCOVERY-PIPELINE-PLAN.md sections 3.1 and 4.3). Definitions (conventions and protocol choices) are frozen with the statements and are not ledger entries.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "text", "kind", "does_work", "why_needed", "testable_by", "measurement_plan", "citation",
+               "added_by", "status", "evidence", "used_by", "basis"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^([AC][0-9]{1,2}|C-[0-9a-f]{8})$"},
+    "text": {"type": "string", "minLength": 1},
+    "kind": {"enum": ["oracle", "store", "prior", "other"]},
+    "does_work": {"type": "boolean"},
+    "why_needed": {"type": "string", "minLength": 1},
+    "testable_by": {"enum": ["code", "citation"]},
+    "measurement_plan": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["measure", "data", "procedure", "accept_if"],
+      "properties": {"measure": {"type": "string", "minLength": 1}, "data": {"type": "string", "minLength": 1},
+                     "procedure": {"type": "string", "minLength": 1},
+                     "accept_if": {"type": "string", "minLength": 1}}
+    },
+    "citation": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["source", "id", "quote"],
+      "properties": {"source": {"enum": ["arxiv", "openalex"]}, "id": {"type": "string", "minLength": 1},
+                     "quote": {"type": "string", "minLength": 10}}
+    },
+    "added_by": {"enum": ["dialogue", "statement_fixer", "challenger"]},
+    "status": {"enum": ["proven", "cited", "measured", "open", "circular"]},
+    "evidence": {"type": ["string", "null"]},
+    "used_by": {"type": "array", "items": {"type": "string", "pattern": "^O[0-9]{1,2}$"}},
+    "basis": {"type": "string", "minLength": 1},
+    "subject": {"enum": ["frozen_definitions", "mechanism", "world"]},
+    "settle_at": {"enum": ["M", "deferrable"]},
+    "refused": {"type": "string", "minLength": 1},
+    "settled": {"description": "FIX-9: the discharging statement whose check held (statuses proven and measured only)",
+                "type": "string", "pattern": "^settled at M by [^ ]+$"}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "open"}}}, "then": {"properties": {"evidence": {"type": "null"}}},
+     "else": {"properties": {"evidence": {"type": "string", "minLength": 1}}}},
+    {"if": {"properties": {"status": {"const": "measured"}}},
+     "then": {"properties": {"evidence": {"pattern": "math_check artifact "}}}},
+    {"if": {"required": ["settled"]}, "then": {"properties": {"status": {"enum": ["proven", "measured"]}}}},
+    {"if": {"properties": {"status": {"const": "cited"}}},
+     "then": {"properties": {"testable_by": {"const": "citation"}, "citation": {"type": "object"}}}}
+  ]
+}

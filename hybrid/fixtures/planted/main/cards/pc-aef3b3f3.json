@@ -1,0 +1,153 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Assignment chains resolved through a constituent labeller",
+  "summary": "Statements v = c and v' = v arrive as token pairs. A labeller marks every statement with the constituent it belongs to, named by the constant at the root of its chain, so a variable can be answered at any chain length from its label. Pairs, strings and brackets use a bounded register bank with a push-down region.",
+  "core_idea": "Resolve variables by the root label a constituent labeller attaches to each statement, so chain length costs nothing and few examples suffice.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "M",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Register bank of C rows, each an address symbol with the symbol stored for it; C = 64 for the listed sizes."
+      },
+      {
+        "name": "k",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Number of occupied rows of M."
+      },
+      {
+        "name": "u",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Holding register for the left symbol of an incoming two-token statement."
+      },
+      {
+        "name": "z",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Nesting level of the push-down region, 0 when no bracket is open."
+      },
+      {
+        "name": "ell",
+        "type": "integer map",
+        "shape": [
+          "N_v"
+        ],
+        "meaning": "Root labels: ell(v) is the constant that the labeller attaches to the constituent containing variable v; N_v variable symbols."
+      },
+      {
+        "name": "Psi",
+        "type": "integer map",
+        "shape": [
+          "R"
+        ],
+        "meaning": "Learned translation from a read result to the emitted symbol, R entries."
+      }
+    ],
+    "update": [
+      {
+        "latex": "\\ell \\leftarrow \\mathrm{Lab}(x_{1..t})",
+        "plain": "the labeller Lab returns, for the statement just completed, the root constant of its chain; ell(v) is set for its left variable v",
+        "name": "label intake"
+      },
+      {
+        "latex": "u=\\varnothing \\Rightarrow u \\leftarrow x_t;\\; \\text{else } M_k \\leftarrow (u, x_t),\\; k \\leftarrow k+1,\\; u \\leftarrow \\varnothing",
+        "plain": "a two-token statement or pair is written as row k of M (held symbol u, then the new symbol x_t)",
+        "name": "row write"
+      },
+      {
+        "latex": "x_t \\in \\mathcal{O} \\Rightarrow z \\leftarrow z+1,\\; M_z \\leftarrow (z, x_t);\\quad x_t \\in \\mathcal{K} \\Rightarrow z \\leftarrow z-1",
+        "plain": "bracket input: an opener (set O) is pushed, so the level z rises and the opener is written at row z; a closer (set K) pops it and z falls",
+        "name": "push-down"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "r_t = \\ell(x_t) \\text{ (chains)},\\; M[\\text{row of } x_t]_1 \\text{ (pairs)},\\; M_{z,1} \\text{ (brackets)};\\qquad \\hat{y}_t = \\Psi[r_t]",
+        "plain": "for a chain probe the read result is the root label of x_t; for a pair probe the symbol stored with x_t (followed once more for a two-step table); for brackets the opener at level z; Psi maps it out"
+      }
+    ],
+    "learning": {
+      "description": "The routing (chains, pairs, brackets, string offsets) is chosen by a search over the four, run on the m training items, keeping the best; Psi is the majority emitted symbol per read result.",
+      "few_shot_argument": "With labels supplied, Psi only has to learn the identity on the 8 constants, so m = 48 binding items cover every constant at chain length 8."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(C)",
+      "memory": "O(C + N_v)",
+      "total_sequence": "O(n C)",
+      "constants_notes": "A row search over at most C rows per read; the label arrives with the statement. 2C + N_v + 4 words."
+    },
+    "sample_efficiency": {
+      "mechanism": "Routing choice plus a majority translation table over labels.",
+      "prediction": {
+        "metric": "examples_to_binding_hops8",
+        "value": 48,
+        "statement": "From m = 48 variable-binding items with chains of 8 hops, the per-query accuracy is at least 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "variable binding",
+        "prediction": "Chains of 1, 4, 8 hops are resolved exactly from root labels."
+      },
+      {
+        "task": "two-hop composition",
+        "prediction": "Pairs routing followed twice answers f(g(x)) at T = 4, 16, 32 with C = 64."
+      },
+      {
+        "task": "associative recall and copy",
+        "prediction": "Exact at K = 8, 32, 64 and L = 8, 32, 64 with C = 64 (state 2C + N_v + 4 words)."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "The push-down region gives the legal closer at depth 2, 4, 8, 16."
+      },
+      {
+        "task": "limit",
+        "prediction": "The limit is a storage count: C slots of two words cannot hold more than C pairs, so at C = 64 an instance with 65 or more distinct pairs loses one of them."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "48 binding items at 8 hops after which the per-query accuracy is below 0.99.",
+    "A bracket prefix of depth at most 16 whose closer the push-down region gets wrong."
+  ],
+  "toy_example": {
+    "description": "Two chains of two hops; labels found by a scan; the translation is the identity.",
+    "python": "import json\nstmts = [(1, 20), (5, 22), (2, 1), (6, 5), (3, 2), (7, 6)]\nroot = {}\nfor lhs, rhs in stmts:\n    root[lhs] = rhs if rhs >= 20 else root[rhs]\nprint(json.dumps({\"v3\": root[3], \"v7\": root[7], \"labelled\": len(root)}))\n",
+    "expected": {
+      "v3": 20,
+      "v7": 22,
+      "labelled": 6
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

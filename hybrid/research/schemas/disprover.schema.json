@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/disprover.schema.json",
+  "title": "Disprover output (S3)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attacks"],
+  "properties": {
+    "attacks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_claim", "counterexample", "status"],
+        "properties": {
+          "target_claim": {"type": "string", "minLength": 1},
+          "counterexample": {"type": "string", "minLength": 1},
+          "status": {"enum": ["succeeds", "fails", "inconclusive"]},
+          "check_code": {"type": "string"}
+        }
+      }
+    }
+  }
+}

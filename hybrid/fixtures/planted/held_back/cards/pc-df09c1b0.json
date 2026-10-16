@@ -1,0 +1,144 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Write list with recomputed counts of newer same-address entries",
+  "summary": "Each written pair is appended to a list. After every write, each entry's count of newer entries with the same address code is recomputed, and a probe returns the entry of its code whose count is zero, which is the most recent writing of that address. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Recompute, for every listed entry, how many newer entries share its address code, and answer a probe with the entry of its code whose count is zero.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Wl",
+        "type": "list of entries",
+        "shape": [
+          "n",
+          4
+        ],
+        "meaning": "One entry (code a_i, item y_i, arrival i, newer count c_i) per write; it grows with the number of writes."
+      },
+      {
+        "name": "bw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket word of open types, 20 bits."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase."
+      }
+    ],
+    "update": [
+      {
+        "name": "append",
+        "latex": "Wl \\leftarrow Wl \\cup \\{(a_t, y_t, t, 0)\\}",
+        "plain": "append (a_t, y_t, t, 0), with a_t the address code kappa(z_t) in 0..255: the position counter for string symbols, the identity for pair addresses, 128 + identity for the second table and y_t = 2 id(item) + lambda_t"
+      },
+      {
+        "name": "recount",
+        "latex": "c_i \\leftarrow \\bigl|\\{\\, j \\in Wl : j > i,\\ a_j = a_i \\,\\}\\bigr| \\text{ for every } i \\in Wl",
+        "plain": "for every entry i in the list, c_i = the number of entries j that arrived after i with the same code a_j = a_i"
+      },
+      {
+        "name": "bracket word",
+        "latex": "bw \\leftarrow 2\\,bw + b,\\quad bw \\leftarrow \\lfloor bw/2 \\rfloor",
+        "plain": "an opener of type b: bw = 2 bw + b; a closer: bw = floor(bw / 2)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "current entry",
+        "latex": "\\hat{y} = y_i \\text{ for the } i \\text{ with } a_i = a,\\ c_i = 0",
+        "plain": "the answer for probe code a is the item of the entry with code a and newer count 0; chained assignments and f(g(x)) probe again, at most 8 times"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = bw \\bmod 2",
+        "plain": "the legal closer has the type in the lowest bit of bw"
+      }
+    ],
+    "learning": {
+      "description": "Symbol roles are inferred as the posterior maximum over role assignments given m example episodes, starting from a uniform prior.",
+      "few_shot_argument": "Each symbol's role is pinned by one consistent episode; m = 6 example episodes per task suffice in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(log n)",
+      "memory": "Theta(n)",
+      "total_sequence": "Theta(n log n)",
+      "constants_notes": "A write raises the newer count of exactly one older entry per code, found through a per-code index in O(log n), and a probe reads the entry with count zero of one code. The list holds four words per write."
+    },
+    "sample_efficiency": {
+      "mechanism": "Posterior over symbol roles from m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction: symbol i under code i, read under codes 1..L; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "The entry with count zero is the newest writing of the probed address; exact at K = 8, 32 and 64."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "Bracket word: exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Two probes per query; exact at sizes 4, 16 and 32. At most 8 chained probes; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "Two-type bracket stacks deeper than 20 do not fit the 20-bit word: exact closer prediction fails at every depth D > 20."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The role posterior learns every small case from m = 6 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The entry with count zero for a code is not its newest writing.",
+    "Counted operations per write grow faster than log n."
+  ],
+  "toy_example": {
+    "description": "Five writes with recounting.",
+    "python": "import json\nWl = []\ndef write(a, y):\n    Wl.append([a, y, len(Wl), 0])\n    for e in Wl:\n        e[3] = sum(1 for f in Wl if f[2] > e[2] and f[0] == e[0])\nfor a, y in [(4, 1), (9, 2), (4, 3), (4, 5), (9, 8)]:\n    write(a, y)\nprint(json.dumps({\"counts\": [e[3] for e in Wl], \"answer_4\": [e[1] for e in Wl if e[0] == 4 and e[3] == 0][0]}))\n",
+    "expected": {
+      "counts": [
+        2,
+        1,
+        1,
+        0,
+        0
+      ],
+      "answer_4": 5
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

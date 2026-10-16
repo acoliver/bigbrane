@@ -1,0 +1,147 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "One large integer whose residues are the slots of a register",
+  "summary": "The whole register is a single integer N below the product Q of 64 distinct primes. Slot j is the residue of N modulo the j-th prime, so writing a slot adds a multiple of that slot's reconstruction constant and leaves every other residue untouched. Brackets use the slots indexed by a depth register. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Store 64 small items as the residues of one integer modulo 64 distinct primes, so a slot write is one scaled addition of a reconstruction constant and a slot read is one remainder.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "N",
+        "type": "integer in [0, Q)",
+        "shape": [
+          1
+        ],
+        "meaning": "The register: N mod q_j is the item in slot j, where q_0 < ... < q_63 are the 64 smallest primes above 64 (67, 71, 73, ..., 421) and Q is their product (about 493 bits)."
+      },
+      {
+        "name": "h",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Depth register: the number of open brackets, which is also the slot holding the innermost open type."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase, reset at every start mark and separator."
+      }
+    ],
+    "update": [
+      {
+        "name": "slot of the current address",
+        "latex": "j_t = \\sigma(z_t)",
+        "plain": "j_t = sigma(z_t): pi for a string symbol, id for a pair address, 32 + id for an address of the second table, h for a bracket"
+      },
+      {
+        "name": "residue write",
+        "latex": "N \\leftarrow \\bigl(N + (y_t - N \\bmod q_{j_t})\\,E_{j_t}\\bigr) \\bmod Q,\\quad E_j = \\tfrac{Q}{q_j}\\Bigl(\\bigl(\\tfrac{Q}{q_j}\\bigr)^{-1} \\bmod q_j\\Bigr)",
+        "plain": "N = (N + (y_t - N mod q_j) * E_j) mod Q, where E_j = (Q / q_j) * inverse(Q / q_j mod q_j) is 1 modulo q_j and 0 modulo every other prime; y_t = 2 id(item) + lambda_t, lambda_t = 1 for a final symbol"
+      },
+      {
+        "name": "depth register",
+        "latex": "h_t = h_{t-1} + [z_t \\text{ opens}] + [z_t \\text{ closes}]",
+        "plain": "h_t = h_(t-1) + [z_t is an opener] + [z_t is a closer]; an opener of type b then writes y = b into slot h_t, a closer is read before h changes"
+      }
+    ],
+    "readout": [
+      {
+        "name": "slot read",
+        "latex": "\\hat{y} = N \\bmod q_{j}",
+        "plain": "the item of slot j is N mod q_j; its symbol is floor(item / 2) and its flag item mod 2"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = N \\bmod q_{h}",
+        "plain": "at a closer the predicted type is N mod q_h, the type written by the innermost open bracket"
+      },
+      {
+        "name": "chains and two hops",
+        "latex": "j \\leftarrow \\lfloor \\hat{y}/2 \\rfloor \\text{ while the flag is } 0",
+        "plain": "a chained assignment rereads slot floor(item / 2) while the flag is 0, at most 8 times; f(g(x)) reads slot 32 + id(x) and then the slot named by the result"
+      }
+    ],
+    "learning": {
+      "description": "The arithmetic is fixed. The episode format is identified by enumerating the finitely many role assignments of the symbols seen in m example episodes (which symbols are addresses, items, marks, openers and closers) and keeping the hypothesis consistent with every example.",
+      "few_shot_argument": "The format hypotheses are a small finite set; each example episode rules out every hypothesis that would have mispredicted one of its answers, and m = 5 episodes per task leave one hypothesis in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(S)",
+      "memory": "Theta(S)",
+      "total_sequence": "Theta(n S)",
+      "constants_notes": "N has S = 64 primes of at most 9 bits, so it is about S machine words; a write is one remainder, one small-by-large product, one addition and one reduction modulo Q, each Theta(S) word operations. The S constants E_j are fixed parameters, not state."
+    },
+    "sample_efficiency": {
+      "mechanism": "Enumeration of format hypotheses consistent with m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 5,
+        "statement": "With m = 5 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction: symbol i of the string goes into slot pi = i and is read back from the same slot after the separator; exact at L = 8, 32 and 64 over up to 33 symbols (items below the smallest prime 67)."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Hand-set construction: an address with identity id writes slot id; exact at K = 8, 32 and 64."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "Openers raise the depth and write their type into the slot of the new depth; a closer reads the slot of the current depth and lowers it. Exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Table g uses slots 32..63 and table f slots 0..31; two slot reads give f(g(x)); exact at sizes 4, 16 and 32. Each variable owns one slot; a probe follows at most 8 links; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "Recall of more than S = 64 pairs with distinct addresses is impossible, because the register has only S residues; exact recall fails at K = 65, consistent with the constructions above."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "Format enumeration learns every small case from m = 5 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "After 64 slot writes, some slot read returns an item other than the last one written to it.",
+    "A slot write changes the residue of another slot."
+  ],
+  "toy_example": {
+    "description": "Three primes, three slot writes and their reads, and the depth after two openers.",
+    "python": "import json\nq = [67, 71, 73]\nQ = q[0] * q[1] * q[2]\nE = [(Q // qj) * pow(Q // qj, -1, qj) for qj in q]\nN = 0\nfor j, y in [(0, 9), (2, 40), (1, 5), (0, 12)]:\n    N = (N + (y - N % q[j]) * E[j]) % Q\nh = 0\nfor opens in [True, True]:\n    h = h + (1 if opens else 0)\nprint(json.dumps({\"N\": N, \"slots\": [N % qj for qj in q], \"depth_after_two_openers\": h}))\n",
+    "expected": {
+      "N": 203491,
+      "slots": [
+        12,
+        5,
+        40
+      ],
+      "depth_after_two_openers": 2
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

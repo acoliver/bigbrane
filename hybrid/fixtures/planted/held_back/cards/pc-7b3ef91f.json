@@ -1,0 +1,157 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "One strip of squares scanned by a moving reader",
+  "summary": "Pairs are written on a strip of 2C + 2 squares, address then item, after the last used square. To fetch, a reader moves from the first square two squares at a time until it sits on the wanted address and reads the next square. Removal blanks the pair. A three-mode controller decides what is written and read.",
+  "core_idea": "Write pairs end to end on a strip and fetch by moving a reader along it, under a searched three-mode controller.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Sq",
+        "type": "integer vector",
+        "shape": [
+          "2C+2"
+        ],
+        "meaning": "The strip: squares holding addresses and items in alternation, -1 when blank."
+      },
+      {
+        "name": "hd",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position of the reader on the strip."
+      },
+      {
+        "name": "en",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "First square after the last written pair."
+      },
+      {
+        "name": "ctl",
+        "type": "integer vector",
+        "shape": [
+          16
+        ],
+        "meaning": "Routing registers (mode, stop symbol sigma, hop limit H) and bookkeeping (pending p, flag w, position c, output count o, depth d), with the learned lists Z and A."
+      },
+      {
+        "name": "M",
+        "type": "integer map",
+        "shape": [
+          "N"
+        ],
+        "meaning": "Learned translation from a read result to an emitted symbol, at most N entries for an alphabet of N symbols."
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_t=\\sigma \\Rightarrow w\\leftarrow 0,\\, o\\leftarrow 0;\\quad \\mu=0:\\; x_t\\in Z \\Rightarrow p\\leftarrow\\varnothing;\\; w=1,\\, p=\\varnothing \\Rightarrow p\\leftarrow x_t;\\; w=1,\\, p\\neq\\varnothing \\Rightarrow \\mathrm{ins}(p, x_t),\\, p\\leftarrow\\varnothing;\\quad \\mu=1:\\; w=1,\\, x_t\\notin Z \\Rightarrow \\mathrm{ins}(c, x_t),\\, c\\leftarrow c+1;\\; w=0 \\Rightarrow o\\leftarrow o+1;\\quad \\mu=2:\\; x_t\\in A \\Rightarrow \\mathrm{del}(d, \\mathrm{get}(d)),\\, d\\leftarrow d-1;\\; x_t\\notin A \\Rightarrow d\\leftarrow d+1,\\, \\mathrm{ins}(d, x_t)",
+        "plain": "routing: mode 0 completes two-token pairs and files them; mode 1 files every symbol under its position before the stop symbol and counts outputs after it; mode 2 files an opener under the raised depth and withdraws the entry at that depth on a closer",
+        "name": "controller"
+      },
+      {
+        "latex": "\\mathrm{ins}(a,b):\\; Sq_{en} \\leftarrow a,\\, Sq_{en+1} \\leftarrow b,\\, en \\leftarrow en+2",
+        "plain": "ins writes the pair at the end of the used part of the strip; a write that would exceed C entries is dropped",
+        "name": "write at end"
+      },
+      {
+        "latex": "\\mathrm{del}(a,b):\\; \\text{blank the first pair with address } a;\\; \\text{if it was the last, } en \\leftarrow en - 2",
+        "plain": "del blanks the first pair whose address is a and pulls the end back when it was the last",
+        "name": "blank"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\mu=0:\\; y_0=x_t,\\; r_j=\\mathrm{get}(y_{j-1}),\\; u=r_j \\text{ at the first } j\\le H \\text{ with } r_j\\in A,\\; u=r_{j-1} \\text{ at the first } r_j=\\varnothing;\\quad \\mu=1:\\; u=\\mathrm{get}(o);\\quad \\mu=2:\\; u=\\mathrm{get}(d);\\qquad \\hat{y}_t = M[u] \\text{ for } u\\in\\mathrm{dom}\\,M,\\; A_0 \\text{ for } u=\\varnothing,\\; u \\text{ otherwise}",
+        "plain": "output: chase partners from the current token for at most H rounds, stopping at an answer symbol; strings ask for position o, brackets for depth d; translate through M, defaulting to the first answer symbol when nothing is held",
+        "name": "readout"
+      },
+      {
+        "latex": "\\mathrm{get}(a):\\; hd \\leftarrow 0;\\; \\text{while } hd < en \\text{ and } Sq_{hd} \\ne a: hd \\leftarrow hd + 2;\\; \\text{return } Sq_{hd+1} \\text{ or } \\varnothing",
+        "plain": "get moves the reader from square 0 in steps of two to the first square holding a and returns the square after it"
+      }
+    ],
+    "learning": {
+      "description": "Program search over a small space: candidates are (mode, stop symbol) with the stop drawn from the once-per-sequence symbols Z, plus a constant answer. A candidate is scored by running it on the m training sequences and fitting M as the most frequent target for each read result; the top scorer wins.",
+      "few_shot_argument": "With m = 12 the correct mode and stop symbol are the unique perfect scorers in every small case; M is filled from the same items."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(H C + |A|)",
+      "memory": "O(C + N)",
+      "total_sequence": "O(n H C)",
+      "constants_notes": "A scan moves the reader over at most C pairs; at most H scans per token."
+    },
+    "sample_efficiency": {
+      "mechanism": "Search over a handful of controller settings with a majority translation.",
+      "prediction": {
+        "metric": "examples_to_small_cases",
+        "value": 12,
+        "statement": "With m = 12 training examples the learned controller reaches accuracy at least 0.99 on copy at L = 4, recall at K = 4, nesting at depth 2, composition at T = 4 and binding at 2 hops, on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "String mode with C = L copies L = 8, 32, 64 over D = 4 with per-string accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "associative recall",
+        "prediction": "Pair mode with C = K and H = 1 answers K = 8, 32, 64 with per-query accuracy 1.0 within 2C + N + 16 words (N = 2K + 17 at K = 64 with V = 16)."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Nesting mode with C = depth predicts the legal closer at depth 2, 4, 8, 16 with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "two-hop composition",
+        "prediction": "Pair mode with C = 2T and H = 2 answers f(g(x)) at T = 4, 16, 32 with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "variable binding",
+        "prediction": "Pair mode with C = 2(hops + 1) and H = hops + 1 resolves chains of 1, 4, 8 hops with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "learning in the small cases",
+        "prediction": "The search learner reaches 0.99 from m = 12 examples on seeds 0, 1, 2 for copy at L = 4, recall at K = 4, depth 2, composition at T = 4 and binding at 2 hops."
+      },
+      {
+        "task": "limit",
+        "prediction": "For any fixed capacity C, recall of K = C + 1 distinct pairs over V = 16 symbols fails on some instance: the store holds at most C pairs, so one probe's item is absent and is answered from at most 16 guesses (at C = 64 this is K = 65, above every P2 size)."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A P2 instance at the listed sizes that the hand-set controller with this store answers wrongly, or that needs more than 2C + N + 16 words.",
+    "A seed on which 12 small-case examples leave the learned controller below 0.99."
+  ],
+  "toy_example": {
+    "description": "Two pairs written, one fetched, the last one blanked and the end pulled back.",
+    "python": "import json\nSq = [-1] * 8\nen = 0\ndef ins(a, b):\n    global en\n    Sq[en] = a; Sq[en + 1] = b; en += 2\ndef seek(a):\n    hd = 0\n    while hd < en:\n        if Sq[hd] == a:\n            return hd\n        hd += 2\n    return -1\nins(9, 70); ins(4, 71)\ngot = Sq[seek(4) + 1]\ni = seek(4)\nSq[i] = -1; Sq[i + 1] = -1\nif i + 2 == en:\n    en = i\nprint(json.dumps({\"get4\": got, \"end\": en, \"get9\": Sq[seek(9) + 1]}))\n",
+    "expected": {
+      "get4": 71,
+      "end": 2,
+      "get9": 70
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

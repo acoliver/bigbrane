@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Model usage</h1>
+<p class="muted">Token counts are the sum of values the backend reported. Calls with an unknown count are listed separately.</p>
+{% if summary.usage %}
+<table>
+  <tr>
+    <th>Backend</th><th>Model</th><th>Roles</th><th class="num">Calls</th><th class="num">Errors</th>
+    <th class="num">Input tokens</th><th class="num">Output tokens</th><th class="num">Cached tokens</th>
+    <th class="num">Calls without usage</th><th class="num">Mean latency (s)</th><th class="num">Total latency (s)</th>
+  </tr>
+  {% for row in summary.usage %}
+  <tr>
+    <td>{{ row.backend }}</td><td>{{ row.model }}</td><td>{{ row.roles }}</td>
+    <td class="num">{{ row.calls }}</td><td class="num">{{ row.errors }}</td>
+    <td class="num">{{ row.input }}</td><td class="num">{{ row.output }}</td><td class="num">{{ row.cached }}</td>
+    <td class="num">{{ row.calls_without_usage }}</td>
+    <td class="num">{{ "%.2f" | format(row.latency_mean) }}</td>
+    <td class="num">{{ "%.2f" | format(row.latency_total) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<p>Total: {{ summary.calls_total }} calls, {{ summary.tokens_total }} input and output tokens.</p>
+{% else %}<p class="muted">No llm_call events in this run.</p>{% endif %}
+{% endblock %}

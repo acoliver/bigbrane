@@ -1,0 +1,213 @@
+{
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "Take two internally connected components of eight sites each. One correctly labeled bridge makes all 64 cross-component parity queries deterministic and correct. Before that bridge, every such query gives probability 0.5 to each answer under the stated prior.",
+        "task": "One-shot relational bridge generalization"
+      },
+      {
+        "prediction": "For d=64, after 63 noiseless spanning-tree demonstrations, all 2016 unordered pair queries remain exactly correct after 100000 additional consistent redundant demonstrations. Memory stays O(d), and there is no fading-memory loss of accuracy.",
+        "task": "Exact long-context retention at bounded capacity"
+      },
+      {
+        "prediction": "For disconnected endpoints under independent fair latent bits, the returned probability 0.5 is the exact posterior. A single wrong cycle-closing demonstration, or a self-pair demonstration DEMO(a,a,1), sets C immediately. Every later query then gets probability 0.5 until a fresh learner is constructed. This detects contradictions but does not repair noisy evidence.",
+        "task": "Uncertainty and contradiction detection"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "The bounds assume a word-RAM with O(log d)-bit words, union by size, and no path compression. Initialization costs O(d) time, so the end-to-end cost including construction is O(d + n log d). Memory is O(d log d) bits. Vocabulary tokens have an arithmetic encoding. The output distribution is returned sparsely with at most two nonzero entries; writing out all V entries would instead cost O(V) per readout. Capacity is at most d named sites and d-1 independent consistent binary relations. It is not an unbounded store of arbitrary associations.",
+      "memory": "O(d)",
+      "time_per_token": "O(log d)",
+      "total_sequence": "O(n log d)"
+    },
+    "sample_efficiency": {
+      "mechanism": "Exact quotient identification. Connected-component membership decides whether a pairwise answer is identifiable, and accumulated edge parity supplies that answer.",
+      "prediction": {
+        "metric": "Accuracy on all unobserved pairs among four sites after three path demonstrations",
+        "statement": "For every noiseless assignment of four binary site values, demonstrations on edges (0,1), (1,2) and (2,3) give 100% accuracy on the three remaining unordered pairs. No pretraining or fitted readout weights are used.",
+        "value": 1.0
+      }
+    }
+  },
+  "core_idea": "Store demonstrations as an exact quotient of a binary constraint graph, so that a handful of relations can determine many unseen answers without storing or replaying the sequence.",
+  "created_by_call": "call-4bb445a7b54f",
+  "extensions": [],
+  "falsifiers": [
+    "Any consistent four-site assignment for which the three path demonstrations give a wrong answer on a remaining pair refutes the exact sufficient-statistic claim.",
+    "If any of the 64 cross-component queries stays ambiguous or becomes incorrect after a valid bridge between two eight-site connected components, the one-shot bridge-generalization claim is false.",
+    "Each of the following refutes the claimed idempotent constraint encoding: a valid consistent cycle that changes a previously determined pairwise answer; a contradictory cycle that does not set C; or DEMO(a,a,1) failing to set C.",
+    "An implementation of the specified union-by-size operations whose storage grows with the number of redundant demonstrations would refute the stated streaming memory bound."
+  ],
+  "id": "card-582f8abf",
+  "known_relatives": [
+    {
+      "claimed_difference": "This core replaces contraction with an exact discrete quotient of constraint solutions. It has no randomly initialized recurrent weights, no fitted regression readout and no decay. Sample complexity is set by connectivity rather than by numerical reservoir separation.",
+      "name": "Graph Echo State Networks",
+      "relation": "The source uses a fixed contractive graph reservoir and an adaptive readout."
+    },
+    {
+      "claimed_difference": "No novelty is claimed for union-find or binary gauge constraints. The proposed learner theory uses their exact sufficient statistic as a reservoir and makes the connectivity-dependent generalization law explicit. The contribution is a narrow sequence-learning mechanism and a testable theory, not a new general-purpose data structure.",
+      "name": "Parity union-find, graph constraint propagation, and binary gauge synchronization",
+      "relation": "These are the direct algorithmic and mathematical relatives. The core implementation is parity union-find."
+    },
+    {
+      "claimed_difference": "The update here changes a discrete component partition and its parent pointers. It is not of the form S_t=A_t S_{t-1}+B_t x_t. A finite-state one-hot encoding could represent the whole algorithm with an enormous transition system. The distinction is therefore one of efficiency and representation, not a claim that a recurrence cannot simulate it.",
+      "name": "Mamba, RWKV, RetNet, and linear-attention recurrences",
+      "relation": "All of these keep a context-dependent persistent state with subquadratic processing cost."
+    },
+    {
+      "claimed_difference": "Here evidence changes an exact constraint quotient. It does not optimize weights or write outer-product associations. Generalization follows logical entailment within a fixed binary relation class, not a learned optimizer.",
+      "name": "Test-time training and fast-weight memory",
+      "relation": "Both can absorb demonstrations while processing a sequence."
+    }
+  ],
+  "lens": "reservoir_computing",
+  "mechanism": {
+    "learning": {
+      "description": "There are no learned numerical parameters. Structure learning is the union operation that each demonstration induces. The model assumes independent fair latent binary values at the d sites, with noiseless observations of their pairwise XOR. For a consistent context, P and H are an exact sufficient statistic for every pairwise posterior. Each connected component keeps one unidentifiable global bit flip. The learner is specialized to this supplied relational hypothesis class. It does not discover XOR semantics from unrestricted text.",
+      "few_shot_argument": "The mechanism is gauge elimination through connectivity. A demonstration that connects two components removes one independent component-flip ambiguity. A spanning tree on k+1 sites therefore needs exactly k independent demonstrations to identify every pairwise relation among those sites. For example, three demonstrations along a four-site path determine all three unobserved pairs exactly. If two large components are already internally identified, one bridge demonstration determines every cross-component pair. Repeated cycles add no information, and disconnected components remain genuinely ambiguous."
+    },
+    "readout": [
+      {
+        "latex": "z=h_a\\mathbin{\\mathrm{XOR}}h_b\\in\\{0,1\\};\\qquad q=\\begin{cases}\\mathbf{1}[z=1],&x_t=\\operatorname{ASK}(a,b),\\ r_a=r_b,\\ \\neg C,\\\\1/2,&\\text{otherwise};\\end{cases}\\qquad p_t(y_1)=q,\\ \\ p_t(y_0)=1-q,\\ \\ p_t(y)=0\\ \\text{for all other }y.",
+        "name": "Exact relational posterior",
+        "plain": "After ASK(a,b), compute the bit z = h_a XOR h_b. If the endpoints share a root and C is false, the probability q is 1.0 when z = 1 and 0.0 when z = 0. In every other case q = 0.5. These other cases are disconnected endpoints, an inconsistent context, and any non-ASK position, which is not claimed to give a useful prediction. Output probability q on y_1 (bit 1) and 1 - q on y_0 (bit 0), and probability zero on every other token. The distribution is stored sparsely as these two entries. ASK(a,a) therefore gives probability 1 on y_0 in a consistent context."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "Protocol. There are d >= 2 named sites, indexed 0 through d-1. The context has length n. The fixed vocabulary has V = 3*d*d + 2 tokens: DEMO(a,b,s) for site indices a,b and parity s in {0,1}; ASK(a,b); and two answer tokens. The answer token y_0 means bit value 0 and y_1 means bit value 1. At step t, x_t is the supplied token, and F decodes tokens arithmetically without a stored lookup table. Self-pairs a = b are valid tokens: DEMO(a,a,s) asserts that a site's bit XOR itself equals s, and ASK(a,a) queries that XOR. XOR denotes addition modulo two.\n\nFind. Find(i) follows parent pointers from site i and returns its root r_i and the parity h_i accumulated along that path. It does not modify the state.\n\nTemporary values. In the join update, u and v denote the two distinct roots. u is the root with the larger M, and on equal M it is the one with the smaller index. In the readout, z is the bit h_a XOR h_b in {0,1}, and q is a real number in [0,1] equal to the predicted probability of y_1. The symbol y is any vocabulary token, p_t(y) is the next-token distribution, and 1[condition] is the 0/1 indicator. These local values are not persistent memories.",
+        "name": "F",
+        "shape": [],
+        "type": "Fixed protocol and operations; not learned"
+      },
+      {
+        "meaning": "Initially P[i]=i. It encodes the component forest of the observed constraint graph. Each entry takes O(log d) bits. Roots identify components; they are not learned semantic embeddings.",
+        "name": "P",
+        "shape": [
+          "d"
+        ],
+        "type": "Integer parent array"
+      },
+      {
+        "meaning": "Initially all zero. H[i] records the inferred XOR of the latent bit at site i and the latent bit at P[i]. Latent site bits themselves are not stored. Root entries remain zero.",
+        "name": "H",
+        "shape": [
+          "d"
+        ],
+        "type": "Binary edge-potential array"
+      },
+      {
+        "meaning": "Initially all one. M[r] is the size of the component rooted at r. Entries at nonroots are ignored. Union by size bounds parent-path length by O(log d).",
+        "name": "M",
+        "shape": [
+          "d"
+        ],
+        "type": "Integer component-size array"
+      },
+      {
+        "meaning": "Initially false. It becomes true if any demonstration contradicts a previously implied parity, including a self-pair demonstration DEMO(a,a,1). An inconsistent context gets a deliberately uninformative answer distribution rather than an unsupported inferred answer.",
+        "name": "C",
+        "shape": [],
+        "type": "Boolean inconsistency flag"
+      }
+    ],
+    "update": [
+      {
+        "latex": "(r_a,h_a)=\\operatorname{Find}(a),\\qquad (r_b,h_b)=\\operatorname{Find}(b).",
+        "name": "Resolve the current relation",
+        "plain": "For DEMO(a,b,s) or ASK(a,b), traverse the parent paths of a and b, XORing H along each path. If a = b, both calls return the same root and parity, so h_a XOR h_b = 0. Answer tokens do not change the reservoir."
+      },
+      {
+        "latex": "\\text{If }x_t=\\operatorname{DEMO}(a,b,s),\\ r_a\\ne r_b:\\ (u,v)=\\begin{cases}(r_a,r_b),& M[r_a]>M[r_b]\\ \\text{or}\\ (M[r_a]=M[r_b]\\ \\text{and}\\ r_a<r_b),\\\\(r_b,r_a),&\\text{otherwise};\\end{cases}\\quad P[v]\\leftarrow u,\\ H[v]\\leftarrow h_a\\mathbin{\\mathrm{XOR}}h_b\\mathbin{\\mathrm{XOR}}s,\\ M[u]\\leftarrow M[u]+M[v].",
+        "name": "Join independent components",
+        "plain": "For a demonstration whose endpoints have different roots, choose the surviving root u: u is r_a if M[r_a] > M[r_b], or if the sizes are equal and r_a < r_b. Otherwise u is r_b. Let v be the other root. Set P[v] = u, set H[v] = h_a XOR h_b XOR s, and set M[u] = M[u] + M[v]. Because XOR is symmetric, the same parity formula is correct for either attachment direction."
+      },
+      {
+        "latex": "\\text{If }x_t=\\operatorname{DEMO}(a,b,s),\\ r_a=r_b:\\quad C\\leftarrow C\\lor\\bigl(h_a\\mathbin{\\mathrm{XOR}}h_b\\ne s\\bigr).",
+        "name": "Check cycle consistency",
+        "plain": "If the endpoints already share a root, compare the supplied parity s with the implied parity h_a XOR h_b. Set C if they disagree. This uses the roots obtained before any update. This also covers a = b. There the implied parity is 0, so DEMO(a,a,0) changes nothing, and DEMO(a,a,1) sets C. This is intended, because a bit XOR itself cannot be 1."
+      }
+    ]
+  },
+  "parent_ids": [],
+  "references": [
+    {
+      "source_id": "W2153513200",
+      "why": "The supplied abstract describes a fixed contractive graph encoding, stability in the presence of cycles, and a separately adaptive readout. The transplant takes the graph-encoding role but replaces contraction with exact, idempotent constraint closure. The parity union-find algorithm and the gauge-identifiability argument are not claimed to appear in this paper."
+    }
+  ],
+  "source_transplant": {
+    "change": "The contractive numerical encoding is replaced by an idempotent encoding of the solution set of binary graph constraints. The resulting reservoir keeps exact component relations instead of fading graph features. This is a substantial change. Neither parity constraints nor union-find are attributed to the source paper.",
+    "object": "The fixed contractive graph encoding map of Graph Echo State Networks",
+    "source_ids": [
+      "W2153513200"
+    ]
+  },
+  "status": {
+    "stage": "S2",
+    "verdicts": {
+      "S0": {
+        "by_calls": [
+          "call-078b70b5138f"
+        ],
+        "reasons": [
+          "card validates against the theory_card schema",
+          "nearest existing card card-f80f2b77 at TF-IDF cosine 0.178 (threshold 0.6)"
+        ],
+        "verdict": "pass"
+      },
+      "S1": {
+        "by_calls": [
+          "call-96ab93234ce7",
+          "job-9581ce2144eb"
+        ],
+        "reasons": [
+          "salad critic: ok. The core is a real mathematical object: parity union-find over binary sites, with an explicit state (P, H, M, C), join and cycle-consistency updates, and a readout that is exact for the stated prior. I checked the symbols, shapes, tie-break rule, vocabulary size (3d^2+2), and the complexity bounds against the equations, and they agree. The toy example's expected values also follow from the stated ",
+          "toy example reproduced 5 expected value(s)"
+        ],
+        "verdict": "pass"
+      },
+      "S2": {
+        "by_calls": [
+          "call-3595933bb3f5",
+          "call-9ab6bae267e9",
+          "call-c6348a74eca0",
+          "call-3832ee612742",
+          "job-a98e425534d6"
+        ],
+        "reasons": [
+          "prior art: prior_art_undertested. The core mechanism is parity (XOR-labeled) union-find with union by size. Labeled union-find over group-valued edge labels (W4411260212) is the same data structure, so the algorithm itself is not novel and the card already disclaims novelty there. Graph Echo State Networks (W2153513200) is the cited source of the reservoir framing, and the card's transplant replaces its contractive encoding with a",
+          "textbook transplant: no (recorded, not gated): The cited source construction is the Graph Echo State Network's fixed contractive graph encoding with an adaptive readout. The card does not use it. The equations contain no contraction, no reservoir weights and no fitted readout, so the transplanted object is replaced rather than applied unmodified",
+          "reduction claim other_known (verified): numeric check confirms equivalence (max_abs_diff 0.0)",
+          "gate: update rule reduces to other_known: The card is Z2-labeled (parity / weighted) union-find, the standard online solver for XOR-pair equations x_a ⊕ x_b = s. This is the same as online 2-coloring and bipartiteness checking, and it is the labeled union-find of W4411260212 specialized to the group Z2. Symbol by symbol: P[i] is the union-find parent pointer parent[i]. H[i] is the edge label (potential) to the parent, label[i] = x_i ⊕ x_{parent(i)}. M[r] is the size field used by union by size. Find(i) is the standard non-compressing find, returning (root, xor of labels along the path). DEMO(a,b,s) on distinct roots is the labeled uni"
+        ],
+        "verdict": "reduces_to_known"
+      }
+    }
+  },
+  "summary": "This is a small, specialized sequence learner for binary relational rules. Its reservoir is a set of named binary sites whose relative values are constrained by demonstrations. It does not evolve a numerical hidden vector. Instead it merges equivalent components and keeps their relative parity. The central theory is that conceptual sample complexity is controlled by graph connectivity: one new bridge can determine every previously ambiguous relation across two components. The mechanism is an exact classical algorithm, not a general language model, and its parity union-find construction is not claimed to be new.",
+  "title": "Gauge-Quotient Constraint Reservoir",
+  "toy_example": {
+    "description": "Three demonstrations identify relations among four sites, while a fifth site stays disconnected. A consistent redundant cycle changes nothing, and an inconsistent cycle sets the rejection flag. Roots are chosen by size with ties going to the smaller index, matching the join equation.",
+    "expected": {
+      "bad_after_conflict": true,
+      "bad_after_consistent": false,
+      "components": 2,
+      "p_one": [
+        1.0,
+        0.0,
+        1.0,
+        0.5
+      ],
+      "p_one_after_conflict": [
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "python": "import json\n\nclass Reservoir:\n    def __init__(self, d):\n        self.P = list(range(d))\n        self.H = [0] * d\n        self.M = [1] * d\n        self.C = False\n\n    def find(self, i):\n        h = 0\n        while self.P[i] != i:\n            h ^= self.H[i]\n            i = self.P[i]\n        return i, h\n\n    def demo(self, a, b, s):\n        ra, ha = self.find(a)\n        rb, hb = self.find(b)\n        if ra == rb:\n            self.C = self.C or ((ha ^ hb) != s)\n            return\n        if self.M[ra] < self.M[rb] or (self.M[ra] == self.M[rb] and ra > rb):\n            u, v = rb, ra\n        else:\n            u, v = ra, rb\n        self.P[v] = u\n        self.H[v] = ha ^ hb ^ s\n        self.M[u] += self.M[v]\n\n    def p_one(self, a, b):\n        ra, ha = self.find(a)\n        rb, hb = self.find(b)\n        if self.C or ra != rb:\n            return 0.5\n        return float(ha ^ hb)\n\nr = Reservoir(5)\nfor event in [(0, 1, 1), (1, 2, 0), (2, 3, 1)]:\n    r.demo(*event)\nqueries = [(0, 2), (0, 3), (1, 3), (0, 4)]\nprobabilities = [r.p_one(*q) for q in queries]\ncomponents = len({r.find(i)[0] for i in range(5)})\nr.demo(0, 3, 0)\nbad_after_consistent = r.C\nr.demo(0, 3, 1)\nresult = {\n    'p_one': probabilities,\n    'components': components,\n    'bad_after_consistent': bad_after_consistent,\n    'bad_after_conflict': r.C,\n    'p_one_after_conflict': [r.p_one(*q) for q in queries]\n}\nprint(json.dumps(result, sort_keys=True))"
+  },
+  "version": 6
+}

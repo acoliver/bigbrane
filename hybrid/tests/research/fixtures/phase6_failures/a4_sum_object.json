@@ -1,0 +1,228 @@
+{
+ "provenance": "Phase 6 run phase6-drafts-20261013T0611Z, A4 draft card-19c22c05 (gate at ledger line 13). Sanitized: the stored v1 card with its call id zeroed and its verdicts cleared.",
+ "arm": "A4",
+ "seeds": {
+  "concepts": [
+   "traffic jams",
+   "spin glasses"
+  ]
+ },
+ "recorded_reason": "gate: arm_structure:A4: object_map names mechanism objects that are neither state objects nor symbols of the update or readout equations: ['sum_i w_i']",
+ "card": {
+  "arm": "A4",
+  "arm_structure": {
+   "closest_known": {
+    "difference": "There is no descent toward a stored pattern or similarity-weighted sum of stored values. Evidence changes rule occupancies through w[j]*(1-w[i])*r[j,i], with r also containing w[i]*w[j]; prediction executes each rule on a new input. The learned state can therefore change predictions for inputs never stored.",
+    "family": "hopfield_associative_memory"
+   },
+   "concepts": [
+    "traffic jams",
+    "spin glasses"
+   ],
+   "image_equation": {
+    "latex": "w_i^{+}=w_i+\\sum_{j\\ne i}\\left[w_j(1-w_i)r_{ji}-w_i(1-w_j)r_{ij}\\right]",
+    "mechanism_ref": "update[1]",
+    "plain": "w_next[i] = w[i] + sum over j != i of (w[j]*(1-w[i])*r[j,i] - w[i]*(1-w[j])*r[i,j]); compute every right-hand side from the old w, then replace w."
+   },
+   "object_map": [
+    {
+     "mechanism_object": "w",
+     "source_object": "Mean occupation of a road cell or up-spin site"
+    },
+    {
+     "mechanism_object": "1-w_i",
+     "source_object": "Vacancy of a destination cell or down-spin site"
+    },
+    {
+     "mechanism_object": "r",
+     "source_object": "Directed hopping or spin-exchange rate"
+    },
+    {
+     "mechanism_object": "sum_i w_i",
+     "source_object": "Conserved particle number or magnetization"
+    }
+   ],
+   "prediction": {
+    "derived_via": "The initial source occupancy and destination vacancy are both 1/2. The proposed evidence rate is 1 + (1/2)(1/2) = 1.25, so the transferred mass is 0.5*0.5*1.25 = 0.3125. The correct executable rule then has mass 0.8125, which also governs predictions on inputs absent from context.",
+    "metric": "Probability assigned to the correct answer",
+    "statement": "One separating demonstration in the two-rule identity-versus-complement task produces probability 0.8125 for the correct rule's answer on an unseen input.",
+    "task": "Choose an unknown Boolean rule uniformly from identity and complement. Reveal its answer at input 1 once, then query input 0.",
+    "value": 0.8125
+   },
+   "shared_relation": "Traffic exclusion models and spin glasses with Kawasaki exchange dynamics both conserve occupancy through currents proportional, under a factorized mean-field closure, to source occupancy times destination vacancy.",
+   "source_equation": {
+    "latex": "\\rho_i^{+}=\\rho_i+\\sum_{j\\ne i}\\left[\\rho_j(1-\\rho_i)a_{ji}-\\rho_i(1-\\rho_j)a_{ij}\\right]",
+    "plain": "rho_next[i] = rho[i] + sum over j != i of (rho[j]*(1-rho[i])*a[j,i] - rho[i]*(1-rho[j])*a[i,j]); rho is mean occupancy and a is a timestep-integrated exchange rate."
+   },
+   "source_field": "Nonequilibrium statistical mechanics: exclusion-process traffic models and conserved spin-exchange dynamics in disordered magnets."
+  },
+  "claims": {
+   "capabilities": [
+    {
+     "prediction": "Across all four choices of hidden rule and demonstrated input, held-out argmax accuracy is 1.0 and correct-answer probability is 0.8125.",
+     "task": "One-shot identity-versus-complement learning, with the demonstration and query at different inputs"
+    },
+    {
+     "prediction": "Both output tokens have probability 0.5; repeated queries leave occupancies unchanged.",
+     "task": "Unsupervised queries before any demonstration in the same two-rule class"
+    },
+    {
+     "prediction": "After the contradictory second demonstration, complement receives probability 0.9482269287109375 on either input. This strong reversal is a predicted plasticity feature and a noise-sensitivity liability.",
+     "task": "Abrupt reversal: demonstrate identity at input 1, then demonstrate complement at the same input"
+    },
+    {
+     "prediction": "For two rules that produce identical outputs on every demonstrated input and start with equal occupancy, their occupancies remain equal. The model can represent only mixtures of the d declared circuits and cannot memorize arbitrarily many unrelated bindings.",
+     "task": "Capacity and indistinguishability test with a fixed bank of d rules"
+    }
+   ],
+   "complexity": {
+    "constants_notes": "The explicit implementation materializes r. Circuit size is bounded by 16 gates, input width by 8 bits, and V is fixed at 2, so evaluating and mixing all d circuits costs O(d). Initialization costs O(d). Context events are consumed once and are not retained. The claim concerns growth with n, not efficient scaling to an unbounded rule bank.",
+    "memory": "O(d^2)",
+    "time_per_token": "O(d^2)",
+    "total_sequence": "O(n d^2)"
+   },
+   "sample_efficiency": {
+    "mechanism": "A single separating observation reallocates occupancy among reusable executable hypotheses through a nonlinear, vacancy-limited current.",
+    "prediction": {
+     "metric": "Held-out correct-answer probability after one demonstration",
+     "statement": "For the uniformly sampled identity-or-complement Boolean rule, one demonstration followed by a query at the other input assigns exactly 0.8125 probability to the correct answer, without pretraining.",
+     "value": 0.8125
+    }
+   }
+  },
+  "core_idea": "Learn executable rules by transporting a conserved unit of belief through an exclusion process whose evidence-driven currents depend nonlinearly on both source occupancy and destination vacancy.",
+  "created_by_call": "call-000000000000",
+  "extensions": [],
+  "falsifiers": [
+   "An implementation of the stated synchronous updates produces anything other than correct-answer probability 0.8125 on the one-demonstration, two-rule held-out task.",
+   "The claimed occupancy invariant fails: any sequence of binary demonstrations produces negative occupancy, occupancy above one, or total mass different from one beyond floating-point tolerance.",
+   "On an expanded declared circuit bank, vacancy transport fails to outperform ordinary replicator transport in any matched-budget setting measuring the tradeoff between rapid reversal and confidence retention; this would undermine the proposed pressure law's practical motivation.",
+   "An exact reduction shows that the occupancy update is ordinary replicator dynamics, Bayesian reweighting, or an excluded memory family under a fixed invertible change of coordinates; that would refute the claimed mechanistic distinction."
+  ],
+  "id": "card-19c22c05",
+  "known_relatives": [
+   {
+    "claimed_difference": "The physical current equation alone is not claimed as new. The proposed learning law is the evidence-dependent rate max(e_i-e_j,0)*(1+w_i*w_j)/(d-1), and rule execution replaces physical transport observables. Its utility and novelty beyond a physical analogy require testing.",
+    "name": "Exclusion processes and mean-field Kawasaki dynamics",
+    "relation": "The gain/loss equation is deliberately transplanted from conserved exclusion dynamics. Factorized occupancies approximate the correlations present in microscopic physical models."
+   },
+   {
+    "claimed_difference": "Ordinary replicator updates have mass-proportional fitness growth. Here transfer additionally requires destination vacancy and has an occupancy-dependent pair rate. A zero-occupancy correct rule can receive mass, and a destination nearing capacity jams incoming transfer. This is not merely a change of fitness vocabulary.",
+    "name": "Evolutionary rule populations and replicator dynamics",
+    "relation": "Both allocate population mass among reusable hypotheses according to observed success."
+   },
+   {
+    "claimed_difference": "The update is not likelihood multiplication followed by normalization: a noiseless separating example leaves 0.1875 mass on the falsified hypothesis, and subsequent contradictions transport mass rather than multiplying a previously zero likelihood.",
+    "name": "Bayesian finite-hypothesis learning",
+    "relation": "Both predict by executing and mixing a bounded bank of hypotheses."
+   },
+   {
+    "claimed_difference": "No observed pattern is stored or retrieved, and the core does not minimize distance to an episode. Its state is rule occupancy, its update is conservative pairwise evidence transport, and its readout executes programs on unseen inputs.",
+    "name": "Hopfield associative memory",
+    "relation": "Both can use nonlinear interactions among competing states."
+   },
+   {
+    "claimed_difference": "The core contains products of source occupancy, destination vacancy, and an occupancy-dependent rate. It neither updates a key-value operator nor has the prohibited affine state recurrence; there are no keys, outer-product writes, or linear query reads.",
+    "name": "Linear recurrence and fast-weight learners",
+    "relation": "These also maintain a compact evolving context state."
+   }
+  ],
+  "lens": "pair:sdm+cls",
+  "mechanism": {
+   "learning": {
+    "description": "All in-context learning is the occupancy transport in the two update equations. The proposed law converts a difference in observed correctness into an exclusion current and multiplies it by the occupancy-dependent pressure factor 1+w_i*w_j. No gradients, outer products, least-squares fits, stored input-output pairs, or inference-time circuit enumeration are used. The symmetric pressure factor and antisymmetric gain/loss accounting preserve total mass. Since (1-w[j])*(1+w[i]*w[j]) <= 1 for occupancies in [0,1], the division by d-1 bounds total outgoing mass by the source occupancy; the analogous incoming bound preserves destination capacity.",
+    "few_shot_argument": "A demonstration moves mass between entire executable rules, not between observed addresses. Consequently, separating evidence changes predictions at all inputs where those rules disagree. For d=2 with identity and complement, either input is separating: one example moves correct-rule mass from 0.5 to 0.8125 and makes every subsequent noiseless query's argmax correct. This is not a universal few-shot claim: rules that agree on the demonstrations cannot be distinguished, and a rule outside F cannot be acquired."
+   },
+   "readout": [
+    {
+     "latex": "p(v\\mid x)=\\sum_{i=0}^{d-1}w_i\\,\\mathbf{1}[F_i(x)=v]",
+     "name": "Execute and mix rules",
+     "plain": "Initialize p[0] and p[1] to zero; for each i, add w[i] to p[F[i](x)]."
+    }
+   ],
+   "state": [
+    {
+     "meaning": "Belief occupancies for d >= 2 executable rules, initialized to 1/d. Each entry lies in [0,1] and their sum is one. Indices i and j range from 0 to d-1; w_next and w_i^+ denote the next value of this state.",
+     "name": "w",
+     "shape": [
+      "d"
+     ],
+     "type": "learned continuous occupancy vector"
+    },
+    {
+     "meaning": "F_i maps an input x to one of V=2 output tokens, numbered 0 and 1. Each rule is a Boolean circuit with at most 16 gates and at most 8 input bits. This is an explicit built-in prior, not a learned large embedding. The core evaluates every circuit; it does not search for new circuits.",
+     "name": "F",
+     "shape": [
+      "d"
+     ],
+     "type": "fixed executable rule bank"
+    },
+    {
+     "meaning": "A structured event contains an input x and either a demonstrated output y in {0,1} or a query marker. On a demonstration, e_i is the derived error indicator 1[F_i(x) != y]. On a query, e_i is set to zero, so querying does not modify w. The symbol v ranges over the V=2 output tokens. A context has n events.",
+     "name": "frame",
+     "shape": [
+      "constant"
+     ],
+     "type": "current sequence event and derived errors"
+    },
+    {
+     "meaning": "r[i,j] is the timestep-integrated transport rate from rule i to rule j, recomputed from the current demonstration and old occupancies. Diagonal entries are zero. It is scratch space, not persistent episodic memory.",
+     "name": "r",
+     "shape": [
+      "d",
+      "d"
+     ],
+     "type": "derived directed transport rates"
+    },
+    {
+     "meaning": "p[v|x] is the distribution over the next binary output token at a query input x. Indicator brackets denote 1 when their condition holds and 0 otherwise; max denotes the ordinary scalar maximum.",
+     "name": "p",
+     "shape": [
+      2
+     ],
+     "type": "derived next-output distribution"
+    }
+   ],
+   "update": [
+    {
+     "latex": "r_{ij}=\\frac{\\max(e_i-e_j,0)(1+w_iw_j)}{d-1}\\quad(i\\ne j),\\qquad r_{ii}=0",
+     "name": "Evidence-to-current law",
+     "plain": "For i != j, r[i,j] = max(e[i]-e[j], 0)*(1+w[i]*w[j])/(d-1); set r[i,i] = 0."
+    },
+    {
+     "latex": "w_i^{+}=w_i+\\sum_{j\\ne i}\\left[w_j(1-w_i)r_{ji}-w_i(1-w_j)r_{ij}\\right]",
+     "name": "Conservative exclusion transport",
+     "plain": "w_next[i] = w[i] + sum over j != i of (w[j]*(1-w[i])*r[j,i] - w[i]*(1-w[j])*r[i,j]); compute every right-hand side from the old w, then replace w."
+    }
+   ]
+  },
+  "references": [],
+  "status": {
+   "stage": "S0",
+   "verdicts": {}
+  },
+  "summary": "Traffic jams and spin glasses with exchange dynamics both support exclusion-limited currents: an occupied location can transfer occupancy only into a vacancy. This card proposes a new evidence-to-current law for competition among executable rules, rather than retrieving examples or fitting a linear operator. The resulting learner has bounded rule capacity, nonlinear confidence dynamics, and an explicit prediction of rapid reversal after contradictory evidence. Its few-shot claim is deliberately restricted to a declared small rule class.",
+  "title": "Vacancy-Limited Rule Transport",
+  "toy_example": {
+   "description": "Run the two-rule mechanism on one identity demonstration, query the unseen input, then present a contradictory complement demonstration. All updates are synchronous and use the proposed occupancy-dependent transport rate.",
+   "expected": {
+    "after_one": [
+     0.8125,
+     0.1875
+    ],
+    "after_reversal": [
+     0.051773,
+     0.948227
+    ],
+    "mass": 1.0,
+    "unseen_distribution": [
+     0.8125,
+     0.1875
+    ]
+   },
+   "python": "import json\nimport numpy as np\n\nF = [lambda x: x, lambda x: 1-x]\nw = np.array([0.5, 0.5], dtype=float)\n\ndef update(w, x, y):\n    d = len(w)\n    e = np.array([int(f(x) != y) for f in F], dtype=float)\n    r = np.zeros((d, d))\n    for i in range(d):\n        for j in range(d):\n            if i != j:\n                r[i, j] = max(e[i]-e[j], 0.0)*(1.0+w[i]*w[j])/(d-1)\n    nxt = w.copy()\n    for i in range(d):\n        for j in range(d):\n            if i != j:\n                nxt[i] += w[j]*(1.0-w[i])*r[j, i] - w[i]*(1.0-w[j])*r[i, j]\n    return nxt\n\ndef predict(w, x):\n    p = np.zeros(2)\n    for i, f in enumerate(F):\n        p[f(x)] += w[i]\n    return p\n\ndef rounded(a):\n    return [round(float(z), 6) for z in a]\n\nw = update(w, 1, 1)\nfirst = rounded(w)\nunseen = rounded(predict(w, 0))\nw = update(w, 1, 0)\nresult = {'after_one': first, 'unseen_distribution': unseen, 'after_reversal': rounded(w), 'mass': round(float(w.sum()), 6)}\nprint(json.dumps(result, sort_keys=True))"
+  },
+  "version": 1,
+  "parent_ids": []
+ }
+}

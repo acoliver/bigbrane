@@ -1,0 +1,79 @@
+# Quick bench config for the loop's first pass: every task, three train sizes, shorter sequences, a
+# smaller step budget and a probe that stops at 2^11. Same entrants and same trust model as
+# default.toml; results are comparable only with other results from this file (its task config
+# hash differs, so its baselines are cached separately). Targets (evaluator-only) were set from the
+# first trusted quick baseline run. Measured runtimes: hybrid/bench/STATUS.md.
+seed = 0
+model_seed = 0
+n_test = 256
+train_sizes = [32, 128, 256]
+baselines = ["ngram", "gru", "transformer", "ssm", "linear_attention"]
+parallel_jobs = 5
+image = "localhost/bigbrane/executor@sha256:7fa94b73a3f6fbd6b6544d075e24ff8bf28fae2662771e577a332348d4a00f1b"
+
+[budget]
+max_steps = 600
+max_epochs = 60
+batch_size = 32
+lr = 0.003
+
+[caps.candidate]
+wall_s = 900
+memory_mb = 4096
+pids = 256
+tmp_mb = 64
+
+[caps.evaluator]
+wall_s = 300
+memory_mb = 2048
+pids = 64
+tmp_mb = 64
+
+# Mechanism fingerprint (see hybrid/bench/README.md). length_* choose which longer test sets the candidate
+# job predicts; the rest are evaluator-only thresholds, recorded in bench_result.json under fingerprint.config.
+[fingerprint]
+length_factors = [2, 4]
+length_tasks = ["hmm", "vom", "compose"]
+learned_ratio = 2.0
+capacity_advantage_ratio = 1.0
+quadratic_slope = 1.5
+fewshot_slope_min = 0.03
+js_close = 0.02
+ratio_close = 0.5
+close_task_fraction = 0.5
+memory_flat_slope = 0.5
+memory_floor_mb = 16.0
+
+[scaling]
+task = "hmm"
+train_size = 32
+lengths_log2 = [6, 11]   # context lengths 2^6 .. 2^11
+batch = 4
+repeats = 3
+warmup = 1
+seed = 7
+stop_after_s = 5.0
+tolerance = 0.4
+tail_points = 4
+
+[tasks.hmm]
+params = { n_states = 4, vocab = 8, rho = 0.9, eta = 0.6, length = 32 }
+target = { metric = "kl", op = "<=", value = 0.05 }
+
+[tasks.vom]
+params = { vocab = 6, split_probs = [1.0, 0.6, 0.45, 0.35, 0.25], alpha = 0.4, length = 64 }
+target = { metric = "kl", op = "<=", value = 0.04 }
+
+[tasks.recall]
+n_test = 128
+params = { k_values = [2, 8, 16], n_keys = 32, n_values = 16, n_queries = 8 }
+target = { metric = "acc", op = ">=", value = 0.12, group = "8" }
+
+[tasks.compose]
+params = { n_types = 3, n_fillers = 6, max_depth = 6, w_open = 0.3, w_close = 0.3, w_fill = 0.4, filler_alpha = 0.5, length = 48 }
+target = { metric = "kl", op = "<=", value = 0.2 }
+
+[tasks.fewshot]
+n_test = 128
+params = { modulus = 13, shots = [2, 4, 8], n_queries = 4, test_fraction = 0.3 }
+target = { metric = "acc", op = ">=", value = 0.15, group = "8" }

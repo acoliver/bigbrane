@@ -1,0 +1,172 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Ordered branching store with lower and upper links",
+  "summary": "Every written address becomes a node with a lower and an upper link. Writing descends from the root, going lower for a smaller address and upper otherwise, and attaches a new node at the first missing link; reading descends the same way. A three-mode controller decides what is written and read; the setting is found by search on a few examples.",
+  "core_idea": "Keep addresses as nodes ordered by comparison and descend to read or write, under a searched three-mode controller.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Nk",
+        "type": "integer vector",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Address of each node, in creation order; at most C nodes."
+      },
+      {
+        "name": "Nb",
+        "type": "integer vector",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Item of each node, -1 when cleared."
+      },
+      {
+        "name": "Lo",
+        "type": "integer vector",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Index of the lower child of each node, -1 if missing."
+      },
+      {
+        "name": "Up",
+        "type": "integer vector",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Index of the upper child of each node, -1 if missing."
+      },
+      {
+        "name": "ctl",
+        "type": "integer vector",
+        "shape": [
+          16
+        ],
+        "meaning": "Controller state outside the store: setting (mu, sigma, H), the waiting token p, flag w, counters c, o, d and the learned symbol sets Z and A."
+      },
+      {
+        "name": "M",
+        "type": "integer map",
+        "shape": [
+          "N"
+        ],
+        "meaning": "Learned translation from a read result to an emitted symbol, at most N entries for an alphabet of N symbols."
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_t=\\sigma \\Rightarrow w\\leftarrow 0,\\, o\\leftarrow 0;\\quad \\mu=0:\\; x_t\\in Z \\Rightarrow p\\leftarrow\\varnothing;\\; w=1,\\, p=\\varnothing \\Rightarrow p\\leftarrow x_t;\\; w=1,\\, p\\neq\\varnothing \\Rightarrow \\mathrm{ins}(p, x_t),\\, p\\leftarrow\\varnothing;\\quad \\mu=1:\\; w=1,\\, x_t\\notin Z \\Rightarrow \\mathrm{ins}(c, x_t),\\, c\\leftarrow c+1;\\; w=0 \\Rightarrow o\\leftarrow o+1;\\quad \\mu=2:\\; x_t\\in A \\Rightarrow \\mathrm{del}(d, \\mathrm{get}(d)),\\, d\\leftarrow d-1;\\; x_t\\notin A \\Rightarrow d\\leftarrow d+1,\\, \\mathrm{ins}(d, x_t)",
+        "plain": "one of three write disciplines picked by learning, pairing, positional or depth-indexed, drives ins and del; writing halts at the learned stop symbol and the emitted-symbol count o starts there",
+        "name": "controller"
+      },
+      {
+        "latex": "\\mathrm{ins}(a,b):\\; i \\leftarrow \\text{root};\\; \\text{while } i \\ne -1: (Nk_i = a \\Rightarrow Nb_i \\leftarrow b;\\; a < Nk_i \\Rightarrow i \\leftarrow Lo_i;\\; \\text{else } i \\leftarrow Up_i);\\; \\text{attach a new node at the missing link}",
+        "plain": "ins descends from the root comparing a with each node's address and either overwrites the node holding a or attaches a new node where the path ends; a write that would exceed C entries is dropped",
+        "name": "attach"
+      },
+      {
+        "latex": "\\mathrm{del}(a,b):\\; Nb_i \\leftarrow -1 \\text{ at the node holding } a",
+        "plain": "del clears the item of the node holding a",
+        "name": "clear"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\mu=0:\\; y_0=x_t,\\; r_j=\\mathrm{get}(y_{j-1}),\\; u=r_j \\text{ at the first } j\\le H \\text{ with } r_j\\in A,\\; u=r_{j-1} \\text{ at the first } r_j=\\varnothing;\\quad \\mu=1:\\; u=\\mathrm{get}(o);\\quad \\mu=2:\\; u=\\mathrm{get}(d);\\qquad \\hat{y}_t = M[u] \\text{ for } u\\in\\mathrm{dom}\\,M,\\; A_0 \\text{ for } u=\\varnothing,\\; u \\text{ otherwise}",
+        "plain": "readout follows held partners from the token (at most H fetches, ending at a member of A) or reads position o or depth d, then applies the learned translation M",
+        "name": "readout"
+      },
+      {
+        "latex": "\\mathrm{get}(a):\\; \\text{descend as in ins};\\; \\text{return } Nb_i \\text{ at the node with } Nk_i = a,\\; \\varnothing \\text{ if the path ends or } Nb_i = -1",
+        "plain": "get descends from the root by comparisons and returns the item of the node holding a"
+      }
+    ],
+    "learning": {
+      "description": "The learner picks a setting by search: the separators Z are symbols present exactly once in every example, the answer set A is the set of targets, and each (mode, stop) candidate is run over the m examples with M fitted by majority; the most accurate candidate is used.",
+      "few_shot_argument": "The candidate count is about 3|Z| + 4, so m = 12 small-case examples (L, K, T at most 4, depth 2, two hops) single out the right one."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(H C + |A|)",
+      "memory": "O(C + N)",
+      "total_sequence": "O(n H C)",
+      "constants_notes": "A descent visits at most the tree height, which is C in the worst case (addresses written in sorted order); random orders give about 2 ln C."
+    },
+    "sample_efficiency": {
+      "mechanism": "Search over a handful of controller settings with a majority translation.",
+      "prediction": {
+        "metric": "examples_to_small_cases",
+        "value": 12,
+        "statement": "With m = 12 training examples the learned controller reaches accuracy at least 0.99 on copy at L = 4, recall at K = 4, nesting at depth 2, composition at T = 4 and binding at 2 hops, on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "String mode with C = L copies L = 8, 32, 64 over D = 4 with per-string accuracy 1.0 within 4C + N + 16 words."
+      },
+      {
+        "task": "associative recall",
+        "prediction": "Pair mode with C = K and H = 1 answers K = 8, 32, 64 with per-query accuracy 1.0 within 4C + N + 16 words (N = 2K + 17 at K = 64 with V = 16)."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Nesting mode with C = depth predicts the legal closer at depth 2, 4, 8, 16 with accuracy 1.0 within 4C + N + 16 words."
+      },
+      {
+        "task": "two-hop composition",
+        "prediction": "Pair mode with C = 2T and H = 2 answers f(g(x)) at T = 4, 16, 32 with accuracy 1.0 within 4C + N + 16 words."
+      },
+      {
+        "task": "variable binding",
+        "prediction": "Pair mode with C = 2(hops + 1) and H = hops + 1 resolves chains of 1, 4, 8 hops with accuracy 1.0 within 4C + N + 16 words."
+      },
+      {
+        "task": "learning in the small cases",
+        "prediction": "The search learner reaches 0.99 from m = 12 examples on seeds 0, 1, 2 for copy at L = 4, recall at K = 4, depth 2, composition at T = 4 and binding at 2 hops."
+      },
+      {
+        "task": "limit",
+        "prediction": "For any fixed capacity C, recall of K = C + 1 distinct pairs over V = 16 symbols fails on some instance: the store holds at most C pairs, so one probe's item is absent and is answered from at most 16 guesses (at C = 64 this is K = 65, above every P2 size)."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A P2 instance at the listed sizes that the hand-set controller with this store answers wrongly, or that needs more than 4C + N + 16 words.",
+    "A seed on which 12 small-case examples leave the learned controller below 0.99."
+  ],
+  "toy_example": {
+    "description": "Five addresses attached, then the depth of the deepest node and two fetches.",
+    "python": "import json\nNk, Nb, Lo, Up = [], [], [], []\ndef ins(a, b):\n    if not Nk:\n        Nk.append(a); Nb.append(b); Lo.append(-1); Up.append(-1)\n        return 0\n    i, depth = 0, 0\n    while True:\n        if Nk[i] == a:\n            Nb[i] = b\n            return depth\n        side = Lo if a < Nk[i] else Up\n        depth += 1\n        if side[i] < 0:\n            Nk.append(a); Nb.append(b); Lo.append(-1); Up.append(-1)\n            side[i] = len(Nk) - 1\n            return depth\n        i = side[i]\ndef get(a):\n    i = 0 if Nk else -1\n    while i >= 0:\n        if Nk[i] == a:\n            return Nb[i]\n        i = Lo[i] if a < Nk[i] else Up[i]\n    return -1\ndepths = [ins(a, b) for a, b in [(5, 30), (2, 31), (8, 32), (6, 33), (7, 34)]]\nprint(json.dumps({\"depths\": depths, \"get6\": get(6), \"get7\": get(7), \"get4\": get(4)}))\n",
+    "expected": {
+      "depths": [
+        0,
+        1,
+        1,
+        2,
+        3
+      ],
+      "get6": 33,
+      "get7": 34,
+      "get4": -1
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

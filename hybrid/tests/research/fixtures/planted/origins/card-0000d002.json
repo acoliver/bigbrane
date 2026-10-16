@@ -1,0 +1,85 @@
+{
+  "id": "card-0000d002",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Bucket tally with a cutoff",
+  "summary": "An earlier idea: tallies of hashed buckets, read once a tally passes a cutoff.",
+  "core_idea": "Tally buckets and read the one past a cutoff.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "mallow",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Tallies per bucket."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "mallow[b(x_t)] = mallow[b(x_t)] + 1 (count, lookup table)",
+        "plain": "mallow[b(x_t)] = mallow[b(x_t)] + 1 (count, lookup table)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = lookup(mallow) if count >= theta, sum over buckets",
+        "plain": "y_t = lookup(mallow) if count >= theta, sum over buckets"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is trained.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(B)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "A bucket seen twice is read."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "frequent bucket",
+        "prediction": "Reads a bucket seen twice."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Tallies are standard.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The wrong bucket is read.",
+    "A tally decreases."
+  ],
+  "toy_example": {
+    "description": "Trivial.",
+    "python": "import json\nprint(json.dumps({'n': 2}))\n",
+    "expected": {
+      "n": 2
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

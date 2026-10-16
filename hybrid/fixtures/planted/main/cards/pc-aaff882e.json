@@ -1,0 +1,108 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Weighted mean of every earlier content under exponentiated match scores",
+  "summary": "Every symbol leaves an address vector and a content vector in a growing list. At each position a probe vector is matched against every listed address by a scaled dot product, the matches are exponentiated and divided by their sum, and the result weights the listed contents. A position-wise two-layer map with a residual path follows.",
+  "core_idea": "Read a growing list of earlier contents by weights proportional to the exponential of scaled probe-address dot products, normalized over the whole list.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "P",
+        "type": "list of real vector pairs",
+        "shape": [
+          "t",
+          "2d"
+        ],
+        "meaning": "List of (address, content) pairs, one appended per symbol read so far; it grows with the position t."
+      }
+    ],
+    "update": [
+      {
+        "name": "append",
+        "latex": "a_t = W_a z_t,\\; c_t = W_c z_t,\\; P_t = P_{t-1} \\cup \\{(a_t, c_t)\\}",
+        "plain": "a_t = W_a z_t and c_t = W_c z_t, where z_t = E[x_t] + p_t is the embedding plus a learned vector for position t; append the pair (a_t, c_t) to the list"
+      }
+    ],
+    "readout": [
+      {
+        "name": "weights",
+        "latex": "\\omega_{t,i} = \\exp\\left(\\frac{b_t \\cdot a_i}{\\sqrt{d}}\\right),\\; b_t = W_b z_t",
+        "plain": "omega_(t,i) = exp(b_t . a_i / sqrt(d)) for i = 1..t, with probe b_t = W_b z_t"
+      },
+      {
+        "name": "mean",
+        "latex": "y_t = \\frac{\\sum_{i \\le t} \\omega_{t,i} c_i}{\\sum_{j \\le t} \\omega_{t,j}}",
+        "plain": "y_t = sum_i omega_(t,i) c_i / sum_j omega_(t,j)"
+      },
+      {
+        "name": "position-wise map",
+        "latex": "r_t = z_t + W_o y_t,\\; o_t = r_t + W_2\\,\\mathrm{relu}(W_1 r_t)",
+        "plain": "r_t = z_t + W_o y_t; o_t = r_t + W_2 relu(W_1 r_t); next symbol scores O o_t"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence.",
+      "few_shot_argument": "No structure for few examples; the card states 1000 training sequences for recall of 4 pairs."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(t d + d^2 + d V)",
+      "memory": "Theta(n d)",
+      "total_sequence": "Theta(n^2 d + n d^2 + n d V)",
+      "constants_notes": "At position t the probe is matched against t addresses and t contents are averaged, so the total is quadratic in n; the list holds 2 d numbers per symbol."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 1000,
+        "statement": "From random weights, 1000 training sequences of 4 pairs over 16 symbols give recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact recall at any K with hand-set weights, because every pair stays in the list and a large score scale makes the weights a near point mass on the matching address."
+      },
+      {
+        "task": "copy a string after a separator",
+        "prediction": "Exact copying at any length with position vectors that let a probe match the position L back."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Recall accuracy drops below 0.9 at K = 64 with hand-set weights and a large score scale.",
+    "The counted operations grow slower than quadratically in n."
+  ],
+  "toy_example": {
+    "description": "Three listed pairs and one normalized exponential read.",
+    "python": "import json, math\nA = [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]\nCv = [[1.0, 0.0], [0.0, 1.0], [2.0, 2.0]]\nb = [2.0, 0.0]\nw = [math.exp((b[0] * a[0] + b[1] * a[1]) / math.sqrt(2.0)) for a in A]\nZ = sum(w)\ny = [sum(w[i] * Cv[i][j] for i in range(3)) / Z for j in range(2)]\nprint(json.dumps({\"weights\": [round(v / Z, 6) for v in w], \"read\": [round(v, 6) for v in y]}))\n",
+    "expected": {
+      "weights": [
+        0.445808,
+        0.108383,
+        0.445808
+      ],
+      "read": [
+        1.337425,
+        1.0
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

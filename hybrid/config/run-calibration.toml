@@ -1,0 +1,272 @@
+# Calibration copy of run.toml (2026-10-14): identical except max_wall_s, raised from 14400 to 36000 because
+# card-runs under --parallel 3 wait for shared job slots and k2-run2 of calibration 121552Z hit 14400 s mid-run.
+# Orchestrator configuration for `python -m hybrid.research run`.
+# Paths are relative to the repository root.
+
+[run]
+n_explorers = 4
+# Lens order seed. Unset (the default): derived from the run id with a stable hash, so each new run
+# visits the lenses in its own shuffled order, and a resumed run keeps the order it started with.
+# Set an integer to make every run use the same order. A run that was started before the lens seed
+# was recorded resumes with seed 0, which is what it used.
+# seed = 0
+models_config = "hybrid/config/models.toml"
+lenses_config = "hybrid/config/lenses.toml"
+
+[budgets]
+# max_cards counts S0 attempts (including duplicates and failed explorer calls).
+# max_calls counts LLMClient.complete() calls made by this run (a schema retry inside one
+# complete() is one call here; models.toml budgets count backend requests separately).
+# max_wall_s applies to one invocation; a resumed run gets a fresh wall budget.
+max_cards = 12
+max_calls = 300
+max_tokens = 20_000_000
+max_wall_s = 36000
+
+[budgets.idea]
+# Loop budgets per idea (DISCOVERY-PIPELINE-PLAN.md section 10, Phase 8; hybrid/research/lineage.py). An idea is keyed
+# by the mechanism signature of its card at creation, so a card that renames an earlier card's mechanism shares its
+# counts. A config without these keys gets the values below, so older runs resume; on resume their cards are given
+# lineages and the S1 revisions they already used are counted. The S1 revision loop keeps its cap in
+# s1.max_revisions and prover attempts per statement in math.max_prover_attempts (4, as the plan proposes).
+# Refinement dialogue rounds (Phase 7, step 2).
+refinement_rounds = 3
+# Prior-art send-backs (Phase 7, step 4). Each one also takes an idea slot of the card's lineage (plan section 8).
+send_backs = 1
+# Math revision rounds (stage V, step 7).
+math_revision_rounds = 3
+# Model calls made while any stage works on a card of this idea, the explorer call included. A card that reaches the
+# cap mid-stage ends there with kill code budget:model_calls.
+model_calls = 80
+
+[budgets.lineage]
+# A lineage is a root idea plus every mutate, cross and escape child (and later repair children); a new card whose
+# signature is already known joins that signature's lineage, so a restart of a recorded idea cannot reset the counts
+# (with outcomes.enabled, lineages of earlier runs count too). At `ideas` admitted cards the lineage admits no more:
+# a new card is dropped at S0 (budget:lineage_ideas), and escape and mutation requests are skipped (budget:escape,
+# budget:mutation). A card whose lineage reaches `model_calls` ends with budget:lineage_calls.
+ideas = 4
+model_calls = 200
+
+[workers]
+# Workers per stage queue. Per-role model concurrency is enforced by LLMClient.
+S1 = 4
+S2 = 3
+S3 = 2
+# Stages M and C run in place of S3 when s3.mode = "math".
+M = 2
+C = 1
+S4 = 1
+S5 = 1
+S6 = 1
+
+[explore]
+papers_min = 3
+papers_max = 6
+abstract_chars = 1200
+existing_summaries = 30
+summary_chars = 300
+# Operator choice once eligible parents exist (cards that passed S1).
+p_mutate = 0.25
+p_cross = 0.15
+# Graveyard: every explorer prompt lists up to graveyard_max earlier cards with their outcome (reduced to
+# a known family at S2, the stage and verdict where the card died, or alive at Sk), about 250 characters
+# each, reductions first.
+graveyard_max = 20
+# Other run directories (relative to the repository root, or absolute) whose cards are added to the
+# graveyard, read-only, so a new run learns from the reductions of earlier runs. Example:
+# graveyard_runs = ["runs/run-20261010T181300Z"]
+graveyard_runs = []
+# Chance of an escape task when S2 reduces a card to a known family: the explorer gets the card, the
+# reduction mapping and the numeric check, and must break the property the mapping relies on. Escape tasks
+# use card slots (max_cards) and are skipped when no slot is left.
+p_escape = 1.0
+# Share of max_cards held back for escape tasks, from 0 to 1. A new, mutate or cross task takes a card slot only
+# if at least this many slots stay free for escapes: ceil(escape_reserve * max_cards) slots, recomputed against
+# max_cards at each start and resume. Without it, the explorers draw the whole budget before the first reduction
+# arrives. A held slot stays unused when no escape is requested; 0 turns the reserve off.
+escape_reserve = 0.3
+
+[diversity]
+# TF-IDF cosine of summary plus mechanism text against every existing card.
+threshold = 0.6
+
+[generation]
+# How S0 drafts cards (DISCOVERY-PIPELINE-PLAN.md section 6, Phase 6). "lenses": the lens-driven explorer, as in every
+# run before Phase 6. "arms": generation stage G (hybrid/research/stages/g_generate.py): new tasks draw one of the
+# generation arms in `config` by weight, each with its own prompt and required output structure; a classifier role
+# places every card in the quality-diversity archive (`archive_config`), cards of the out-of-scope families in
+# `families_config` die at G, and arm A2 draws on `limits_config`. A config without the section gets "lenses", so
+# older runs resume as they started; resume a run with the mode it started with.
+mode = "lenses"
+config = "hybrid/config/generation.toml"
+archive_config = "hybrid/config/archive.toml"
+families_config = "hybrid/config/families.toml"
+limits_config = "hybrid/config/limits.toml"
+# Fixed number of drafts per arm, taken first and interleaved across arms (the Phase 6 live check); empty: arms are
+# drawn by weight. Set from the command line with `run --arm-quota A1=10,A2=10,...`.
+quota = {}
+# true: every card stops at S0 (no later stage runs); `run --draft-only`. A resumed run without it continues the
+# drafted cards into S1.
+draft_only = false
+
+[s1]
+# Revisions a card may use for fixable salad-critic findings or a toy mismatch. A fatal finding fails at once.
+max_revisions = 2
+# When the revisions are used up, a card with no fatal finding and a reproduced toy example passes S1 with
+# its remaining fixable findings recorded as residual (reasons prefixed "residual:", artifact s1_residual).
+# S3 gives them to the formalizer and the disprover as known open issues from S1. A toy mismatch after the
+# last revision still fails. Set to false to fail such cards instead.
+pass_with_residual_fixable = true
+toy_rtol = 1e-6
+toy_atol = 1e-9
+
+[refine]
+# Refinement dialogue, stage R between S1 and S2 (DISCOVERY-PIPELINE-PLAN.md section 7, Phase 7;
+# hybrid/research/stages/r_refine.py). A challenger from a family other than the proposer's asks up to max_questions
+# questions per round (undefined objects, unstated assumptions, untested claims, uncosted steps, decorative
+# commitments); the proposer answers by revising the card and writing the definitions and premises stage M's statement
+# fixer starts from. Rounds per idea: budgets.idea.refinement_rounds. With enabled = true, S1 becomes the entry check
+# (no S1 revisions: the dialogue replaces them). A config without the section gets enabled = false, so older runs
+# resume without R; resume a run with the setting it started with.
+enabled = true
+# A revision may not grow the core (state objects plus update and readout equations) by more than this share of its
+# size when the dialogue started; a revision past it is rejected.
+growth_limit = 0.25
+# At most 5 (plan section 7).
+max_questions = 5
+
+[literature]
+# Local arXiv metadata index (python -m hybrid.literature harvest). Relative to the repository root.
+# S2 prior-art searches query it before the remote sources. If the file is missing, S2 skips it and
+# the search receipt says so.
+local_index_path = "data/arxiv-index/arxiv.sqlite"
+
+[s2]
+require_radical = true
+# A claimed reduction with no runnable check counts as verified at or above this confidence.
+reduction_confidence = 0.8
+# A `novel` label with no paper from any literature search is not evidence of novelty. With false (the default),
+# S2 retries the classification once with broader queries and gives `undetermined` if that search is empty too.
+# Set true to pass such cards as novel, as earlier runs did.
+empty_search_counts_as_novel = false
+# Phase 7 (plan sections 1.2 and 8; hybrid/research/stages/difference.py). family_exclusion: the reduction critic names
+# the card's family from hybrid/config/families.toml (decision D8), and a verified reduction into an out-of-scope
+# family fails the card with excluded_family:<id> even with a LEARNING_RULE: difference. difference_statement: a card
+# that passes the other S2 gates writes a difference statement (closest prior works with receipts or outcome-store
+# ids, what was tried, why it failed, the precise change, the changed equation, the cause ids it addresses), checked
+# on the host and by a challenger role; a failure gets one send-back (budgets.idea.send_backs, which also takes a
+# lineage slot), then the card dies with not_radical:R3 or no_difference. A config without these keys gets false.
+family_exclusion = true
+difference_statement = true
+
+[s3]
+# Which stage decides feasibility. "judges": S3 (formalizer, disprover, obligation checks, two judges), as in every
+# run before Phase 3. "math": stages M and C replace S3 (DISCOVERY-PIPELINE-PLAN.md sections 4 and 5, settings in
+# [math]); they need the tools image (hybrid/executor/image.tools.lock.json). A config without the key gets
+# "judges", so older runs resume as they started. Resume a run with the mode it started with.
+mode = "judges"
+# A split vote gets this many more judge rounds before the verdict is undetermined.
+extra_rounds = 1
+# Executed disproof checks (attack programs from the disprover).
+max_checks = 3
+# Executed obligation checks: the obligation_checker sorts each formalizer obligation into a kind and writes a
+# sympy or numpy program for the checkable kinds (complexity, capacity, algebraic, numerical_stability). Each
+# program runs in the executor, a deciding run is replayed, and the results go to both judges and the gate.
+symbolic_checks = true
+# Programs run per card (each deciding program runs twice).
+max_obligation_checks = 6
+
+[math]
+# Stages M and C (s3.mode = "math"). Prover rounds per card: each round is one prover call for every statement still
+# open and counts as one attempt for each, so no statement gets more than this many attempts (plan section 10: 4).
+max_prover_attempts = 4
+# Most obligations the statement fixer may write, and most statements frozen per card (each statement is one or
+# more checks in the tools image).
+max_obligations = 12
+max_statements = 16
+# Random assignments on which the statement-match harness compares a Z3 property with the claim's predicate.
+match_instances = 1000
+# Transformer profile (DISCOVERY-PIPELINE-PLAN.md section 4.4, Phase 4; hybrid/math/profile.py). true: every card must
+# discharge P1 (exact cost, run at several lengths), P2 (constructions for copy, recall, nesting and composition), P3
+# (a derived limit), P4 (toy learnability) and P5 (information bounds) as well as its own claims; the slots, forms,
+# sizes and thresholds are fixed in the hashed profile module, and max_obligations and max_statements get room for
+# them on top. A config without the key gets false, so runs started before Phase 4 resume without the profile.
+profile = true
+# Executor jobs that may run at once on this host, across every process (hybrid/slots.py; slot files under var/slots).
+# Stage M runs the checks of a prover round together, and calibrate and planted --parallel run card-runs together;
+# this bounds what reaches the Podman VM. Each job keeps its own caps (1 CPU, 4096 MB for library and learnability
+# jobs), so timings stay comparable with the learnability budget; a Lean job (8192 MB) takes two slots. "auto" is half
+# the VM's CPUs (4 on the 8-CPU VM measured 2026-10-14); any value is clamped to the VM's CPUs less one and to its
+# memory less 4096 MiB in 4096 MB slots (5 on the 24576 MiB VM), and the command prints the limit it uses.
+max_parallel_jobs = "auto"
+
+[target]
+# The compute target gate (plan sections 1.1 and 4.4, hybrid/math/target.py), separate from the profile so that
+# calibration can check the profile on a known model while the target still rejects it. It reads the P1 cost formula
+# once P1's check held, and fails a card that misses the target with obligation_failed:target at stage M.
+# Decision D1 defaults, applied 2026-10-13 until Andrew decides otherwise (plan section 18): the total cost over a
+# sequence of length n grows at most as n^1.5, and inference state is fixed in n or grows at most as O(log n)
+# ("log"; "fixed" allows only a fixed state). A store that grows with the corpus rather than the context is constant
+# in n and passes when its size is in the P1 state formula. A config without the section gets enabled = false.
+enabled = true
+max_cost_exponent = 1.5
+state_growth = "log"
+# FIX-17 (decision C17, amended 2026-10-15): the skill scale at target. For each P2 task the card's stated widths are
+# substituted into the verified P1 cost and state formulas, and b is the largest exponent with task size s = n^b,
+# total cost at most n^coupled_max_cost_exponent and state at most n^coupled_max_state_exponent. The state bound is
+# sublinear rather than the D1 rule above, since recalling K pairs needs K log V bits in any mechanism. With the gate
+# enabled, a card needs b > 0 on at least one P2 task (obligation_failed:target_coupled); calibration records b only.
+coupled_max_cost_exponent = 1.5
+coupled_max_state_exponent = 0.5
+
+[outcomes]
+# Outcome store (DISCOVERY-PIPELINE-PLAN.md section 9): results/outcomes/outcomes.jsonl (append-only, hash-chained)
+# plus an SQLite index. Fill it from old runs with `python -m hybrid.research outcomes backfill`.
+# enabled = true: S0 lists the dead ideas of earlier runs nearest to each task, with their kill codes and cause ids;
+# S2 searches the store by the card's mechanism signature and nearest neighbours before the reduction critic and
+# shows it the matches; the orchestrator writes a record when a card's line ends. A config without the section gets
+# enabled = false, so older runs resume as they started.
+enabled = false
+# Relative to the repository root, or absolute.
+path = "results/outcomes"
+# Dead ideas listed in each explorer prompt.
+prompt_max = 12
+# Own-history matches shown at S2: every exact signature match, plus nearest neighbours up to this many in total.
+history_max = 8
+# A neighbour is a record whose signature tokens have Jaccard similarity at least jaccard_min with the card's, or
+# whose core idea and summary have TF-IDF cosine at least tfidf_min. Set from the backfilled store
+# (results/phase5-20261012T210932Z/summary.md): replaying the old runs in order, the nearest earlier-run record had
+# Jaccard at most 0.67 and TF-IDF at most 0.47; these values give about one card in six a neighbour.
+jaccard_min = 0.6
+tfidf_min = 0.3
+# Rule R3 (plan section 1.3): a card whose signature matches a dead idea exactly, or within jaccard_min, must cite every
+# cause id of that record in its difference statement and change the equation the cause names (checked by the S2
+# challenger role), or it dies at S2 with not_radical:R3 after one send-back. Needs enabled = true to have a store to
+# match against, and s2.difference_statement = true to give the card a statement (with it false, every exact match
+# fails, as before Phase 7). On for new runs since Phase 7; a config without the key gets false.
+enforce_r3 = true
+
+[s4]
+repair_rounds = 2
+
+[s5]
+# "podman" uses hybrid.executor.Executor; "local" uses hybrid.bench.local.LocalExecutor (untrusted).
+mode = "podman"
+bench_config = "hybrid/config/bench_quick.toml"
+# Card falsifier tasks: before the bench runs, the falsifier_designer writes one to three task programs from the
+# card's own claims and falsifiers, each validated in the executor (deterministic replay, oracle self-score,
+# analytic trivial levels, caps, no file or network use) with one retry. Validated tasks run next to the standard
+# tasks for the candidate and every baseline, and S6 decides the claims their pre-registered rules name.
+falsifiers = true
+# Wall cap of each validation job (the generator runs twice inside it).
+falsifier_wall_s = 300
+
+[executor]
+# Caps for toy examples, reduction checks, disproof checks and construct checks.
+wall_s = 120
+memory_mb = 1024
+pids = 64
+tmp_mb = 64
+construct_wall_s = 300
+construct_memory_mb = 2048

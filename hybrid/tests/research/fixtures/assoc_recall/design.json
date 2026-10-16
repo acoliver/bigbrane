@@ -1,0 +1,60 @@
+{
+ "deviations": "V_c scaled to 1024 content tokens; K=256 group tests capacity limit with 50 trials instead of 500.",
+ "program": "import numpy as np\n\ndef generate(seed):\n    rng = np.random.default_rng(seed)\n    V = 1027\n    BOS, SEP, AT1 = 0, 1, 2\n    CONTENT_START = 3\n    \n    train_seqs = []\n    for _ in range(256):\n        K = int(rng.choice([16, 32, 48]))\n        seq = [BOS]\n        used_a = set()\n        bindings = []\n        for _ in range(K):\n            while True:\n                a = int(rng.integers(CONTENT_START, CONTENT_START + 1024))\n                if a not in used_a:\n                    break\n            b = int(rng.integers(CONTENT_START, CONTENT_START + 1024))\n            while b == a or b in used_a:\n                b = int(rng.integers(CONTENT_START, CONTENT_START + 1024))\n            used_a.add(a)\n            seq.extend([a, b, SEP])\n            bindings.append((a, b))\n        idx = int(rng.integers(0, K))\n        qa, qb = bindings[idx]\n        seq.extend([AT1, qa, qb])\n        train_seqs.append(seq)\n        \n    prefixes = []\n    next_tokens = []\n    groups = []\n    group_labels = [\"K=16\", \"K=32\", \"K=48\", \"K=256\"]\n    \n    for K in [16, 32, 48, 256]:\n        for _ in range(50):\n            seq = [BOS]\n            used_a = set()\n            bindings = []\n            for _ in range(K):\n                while True:\n                    a = int(rng.integers(CONTENT_START, CONTENT_START + 1024))\n                    if a not in used_a:\n                        break\n                b = int(rng.integers(CONTENT_START, CONTENT_START + 1024))\n                while b == a or b in used_a:\n                    b = int(rng.integers(CONTENT_START, CONTENT_START + 1024))\n                used_a.add(a)\n                seq.extend([a, b, SEP])\n                bindings.append((a, b))\n            idx = int(rng.integers(0, K))\n            qa, qb = bindings[idx]\n            prefixes.append(seq + [AT1, qa])\n            next_tokens.append(int(qb))\n            groups.append([16, 32, 48, 256].index(K))\n            \n    return {\n        \"vocab_size\": V,\n        \"train\": train_seqs,\n        \"prefixes\": prefixes,\n        \"next_tokens\": next_tokens,\n        \"oracle_kind\": \"answer\",\n        \"oracle\": next_tokens,\n        \"group\": groups,\n        \"group_labels\": group_labels\n    }",
+ "protocol": "BOS, K pairs 'a b ;' with distinct bindings, query '@1 a', target b. Groups: K=16, 32, 48, 256.",
+ "rules": [
+  {
+   "claims": [
+    "capability.2"
+   ],
+   "conditions": [
+    {
+     "entrant": "candidate",
+     "group": "K=16",
+     "metric": "acc",
+     "minus": "unigram",
+     "op": ">=",
+     "value": 0.5
+    },
+    {
+     "entrant": "candidate",
+     "group": "K=32",
+     "metric": "acc",
+     "minus": "unigram",
+     "op": ">=",
+     "value": 0.5
+    },
+    {
+     "entrant": "candidate",
+     "group": "K=48",
+     "metric": "acc",
+     "minus": "unigram",
+     "op": ">=",
+     "value": 0.5
+    }
+   ],
+   "if_met": "supported",
+   "quote": "Accuracy \u2265 0.95 for K \u2264 48."
+  },
+  {
+   "claims": [
+    "capability.2",
+    "falsifier.3"
+   ],
+   "conditions": [
+    {
+     "entrant": "candidate",
+     "group": "K=256",
+     "metric": "acc",
+     "minus": null,
+     "op": "<=",
+     "value": 0.6
+    }
+   ],
+   "if_met": "supported",
+   "quote": "Accuracy \u2264 0.6 for K = 256 (4d)."
+  }
+ ],
+ "task_id": "assoc_recall_capacity",
+ "title": "Associative Recall Capacity Limit"
+}

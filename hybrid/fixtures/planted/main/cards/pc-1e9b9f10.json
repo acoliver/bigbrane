@@ -1,0 +1,159 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Sign-coded slot bank read by sharpened exponential weighting",
+  "summary": "Each written pair occupies one of C slots as two sign codes of q bits. A fetch scores every occupied slot by the dot product of its address code with the probe's code, weights the slots by a sharpened exponential of the score normalized to sum one, and decodes the weighted item code bit by bit. A three-mode controller decides what is written and fetched.",
+  "core_idea": "Store pairs as sign codes in a fixed slot bank and fetch by exponentially weighted, normalized code matching, under a searched controller.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Ad",
+        "type": "real matrix",
+        "shape": [
+          "C",
+          "q"
+        ],
+        "meaning": "Address codes: row i is the plus/minus one code (q = 9 bits) of the address in slot i."
+      },
+      {
+        "name": "It",
+        "type": "real matrix",
+        "shape": [
+          "C",
+          "q"
+        ],
+        "meaning": "Item codes: row i is the plus/minus one code of the item in slot i."
+      },
+      {
+        "name": "occ",
+        "type": "real vector",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Occupancy: 1 for a used slot, 0 for a free one."
+      },
+      {
+        "name": "ctl",
+        "type": "integer vector",
+        "shape": [
+          16
+        ],
+        "meaning": "Control words: the learned mode and stop symbol, the separator list Z and answer list A, the pending token p, the writing flag w and three counters c, o and d."
+      },
+      {
+        "name": "M",
+        "type": "integer map",
+        "shape": [
+          "N"
+        ],
+        "meaning": "Learned translation from a read result to an emitted symbol, at most N entries for an alphabet of N symbols."
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_t=\\sigma \\Rightarrow w\\leftarrow 0,\\, o\\leftarrow 0;\\quad \\mu=0:\\; x_t\\in Z \\Rightarrow p\\leftarrow\\varnothing;\\; w=1,\\, p=\\varnothing \\Rightarrow p\\leftarrow x_t;\\; w=1,\\, p\\neq\\varnothing \\Rightarrow \\mathrm{ins}(p, x_t),\\, p\\leftarrow\\varnothing;\\quad \\mu=1:\\; w=1,\\, x_t\\notin Z \\Rightarrow \\mathrm{ins}(c, x_t),\\, c\\leftarrow c+1;\\; w=0 \\Rightarrow o\\leftarrow o+1;\\quad \\mu=2:\\; x_t\\in A \\Rightarrow \\mathrm{del}(d, \\mathrm{get}(d)),\\, d\\leftarrow d-1;\\; x_t\\notin A \\Rightarrow d\\leftarrow d+1,\\, \\mathrm{ins}(d, x_t)",
+        "plain": "per token the mode mu decides: pairs (hold one token in p, then ins the held and the new one), positions (ins under the counter c until sigma, then count emitted symbols in o), or depth (openers enter at d + 1, closers withdraw what sits at d)",
+        "name": "controller"
+      },
+      {
+        "latex": "\\mathrm{ins}(a,b):\\; i=\\arg\\min_j occ_j,\\; Ad_i \\leftarrow \\kappa(a),\\; It_i \\leftarrow \\kappa(b),\\; occ_i \\leftarrow 1",
+        "plain": "ins fills the first free slot i with the codes kappa(a) and kappa(b) (kappa_k(x) = +1 if bit k of x is set, else -1); a write that would exceed C entries is dropped",
+        "name": "fill"
+      },
+      {
+        "latex": "\\mathrm{del}(a,b):\\; i=\\arg\\max_{j: occ_j=1} Ad_j \\cdot \\kappa(a),\\; occ_i \\leftarrow 0",
+        "plain": "del frees the occupied slot whose address code best matches kappa(a) and zeroes its codes",
+        "name": "free"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\mu=0:\\; y_0=x_t,\\; r_j=\\mathrm{get}(y_{j-1}),\\; u=r_j \\text{ at the first } j\\le H \\text{ with } r_j\\in A,\\; u=r_{j-1} \\text{ at the first } r_j=\\varnothing;\\quad \\mu=1:\\; u=\\mathrm{get}(o);\\quad \\mu=2:\\; u=\\mathrm{get}(d);\\qquad \\hat{y}_t = M[u] \\text{ for } u\\in\\mathrm{dom}\\,M,\\; A_0 \\text{ for } u=\\varnothing,\\; u \\text{ otherwise}",
+        "plain": "the current token's partner is fetched, then that partner's partner, up to H rounds, until a symbol of A appears (positions o and depths d are fetched directly in the other modes); M translates the result",
+        "name": "readout"
+      },
+      {
+        "latex": "s = Ad\\,\\kappa(a) \\text{ over occupied slots};\\; \\max s < q - \\tfrac12 \\Rightarrow \\varnothing;\\; \\omega = \\exp(\\beta(s - \\max s)) / \\textstyle\\sum \\exp(\\beta(s - \\max s));\\; \\mathrm{get}(a) = \\sum_k 2^k [(\\omega It)_k > 0]",
+        "plain": "get: score s = Ad times kappa(a) over occupied slots; no slot with a full match (score below q - 1/2) means nothing; otherwise weights omega = exp(beta (s - max s)) divided by their sum, beta = 8, and the item is read from the signs of omega times It"
+      }
+    ],
+    "learning": {
+      "description": "Learning enumerates the controller settings, mode times stop symbol, 3(|Z| + 1) + 1 of them, where Z holds the symbols seen once in every training sequence. Each setting is run on the m items and its translation M is fitted by majority count; the best setting on the items is kept. A is read off the targets.",
+      "few_shot_argument": "Twelve training sequences suffice in the small cases: the wrong settings each miss several targets, the right one misses none, and M only needs each read result once."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(H C q + |A|)",
+      "memory": "O(C q + N)",
+      "total_sequence": "O(n H C q)",
+      "constants_notes": "A fetch is one C by q product, C exponentials and one q by C product; at most H fetches per token; q = 9 covers alphabets up to 512 symbols."
+    },
+    "sample_efficiency": {
+      "mechanism": "Search over a handful of controller settings with a majority translation.",
+      "prediction": {
+        "metric": "examples_to_small_cases",
+        "value": 12,
+        "statement": "With m = 12 training examples the learned controller reaches accuracy at least 0.99 on copy at L = 4, recall at K = 4, nesting at depth 2, composition at T = 4 and binding at 2 hops, on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "String mode with C = L copies L = 8, 32, 64 over D = 4 with per-string accuracy 1.0 within 19C + N + 16 words."
+      },
+      {
+        "task": "associative recall",
+        "prediction": "Pair mode with C = K and H = 1 answers K = 8, 32, 64 with per-query accuracy 1.0 within 19C + N + 16 words (N = 2K + 17 at K = 64 with V = 16)."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Nesting mode with C = depth predicts the legal closer at depth 2, 4, 8, 16 with accuracy 1.0 within 19C + N + 16 words."
+      },
+      {
+        "task": "two-hop composition",
+        "prediction": "Pair mode with C = 2T and H = 2 answers f(g(x)) at T = 4, 16, 32 with accuracy 1.0 within 19C + N + 16 words."
+      },
+      {
+        "task": "variable binding",
+        "prediction": "Pair mode with C = 2(hops + 1) and H = hops + 1 resolves chains of 1, 4, 8 hops with accuracy 1.0 within 19C + N + 16 words."
+      },
+      {
+        "task": "learning in the small cases",
+        "prediction": "The search learner reaches 0.99 from m = 12 examples on seeds 0, 1, 2 for copy at L = 4, recall at K = 4, depth 2, composition at T = 4 and binding at 2 hops."
+      },
+      {
+        "task": "limit",
+        "prediction": "For any fixed capacity C, recall of K = C + 1 distinct pairs over V = 16 symbols fails on some instance: the store holds at most C pairs, so one probe's item is absent and is answered from at most 16 guesses (at C = 64 this is K = 65, above every P2 size)."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A P2 instance at the listed sizes that the hand-set controller with this store answers wrongly, or that needs more than 19C + N + 16 words.",
+    "A seed on which 12 small-case examples leave the learned controller below 0.99."
+  ],
+  "toy_example": {
+    "description": "Two pairs in four slots of q = 4 bit codes, then two fetches.",
+    "python": "import json\nimport numpy as np\nq, beta = 4, 8.0\ndef code(x):\n    return np.array([1.0 if (x >> k) & 1 else -1.0 for k in range(q)])\nAd = np.zeros((4, q)); It = np.zeros((4, q)); occ = np.zeros(4)\nfor a, b in [(3, 9), (6, 5)]:\n    i = int(np.argmin(occ)); Ad[i] = code(a); It[i] = code(b); occ[i] = 1.0\ndef get(a):\n    s = np.where(occ > 0.5, Ad @ code(a), -1e9)\n    if s.max() < q - 0.5:\n        return -1\n    w = np.exp(beta * (s - s.max())); w = w / w.sum()\n    r = w @ It\n    return int(sum(2 ** k for k in range(q) if r[k] > 0))\nprint(json.dumps({\"get3\": get(3), \"get6\": get(6), \"get1\": get(1)}))\n",
+    "expected": {
+      "get3": 9,
+      "get6": 5,
+      "get1": -1
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

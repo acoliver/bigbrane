@@ -1,0 +1,7 @@
+name = "bigbrane_math"
+
+# Mathlib tag v4.34.1, whose lean-toolchain is leanprover/lean4:v4.34.1 (the toolchain in Containerfile.tools).
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "d13f23b723b8a846827a245b89c10fc7d3f11612"

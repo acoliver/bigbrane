@@ -1,0 +1,161 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Welding the unexplained part of each demonstration into the square root of a concept covariance",
+  "summary": "A learner for positive directional concepts over supplied unit feature vectors keeps one unit-trace covariance Q. A demonstration takes the principal square root H of Q, mixes the demonstrated direction into H through a symmetric cross term scaled by a learned gain and by the part of the direction that Q leaves unexplained, adds a birth term along that direction, and rescales to unit trace. A probe u is scored by u^T Q u, clipped to [0, 1], and turned into a YES probability s / (s + lambda).",
+  "core_idea": "Each demonstration welds its unexplained direction into the square-root amplitude of a covariance concept, which creates new support and new cross-attribute correlation at once, and a probe is scored by its clipped quadratic form.",
+  "mechanism": {
+    "learning": {
+      "description": "A fully specified offline calibration dataset uses d=2 and lambda=1/20. It contains four equally weighted episodes, resetting Q=diag(1,0) before each: (1) no demonstrations, probe [1,0] labeled YES and [0,1] labeled NO; (2) demonstrate [0,1], probe [1,0] and [0,1], both labeled YES; (3) demonstrate [1,1]/sqrt(2), probe [1,1]/sqrt(2) labeled YES and [1,-1]/sqrt(2) labeled NO; (4) demonstrate [0,1] then [1,0], probe [1,0] labeled YES and [0,1] labeled NO. The objective is the arithmetic mean over these eight probes of minus the natural logarithm of the probability assigned to the specified label; demonstrations contribute no loss. Evaluate gamma on the grid 0,0.001,...,2 and choose the smallest minimizer, then freeze it at deployment. This is scalar calibration on a finite training distribution, not evidence of general statistical efficiency. All quantitative claims instead supply gamma=1/sqrt(2); they do not assert that this grid search selects it. The candidate new law is the coupling of deficit, transport amplitude, and coherent support birth, not covariance square roots or PSD normalization alone.",
+      "few_shot_argument": "The mechanism is deficit-welded amplitude transfer. For d=2, initialization Q=diag(1,0), and a single demonstration e_2=[0,1], v=0 and b=1, so teaching creates the previously absent second direction and gives Q=diag(1/2,1/2). A subsequent demonstration e_1=[1,0], with gamma=1/sqrt(2), yields Q=diag(5/6,1/6). Later probes use these installed directions without retrieving an example. Teaching [1,1]/sqrt(2) directly from initialization gives Q=[[41,10],[10,5]]/46, creating off-diagonal correlations. These are conditional algebraic guarantees, not a general sample-complexity theorem."
+    },
+    "readout": [
+      {
+        "latex": "\\text{PROBE}:\\quad s=\\operatorname{clip}(u^TQu,0,1),\\quad P=\\left(\\frac{s}{s+\\lambda},\\frac{\\lambda}{s+\\lambda}\\right);\\qquad \\text{DEMO}:\\quad P=(1/2,1/2).",
+        "name": "Conditional next-token distribution",
+        "plain": "After processing the event, on PROBE compute s=u@Q@u, clip s to [0,1], and return [s/(s+lambda),lambda/(s+lambda)]. On DEMO return [0.5,0.5]. Readout does not change Q."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "The concept covariance. d is the supplied feature dimension and n is the number of structured events in a sequence. Initialize Q=e_1 e_1^T, where e_1 is the first standard basis vector. Process events in their supplied order: each update reads Q from before the event and overwrites it for the next event; readout uses the resulting Q. Its rank cannot exceed d. Superscript T denotes transpose, tr denotes trace, and ||.||_F denotes the Frobenius norm.",
+        "name": "Q",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "type": "contextual positive-semidefinite matrix with unit trace"
+      },
+      {
+        "meaning": "The ordered pair (gamma,lambda), with nonnegative coherence gain gamma and positive readout scale lambda. Offline training learns gamma; lambda is fixed. All analytic claims use d=2, gamma=1/sqrt(2), and lambda=1/20. No feature encoder is hidden in the core.",
+        "name": "parameters",
+        "shape": [
+          2
+        ],
+        "type": "learned scalar and fixed scalar"
+      },
+      {
+        "meaning": "The first d coordinates form u, a supplied unit Euclidean-norm feature vector. The final coordinate is a tag: 0 means DEMO and 1 means PROBE. DEMO is a positive concept example; PROBE requests an output. Reject vectors with nonunit features or a tag outside {0,1}. These structured events, rather than raw text tokens, are the input units.",
+        "name": "event",
+        "shape": [
+          "d+1"
+        ],
+        "type": "real vector with a constrained binary final coordinate"
+      },
+      {
+        "meaning": "H is the principal positive-semidefinite square root of Q. It maps a standard Gaussian to the possibly degenerate Gaussian with covariance Q. v=Hu is the current transport response; b is the unexplained-amplitude magnitude. G is the coherently welded transport amplitude and R is the unnormalized new covariance. Compute the square root by symmetric eigendecomposition, clipping negative eigenvalues caused solely by roundoff to zero.",
+        "name": "transport_workspace",
+        "shape": [
+          "H:(d,d)",
+          "v:(d)",
+          "b:()",
+          "G:(d,d)",
+          "R:(d,d)"
+        ],
+        "type": "temporary matrices, vector, and scalar"
+      },
+      {
+        "meaning": "s is the nonnegative directional score. V=2 is the output vocabulary, ordered YES and NO. P is its normalized probability vector. DEMO predicts a uniform distribution; PROBE uses the directional score.",
+        "name": "read",
+        "shape": [
+          "s:()",
+          "P:(V)"
+        ],
+        "type": "temporary score and probability vector"
+      }
+    ],
+    "update": [
+      {
+        "latex": "H=Q^{1/2},\\qquad v=Hu,\\qquad b=\\sqrt{\\max(0,1-u^TQu)}.",
+        "name": "Expose the transport amplitude and deficit",
+        "plain": "On DEMO, compute the principal symmetric square root H, v=H@u, and b=sqrt(max(0,1-u@Q@u)). Since Q has trace one and u is unit length, the expression inside the square root is nonnegative in exact arithmetic. On PROBE, skip all update computations and leave Q unchanged."
+      },
+      {
+        "latex": "G=H+\\gamma b(uv^T+vu^T).",
+        "name": "Coherent welding",
+        "plain": "On DEMO, set G=H+gamma*b*(outer(u,v)+outer(v,u)). This changes the current amplitude through a demonstration-dependent cross term, rather than adding an independent stored pattern."
+      },
+      {
+        "latex": "R=GG^T+b^2uu^T,\\qquad Q\\leftarrow R/\\operatorname{tr}(R).",
+        "name": "Support birth and covariance normalization",
+        "plain": "On DEMO, set R=G@G.T+b*b*outer(u,u), then overwrite Q with R/trace(R). The second term creates support even when v is zero. The normalizer is positive: trace(G)=trace(H)+2*gamma*b*u@H@u>0, so G is nonzero; because u is unit length, trace(R)=||G||_F^2+b^2>0. The resulting Q is positive semidefinite with unit trace."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "Starting from diag(1,0), teaching [0,1] produces Q=diag(1/2,1/2) with rank two. Rank-one initialization followed solely by congruence transformations cannot produce a rank-two covariance.",
+        "task": "Support creation rather than rank-one reinforcement"
+      },
+      {
+        "prediction": "Starting from diag(1,0), teaching [1,1]/sqrt(2) produces Q=[[41,10],[10,5]]/46. Queries [1,1]/sqrt(2) and [1,-1]/sqrt(2) receive YES probabilities 330/353 and 130/153 respectively. A diagonal-only ablation assigns these queries identical probabilities.",
+        "task": "Cross-attribute coherent generalization"
+      },
+      {
+        "prediction": "Starting from diag(1,0), teach [0,1] and then [1,0]. The result is Q=diag(5/6,1/6). Queries [1,0] and [0,1] receive YES probabilities 50/53 and 10/13. The second example changes the installed concept without deleting its second supported direction.",
+        "task": "Two-shot selective reinforcement"
+      },
+      {
+        "prediction": "For every teaching history and unit u, queries u and -u have exactly equal distributions. On a balanced test labeling u YES and -u NO, any deterministic classifier using only the returned distribution has exactly 50% accuracy. Q contains at most d(d+1)/2-1 independent real degrees of freedom and at most d supported directions; it is not a store for arbitrarily many independent bindings.",
+        "task": "Explicit representational limits"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "Dense symmetric eigendecomposition dominates each DEMO. QUERY costs O(d^2); V=2 is fixed. The implementation retains only Q and constant-many work arrays, not demonstrations. Offline scalar grid search is excluded. d is configured independently of n. These are arithmetic complexity bounds, excluding arbitrary-precision costs.",
+      "memory": "O(d^2)",
+      "time_per_token": "O(d^3)",
+      "total_sequence": "O(n d^3)"
+    },
+    "sample_efficiency": {
+      "mechanism": "One unexplained positive direction produces a new supported concept direction through the explicit b^2 uu^T birth term.",
+      "prediction": {
+        "metric": "YES probability on an unseen mixed query after one orthogonal positive demonstration",
+        "statement": "With d=2, Q initialized to diag(1,0), gamma=1/sqrt(2), and lambda=1/20, one demonstration [0,1] makes every unit query receive YES probability exactly 10/11. In particular the never-demonstrated query [1,1]/sqrt(2) receives this probability. This tests installation of full two-dimensional support, not discrimination of an arbitrary concept.",
+        "value": 0.9090909090909091
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "In float64, starting from diag(1,0), teaching [0,1] and then [1,0] with gamma=1/sqrt(2) yields maximum entrywise deviation greater than 1e-10 from diag(5/6,1/6). This refutes the stated two-shot law.",
+    "Starting from diag(1,0), teaching [1,1]/sqrt(2) yields a covariance farther than 1e-10 entrywise from [[41,10],[10,5]]/46, or either mixed-query probability differs from 330/353 and 130/153 by more than 1e-10. This refutes the coherent-transfer claim.",
+    "In float64 at d=2 with gamma=1/sqrt(2), run every demonstration history of length at most four drawn from {[1,0],[0,1],[1,1]/sqrt(2),[1,-1]/sqrt(2)}. If any resulting Q has minimum eigenvalue below -1e-10, trace differing from one by more than 1e-10, or YES probabilities for any of these directions and its negative differing by more than 1e-10, a structural invariant of the core is refuted."
+  ],
+  "toy_example": {
+    "description": "Computes orthogonal support birth, selective second-shot reinforcement, and mixed-direction coherence using the actual square-root transport update.",
+    "python": "import json\nimport numpy as np\n\ngamma = 1 / np.sqrt(2.0)\nlam = 1 / 20.0\ninitial = np.diag([1.0, 0.0])\n\ndef teach(Q, u):\n    u = np.asarray(u, dtype=float)\n    u = u / np.linalg.norm(u)\n    vals, vecs = np.linalg.eigh(Q)\n    H = (vecs * np.sqrt(np.maximum(vals, 0.0))) @ vecs.T\n    v = H @ u\n    b = np.sqrt(max(0.0, 1.0 - float(u @ Q @ u)))\n    G = H + gamma * b * (np.outer(u, v) + np.outer(v, u))\n    R = G @ G.T + b * b * np.outer(u, u)\n    return R / np.trace(R)\n\ndef probability(Q, u):\n    u = np.asarray(u, dtype=float)\n    u = u / np.linalg.norm(u)\n    s = min(1.0, max(0.0, float(u @ Q @ u)))\n    return round(s / (s + lam), 6)\n\none = teach(initial, [0, 1])\ntwo = teach(one, [1, 0])\nmixed = teach(initial, [1, 1])\nresult = {\n    'one_shot_rank': int(np.linalg.matrix_rank(one)),\n    'one_shot_probability': probability(one, [1, 1]),\n    'two_shot_e1_probability': probability(two, [1, 0]),\n    'two_shot_e2_probability': probability(two, [0, 1]),\n    'mixed_covariance': np.round(mixed, 6).tolist(),\n    'mixed_sum_probability': probability(mixed, [1, 1]),\n    'mixed_difference_probability': probability(mixed, [1, -1])\n}\nprint(json.dumps(result, sort_keys=True))",
+    "expected": {
+      "mixed_covariance": [
+        [
+          0.891304,
+          0.217391
+        ],
+        [
+          0.217391,
+          0.108696
+        ]
+      ],
+      "mixed_difference_probability": 0.849673,
+      "mixed_sum_probability": 0.934844,
+      "one_shot_probability": 0.909091,
+      "one_shot_rank": 2,
+      "two_shot_e1_probability": 0.943396,
+      "two_shot_e2_probability": 0.769231
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

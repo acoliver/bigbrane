@@ -1,0 +1,445 @@
+{
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "Setup: hand-factorized codes, F = 3, 5 values per attribute, V = 125. Draw a rule with one atom p_i -> q_i (p_i != q_i) per attribute. Show three demonstrations. Each is on a token that carries exactly one source value, with its rule image as the target.\n\nPrediction:\n- K_fin = 3.\n- Accuracy is 1.0 on all 13 never-shown tokens that carry at least two source values.\n- Accuracy is 1.0 on all 64 tokens that carry no source value; these map to themselves.\n\nResults are over 1000 random rules.",
+        "task": "One-shot transfer and composition of substitution atoms (code sheet)"
+      },
+      {
+        "prediction": "Setup: show a one-atom rule p -> q in attribute 0 once, on token x0. Then show DEMO(x1, x1) for a never-demonstrated x1 != x0 with attribute 0 = p.\n\nPrediction:\n- The second demonstration writes a code-sheet full-pair row, so K_fin = 2.\n- QUERY(x1) returns x1.\n- The other 24 tokens with attribute 0 = p follow the rule with accuracy 1.0.\n\nResults are over all 20 ordered (p, q) pairs and uniformly random x0, x1.",
+        "task": "Exceptions by specificity blocking"
+      },
+      {
+        "prediction": "Use the sample-efficiency setup with m = 3 members, then run three tests:\n- All 3 members decode y' (accuracy 1.0).\n- A newcomer x' differs from y and from all members in every attribute and is shown -> y after the remap. QUERY(x') returns y (accuracy 1.0).\n- QUERY(y), with y never demonstrated, returns y (accuracy 1.0).\n\nThe result is identical whichever member is remapped.",
+        "task": "Class remap with a time-local class"
+      },
+      {
+        "prediction": "Stream: DEMO(a, v); DEMO(b, v); DEMO(a, w); QUERY(b). Use hand-factorized codes, F = 3, 5 values, V = 125.\n\nEach draw: (a, b, v) is uniform over ordered triples of tokens that differ pairwise in every attribute, and w is uniform over the 124 tokens != v.\n\nPrediction: the core answers w on 100% of 1000 draws. Its accuracy at answering v, the correct value because only a changed, is therefore exactly 0.0. This is the inherited co-motion bias.\n\nTrace: rows 1 and 2 are code-sheet rows (E_a -> E_v, E_b -> E_v). Row 3 is the image-sheet row (E_v minus E_w -> E_w minus E_v). b has tau_b = 2 <= 3, so row 3 acts on b.",
+        "task": "Stickiness signature (defection probe)"
+      },
+      {
+        "prediction": "Setup: show DEMO(x, rule(x)) for the atom p -> q in attribute 0. Then show DEMO(x, x'). Here x' has value q2 in attribute 0, with q2 != q and q2 != p, and keeps the other attributes of x.\n\nPrediction:\n- The second write is an image-sheet row, so K_fin = 2.\n- QUERY(x) returns x' (accuracy 1.0).\n- The 24 other tokens with attribute 0 = p still decode with q. The fraction of them that follow the revised value q2 is exactly 0.0.",
+        "task": "Rule revision moves only witnessed tokens"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "n counts events. K_max = 8 in all claims. All vectors are stored densely at length M, as mechanism.state defines them.\n\nTime per event:\n- Two packings each visit at most K <= K_max rows.\n- Each containment test all(c >= a_j) and each overlap test dot(a_j, U) costs O(M).\n- Sorting costs O(K_max log K_max), a constant at K_max = 8.\n- Decoding computes E @ o, which costs O(V M).\n\nMemory:\n- V*M bits for E;\n- K_max*(2M+1) + 1 entries for R;\n- V integer stamps for tau;\n- O(K_max + M) scratch.\n\nOffline hill climbing is excluded. The sparse-storage extension reduces M to N in both bounds.",
+      "memory": "O((K_max + V) M)",
+      "time_per_token": "O((K_max + V) M)",
+      "total_sequence": "O(n (K_max + V) M)"
+    },
+    "sample_efficiency": {
+      "mechanism": "One image-sheet location remaps every stamped token whose code-sheet image contains the residual units. So if m members are each shown once with a shared value, one remap demonstration of any single member moves all m members.\n\nThe comparisons fail on this test:\n- A single-sheet residual memory (parent A) writes a full-code exception for the remapped member only.\n- A last-seen-successor table also changes only that member.",
+      "prediction": {
+        "metric": "Exact-token accuracy on the un-remapped class members. Codes are hand-factorized (F = 3 attributes, 5 values each, V = 125, M = 15, N = 3, K_max = 8). Results are averaged over 1000 random draws.",
+        "statement": "Protocol:\n1. Draw a target y and m = 4 members x_1..x_4 uniformly among tuples where the members differ pairwise in every attribute and differ from y in every attribute.\n2. Show DEMO(x_i, y) for i = 1..4.\n3. Show DEMO(x_k, y'), with k uniform in 1..4 and y' uniform among tokens != y.\n4. Query the 3 members other than x_k.\n\nPrediction: accuracy is exactly 1.0 and K_fin = 5 on every draw. Parent A's single-sheet core and a last-seen table both score exactly 0.0.",
+        "value": 1.0
+      }
+    }
+  },
+  "core_idea": "A demonstration writes one residual rewrite location: on the code sheet if its token has never been demonstrated, and otherwise on the image sheet, which rewrites the code sheet's output; separately shown rules then compose through non-overlapping packing, and one remap moves every earlier-demonstrated token whose image contains the corrected units.",
+  "created_by_call": "call-7997f8e85a6b",
+  "extensions": [
+    {
+      "description": "Replace the one-hot decoding with a softmax over overlaps at a learned temperature. This gives a finite log-loss. No claim depends on it.",
+      "equations": [
+        {
+          "latex": "p_v=\\operatorname{softmax}_v(\\theta\\,E_v^\\top o)",
+          "plain": "p_v = softmax over v of theta * dot(E_v, o), with theta a learned scalar."
+        }
+      ],
+      "name": "Graded readout"
+    },
+    {
+      "description": "Suppose a stamped token's demonstration contradicts an image-sheet row written for a different token. Before writing, reset that token's stamp to K+1, so its next write detaches it from the class. This addresses the stickiness signature, which the core keeps on purpose.",
+      "name": "Defection release"
+    },
+    {
+      "description": "Let image-sheet rows also act on unstamped tokens when the row's address lies inside the contents of a firing code-sheet rule. A revised rule then reaches never-shown tokens. This changes the prediction of capability 5.",
+      "name": "Rule-revision propagation"
+    },
+    {
+      "description": "Two changes reduce M to N in the bounds:\n- Store E rows, a_j and b_j as sorted index lists of at most N units. This is possible because every address lies inside a code or a valid image. Containment and overlap tests then cost O(N), and memory falls to O((K_max + V) N).\n- List each row under the units of its address. Packing then visits only rows that share a unit with the code being packed.\n\nTogether, time per event becomes O((K_max + V) N).",
+      "name": "Sparse storage and unit-indexed packing"
+    }
+  ],
+  "falsifiers": [
+    "On the class-remap protocol (m = 4, hand-factorized codes), some un-remapped member decodes a token other than y', or K_fin != 5 on some draw.",
+    "Ablation: route witnessed residuals to the code sheet, which recovers parent A. If class-transfer accuracy then stays at or above 0.9, the image sheet does no work and the card reduces to parent A.",
+    "A newcomer shown -> y after a remap decodes y', or a never-demonstrated y decodes y'. Either result refutes the stamp rule, which keeps classes local in time.",
+    "With hand-factorized codes, the three-atom composition protocol gives any error on the 13 composed tokens, or K_fin != 3.",
+    "Immediately after a demonstration DEMO(x, y) that recruits a row (with K < K_max before it and hand-factorized codes), QUERY(x) does not return y.",
+    "With hand-factorized codes, some o1 or o computed during any claimed protocol is not a valid one-unit-per-attribute binary code. This would refute closure lemma (0)."
+  ],
+  "id": "card-03fa1d38",
+  "known_relatives": [
+    {
+      "claimed_difference": "Parent A has one sheet. When an already-shown token is remapped, its residual lies outside its own units, so A writes a full-code exception for that token alone and scores 0.0 on class transfer.\n\nHere, residuals of demonstrated tokens go to a second sheet. That sheet acts on images and is filtered by first-demonstration stamps. The sample-efficiency prediction separates the two exactly.",
+      "name": "Parent A: Residual Selected-Coordinate Locations",
+      "relation": "The code sheet uses the same residual nucleation and specificity-ordered non-overlap packing."
+    },
+    {
+      "claimed_difference": "Parent B moves V particles in R^d by Euler substeps, at O(S V d) per token. It keeps class membership only up to a snowplow gap.\n\nHere:\n- co-location is exact;\n- the image sheet is applied at read time to stamped tokens whose code-sheet image contains the residual units, and no per-token position is ever updated;\n- a write costs O(K_max M);\n- class transfer composes with code-sheet rules through packing.",
+      "name": "Parent B: Snowplow Flows (Lagrangian particle diffeomorphism)",
+      "relation": "Same class semantics: tokens shown to share a successor are co-located, so a single remap carries the whole class, and the class is sticky under defection."
+    },
+    {
+      "claimed_difference": "There are no parent pointers and no merge operation. A remap location matches a subset of image units, so it can move tokens from different 'classes' that share one attribute of their image.\n\nMembership is decided by containment and by stamp time, not by a partition. Rules and exceptions on the code sheet feed the image sheet through packing.",
+      "name": "Union-find with labelled roots",
+      "relation": "Members that share a successor behave like a merged set, and a remap behaves like relabelling the root."
+    },
+    {
+      "claimed_difference": "Those systems fire one winning rule over hand-written conditions. Here:\n- every disjoint match fires, which gives composition;\n- each condition is the residual against the memory's own two-stage prediction;\n- a second rule layer rewrites the first layer's outputs, but only for tokens demonstrated before that rule was written.\n\nThis last point is the class mechanism, and a flat rule base has no counterpart to it.",
+      "name": "Ripple-down rules, production systems with specificity and recency, decision lists",
+      "relation": "These systems add exceptions on error and resolve conflicts by specificity and recency."
+    },
+    {
+      "claimed_difference": "Here the written key is the residual of a read over the whole memory, not a function of the token. Each read is a greedy set packing in which a record's effect depends on which other records exist, and no fixed weight w(a_j, c) captures that. There is no additive outer-product state.",
+      "name": "Delta rule / KV cache with decoder; linear attention",
+      "relation": "Both write records inside the context on prediction error."
+    },
+    {
+      "claimed_difference": "That method induces rules offline from a full transition dataset by computing reducts. Here each rule is induced online from a single transition, its condition is the residual against the current prediction, and non-overlap packing on two sheets glues the rules together.",
+      "name": "Rough-set CA rule identification (1409.6359)",
+      "relation": "Same rule format: a minimal condition set over cells implies a new cell value."
+    }
+  ],
+  "lens": "pair:ca+sheaves",
+  "mechanism": {
+    "learning": {
+      "description": "Only E is learned. It uses parent A's offline discrete hill climbing, unchanged in form. The world has F = 3 attributes with 5 values each, so V = 125, M = 15 and N = 3.\n\nInitialization (E_0): draw each row with rng.choice(M, N, replace=False), and redraw duplicates.\n\nProposal: in a uniformly chosen row, swap one active unit with one inactive unit.\n\nAcceptance: keep the proposal iff J does not increase on the current batch of 200 episodes and all rows stay distinct.\n\nSchedule: 20000 proposals, with the batch resampled every 1000 proposals.\n\nEpisodes are drawn 50/50 from two types:\n- Two-atom rule episodes, exactly as in parent A: 2 demonstrations, then 25 queries scored against rule images.\n- Class-remap episodes: two tokens x1 and x2, each differing from y in every attribute, are each shown -> y. Then x1 is shown -> y'. Then x2 is queried, with target y'.\n\nThe in-context law u1-u6 has no free parameters. All claims below use hand-factorized codes (unit 5i+v is active iff attribute i has value v), so they test u1-u6 alone.",
+      "equations": [
+        {
+          "latex": "J(E)=\\sum_{\\text{ep}\\in B}\\Big(K_{\\text{fin}}(\\text{ep};E)+10\\sum_{(q,t)\\in\\text{ep}}[j^\\ast(q)\\ne t]\\Big)",
+          "name": "Offline description-cost objective",
+          "plain": "For each episode in batch B, run the core with codes E. Add the final fill counter K_fin. Add 10 times the number of queries whose decoded token differs from the target."
+        }
+      ],
+      "few_shot_argument": "(0) Closure lemma (hand-factorized codes). Every row written by u5 has one of two types:\n- (i) a substitution: D and A each have exactly one unit in the same set of attribute blocks;\n- (ii) a full pair (beta, E_y) with beta a valid code.\n\nPacking a valid c with such rows gives a valid code, for these reasons:\n- Firing addresses lie inside c and are pairwise disjoint, so they occupy distinct attribute blocks.\n- Each firing substitution swaps the value unit inside its blocks.\n- A firing address of size F claims every unit of c, so it is the only firing row.\n\nBy induction over writes, o1 and o are always valid. So r = E_y - o has entries in {-1,0,1}, D and A are paired by attribute (type i), [o1>0] = o1, and full-pair bases are valid (type ii).\n\n(1) Exact landing. Suppose a write uses (l, D, A) under the four conditions of u5.\n- Every location visited before the new one fires exactly as before, so its claims are unchanged.\n- D is unclaimed and contained in the base, so the new location fires.\n- Locations visited after it fired before without overlapping D, so they still fire.\nThe prediction therefore becomes o + A - D = o + r = E_y.\n\nSuppose instead the full pair (beta, E_y) is written. Its address is the whole base, so it is maximally specific and newest. It fires first, claims every unit and gives E_y. On the image sheet this needs o1 to be binary, which lemma (0) guarantees.\n\n(2) Rule transfer and composition (code sheet). Take an unstamped x on which no code-sheet location fires. Then o1 = E_x. Because u2 runs before u3 stamps x, tau_x is still infinity, so o = o1 = E_x. Hence:\n- r = E_y - E_x;\n- D = [r<0] is exactly the set of units of E_x absent from E_y;\n- A is the set of units of E_y absent from E_x.\nThe new location fires on every code that contains D. Two atoms shown on different tokens have disjoint addresses. Both fire on a token carrying both, and that token receives both substitutions.\n\n(3) Class remap (image sheet). Suppose m stamped tokens all have code-sheet image E_y, and one of them is then shown -> y'. Its residual D = E_y minus E_y' lies inside o1 = E_y and is unclaimed. The image-sheet location (D, E_y' minus E_y) is written at an index >= every member's stamp. It therefore fires on all m images, and one demonstration remaps the whole class.\n\n(4) Locality in time. A token first demonstrated after the remap has a larger stamp, so the remap never acts on it. A token that was never demonstrated never passes through the image sheet. Exceptions and rule generalizations on unstamped tokens are therefore untouched."
+    },
+    "readout": [
+      {
+        "latex": "j^\\ast=\\min\\operatorname*{argmax}_{v} E_v^\\top o(x),\\qquad p_v=[v=j^\\ast]",
+        "name": "Maximal-overlap decoding",
+        "plain": "For QUERY(x):\n1. Compute o by u2.\n2. Score every token v by dot(E_v, o).\n3. Return a one-hot distribution on the highest-scoring token, breaking ties by the smallest index."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "Row E_x in {0,1}^M is the N-of-M code of token x.\n- V is the vocabulary size.\n- M is the number of code units.\n- N is the number of active units per row.\n\nRows are pairwise distinct. This is the only learned parameter block.\n\nAll claims use V = 125, M = 15, N = 3. The toy uses V = 9, M = 6, N = 2.\n\n'Hand-factorized codes' means the following. With F attributes of m values each, unit m*i + v is active iff attribute i has value v. A 'valid code' is a binary vector with exactly one active unit in each attribute block.",
+        "name": "E",
+        "shape": [
+          "V",
+          "M"
+        ],
+        "type": "learned binary code matrix (frozen during inference)"
+      },
+      {
+        "meaning": "R holds K_max rows plus one integer K (0 <= K <= K_max), the number of rows in use. K_max is the pool size; K_max = 8 in all claims and in the toy.\n\nRows 1..K are numbered from 1 in recruitment order. Row j holds three things:\n- a sheet flag l_j in {0,1} (0 = code sheet, 1 = image sheet);\n- an address a_j in {0,1}^M;\n- an addition pattern b_j in {0,1}^M.\n\nThe specificity of row j is |a_j| = sum of a_j. A row is never modified after it is written. K = 0 at the start of each context.",
+        "name": "R",
+        "shape": [
+          "K_max*(2M+1) + 1"
+        ],
+        "type": "preallocated pool of rewrite locations with an integer fill counter K"
+      },
+      {
+        "meaning": "tau_x is in {1..K_max+1}, or infinity if x has never been demonstrated in this context.\n\nWhen x is first demonstrated, tau_x is set to K+1, the 1-based index the next recruited row would receive. An image-sheet row j acts on x only if j >= tau_x.\n\nAll entries are reset to infinity at the start of each context.",
+        "name": "tau",
+        "shape": [
+          "V"
+        ],
+        "type": "integer stamp vector"
+      },
+      {
+        "meaning": "The current input event.\n- kind = 0 means DEMO(x, y): token x maps to token y.\n- kind = 1 means QUERY(x): a request for the image of token x.\n\nx and y are in {0..V-1}. For QUERY, y = -1 and is not used.",
+        "name": "e",
+        "shape": [
+          3
+        ],
+        "type": "integer triple (kind, x, y)"
+      },
+      {
+        "meaning": "These temporaries are the visiting order and the fire flags s_j of the packing operator P, plus eight length-M integer vectors:\n- o1: the code-sheet image;\n- U1: the units claimed on the code sheet;\n- o: the final prediction;\n- U2: the units claimed on the image sheet;\n- r = E_y - o: the residual;\n- D = [r<0]: the units the prediction has but the target lacks;\n- A = [r>0]: the units the target has but the prediction lacks;\n- beta: the base code of the write.\n\nHere [.] is the elementwise Iverson bracket.",
+        "name": "pack",
+        "shape": [
+          "2*K_max + 8*M"
+        ],
+        "type": "per-event temporaries (recomputed every event)"
+      }
+    ],
+    "update": [
+      {
+        "latex": "P(S,c):\\ \\pi=\\operatorname{argsort}_{j\\in S}(-|a_j|,-j);\\ U\\leftarrow 0;\\ \\text{for } j\\in\\pi:\\ s_j=[a_j\\le c]\\,[a_j^\\top U=0],\\ U\\leftarrow U+s_j a_j;\\quad P(S,c)=\\big(c+\\textstyle\\sum_{j\\in S}s_j(b_j-a_j),\\ U\\big)",
+        "name": "u1 Packing operator P(S, c)",
+        "plain": "Input: a set S of row indices and an integer vector c of length M.\n\n1. Sort S by address size, largest first. Break ties newest first (largest j).\n2. Set U = zeros(M).\n3. Visit each j in that order. Location j fires (s_j = 1) iff two tests pass:\n   - all(c >= a_j): every unit of a_j is present in c;\n   - dot(a_j, U) == 0: none of its units is already claimed.\n   If it fires, U += a_j.\n4. Return o = c + sum over firing j of (b_j - a_j), together with U.\n\nRange of o. o is an integer vector and need not be binary in general: an added b_j can coincide with a kept unit, giving an entry of 2. Two cases:\n- Hand-factorized codes: lemma (0) of the few-shot argument shows that a valid c always yields a valid binary o.\n- General case: u5 guards it with [o1 > 0] and with the max|r| <= 1 test."
+      },
+      {
+        "latex": "(o_1,U_1)=P(\\{j\\le K:\\ell_j=0\\},E_x),\\qquad (o,U_2)=P(\\{j\\le K:\\ell_j=1,\\ j\\ge\\tau_x\\},o_1)",
+        "name": "u2 Two-sheet prediction",
+        "plain": "For the event token x:\n1. (o1, U1) = P(code-sheet rows, E_x).\n2. (o, U2) = P(image-sheet rows j with j >= tau_x, o1).\n\nIf tau_x is infinity, the second set is empty and o = o1."
+      },
+      {
+        "latex": "\\text{on DEMO}(x,y):\\ w=[\\tau_x<\\infty];\\ \\text{if } w=0:\\ \\tau_x\\leftarrow K+1",
+        "name": "u3 First-demonstration stamp",
+        "plain": "On a demonstration, after u2:\n- w = 1 if x was demonstrated before, else w = 0.\n- If w == 0, set tau_x = K + 1. K is its value before any write of this event, so K + 1 is the 1-based index of the next row.\n\nQueries never change tau."
+      },
+      {
+        "latex": "r=E_y-o,\\qquad D=[r<0],\\qquad A=[r>0]",
+        "name": "u4 Residual",
+        "plain": "r = E_y - o. D = (r < 0) as 0/1. A = (r > 0) as 0/1."
+      },
+      {
+        "latex": "(\\beta,U,\\ell)=\\begin{cases}(E_x,U_1,0)&w=0\\\\([o_1>0],U_2,1)&w=1\\end{cases};\\ \\text{if } r\\ne0,\\ K<K_{max}:\\ (\\ell_{K+1},a_{K+1},b_{K+1})=\\begin{cases}(\\ell,D,A)&|D|>0,\\ \\max_i|r_i|\\le1,\\ D\\le\\beta,\\ D^\\top U=0\\\\(\\ell,\\beta,E_y)&\\text{otherwise}\\end{cases};\\ K\\leftarrow K+1",
+        "name": "u5 Two-sheet residual nucleation",
+        "plain": "Choose the sheet:\n- if w == 0: beta = E_x, U = U1, l = 0;\n- if w == 1: beta = (o1 > 0) as 0/1, U = U2, l = 1.\n\nIf r is not all zeros and K < K_max, write row K+1:\n- Write (l, D, A) when all four conditions hold: sum(D) > 0; max(abs(r)) <= 1; all(beta >= D); dot(D, U) == 0.\n- Otherwise write the full pair (l, beta, E_y).\n\nThen K += 1."
+      },
+      {
+        "latex": "R\\leftarrow R\\ \\text{on every QUERY, on every DEMO with } r=0, \\text{ and on every DEMO with } K=K_{max}",
+        "name": "u6 No-change cases",
+        "plain": "- Queries write nothing.\n- Correctly predicted demonstrations write no row, but u3 still stamps an unstamped x.\n- When the pool is full, no row is written."
+      }
+    ]
+  },
+  "parent_ids": [
+    "card-3e8a2b47",
+    "card-6327b32c"
+  ],
+  "references": [
+    {
+      "source_id": "1409.6359",
+      "why": "Source of the rule format. That paper identifies a CA update from observed transitions as decision rules whose condition is a minimal set of cells (a reduct). Here each location is such a rule over code units. Its condition is induced online from one transition, as the residual against the current prediction, rather than from reducts over a dataset."
+    },
+    {
+      "source_id": "0908.0853",
+      "why": "Source of the image-sheet semantics. A stationary eater stores a binary configuration, and each later glider hit rewrites it once, so hits compose. Here the stored image of each demonstrated token is rewritten by the image-sheet locations written after its stamp."
+    }
+  ],
+  "source_transplant": {
+    "change": "Changes to rule identification:\n- Each rule is identified online from one transition, not from reducts computed over a whole transition dataset.\n- The rule's condition set is the residual between the target code and the memory's current prediction, not a minimal reduct.\n- Several rules fire on one code at once. A specificity-then-recency non-overlap packing filters them; the source applies one rule per cell.\n\nChanges to the glider-eater interaction:\n- The eater's stored configuration becomes the code-sheet image of a demonstrated token.\n- A glider hit becomes an image-sheet location. It rewrites only images that contain its address and that belong to tokens stamped before it was written.\n\nNo spatial lattice and no reaction-diffusion dynamics are kept.",
+    "object": "The transplant takes two objects.\n\n1. From 1409.6359: the decision-rule form of a cellular-automaton update rule, identified from observed transitions. A rule says: if the cells of a minimal neighbourhood (a reduct) hold given values, the cell takes a given new value.\n\n2. From 0908.0853: the glider-eater interaction of the Spiral Rule automaton. A stationary eater stores a binary configuration. Each glider that later brushes it rewrites that configuration once, so a sequence of glider hits composes transformations of the stored string.",
+    "source_ids": [
+      "1409.6359",
+      "0908.0853"
+    ]
+  },
+  "status": {
+    "stage": "S6",
+    "verdicts": {
+      "S0": {
+        "by_calls": [
+          "call-be7ed0ee90d5"
+        ],
+        "reasons": [
+          "card validates against the theory_card schema",
+          "nearest existing card card-3e8a2b47 at TF-IDF cosine 0.563 (threshold 0.6)"
+        ],
+        "verdict": "pass"
+      },
+      "S1": {
+        "by_calls": [
+          "call-7dde4770b4bc",
+          "job-47cc5681c809"
+        ],
+        "reasons": [
+          "gate: passed with 4 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+          "residual: vague_secondary_claim (claims.capabilities[3].prediction): The prediction says the core answers w on 100% of draws and that accuracy 'at answering v, the correct value because only a changed, is therefore exactly 0.0', but it never states which token counts as correct for QUERY(b), so the 0.0 figure has no defined target.",
+          "residual: missing_definition (claims.complexity and mechanism.learning.equations[0]): K_fin appears in the objective J and in several falsifiers and predictions but is never defined; it is presumably the value of the fill counter K at the end of an episode, and that should be stated.",
+          "residual: underspecified_step (mechanism.learning.description): The acceptance test uses 'the current batch of 200 episodes' and says batches are resampled every 1000 proposals, but it does not say how a batch is drawn, how the class-remap episode's tokens x1, x2, y and y' are sampled to satisfy their distinctness constraints, or whether the batch is shared across proposals within one resampling window.",
+          "residual: notation_clash (mechanism.state[0] and mechanism.learning.description): The letter E denotes the full learned matrix (shape [V, M]), a row E_x, the initialization E_0, and the code-sheet image in the toy, which makes the learning and update equations harder to read unambiguously.",
+          "toy example reproduced 12 expected value(s)"
+        ],
+        "verdict": "pass"
+      },
+      "S2": {
+        "by_calls": [
+          "call-11f202e374c8",
+          "call-c6f7348fd932",
+          "call-3d21bd4731cb"
+        ],
+        "reasons": [
+          "prior art: prior_art_undertested. The search results contain no paper that refutes any claim, so known_disproven does not apply. The exception-on-error rule structure (specificity-ordered exceptions that add rules only to correct errors) has tested prior art in ripple-down-rules work: 1412.4021 (POS tagging across 13 languages) and 1709.06307 (Vietnamese word segmentation, benchmark treebank), with 2402.10224 covering learning-by-",
+          "textbook transplant: no (recorded, not gated): Rough-set CA rule identification induces minimal-reduct decision rules offline from a whole transition dataset. The card instead induces each rule online from one transition, uses the residual against its own prediction as the condition, and fires many rules at once through specificity-then-recency ",
+          "reduction critic: none, radical_enough True: Linear attention and delta-rule mapping fails. There is no additive state S, and the readout is not S^T phi(q). Whether a row fires depends on containment in the code and on claims by more specific or newer rows, which is order-dependent set packing that no fixed kernel w(a_j, c) reproduces.\n\nSSM, RNN and LSTM mappings hold only in the vacuous sense that any finite-state machine is a recurrence; n"
+        ],
+        "verdict": "pass"
+      },
+      "S3": {
+        "by_calls": [
+          "call-11e206a02fe6",
+          "call-c159ed2cc211",
+          "job-f7d8b7e62ad9",
+          "call-370277f6348c",
+          "job-5209cd03e0af",
+          "job-6613243b00db",
+          "job-ff92f111fcdc",
+          "job-1876775349ec",
+          "job-8e2d581de2c0",
+          "job-0bc16ef5cb96",
+          "job-341f3a00c310",
+          "job-6861a6ef3e2e",
+          "job-5d11e4e34930",
+          "job-8fe44645de04",
+          "job-4a148c5ea5cd",
+          "call-a71aec48cc45",
+          "call-5e374ea6b85b"
+        ],
+        "reasons": [
+          "gate rule: judges",
+          "round 1 feasibility_judge_a (claude-opus-5-5): feasible (confidence 0.85); fatal: none",
+          "round 1 feasibility_judge_b (gpt-6.1-sol): feasible (confidence 0.97); fatal: none",
+          "both judges feasible; 8 obligations, 0 judge entries not marked discharged",
+          "obligation check complexity_time_memory_total (complexity): discharged (replayed): Instrumented operation counts for the packing and decode of one event with K=8, sweeping M in 15..240 at V=125 and V in 125..2000 at M=15. The ratio cost/((K+V)M) lies in [1.01, 1.21] (spread 1.20), and the word count of memory divided by (K+V)M has the same bounded range, so both are Theta((K+V)M) ",
+          "obligation check capacity_composition_one_shot_substitution (capacity): discharged (replayed): 1000 random rules with p_i != q_i, three one-source demos each: 1000 draws had K_fin=3 and all 125 tokens answered by the rule image. For p=(0,0,0) the counts are 12 tokens with 2 source values, 1 with 3 (total 13) and 64 with none (64).",
+          "obligation check capacity_exception_specificity_blocking (capacity): discharged (replayed): 1000 draws covering all 20 ordered (p,q) pairs (50 each), with x0 and x1 uniform among the 25 tokens with attribute 0 = p, x0 != x1. 1000 draws had K_fin=2, QUERY(x1)=x1, and all 24 other tokens with attribute 0 = p following the rule.",
+          "obligation check capacity_class_remap_and_locality (capacity): discharged (replayed): 1000 draws of the m=4 protocol: 1000 had K_fin=5 and all 3 un-remapped members decoding y-prime. 1000 draws of the m=3 protocol: 1000 had all 3 members decoding y-prime, the newcomer decoding y, and undemonstrated y decoding y.",
+          "obligation check capacity_stickiness_and_revision (capacity): discharged (replayed): Stickiness stream over 1000 draws: query(b) returned w in 1000 draws. Revision over 1000 draws: K_fin=2 and query(x)=x-prime in 1000 draws, with 0 of the 24 other attribute-0=p tokens following q2 and all 24 following q.",
+          "obligation check learnability_offline_hill_climbing (learnability): not_checked",
+          "obligation check other_closure_lemma_and_numerical_validity (algebraic): unknown: Sampled 9000 events over 300 random trials of length 30 with hand-factorized codes; every o1 and o was a valid code and the decode had a unique maximum. This is a sample, not an exhaustive proof over all reachable states, so the lemma is not discharged.",
+          "obligation check other_ablation_and_parent_reduction (other): not_checked"
+        ],
+        "verdict": "pass"
+      },
+      "S4": {
+        "by_calls": [
+          "call-6818cd5f3beb",
+          "job-c90734e33b9b"
+        ],
+        "reasons": [
+          "attempt 0: static checks and executor check passed",
+          "describe: {\"params\": 42, \"state_floats_per_sequence\": 176, \"hyper\": {\"F\": 3, \"m\": 2, \"M\": 6, \"N\": 3, \"K_max\": 8, \"V\": 7}, \"train_max_len\": 2048, \"notes\": \"Two-sheet residual rewriting core (u1-u6) with hand-factorized codes: F=3 attributes, m=ceil(V^(1/3)) values, M=F*m, N=F, K_max=8. Each prefix is read as a fresh context: consecutive pairs (x_t, x_{t+1}) are DEMO events, the last token is a QUERY; decodin",
+          "measured params: {'torch': 0, 'numpy_arrays': 42, 'total': 42}"
+        ],
+        "verdict": "pass"
+      },
+      "S5": {
+        "by_calls": [
+          "call-ef4162b58f45",
+          "job-d224ba312c59",
+          "job-472dbe5ca46d",
+          "call-bde43c9fee86",
+          "job-d9bb2f0a92ee",
+          "job-254364e49d99",
+          "job-79917012bd33",
+          "job-2e3c8ee9757d",
+          "job-b1da2dafe674",
+          "job-bb0e8de92003",
+          "job-e8b71a142772",
+          "job-3762855c3423",
+          "job-334027aa2090",
+          "job-697d16ec392c",
+          "job-2a4b451b3d89",
+          "job-979cdfdc9bc2",
+          "job-55c37b6d287b",
+          "job-cf72205ca001",
+          "job-b970e1c6af9e",
+          "job-af245dabe187",
+          "job-8f766e4ae364",
+          "job-022a42d94851",
+          "job-4f19770eabbd",
+          "job-4169cfaab4ed"
+        ],
+        "reasons": [
+          "bench results recorded (trusted=True); scaling verdict match, claimed exponent 1.0, slopes {\"candidate\": 0.996592309873441, \"gru\": 0.9640099087410472, \"linear_attention\": 0.9610331053110368, \"ngram\": -0.007938236556203536, \"ssm\": 0.9568197111902896, \"transformer\": 1.4157532162731972}",
+          "falsifier tasks run: 2",
+          "falsifier exceptions_and_revision rule for capability.2: inconclusive (the candidate did not train on this task: it does not beat the better of the uniform and unigram references by 0.05 nats of KL or 0.05 accuracy)",
+          "falsifier exceptions_and_revision rule for capability.5: inconclusive (the candidate did not train on this task: it does not beat the better of the uniform and unigram references by 0.05 nats of KL or 0.05 accuracy)",
+          "falsifier three_atom_composition rule for capability.1: inconclusive (the candidate did not train on this task: it does not beat the better of the uniform and unigram references by 0.05 nats of KL or 0.05 accuracy)"
+        ],
+        "verdict": "pass"
+      },
+      "S6": {
+        "by_calls": [
+          "call-707b65d75cc2"
+        ],
+        "reasons": [
+          "claims ledger: 1 supported, 1 refuted, 3 inconclusive, 11 untested; 3 decided by falsifier rules",
+          "untested [analyst]: complexity time_per_token: O((K_max + V) M) (The candidate scaling block (entrants.candidate.scaling, bench_result.json) measures wall time against sequence length n only, at fixed hyperparameters (F=3, K_max=8, M=9, V=12 for the hmm task at train_size 32). It does not vary K_max, V, or M, so the (K_max + V) M per-event dependence is not measu)",
+          "untested [analyst]: complexity memory: O((K_max + V) M) (candidate.scaling.memory_growth = 'flat' (memory_fit_tail slope 1.5e-15, peak_rss_delta_mb_at_max_n 2.5) across lengths 64 to 1024. This shows no growth in n, but the bench did not vary V, M, or K_max, so the (K_max + V) M size dependence is not measured. The candidate's own describe.compose state_f)",
+          "supported [analyst]: complexity total_sequence: O(n (K_max + V) M) (candidate.scaling (hmm task, train_size 32, batch 2, lengths 64,128,256,512,1024): claimed_exponent 1.0, time_slope_tail 0.9966 (r2 0.9985, 3 tail points), time_slope_all 1.026 (r2 0.999), verdict 'match' with tolerance 0.5. Median times run 0.0019 s at n=64 to 0.0309 s at n=1024. Linear in n, consi)",
+          "untested [analyst]: sample efficiency mechanism: One image-sheet location remaps every stamped token whose code-sheet image contains the residual units. So if m members are each shown once with a shared value, one remap  (No bench task in bench_result.json runs the class-remap protocol or a comparison with parent A or a last-seen-successor table. The bench tasks are compose, fewshot, hmm, recall, vom (standard tasks, candidate and baselines), plus the falsifier tasks exceptions_and_revision and three_atom_composition)",
+          "untested [analyst]: sample efficiency prediction: Protocol:\n1. Draw a target y and m = 4 members x_1..x_4 uniformly among tuples where the members differ pairwise in every attribute and differ from y in every attribute.\n (The class-remap protocol with m=4 was not run by the bench. No entrant has a metric for un-remapped class member accuracy, and K_fin is not observable (falsifier_eval deviations: 'Internal sheet selection and K_fin are not observable'). No parent A or last-seen comparison was run.)",
+          "inconclusive [rule]: capability 1: task: One-shot transfer and composition of substitution atoms (code sheet) prediction: Setup: hand-factorized codes, F = 3, 5 values per attribute, V = 125. Draw a rule with one atom p_i (no rule reached a decision (three_atom_composition rule 0: inconclusive))",
+          "inconclusive [rule]: capability 2: task: Exceptions by specificity blocking prediction: Setup: show a one-atom rule p -> q in attribute 0 once, on token x0. Then show DEMO(x1, x1) for a never-demonstrated x1 != x0 with at (no rule reached a decision (exceptions_and_revision rule 0: inconclusive))",
+          "untested [analyst]: capability 3: task: Class remap with a time-local class prediction: Use the sample-efficiency setup with m = 3 members, then run three tests:\n- All 3 members decode y' (accuracy 1.0).\n- A newcomer x'  (The sample-efficiency class-remap setup with m=3 and its three tests were not run by the bench. No task in bench_result.json measures class remap, newcomer decoding, or the time-local stamp rule.)",
+          "untested [analyst]: capability 4: task: Stickiness signature (defection probe) prediction: Stream: DEMO(a, v); DEMO(b, v); DEMO(a, w); QUERY(b). Use hand-factorized codes, F = 3, 5 values, V = 125.\n\nEach draw: (a, b, v)  (The stickiness probe stream was not run by the bench. No bench task contains this DEMO/QUERY sequence or reports the answer-w rate for QUERY(b).)",
+          "inconclusive [rule]: capability 5: task: Rule revision moves only witnessed tokens prediction: Setup: show DEMO(x, rule(x)) for the atom p -> q in attribute 0. Then show DEMO(x, x'). Here x' has value q2 in attribute 0, w (no rule reached a decision (exceptions_and_revision rule 1: inconclusive))",
+          "falsifier 1 untested [analyst]: On the class-remap protocol (m = 4, hand-factorized codes), some un-remapped member decodes a token other than y', or K_fin != 5 on some draw. (The class-remap protocol with m=4 was not run by the bench, and K_fin is not observable (falsifier deviations). No falsifier condition can be evaluated from bench_result.json.)",
+          "falsifier 2 untested [analyst]: Ablation: route witnessed residuals to the code sheet, which recovers parent A. If class-transfer accuracy then stays at or above 0.9, the image sheet does no work and the card reduces to parent A. (No ablation with witnessed residuals routed to the code sheet was run, and no class-transfer accuracy was measured. The bench has no parent-A entrant.)",
+          "falsifier 3 untested [analyst]: A newcomer shown -> y after a remap decodes y', or a never-demonstrated y decodes y'. Either result refutes the stamp rule, which keeps classes local in time. (The newcomer and never-demonstrated-y tests of the time-local stamp rule were not run. No bench task reports decoding of such tokens after a remap.)",
+          "falsifier 4 fired, card refuted on this point [analyst]: With hand-factorized codes, the three-atom composition protocol gives any error on the 13 composed tokens, or K_fin != 3. (Falsifier task three_atom_composition ran this protocol (128 sampled episodes per category, deviation noted). The candidate's composed-token group ('at least two source values', n=128) has acc 0.0078125 and kl 18.52, so the error condition is observed. Only 1 of 128 composed queries was right, so er)",
+          "falsifier 5 untested [analyst]: Immediately after a demonstration DEMO(x, y) that recruits a row (with K < K_max before it and hand-factorized codes), QUERY(x) does not return y. (No bench task reports an immediate DEMO-then-QUERY on the same token for the recruited-row case with K < K_max. The exceptions_and_revision and three_atom_composition tasks query tokens only after several demonstrations, and K is not observable.)",
+          "falsifier 6 untested [analyst]: With hand-factorized codes, some o1 or o computed during any claimed protocol is not a valid one-unit-per-attribute binary code. This would refute closure lemma (0). (The intermediate packed images o1 and o are internal to the candidate and not observable (falsifier deviations: 'the interface cannot install or inspect the candidate's internal E'). Only final decoded predictions (pred.npy) are reported, so the validity of o1 and o cannot be checked.)"
+        ],
+        "verdict": "pass"
+      }
+    }
+  },
+  "summary": "Scope. This is a restricted conditional sequence learner over DEMO(x,y) and QUERY(x) events. It is not a general language model.\n\nCodes. Each token carries an N-of-M binary code E_x.\n\nState. The in-context state has two parts:\n- a small pool R of rewrite locations. Each location has a sheet flag, an address a_j (the units that must all be present) and a substitution (remove a_j, add b_j);\n- one first-demonstration stamp tau_x per token.\n\nRead. The read has two stages, followed by decoding.\n- Stage 1 packs the code-sheet locations on the query's own code. Locations are visited from most specific to least specific, newest first on ties. A location fires only if no earlier firing location has already claimed any unit of its address. The result is the image o1.\n- Stage 2 packs the image-sheet locations on o1 in the same way. Only locations written at or after the query token's stamp take part.\n- The result is decoded by maximal overlap.\n\nWrite. The mechanism first predicts each demonstration. If the prediction is wrong, it recruits one location whose address and contents are the residual between the target code and the prediction. If the residual cannot be applied as a substitution, the location instead memorizes the whole pair as an exception. The sheet depends on whether x has been demonstrated before:\n- Never demonstrated: the location goes on the code sheet. This is parent A's rule or exception, and it transfers to every token that shares the source units.\n- Demonstrated before: the location goes on the image sheet. It then remaps every earlier-demonstrated token whose image contains the residual units. This is parent B's class co-motion, made discrete and Eulerian: the class is the set of stamped tokens that sit at the same place in image space when the remap is written.\n\nCost. With dense length-M vectors, each event costs O((K_max + V) M).",
+  "title": "Two-Sheet Residual Rewriting: in-context rules on token codes and class remaps on their images, glued by non-overlap packing",
+  "toy_example": {
+    "description": "Six code units (M = 6, N = 2, V = 9, K_max = 8): colors red, green and blue on units 0-2, and shapes circle, square and triangle on units 3-5. Token id = 3*color + shape.\n\nRows are numbered from 1 as in u3. Python list position j holds row j+1. A stamp is set to len(R) + 1 at the token's first demonstration. Image-sheet row j+1 acts on x iff j + 1 >= tau[x].\n\nPart 1 reproduces parent A's context:\n- red-square -> blue-square and green-circle -> green-triangle write the code-sheet rules {0}->{2} and {3}->{5}. The never-shown red-circle composes both and is answered blue-triangle (8).\n- The exception red-circle -> red-circle is written as a code-sheet full-pair row. It blocks both rules on red-circle only.\n- In the reversed order, the empty memory already predicts red-circle -> red-circle correctly, so the demonstration only stamps red-circle. Red-circle is then answered blue-circle (6).\n\nPart 2 is the class remap:\n- red-circle -> blue-triangle and green-square -> blue-triangle make both tokens decode 8.\n- Remapping either one to green-triangle writes the image-sheet row {2}->{1} (layer 1), and both members decode 5.\n- The never-demonstrated blue-triangle still decodes 8.\n- The newcomer red-triangle -> blue-triangle, shown after the remap, decodes 8, while red-circle stays at 5.\n- A last-seen table keeps green-square at 8.",
+    "expected": {
+      "class_forward": [
+        5,
+        5
+      ],
+      "class_reverse": [
+        5,
+        5
+      ],
+      "class_shared": [
+        8,
+        8
+      ],
+      "components": [
+        [
+          0,
+          [
+            0
+          ],
+          [
+            2
+          ]
+        ],
+        [
+          0,
+          [
+            3
+          ],
+          [
+            5
+          ]
+        ],
+        [
+          0,
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            3
+          ]
+        ]
+      ],
+      "member_after_newcomer": 5,
+      "newcomer": 8,
+      "queries_after_exception": [
+        0,
+        8,
+        8
+      ],
+      "queries_after_two_demos": [
+        8,
+        7,
+        4
+      ],
+      "remap_layer": 1,
+      "reversed_order_query_red_circle": 6,
+      "table_b_after_forward": 8,
+      "unwitnessed_v": 8
+    },
+    "python": "import json\nimport numpy as np\n\nM, V, KMAX, INF = 6, 9, 8, 10**9\nE = np.zeros((V, M), dtype=int)\nfor v in range(V):\n    E[v, v // 3] = 1\n    E[v, 3 + v % 3] = 1\n\ndef pack(R, idx, c):\n    order = sorted(idx, key=lambda j: (-int(R[j][1].sum()), -j))\n    used = np.zeros(M, dtype=int)\n    o = c.copy()\n    for j in order:\n        a, b = R[j][1], R[j][2]\n        if np.all(c >= a) and not np.any(used * a):\n            used = used + a\n            o = o + b - a\n    return o, used\n\ndef predict(R, tau, x):\n    o1, u1 = pack(R, [j for j in range(len(R)) if R[j][0] == 0], E[x])\n    o, u2 = pack(R, [j for j in range(len(R)) if R[j][0] == 1 and j + 1 >= tau[x]], o1)\n    return o1, u1, o, u2\n\ndef demo(R, tau, x, y):\n    o1, u1, o, u2 = predict(R, tau, x)\n    seen = tau[x] < INF\n    if not seen:\n        tau[x] = len(R) + 1\n    r = E[y] - o\n    if not np.any(r) or len(R) >= KMAX:\n        return\n    base, used, layer = (o1, u2, 1) if seen else (E[x], u1, 0)\n    sup = (base > 0).astype(int)\n    D = (r < 0).astype(int)\n    A = (r > 0).astype(int)\n    ok = D.sum() > 0 and np.all(np.abs(r) <= 1) and np.all(sup >= D) and not np.any(used * D)\n    R.append((layer, D, A) if ok else (layer, sup, E[y].copy()))\n\ndef query(R, tau, x):\n    return int(np.argmax(E @ predict(R, tau, x)[2]))\n\nR, tau = [], [INF] * V\ndemo(R, tau, 1, 7)\ndemo(R, tau, 3, 5)\nq1 = [query(R, tau, x) for x in [0, 1, 4]]\ndemo(R, tau, 0, 0)\nq2 = [query(R, tau, x) for x in [0, 2, 6]]\ncomps = [[l, np.flatnonzero(a).tolist(), np.flatnonzero(b).tolist()] for l, a, b in R]\nRr, taur = [], [INF] * V\ndemo(Rr, taur, 0, 0)\ndemo(Rr, taur, 1, 7)\nRc, tauc = [], [INF] * V\ndemo(Rc, tauc, 0, 8)\ndemo(Rc, tauc, 4, 8)\nshared = [query(Rc, tauc, 0), query(Rc, tauc, 4)]\nRf, tauf = list(Rc), list(tauc)\ndemo(Rf, tauf, 0, 5)\nRv, tauv = list(Rc), list(tauc)\ndemo(Rv, tauv, 4, 5)\nforward = [query(Rf, tauf, 0), query(Rf, tauf, 4)]\nreverse = [query(Rv, tauv, 0), query(Rv, tauv, 4)]\nremap_layer = Rf[2][0]\nunwitnessed_v = query(Rf, tauf, 8)\ndemo(Rf, tauf, 2, 8)\nnewcomer = query(Rf, tauf, 2)\nmember_after = query(Rf, tauf, 0)\ntable = {}\nfor x, y in [(0, 8), (4, 8), (0, 5)]:\n    table[x] = y\nout = {'components': comps, 'queries_after_two_demos': q1, 'queries_after_exception': q2, 'reversed_order_query_red_circle': query(Rr, taur, 0), 'class_shared': shared, 'class_forward': forward, 'class_reverse': reverse, 'remap_layer': remap_layer, 'unwitnessed_v': unwitnessed_v, 'newcomer': newcomer, 'member_after_newcomer': member_after, 'table_b_after_forward': table[4]}\nprint(json.dumps(out))\n"
+  },
+  "version": 11
+}

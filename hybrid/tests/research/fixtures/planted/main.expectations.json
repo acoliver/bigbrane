@@ -1,0 +1,64 @@
+{
+  "format": "bigbrane.planted/1",
+  "set": "fixture_main",
+  "cards": {
+    "pc-a1c0de01": {
+      "type": "T1",
+      "spec": "a sum of outer products read by a dot product",
+      "source_family": "outer product memory",
+      "aliases": [],
+      "batch": 1
+    },
+    "pc-a1c0de02": {
+      "type": "T2",
+      "spec": "the bucket tally of card-0000d002 with a hashed bucket added",
+      "source_family": "bucket tally",
+      "aliases": [],
+      "batch": 1,
+      "origin": {
+        "run": "run-20260901T000000Z",
+        "card_id": "card-0000d002"
+      }
+    },
+    "pc-a1c0de03": {
+      "type": "T3",
+      "spec": "recall resting on a free index",
+      "source_family": "sorted index",
+      "aliases": [],
+      "batch": 1
+    },
+    "pc-a1c0de04": {
+      "type": "T4",
+      "subtype": "capacity",
+      "spec": "claims more recall than its state holds",
+      "source_family": "bounded level tracker",
+      "aliases": [],
+      "batch": 1
+    },
+    "pc-a1c0de05": {
+      "type": "T5",
+      "spec": "a push-down bracket matcher",
+      "source_family": "pushdown store",
+      "aliases": [],
+      "batch": 1
+    },
+    "pc-a1c0de06": {
+      "type": "T6",
+      "spec": "card-0000d006 under new names",
+      "source_family": "residue register",
+      "aliases": [],
+      "batch": 1,
+      "origin": {
+        "run": "run-20260901T000000Z",
+        "card_id": "card-0000d006"
+      }
+    },
+    "pc-a1c0de07": {
+      "type": "T7",
+      "spec": "class merging that passes every check",
+      "source_family": "union find",
+      "aliases": [],
+      "batch": 1
+    }
+  }
+}

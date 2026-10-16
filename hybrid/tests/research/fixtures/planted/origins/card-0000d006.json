@@ -1,0 +1,85 @@
+{
+  "id": "card-0000d006",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Residue register",
+  "summary": "An earlier idea: a register of residues combined by exclusive or, reported modulo a base.",
+  "core_idea": "Combine residues by exclusive or.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "crosswort",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Register of combined residues."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "crosswort_t = xor(crosswort_(t-1), x_t mod m)",
+        "plain": "crosswort_t = xor(crosswort_(t-1), x_t mod m)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = crosswort_t mod b",
+        "plain": "y_t = crosswort_t mod b"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is trained.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(1)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "Parity after one symbol."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "parity",
+        "prediction": "Reports parity."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Elementary.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Parity is wrong.",
+    "Order matters."
+  ],
+  "toy_example": {
+    "description": "Trivial.",
+    "python": "import json\nprint(json.dumps({'r': 1}))\n",
+    "expected": {
+      "r": 1
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

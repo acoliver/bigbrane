@@ -1,0 +1,167 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "A modular polynomial grown one interpolation node at a time",
+  "summary": "Working over the integers modulo the prime 257, the model keeps a polynomial Q in divided-difference form. Each address-item pair adds one node and one new coefficient, computed from the residual at the new point divided by the product of the point's distances to the earlier nodes. A probe is answered by evaluating Q at its point. Open brackets are kept as the binary digits of an integer. Episodes come in five fixed formats: a string to reproduce after a separator; address-item pairs followed by probes; two-type bracket prefixes whose next closer must be named; two tables g and f followed by probes answered f(g(x)); and chains of assignments ending in a probe variable.",
+  "core_idea": "Treat the context's pairs as interpolation nodes of a single polynomial modulo 257 in divided-difference form, add one coefficient per pair, and answer by evaluation.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "xi",
+        "type": "vector over GF(257)",
+        "shape": [
+          "R"
+        ],
+        "meaning": "Interpolation nodes xi_0..xi_(m-1), distinct field points already used; R = 96."
+      },
+      {
+        "name": "beta",
+        "type": "vector over GF(257)",
+        "shape": [
+          "R"
+        ],
+        "meaning": "Divided-difference coefficients beta_0..beta_(m-1) of the polynomial Q_m, integers modulo p = 257."
+      },
+      {
+        "name": "m",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "How many nodes are in use, at most R."
+      },
+      {
+        "name": "ctr",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Step counter inside a string, set back to zero at a start mark and at the separator."
+      },
+      {
+        "name": "ob",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Open-bracket integer: the type of each open bracket as one binary digit, the latest one lowest, up to H = 20 digits."
+      }
+    ],
+    "update": [
+      {
+        "name": "open-bracket integer",
+        "latex": "ob \\leftarrow 2\\,ob + b \\text{ (push type } b),\\quad ob \\leftarrow \\lfloor ob/2 \\rfloor \\text{ (pop)}",
+        "plain": "on an opener of type b push it: ob = 2 ob + b; on a closer pop: ob = floor(ob / 2)"
+      },
+      {
+        "name": "encode",
+        "latex": "u_t = \\kappa(z_t),\\; v_t = 2\\,\\mathrm{id}(z'_t) + f_t",
+        "plain": "u_t = kappa(z_t) is the field point of the address z_t (the in-string position ctr, 1 + id for a pair address, 65 + id for an address of the second table); v_t = 2 id(z'_t) + f_t codes the item z'_t, f_t = 1 when it is a final symbol and 0 when it names a variable"
+      },
+      {
+        "name": "add a node",
+        "latex": "\\beta_m = \\bigl(Q_m(u_t) - v_t\\bigr)\\Bigl(\\prod_{i<m}(u_t - \\xi_i)\\Bigr)^{-1} \\bmod p,\\; \\xi_m = u_t,\\; m \\leftarrow m + 1",
+        "plain": "beta_m = (Q_m(u_t) - v_t) * inverse(prod over i < m of (u_t - xi_i)) mod p; then xi_m = u_t and m = m + 1"
+      }
+    ],
+    "readout": [
+      {
+        "name": "evaluate",
+        "latex": "Q_m(u) = \\sum_{k<m} \\beta_k \\prod_{i<k}(u - \\xi_i) \\bmod p",
+        "plain": "Q_m(u) = sum over k < m of beta_k * prod over i < k of (u - xi_i), mod p, by nested multiplication; the symbol is floor(Q_m(u) / 2) and the final-symbol flag is Q_m(u) mod 2"
+      },
+      {
+        "name": "next bracket",
+        "latex": "\\hat{b} = ob \\bmod 2",
+        "plain": "the closer to predict has type ob mod 2"
+      },
+      {
+        "name": "follow links",
+        "latex": "u \\leftarrow 1 + \\lfloor Q_m(u)/2 \\rfloor \\text{ while the flag is } 0,\\ \\text{at most 8 times}",
+        "plain": "if the flag is 0 the item names a variable, so set u = 1 + floor(Q_m(u) / 2) and evaluate again, at most 8 times; for f(g(x)) evaluate at 65 + id(x) and then at 1 + that result"
+      }
+    ],
+    "learning": {
+      "description": "Modular arithmetic has nothing to fit. Each vocabulary symbol's role (address, item, final item, start mark, separator, opener type 0, opener type 1, closer) is learned from m example episodes per task by keeping a count per symbol and role and taking the most frequent role.",
+      "few_shot_argument": "A symbol always plays one role within a task, so its first appearance decides it; with m = 6 example episodes per task every symbol of the small cases has been seen, and a pair needs no examples: it is stored the first time it is written."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(R)",
+      "memory": "Theta(R)",
+      "total_sequence": "Theta(n R)",
+      "constants_notes": "Adding a node costs one evaluation of Q_m with m <= R terms, a product of m differences and one modular inverse; answering costs at most 8 evaluations. State: 2R field elements of 9 bits, the 20-digit open-bracket integer and two counters, with R = 96 and p = 257 fixed."
+    },
+    "sample_efficiency": {
+      "mechanism": "Role counts per symbol over m example episodes; pairs are stored with no examples.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "By hand: the string symbols go to the points ctr = 1..L and are read back at the same points after the separator; exact at L = 8, 32 and 64 over up to 128 symbols with 64 of the 96 nodes."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "By hand: an address with identity id goes to the point 1 + id and is probed there; exact at K = 8, 32 and 64 over up to 128 items."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "The open-bracket integer keeps the open types, and ob mod 2 names the closer exactly at depths 2, 4, 8 and 16 (H = 20)."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "g goes to the points 65 + id and f to 1 + id, so f(g(x)) takes two evaluations; exact at table sizes 4, 16 and 32 (64 nodes). One node per assignment and at most 8 links per probe; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "With R nodes, exact recall of K = R + 1 = 97 pairs with distinct addresses is impossible: a polynomial of degree below R fixed by R nodes has no freedom left at another point. The constructions above use at most 64 pairs, so they are consistent with this."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The role counts learn each small case from m = 6 example episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "With 64 distinct pairs written, evaluating Q at a written node gives a different item from the one written there.",
+    "The counted operations of adding a node grow with n at fixed R."
+  ],
+  "toy_example": {
+    "description": "Writing three pairs modulo 257 and the open-bracket integer after pushes of 0 and 1 and one pop.",
+    "python": "import json\np = 257\nbeta, xi = [], []\ndef Q(u):\n    v = 0\n    for k in range(len(beta) - 1, -1, -1):\n        v = (v * (u - xi[k]) + beta[k]) % p\n    return v\ndef add(u, val):\n    prod = 1\n    for x in xi:\n        prod = prod * (u - x) % p\n    beta.append((Q(u) - val) * pow(prod, -1, p) % p)\n    xi.append(u)\nfor u, val in [(4, 3), (9, 20), (2, 33)]:\n    add(u, val)\nob = 0\nfor b in [0, 1]:\n    ob = 2 * ob + b\nob = ob // 2\nprint(json.dumps({\"beta\": beta, \"xi\": xi, \"open_brackets\": ob}))\n",
+    "expected": {
+      "beta": [
+        254,
+        201,
+        189
+      ],
+      "xi": [
+        4,
+        9,
+        2
+      ],
+      "open_brackets": 0
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

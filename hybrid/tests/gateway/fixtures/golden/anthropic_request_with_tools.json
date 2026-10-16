@@ -1,0 +1,81 @@
+{
+  "max_tokens": 500,
+  "messages": [
+    {
+      "content": [
+        {
+          "cache_control": {
+            "ttl": "1h",
+            "type": "ephemeral"
+          },
+          "text": "<system>\nYou are terse.\n</system>\n\nUser provided conversation begins here:",
+          "type": "text"
+        }
+      ],
+      "role": "user"
+    },
+    {
+      "content": [
+        {
+          "text": "Weather in Paris?",
+          "type": "text"
+        }
+      ],
+      "role": "user"
+    },
+    {
+      "content": [
+        {
+          "id": "toolu_abc123",
+          "input": {
+            "city": "Paris"
+          },
+          "name": "get_weather",
+          "type": "tool_use"
+        }
+      ],
+      "role": "assistant"
+    },
+    {
+      "content": [
+        {
+          "content": "18C, sunny",
+          "tool_use_id": "toolu_abc123",
+          "type": "tool_result"
+        },
+        {
+          "cache_control": {
+            "ttl": "1h",
+            "type": "ephemeral"
+          },
+          "text": "Thanks. Now Rome?",
+          "type": "text"
+        }
+      ],
+      "role": "user"
+    }
+  ],
+  "model": "claude-opus-5-5",
+  "stream": true,
+  "system": "You are Claude Code, Anthropic's official CLI for Claude.",
+  "tool_choice": {
+    "type": "auto"
+  },
+  "tools": [
+    {
+      "description": "Look up weather",
+      "input_schema": {
+        "properties": {
+          "city": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "city"
+        ],
+        "type": "object"
+      },
+      "name": "llxprt_get_weather"
+    }
+  ]
+}

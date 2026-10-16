@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/math_verdict.schema.json",
+  "title": "Verdict of stage M or C with the tier record of every claim (DISCOVERY-PIPELINE-PLAN.md sections 4.2, 4.3, 5)",
+  "type": "object",
+  "required": [
+    "card_id",
+    "stage",
+    "verdict",
+    "kill_codes",
+    "claims",
+    "assumption_ledger",
+    "manifest",
+    "models",
+    "checks",
+    "definitions",
+    "conditional",
+    "scheduled_measurements"
+  ],
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "pattern": "^card-[0-9a-f]{8}$"
+    },
+    "stage": {
+      "enum": [
+        "M",
+        "C"
+      ]
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fail",
+        "infeasible_proved",
+        "undetermined"
+      ]
+    },
+    "kill_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(obligation_failed:.+|unproven:.+|magic_x:.+|magic_x_missing:.+|circular:.+|conservation:.+|statement_mismatch|match_unresolved:.+|card_incomplete|resource_contradiction|stall:math_revision|budget:math_revision)$"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "claim_id",
+          "status",
+          "tier",
+          "label",
+          "phrase",
+          "obligations",
+          "open_premises",
+          "circular_premises"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "proven",
+              "proven_up_to_bound",
+              "observed",
+              "conditional",
+              "circular",
+              "unproven",
+              "refuted",
+              "failed",
+              "blocked",
+              "not_formalized"
+            ]
+          },
+          "tier": {
+            "enum": [
+              "lean",
+              "smt_bounded",
+              "sympy_exact",
+              "executed",
+              "argued"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "phrase": {
+            "type": "string"
+          },
+          "obligations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "open_premises": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "circular_premises": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "tier": {
+                  "const": "executed"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "not": {
+                    "enum": [
+                      "proven",
+                      "proven_up_to_bound"
+                    ]
+                  }
+                },
+                "phrase": {
+                  "not": {
+                    "pattern": "(?i)\\bproven\\b"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "conditional"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "open_premises": {
+                  "minItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "proven",
+                    "proven_up_to_bound",
+                    "observed"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "open_premises": {
+                  "maxItems": 0
+                },
+                "circular_premises": {
+                  "maxItems": 0
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "assumption_ledger": {
+      "type": "string"
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "checks": {
+      "type": "object"
+    },
+    "definitions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^D[0-9]{1,2}$"
+      }
+    },
+    "conditional": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scheduled_measurements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "premise_id",
+          "text",
+          "measurement_plan",
+          "claims",
+          "status"
+        ],
+        "properties": {
+          "premise_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "measurement_plan": {
+            "type": "object"
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "const": "deferred_to_test_design"
+          }
+        }
+      }
+    },
+    "profile": {
+      "description": "Phase 4: each profile slot's status, tier and the forms and tiers it accepts.",
+      "type": "object"
+    },
+    "target": {
+      "description": "Phase 4: the compute target gate (hybrid/math/target.py) on the verified P1 formula, and whether it decided the verdict.",
+      "type": "object"
+    },
+    "target_coupled": {
+      "description": "FIX-17 (decision C17): the skill scale at target of every P2 task and slot (hybrid/math/coupled.py): the card's per-task resources substituted into the verified P1 formulas, the largest growth s = Theta(n^b) with total cost at most n^coupled_max_cost_exponent and state at most n^coupled_max_state_exponent ([target]), and whether the coupled gate decided the verdict (applied only when the target gate is).",
+      "type": "object",
+      "required": ["status", "applied", "reasons", "rule"],
+      "properties": {
+        "status": {"enum": ["pass", "fail", "not_applicable"]},
+        "applied": {"type": "boolean"},
+        "kill_code": {"type": ["string", "null"]},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "rule": {"type": "object"},
+        "slots": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["growth", "scale"],
+            "properties": {
+              "growth": {"enum": ["none", "uncovered", "bounded", "log", "power"]},
+              "b": {"type": ["number", "null"]},
+              "scale": {"type": "string"}
+            }
+          }
+        },
+        "tasks": {"type": "object"},
+        "problems": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

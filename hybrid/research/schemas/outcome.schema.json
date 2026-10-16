@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "outcome.schema.json",
+  "title": "Outcome record (DISCOVERY-PIPELINE-PLAN.md section 9)",
+  "description": "One card outcome in results/outcomes/outcomes.jsonl. Kill codes are checked against the enumeration in hybrid/research/outcomes.py. written_by planted_seed marks a dead record of an earlier run that the planted-card driver (hybrid/research/planted.py) copied into a planted run's own store copy; it never appears in results/outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run", "card_id", "card_version", "card_sha256", "card_path", "written_by", "legacy", "missing",
+               "override", "source_run", "lineage_id", "parent_ids", "operator", "arm", "archive_cell", "lens",
+               "title", "core_idea", "summary", "mechanism_signature", "difference_statement",
+               "non_reduction_argument", "premises", "definitions", "stage_verdicts", "terminal_stage", "outcome",
+               "kill_codes", "kill_detail", "causes", "evidence", "cost"],
+  "properties": {
+    "run": {"type": "string", "minLength": 1},
+    "card_id": {"type": "string", "pattern": "^card-[0-9a-f]{8}$"},
+    "card_version": {"type": "integer", "minimum": 1},
+    "card_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "card_path": {"type": "string", "minLength": 1},
+    "written_by": {"enum": ["backfill", "orchestrator", "planted_seed"]},
+    "legacy": {"type": "boolean"},
+    "missing": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "override": {"type": "boolean"},
+    "source_run": {"type": ["string", "null"]},
+    "lineage_id": {"type": "string", "minLength": 1},
+    "parent_ids": {"type": "array", "items": {"type": "string"}},
+    "operator": {"type": ["string", "null"]},
+    "arm": {"type": ["string", "null"]},
+    "archive_cell": {"type": ["object", "null"]},
+    "lens": {"type": ["string", "null"]},
+    "title": {"type": "string"},
+    "core_idea": {"type": ["string", "null"]},
+    "summary": {"type": "string"},
+    "mechanism_signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signature", "tokens", "skeleton", "source", "version"],
+      "properties": {
+        "signature": {"type": "string", "pattern": "^sig-[0-9a-f]{16}$"},
+        "tokens": {"type": "array", "items": {"type": "string"}},
+        "skeleton": {"type": "object"},
+        "source": {"enum": ["extracted", "statement_fixer"]},
+        "version": {"type": "integer", "minimum": 1}
+      }
+    },
+    "difference_statement": {"type": ["object", "null"]},
+    "non_reduction_argument": {"type": ["object", "null"]},
+    "premises": {"type": "array", "items": {"type": "object"}},
+    "definitions": {"type": "array", "items": {"type": "object"}},
+    "stage_verdicts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["verdict", "reasons", "by_calls"],
+        "properties": {
+          "verdict": {"type": "string"},
+          "reasons": {"type": "array", "items": {"type": "string"}},
+          "by_calls": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "terminal_stage": {"type": ["string", "null"]},
+    "outcome": {"enum": ["dead", "finished", "open"]},
+    "kill_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "kill_detail": {"type": ["string", "null"]},
+    "causes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "detail", "evidence"],
+        "properties": {
+          "code": {"type": "string", "minLength": 1},
+          "detail": {"type": "string"},
+          "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+        }
+      }
+    },
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "budget": {
+      "description": "Phase 8 loop budgets: the card's lineage and idea key, revisions charged to it per loop, its model calls and its loop stops. Absent or null for records written before Phase 8.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["lineage_id", "idea_key", "joined", "admitted", "loops", "model_calls", "stops"],
+      "properties": {
+        "lineage_id": {"type": "string", "minLength": 1},
+        "idea_key": {"type": "string", "minLength": 1},
+        "joined": {"enum": ["parent", "signature", "new"]},
+        "admitted": {"type": "boolean"},
+        "loops": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "model_calls": {"type": "integer", "minimum": 0},
+        "stops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["stage", "loop", "reason", "kill_code", "terminal"],
+            "properties": {
+              "stage": {"type": "string"},
+              "loop": {"type": "string"},
+              "reason": {"enum": ["budget", "stall"]},
+              "kill_code": {"type": "string"},
+              "terminal": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "target_coupled": {
+      "description": "FIX-17 (decision C17): the skill scale at target of each P2 slot from the card's stage M verdict (hybrid/math/coupled.py), and whether the coupled gate applied. Absent or null for records written before FIX-17 or for cards without a stage M verdict.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["status", "applied", "slots"],
+      "properties": {
+        "status": {"enum": ["pass", "fail", "not_applicable"]},
+        "applied": {"type": "boolean"},
+        "slots": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["growth", "b", "scale"],
+            "properties": {
+              "growth": {"enum": ["none", "uncovered", "bounded", "log", "power"]},
+              "b": {"type": ["number", "null"]},
+              "scale": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_calls", "tokens", "executor_jobs"],
+      "properties": {
+        "model_calls": {"type": "integer", "minimum": 0},
+        "tokens": {"type": "integer", "minimum": 0},
+        "executor_jobs": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": {"type": "string", "minLength": 1},
+        "ref": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

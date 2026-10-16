@@ -1,0 +1,150 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Constant-time recall through a probe-addressed retrieval index",
+  "summary": "Pairs are deposited in a bounded store. A retrieval index sits beside the store and returns, for any probe symbol, the item deposited with it, in one step. Strings use the same index with the position as probe and brackets with the depth as probe.",
+  "core_idea": "Put a probe-addressed retrieval index next to a bounded store so every read is one step and recall at K = 64 needs only a few training items.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "B",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Bounded deposit store: C rows of (probe symbol, item); C = 64."
+      },
+      {
+        "name": "nb",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Rows deposited."
+      },
+      {
+        "name": "hold",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "First symbol of an incoming pair."
+      },
+      {
+        "name": "dpt",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket depth, used as the probe for brackets."
+      },
+      {
+        "name": "ix",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter, used as the probe for strings."
+      },
+      {
+        "name": "Idx",
+        "type": "retrieval index",
+        "shape": [
+          1
+        ],
+        "meaning": "Retrieval index over B: Idx(s) returns the item deposited with probe s, in one step."
+      },
+      {
+        "name": "Out",
+        "type": "integer map",
+        "shape": [
+          "V"
+        ],
+        "meaning": "Learned output map from retrieved item to emitted symbol."
+      }
+    ],
+    "update": [
+      {
+        "latex": "hold=\\varnothing \\Rightarrow hold \\leftarrow x_t;\\;\\text{else } B_{nb} \\leftarrow (hold, x_t),\\; nb \\leftarrow nb + 1",
+        "plain": "pairs are stored row by row; strings store (ix, x_t); openers store (dpt, x_t)",
+        "name": "deposit"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\hat{y}_t = \\mathrm{Out}[\\mathrm{Idx}(x_t)]",
+        "plain": "the index returns the item deposited with the probe (the current symbol, the position or the depth) and Out maps it; for two-step tables Idx is applied twice"
+      }
+    ],
+    "learning": {
+      "description": "Out is the majority map from a frequency tally over the m training items; the probe source (symbol, position, depth) is chosen by training accuracy.",
+      "few_shot_argument": "Out is the identity on 16 symbols; m = 6 items with 64 probes each cover them."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(C)",
+      "total_sequence": "O(n)",
+      "constants_notes": "One deposit and one index read per token; 2C + 4 words."
+    },
+    "sample_efficiency": {
+      "mechanism": "Index reads leave only the output map to learn.",
+      "prediction": {
+        "metric": "examples_to_recall_K64",
+        "value": 6,
+        "statement": "From m = 6 recall items with K = 64 pairs over V = 16, per-query accuracy is at least 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall",
+        "prediction": "Exact at K = 8, 32, 64 with C = 64 in O(1) time per token."
+      },
+      {
+        "task": "copy, nesting",
+        "prediction": "Exact at L = 8, 32, 64 and depth 2, 4, 8, 16."
+      },
+      {
+        "task": "composition, binding",
+        "prediction": "Exact at T = 4, 16, 32 (two index reads) and hops 1, 4, 8 (up to 9 reads)."
+      },
+      {
+        "task": "limit",
+        "prediction": "The limit is a storage count: C slots of two words cannot hold more than C pairs, so at C = 64 an instance with 65 or more distinct pairs loses one of them."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Counted operations per token that grow with C at fixed n.",
+    "6 items at K = 64 after which recall accuracy is below 0.99."
+  ],
+  "toy_example": {
+    "description": "Index reads on a K = 3 deposit store.",
+    "python": "import json\nB = [(4, 20), (9, 25), (1, 18)]\ndef idx(s):\n    for a, b in B:\n        if a == s:\n            return b\n    return -1\nprint(json.dumps({\"reads\": [idx(9), idx(1), idx(4)], \"miss\": idx(7)}))\n",
+    "expected": {
+      "reads": [
+        25,
+        18,
+        20
+      ],
+      "miss": -1
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

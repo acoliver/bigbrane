@@ -1,0 +1,130 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "String reproduction through an offset-addressed retrieval service",
+  "summary": "A string is deposited symbol by symbol. After the separator a retrieval service returns, in one step, the deposited symbol at the current offset, for any offset. Pairs and brackets use the same service with other addresses.",
+  "core_idea": "Reproduce strings by one-step retrieval of the symbol deposited at each offset.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Dp",
+        "type": "integer vector",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Deposit area of C symbols, C = 64."
+      },
+      {
+        "name": "nd",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Symbols deposited."
+      },
+      {
+        "name": "off",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Offset counter after the separator."
+      },
+      {
+        "name": "Svc",
+        "type": "retrieval service",
+        "shape": [
+          1
+        ],
+        "meaning": "Retrieval service: Svc(a) returns the symbol deposited at address a in one step."
+      },
+      {
+        "name": "Em2",
+        "type": "integer map",
+        "shape": [
+          "D"
+        ],
+        "meaning": "Learned map from retrieved symbol to output."
+      }
+    ],
+    "update": [
+      {
+        "latex": "t < t_{sep}: Dp_{nd} \\leftarrow x_t,\\; nd \\leftarrow nd + 1;\\quad t > t_{sep}: off \\leftarrow off + 1",
+        "plain": "symbols are deposited until the separator step t_sep; then the offset counts emitted symbols",
+        "name": "deposit"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\hat{y}_t = Em2[\\mathrm{Svc}(off)]",
+        "plain": "the service returns the symbol at the offset and Em2 maps it; for pairs the address is the probe symbol, for brackets the depth"
+      }
+    ],
+    "learning": {
+      "description": "Em2 by majority over the m items; the address source is chosen by training accuracy.",
+      "few_shot_argument": "Em2 is the identity on D = 4 symbols; m = 4 strings of length 64 cover them."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(C)",
+      "total_sequence": "O(n)",
+      "constants_notes": "One deposit or one service call per token; C + 3 words."
+    },
+    "sample_efficiency": {
+      "mechanism": "Service reads leave only Em2 to learn.",
+      "prediction": {
+        "metric": "examples_to_copy_L64",
+        "value": 4,
+        "statement": "From m = 4 strings of length 64 over D = 4, per-symbol accuracy of the copy is at least 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy",
+        "prediction": "Exact at L = 8, 32, 64 with C = 64."
+      },
+      {
+        "task": "recall, nesting, composition, binding",
+        "prediction": "Exact at K = 8, 32, 64; depth 2, 4, 8, 16; T = 4, 16, 32; hops 1, 4, 8."
+      },
+      {
+        "task": "limit",
+        "prediction": "Strings longer than C = 64 cannot be reproduced exactly: L = 65 over D = 4 is 130 bits against 128 bits of deposit."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Counted operations per token that grow with C.",
+    "4 strings of length 64 after which copy accuracy is below 0.99."
+  ],
+  "toy_example": {
+    "description": "Deposit four symbols and retrieve them by offset.",
+    "python": "import json\nsrc = [2, 0, 3, 1]\nDp = list(src)\nprint(json.dumps({\"copy\": [Dp[o] for o in range(4)], \"same\": [Dp[o] for o in range(4)] == src}))\n",
+    "expected": {
+      "copy": [
+        2,
+        0,
+        3,
+        1
+      ],
+      "same": true
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "model": "MODEL",
+  "max_tokens": 4000,
+  "messages": [
+    {"role": "system", "content": "You are terse."},
+    {"role": "user", "content": "Capital of France?"}
+  ]
+}

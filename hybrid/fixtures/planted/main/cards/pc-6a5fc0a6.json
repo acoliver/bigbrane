@@ -1,0 +1,149 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Halving weights of near-identical earlier records before each new record",
+  "summary": "The model writes a record for every pair it reads: an 8-bit code, the item and a weight of 1. Just before the new record goes in, every earlier record whose code differs from the new code in at most one bit position has its weight halved. To answer, it picks among the records carrying the probed code the one of greatest weight. Episodes come in five fixed formats: a string to reproduce after a separator; address-item pairs followed by probes; two-type bracket prefixes whose next closer must be named; two tables g and f followed by probes answered f(g(x)); and chains of assignments ending in a probe variable.",
+  "core_idea": "Halve the weight of every earlier record within one bit of each new code, then answer a probe with the greatest-weight record carrying its code.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Rec",
+        "type": "list of records",
+        "shape": [
+          "n",
+          3
+        ],
+        "meaning": "Records (code c_i, item u_i, weight g_i), one per written pair in order of arrival; the list grows with every write."
+      },
+      {
+        "name": "ctr",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Step counter inside a string."
+      },
+      {
+        "name": "ob",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Open-bracket integer, one binary digit per open bracket, the latest lowest, 20 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "open-bracket integer",
+        "latex": "ob \\leftarrow 2\\,ob + b \\;(\\text{opener}),\\quad ob \\leftarrow \\lfloor ob/2 \\rfloor \\;(\\text{closer})",
+        "plain": "an opener of type b gives ob = 2 ob + b; a closer gives ob = floor(ob / 2)"
+      },
+      {
+        "name": "append",
+        "latex": "Rec \\leftarrow Rec \\cup \\{(c_t, u_t, 1)\\}",
+        "plain": "append (c_t, u_t, 1), where u_t = 2 id(item) + f_t and f_t = 1 marks a final symbol; this runs after the halving step"
+      },
+      {
+        "name": "halving",
+        "latex": "g_i \\leftarrow g_i / 2 \\;\\text{ for every earlier record } i \\text{ with } \\mathrm{ham}(c_i, c_t) \\le 1",
+        "plain": "first, for every record i already in Rec: if the Hamming distance between the 8-bit codes c_i and c_t is at most 1, g_i = g_i / 2; the code c_t in 0..255 is the step counter for string symbols, the identity for pair addresses and 128 + identity for the second table, as in the log of writes"
+      }
+    ],
+    "readout": [
+      {
+        "name": "next bracket",
+        "latex": "\\hat{b} = ob \\bmod 2",
+        "plain": "the closer to predict has the type in the lowest digit of ob"
+      },
+      {
+        "name": "greatest weight",
+        "latex": "\\hat{u} = u_{i^\\ast},\\; i^\\ast = \\arg\\max_{i:\\, c_i = c} g_i",
+        "plain": "for probe code c the answer is the item of the greatest-weight record with code c (the latest one on ties)"
+      },
+      {
+        "name": "follow links",
+        "latex": "c \\leftarrow \\lfloor \\hat{u}/2 \\rfloor \\text{ while the flag is } 0",
+        "plain": "while the item's flag is 0 it names a variable: probe again with it, at most 8 times; f(g(x)) probes 128 + id(x) and then the result"
+      }
+    ],
+    "learning": {
+      "description": "Which role each symbol plays (address, item, final item, mark, opener, closer) is read off m example episodes per task: a symbol is given the role it was observed in most often.",
+      "few_shot_argument": "Each symbol of a small case appears in its role within one episode, so m = 6 example episodes per task settle every role; a pair is answered correctly from its first writing."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(n)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "Halving reaches only records whose codes are within one bit of the new code, at most 9 distinct codes, so a write changes a constant number of weights, and an answer looks only at the records of one code. Each record takes three words."
+    },
+    "sample_efficiency": {
+      "mechanism": "Most frequent observed role per symbol over m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "By hand: symbol i is written under code i and read back under codes 1..L after the separator; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Each address is written under its identity, and its latest record always has the greatest weight, so recall is exact at K = 8, 32 and 64 even after rewrites."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "The open-bracket integer names every closer exactly at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "g under codes 128..159 and f under 0..31; two probes; exact at sizes 4, 16 and 32. At most 8 linked probes; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "Bracket prefixes deeper than 20 cannot all be kept apart: two-type stacks of depth D take 2^D values against 2^20 for the integer, so exact closer prediction fails at every depth D > 20."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The observed-role rule learns each small case from m = 6 example episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A probe is answered from an older record of its code while a newer record of that code exists.",
+    "Counted operations of a write grow with the number of records."
+  ],
+  "toy_example": {
+    "description": "Five writes, two of them under the same code, and the resulting weights.",
+    "python": "import json\nrec = []\ndef ham(a, b):\n    return bin(a ^ b).count(\"1\")\ndef write(c, u):\n    for r in rec:\n        if ham(r[0], c) <= 1:\n            r[2] = r[2] / 2\n    rec.append([c, u, 1.0])\nfor c, u in [(12, 4), (13, 9), (100, 2), (12, 6), (44, 1)]:\n    write(c, u)\nbest = max((r for r in rec if r[0] == 12), key=lambda r: r[2])\nprint(json.dumps({\"weights\": [r[2] for r in rec], \"answer_12\": best[1]}))\n",
+    "expected": {
+      "weights": [
+        0.125,
+        0.5,
+        1.0,
+        0.5,
+        1.0
+      ],
+      "answer_12": 6
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

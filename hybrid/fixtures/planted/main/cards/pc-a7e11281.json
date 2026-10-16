@@ -1,0 +1,109 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Per-channel exponential retention with a step size chosen by each symbol",
+  "summary": "Every input channel carries a row of N numbers. A step size computed from the current symbol sets, per channel, how strongly the row is retained (an exponential of the step times a fixed negative rate) and how strongly the channel's input is written along an input-dependent write vector. The output reads each row with an input-dependent read vector and adds a direct path.",
+  "core_idea": "Run a diagonal linear recurrence per channel whose retention exp(step * rate) and write strength both depend on the current symbol through a learned step size.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "H",
+        "type": "real matrix",
+        "shape": [
+          "d",
+          "N"
+        ],
+        "meaning": "Row i holds the N-number recurrent memory of input channel i."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "\\Delta_t = \\mathrm{softplus}(W_\\Delta x_t + b_\\Delta),\\; B_t = W_B x_t,\\; C_t = W_C x_t",
+        "plain": "Delta_t = softplus(W_Delta x_t + b_Delta) in R^d is the per-channel step; B_t = W_B x_t and C_t = W_C x_t are the write and read vectors in R^N; x_t = E[symbol_t]"
+      },
+      {
+        "name": "retention",
+        "latex": "\\bar{A}_t[i, j] = \\exp(\\Delta_t[i] A[i, j])",
+        "plain": "A_bar[i, j] = exp(Delta_t[i] * A[i, j]) with A a fixed-shape learned matrix of negative rates"
+      },
+      {
+        "name": "recurrence",
+        "latex": "H_t = \\bar{A}_t \\odot H_{t-1} + (\\Delta_t \\odot x_t) B_t^{\\top}",
+        "plain": "H_t = A_bar elementwise times H_(t-1) plus outer(Delta_t * x_t, B_t)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "output",
+        "latex": "y_t = H_t C_t + D \\odot x_t",
+        "plain": "y_t = H_t C_t + D * x_t, with D a learned per-channel direct weight"
+      },
+      {
+        "name": "symbol",
+        "latex": "\\hat{s}_{t+1} = \\arg\\max_v (O y_t)_v",
+        "plain": "next symbol scores O y_t over the V symbols"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence. The rates A are kept negative by storing their logarithms.",
+      "few_shot_argument": "No structure for few examples; the card states 3000 training sequences for copying at L = 4."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d N + d V)",
+      "memory": "Theta(d N)",
+      "total_sequence": "Theta(n d N + n d V)",
+      "constants_notes": "d N exponentials, products and additions per symbol, the read H_t C_t and the output map; memory is the d by N matrix H."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_copy_L4",
+        "value": 3000,
+        "statement": "From random weights, 3000 copy examples at L = 4 over 4 symbols give per-string accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "selective copying",
+        "prediction": "A symbol with a large step overwrites the row of its channel and a symbol with a step near 0 leaves it untouched, so filler symbols can be skipped exactly."
+      },
+      {
+        "task": "copy a string after a separator",
+        "prediction": "Exact for L log2 D below the bits of the d N memory with hand-set weights; impossible beyond that."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A filler symbol with step near 0 changes the memory by more than the step times the input.",
+    "The counted operations grow faster than linearly in n at fixed d, N and V."
+  ],
+  "toy_example": {
+    "description": "One channel with N = 2 over three symbols.",
+    "python": "import json, math\nA = [-1.0, -0.5]\nh = [0.0, 0.0]\nfor x, raw in [(1.0, 0.0), (2.0, -3.0), (-1.0, 1.0)]:\n    dl = math.log1p(math.exp(raw))\n    Bv = [x, 1.0]\n    h = [math.exp(dl * A[j]) * h[j] + dl * x * Bv[j] for j in range(2)]\nC = [1.0, 0.5]\ny = h[0] * C[0] + h[1] * C[1] + 0.1 * (-1.0)\nprint(json.dumps({\"memory\": [round(v, 6) for v in h], \"out\": round(y, 6)}))\n",
+    "expected": {
+      "memory": [
+        1.543105,
+        -0.912032
+      ],
+      "out": 0.98709
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

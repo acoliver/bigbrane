@@ -1,0 +1,1553 @@
+{
+  "card_id": "card-46dbb349",
+  "matches": [
+    {
+      "card_id": "card-46dbb349",
+      "causes": [
+        {
+          "code": "unproven:A1",
+          "detail": "premise A1 (open): Unspecified random choices are uniform; base demonstration inputs are sampled without replacement, fresh new-rule inputs exclude the base demonstration inputs, and queries are sampled uniformly from inputs not demonstrated for the queried rule.",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+              "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+              "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+            }
+          ],
+          "id": "oc-75618165949e/unproven:A1"
+        },
+        {
+          "code": "unproven:A2",
+          "detail": "premise A2 (open): Evaluation processes adjacent pairs beginning with (BOS,x_1), scores the post-update readout at the query token before its following separator, uses the smallest token index to break logit ties, and uses lambda=1e-6 and tau=1e3 wherever the capability settings omit them.",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+              "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+              "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+            }
+          ],
+          "id": "oc-75618165949e/unproven:A2"
+        },
+        {
+          "code": "unproven:A3",
+          "detail": "premise A3 (open): The simulation runner returns predictions from the stated recurrence and the named baselines, with fresh RLS reset for each new rule, pooled and ablated RLS using all preceding content pairs, and no access to targets.",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+              "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+              "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+            }
+          ],
+          "id": "oc-75618165949e/unproven:A3"
+        },
+        {
+          "code": "unproven:A4",
+          "detail": "premise A4 (open): For the otherwise underspecified Gated DeltaNet baseline, each content pair updates W from W_old to gamma*W_old+outer(u,v-W_old.T@u), initializes W=0, skips reserved pairs, and reads W.T@Phi[q], separately for each listed gamma.",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+              "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+              "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+            }
+          ],
+          "id": "oc-75618165949e/unproven:A4"
+        },
+        {
+          "code": "unproven:A5",
+          "detail": "premise A5 (open): Complexity is measured in unit-cost scalar arithmetic and stored scalar words, with dense matrix-vector operations, streaming orbit search that retains the best transported key rather than every orbit point, and no retained context or autograd tape at inference.",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+              "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+              "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+            }
+          ],
+          "id": "oc-75618165949e/unproven:A5"
+        },
+        {
+          "code": "unproven:A6",
+          "detail": "premise A6 (open): Under the scalar accounting convention, the recurrence has a per-token worst-case accounting envelope (4M+12)d^2+3Md+8d+2Vd+V+10 operations and 6d^2+Vd+10d+V+4 peak words, including parameters and transient workspace.",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+              "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+              "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+            },
+            {
+              "kind": "job",
+              "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+            }
+          ],
+          "id": "oc-75618165949e/unproven:A6"
+        }
+      ],
+      "exact_signature": false,
+      "jaccard": 0.95,
+      "kill_codes": [
+        "unproven:A1",
+        "unproven:A2",
+        "unproven:A3",
+        "unproven:A4",
+        "unproven:A5",
+        "unproven:A6"
+      ],
+      "kill_detail": "math gate (M): undetermined; kill codes unproven:A1, unproven:A2, unproven:A3, unproven:A4, unproven:A5, unproven:A6",
+      "legacy": true,
+      "outcome": "dead",
+      "override": true,
+      "record_id": "oc-75618165949e",
+      "run": "plumb-math-card-46dbb349-20261012T193523Z",
+      "terminal_stage": "M",
+      "tfidf": 0.9465,
+      "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes"
+    },
+    {
+      "card_id": "card-46dbb349",
+      "causes": [
+        {
+          "code": "circular:C13",
+          "detail": "premise C13 is circular: Directly asserts the stability bound required for multi-rule retention in capability 2.; claim capability.2: rests on circular premises: C13: restates or implies capability.2, which it supports: Directly asserts the stability bound required for multi-rule retention in capability 2.",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/math_verdict/card-46dbb349-v2-d5a2f7.json",
+              "sha256": "7169952d90772cd0ba659a92c9c6f9a06e088733096d3287968eca3fe62f4f57"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/assumption_ledger/card-46dbb349-v2-23d003.json",
+              "sha256": "a052153d390900f1001045491bd19bf8429f46a261ee90028c07dfa8686c12c3"
+            },
+            {
+              "kind": "challenge",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/challenge/card-46dbb349-v2-816265.json",
+              "sha256": "b11f5b4855cca1d820868344f53faeff8906cf4fc3c08ee28444c8b8dd60b13a"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-de3a83188f25"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-0d1bb5c10e2d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-031887942ef6"
+            }
+          ],
+          "id": "oc-dbe79e9ad52b/circular:C13"
+        },
+        {
+          "code": "obligation_failed:capability.3",
+          "detail": "claim capability.3: failed [argued (prose only)]: failed: size 1 mean 1.0000, size 2 mean 0.0000; threshold 1; observed on the listed sizes: size=1, size=2",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/math_verdict/card-46dbb349-v2-d5a2f7.json",
+              "sha256": "7169952d90772cd0ba659a92c9c6f9a06e088733096d3287968eca3fe62f4f57"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/assumption_ledger/card-46dbb349-v2-23d003.json",
+              "sha256": "a052153d390900f1001045491bd19bf8429f46a261ee90028c07dfa8686c12c3"
+            },
+            {
+              "kind": "challenge",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/challenge/card-46dbb349-v2-816265.json",
+              "sha256": "b11f5b4855cca1d820868344f53faeff8906cf4fc3c08ee28444c8b8dd60b13a"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-de3a83188f25"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-0d1bb5c10e2d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-031887942ef6"
+            }
+          ],
+          "id": "oc-dbe79e9ad52b/obligation_failed:capability.3"
+        },
+        {
+          "code": "statement_mismatch",
+          "detail": "statement mismatch: statement O1.a (complexity.time_per_token): constants: O-notation hides multiplicative constants; formal specifies 3 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation. | statement O2.a (complexity.memory): constants: O-notation hides constants; formal specifies 2 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation. | statement O3.a (complexity.total_sequence): constants: O-notation hides constants; formal specifies 3 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation. | statement O4.a (sample_efficiency.prediction): quantifiers: Claim asserts threshold crossing at k=1; formal only checks accuracy >= 0.9 at k=16.; constants: Claim specifies k_new=1 and baseline failure thresholds; formal checks single point.; the formal statement is weaker than the claim: Formal statement only verifies accuracy at k=16 and does not confirm the model reaches threshold at k=1 or that baselines fail for all k<16.",
+          "evidence": [
+            {
+              "kind": "math_verdict",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/math_verdict/card-46dbb349-v2-d5a2f7.json",
+              "sha256": "7169952d90772cd0ba659a92c9c6f9a06e088733096d3287968eca3fe62f4f57"
+            },
+            {
+              "kind": "assumption_ledger",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/assumption_ledger/card-46dbb349-v2-23d003.json",
+              "sha256": "a052153d390900f1001045491bd19bf8429f46a261ee90028c07dfa8686c12c3"
+            },
+            {
+              "kind": "challenge",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/challenge/card-46dbb349-v2-816265.json",
+              "sha256": "b11f5b4855cca1d820868344f53faeff8906cf4fc3c08ee28444c8b8dd60b13a"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-de3a83188f25"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-0d1bb5c10e2d"
+            },
+            {
+              "kind": "call",
+              "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-031887942ef6"
+            }
+          ],
+          "id": "oc-dbe79e9ad52b/statement_mismatch"
+        }
+      ],
+      "exact_signature": false,
+      "jaccard": 0.95,
+      "kill_codes": [
+        "circular:C13",
+        "obligation_failed:capability.3",
+        "statement_mismatch"
+      ],
+      "kill_detail": "math gate (C): fail; kill codes circular:C13, obligation_failed:capability.3, statement_mismatch",
+      "legacy": true,
+      "outcome": "dead",
+      "override": true,
+      "record_id": "oc-dbe79e9ad52b",
+      "run": "plumb-math-card-46dbb349-20261012T203633Z",
+      "terminal_stage": "C",
+      "tfidf": 0.9465,
+      "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes"
+    },
+    {
+      "card_id": "card-46dbb349",
+      "causes": [
+        {
+          "code": "undetermined:S3",
+          "detail": "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']",
+          "evidence": [
+            {
+              "kind": "judges",
+              "ref": "run-20261010T181300Z/artifacts/judges/card-46dbb349-v8-93b1b8.json",
+              "sha256": "dc9692325d4b0e7a394f3eecdde8ab4d2bad666fe304831075c04c6d90ea767f"
+            },
+            {
+              "kind": "disproof",
+              "ref": "run-20261010T181300Z/artifacts/disproof/card-46dbb349-v8-1b372f.json",
+              "sha256": "268364f108ed9d864ef109c4adc961a40bd7df1767311944db037ee4e8dae477"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-20c48010b241"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-4c02ca7b93f8"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261010T181300Z/job-c63a4e2d2d1f"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261010T181300Z/job-dfd9832f8f73"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-f1f1dbc15bcc"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-ec5bbe34c829"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-a344ac174188"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-b2137e592932"
+            }
+          ],
+          "id": "oc-12f90f33cddc/undetermined:S3"
+        }
+      ],
+      "exact_signature": false,
+      "jaccard": 0.95,
+      "kill_codes": [
+        "undetermined:S3"
+      ],
+      "kill_detail": "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']",
+      "legacy": true,
+      "outcome": "dead",
+      "override": false,
+      "record_id": "oc-12f90f33cddc",
+      "run": "run-20261010T181300Z",
+      "terminal_stage": "S3",
+      "tfidf": 0.9465,
+      "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes"
+    },
+    {
+      "card_id": "card-46dbb349",
+      "causes": [
+        {
+          "code": "undetermined:S3",
+          "detail": "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']",
+          "evidence": [
+            {
+              "kind": "disproof",
+              "ref": "s3checks-card-46dbb349-20261011/artifacts/disproof/card-46dbb349-v1-7699ab.json",
+              "sha256": "64d0f6e603ce9c531c3720dcfced9a5e59c7f0894ea18fbbb24b7d1008b8ae7c"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011/call-20c48010b241"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011/call-4c02ca7b93f8"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011/job-c63a4e2d2d1f"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011/job-dfd9832f8f73"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011/call-f1f1dbc15bcc"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011/call-ec5bbe34c829"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011/call-a344ac174188"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011/call-b2137e592932"
+            }
+          ],
+          "id": "oc-2d48993b203e/undetermined:S3"
+        }
+      ],
+      "exact_signature": false,
+      "jaccard": 0.95,
+      "kill_codes": [
+        "undetermined:S3"
+      ],
+      "kill_detail": "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']",
+      "legacy": true,
+      "outcome": "dead",
+      "override": true,
+      "record_id": "oc-2d48993b203e",
+      "run": "s3checks-card-46dbb349-20261011",
+      "terminal_stage": "S3",
+      "tfidf": 0.9465,
+      "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes"
+    },
+    {
+      "card_id": "card-46dbb349",
+      "causes": [
+        {
+          "code": "obligation_failed:capacity_semigroup_membership_composite_cycle",
+          "detail": "executed check violated stated obligation 'capacity_semigroup_membership_composite_cycle' (replayed): Composite p=64, Fourier lift frequencies 1..8, M=63, 500 trials each: odd base accuracy 0.996 (needs >=0.9); even base with odd new shift accuracy 0.300 (needs <=0.15). For condition ii the counterexample is the first hit, since a hit is the violation.; counterexample {\"condition\": \"i\", \"trial\": 329, \"sA\": 17, \"sB\": 9, \"q\": 61, \"pred\": 14, \"expected\": 6}",
+          "evidence": [
+            {
+              "kind": "s3_gate",
+              "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/s3_gate/card-46dbb349-v1-6715b7.json",
+              "sha256": "e3b81eb1507daadfd80a6a15480620e80f7832aaf3d37bf2d03076201beb37b8"
+            },
+            {
+              "kind": "judges",
+              "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/judges/card-46dbb349-v1-5c3f99.json",
+              "sha256": "54b924f2c523af1928743d0365ebe5568d7b033b5b1f040f705b516f256e261d"
+            },
+            {
+              "kind": "disproof",
+              "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/disproof/card-46dbb349-v1-5938d2.json",
+              "sha256": "e978a2450e51368de7ef5ba48c11cde64b1147a55af6d73683b9300d9788b3d2"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-4b11ed98b4f3"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-d3a9ed4ec376"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-bcc64a2871f1"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-12c0abe66866"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-b6fb314bae25"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-f02ec872a09a"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-8b1874c709f4"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-4ec1ea85d2f8"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-882bf3b89274"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-2b4292a39a12"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-6bea1e1bc050"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-fd0a7ac59351"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-318dc56f6653"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-fc97dc44c1e0"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-52bc2f973c85"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-ade2df5f5bc4"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-8dfbcd714c7f"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-19d42146187e"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-8df9bbfa7928"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-1f6acaebe6b6"
+            }
+          ],
+          "id": "oc-b5d3989d0e5d/obligation_failed:capacity_semigroup_membership_composite_cycle"
+        },
+        {
+          "code": "obligation_failed:stability_error_accumulation_numerics",
+          "detail": "executed check violated stated obligation 'stability_error_accumulation_numerics' (replayed): Float64, 500 sampled one-shot trials with 8 extra rules, p=61: worst ||K^T-T||_2=1.11e+01, worst M*eps=6.67e+02 vs delta_min^2/4=0.0651; min eig of P 1.26e-01. Sampled only, and float32 is not tested; the stated power bound is checked numerically, not derived.; counterexample {\"trial\": 3, \"sA\": 42, \"eps\": 0.007303416629861763, \"M_eps\": 0.43820499779170574, \"delta_min_sq_over_4\": 0.06511083160530479, \"min_eig_P\": 0.26460284599926487, \"power_bound_ok\": true}",
+          "evidence": [
+            {
+              "kind": "s3_gate",
+              "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/s3_gate/card-46dbb349-v1-6715b7.json",
+              "sha256": "e3b81eb1507daadfd80a6a15480620e80f7832aaf3d37bf2d03076201beb37b8"
+            },
+            {
+              "kind": "judges",
+              "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/judges/card-46dbb349-v1-5c3f99.json",
+              "sha256": "54b924f2c523af1928743d0365ebe5568d7b033b5b1f040f705b516f256e261d"
+            },
+            {
+              "kind": "disproof",
+              "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/disproof/card-46dbb349-v1-5938d2.json",
+              "sha256": "e978a2450e51368de7ef5ba48c11cde64b1147a55af6d73683b9300d9788b3d2"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-4b11ed98b4f3"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-d3a9ed4ec376"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-bcc64a2871f1"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-12c0abe66866"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-b6fb314bae25"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-f02ec872a09a"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-8b1874c709f4"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-4ec1ea85d2f8"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-882bf3b89274"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-2b4292a39a12"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-6bea1e1bc050"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-fd0a7ac59351"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-318dc56f6653"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-fc97dc44c1e0"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-52bc2f973c85"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-ade2df5f5bc4"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-8dfbcd714c7f"
+            },
+            {
+              "kind": "job",
+              "ref": "s3checks-card-46dbb349-20261011-r2/job-19d42146187e"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-8df9bbfa7928"
+            },
+            {
+              "kind": "call",
+              "ref": "s3checks-card-46dbb349-20261011-r2/call-1f6acaebe6b6"
+            }
+          ],
+          "id": "oc-b5d3989d0e5d/obligation_failed:stability_error_accumulation_numerics"
+        }
+      ],
+      "exact_signature": false,
+      "jaccard": 0.95,
+      "kill_codes": [
+        "obligation_failed:capacity_semigroup_membership_composite_cycle",
+        "obligation_failed:stability_error_accumulation_numerics"
+      ],
+      "kill_detail": "gate rule: check_violation; executed check violated stated obligation 'capacity_semigroup_membership_composite_cycle' (replayed): Composite p=64, Fourier lift frequencies 1..8, M=63, 500 trials each: odd base accuracy 0.996 (needs >=0.9); even base with odd new shift accuracy 0.300 (needs <=0.15). For condition ii the counterexample is the first hit, since a hit is the violation.; counterexample {\"condition\": \"i\", \"trial\": 329, \"sA\": 17, \"sB\": 9, \"q\": 61, \"pred\": 14, \"expected\": 6}",
+      "legacy": true,
+      "outcome": "dead",
+      "override": true,
+      "record_id": "oc-b5d3989d0e5d",
+      "run": "s3checks-card-46dbb349-20261011-r2",
+      "terminal_stage": "S3",
+      "tfidf": 0.9465,
+      "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes"
+    },
+    {
+      "card_id": "card-36725a7c",
+      "causes": [
+        {
+          "code": "reduces_to_known:other_known",
+          "detail": "reduced to other_known. Mapping: Known form: sequential greedy (local-MAP) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions. This is SUGS (Wang & Dunson 2011, 'Sequential Updating and Greedy Search'), the same scheme as the hard-assignment online CRP mixtures of linear experts in continual and meta-learning (Jerfel et al. 2019; MOCA, Harrison et al. 2020) and as online PWARX clustering. The neural phrasing is Mixture-of-Memories linear attention with R MesaNet memories and a likelihood router in place of a token router. Symbol by symbol: (1) Observation pair (regressor, target) := (u_t, v_t) = (Phi[x_{t-1}], Phi[x_t]). Phi is a learned feature map, and beta_t is a learned observation weight that drops pairs with beta < 1/2. (2) Cluster j's sufficient statistics := (P_j, K_j, N_j). P_j = (lambda I + sum beta u u^T)^{-1} is the posterior covariance of a Gaussian linear-regression cluster with prior precision lambda I and fixed noise variance s2. K_j is its posterior mean. N_j is its CRP table count. Updates u[3] and u[4] are the exact conjugate (RLS) posterior update of the chosen cluster only, as in SUGS. (3) Score S_{t,j} = ln N_j - ||v - K_j^T u||^2 / (2 s2 (1 + u^T P_j u)) := log CRP prior plus Gaussian posterior-predictive log density of v under cluster j. The predictive variance is s2 (1 + u^T P_j u). The constant and -(d/2) ln(1 + u^T P_j u) terms are dropped. (4) S_new = ln eta - ||v||^2 / (2 s2 (1 + ||u||^2/lambda)) := CRP new-table weight (concentration eta) times the prior predictive. (5) z_t = argmax_j S_{t,j} := the SUGS greedy MAP assignment. Mode birth := opening a new table, truncated at R components (truncated DP). (6) Readout y_t = K_{z_t}^T Phi[x_t] := the predictive mean of the most recently assigned cluster, applied to the current regressor. Logits Phi y := tied decoder. The equations coincide term by term except for the omitted log-det term in (3) and the cap R. Numeric check: reduction claim other_known (verified): numeric check confirms equivalence (max_abs_diff 1.341149413747189e-12) Critic's argument: Escape test, step 1: the broken invariant is real in the card's own equations. In u[1]-u[2], z_t is the argmax of scores that depend on K_j and P_j, so the slot that receives each write depends on the whole prefix. The bank is therefore not a sum of per-token writes. Two order-sensitive effects follow. MesaNet without decay is invariant to the order of the pairs, while this card's assignment of a young mode depends on order. With decay, MesaNet cannot keep rule A through 16 B writes. So the parent's linear-attention mapping does not repair. Step 2, repairs tried. The closest neural repair is Mixture-of-Memories linear attention (several MesaNet states with a hard router). Its router is a function of the token only, so it fails for the reason the card's Repair 1 gives: the identical key Phi[0] is routed to different slots within one sequence. Making the router a function of each memory's prediction error is no longer MoM. Content-addressed writes in a Neural Turing Machine are state-dependent, but they use cosine similarity to memory rows, not likelihood tests over d×d regression states. So no linear_attention, ssm, moe or hopfield mapping is exact. Step 3: why_unrepairable is correct against neural sequence families, but it misses the strongest reduction, which lies outside them. The update, routing, birth and readout are textbook sequential greedy CRP / Dirichlet-process mixture inference with conjugate Gaussian linear-regression components (SUGS). The score is literally log CRP weight plus posterior-predictive log likelihood, with the log-det term dropped. The card's own known_relatives concedes the PWARX, Mahalanobis-gating and sticky-HMM lineage. The same scheme with a learned feature extractor already exists in continual meta-learning (online CRP mixtures of linear-regression heads; MOCA). The argument holds against the parent but fails as a claim of novelty. It is a known online clustering/regression algorithm moved onto a token stream, so it is not radical.",
+          "evidence": [
+            {
+              "kind": "reduction_critic",
+              "ref": "run-20261010T181300Z/artifacts/reduction_critic/card-36725a7c-v7-9017d9.json",
+              "sha256": "66c763a8bc44aec7fe9034bfc82699db2aaf50cf634888c64e8b9c1afb7c4749"
+            },
+            {
+              "kind": "prior_art",
+              "ref": "run-20261010T181300Z/artifacts/prior_art/card-36725a7c-v7-98d01d.json",
+              "sha256": "410de5c1f06c0a08ee94631bff9ac53f4149ccd5b8fcadb974dc323b9f7a5faf"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-d682aea58b6f"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-01498903b9e9"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-95a7616a913d"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261010T181300Z/call-4baf77e5be71"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261010T181300Z/job-15958ba3d8bb"
+            }
+          ],
+          "id": "oc-5a0e466a2845/reduces_to_known:other_known"
+        }
+      ],
+      "exact_signature": false,
+      "jaccard": 0.625,
+      "kill_codes": [
+        "reduces_to_known:other_known"
+      ],
+      "kill_detail": "reduced to other_known: Known form: sequential greedy (local-MAP) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions.",
+      "legacy": true,
+      "outcome": "dead",
+      "override": false,
+      "record_id": "oc-5a0e466a2845",
+      "run": "run-20261010T181300Z",
+      "terminal_stage": "S2",
+      "tfidf": 0.2409,
+      "title": "Switched Koopman Repertoire: in-context identification of a growing bank of EDMD operators with innovation-gated switching"
+    },
+    {
+      "card_id": "card-bd36b4f5",
+      "causes": [
+        {
+          "code": "reduces_to_known:other_known",
+          "detail": "reduced to other_known. Mapping: Repair the parent's mapping with exemplar-based leader clustering (Hartigan's leader algorithm, or BSAS with a point representative and an arbitrary proximity measure). Equivalently, use online sequential RANSAC with a one-point minimal solver. Neither needs a metric, a common feature space or a summed centroid. (1) The datum is the episode pair j = (x_j, y_j). The model family is learned: the hypothesis M_a instantiated from one exemplar a = (x_a, y_a) predicts, at any source x, the point mu_a(x) = E[x] + T(E[x_a] -> E[x]) delta_a. (2) The inlier residual of j under M_a is res(a, j) = ||mu_a(x_j) - E[y_j]|| = ||T_aj delta_a - delta_j||. That is exactly the gap in u1, so Pred(a, j) is the RANSAC inlier test res <= tau. It is also the leader-algorithm dissimilarity between the leader exemplar a and point j. Both families allow a non-symmetric, non-transitive dissimilarity, because only leader-to-point comparisons are made. (3) The anchor (x*, y*) is the leader / incumbent hypothesis, held as its minimal sample (an exemplar, as in Hartigan's leader and in RANSAC). m is its inlier count. u2 is leader assignment / inlier counting against the incumbent. (4) H is the outlier buffer (DenStream o-micro-clusters), holding singleton exemplars in a FIFO of size K. s_H counts each pending exemplar's inliers among buffered points: each buffered point is a candidate hypothesis scored on the buffer (u3). (5) u4 is hypothesis replacement by inlier support: a candidate whose support reaches the incumbent's count replaces it. This is the standard keep-the-best-consensus rule of sequential/preemptive RANSAC, evaluated online. Reinserting the loser into the buffer is ordinary bookkeeping that keeps a rejected hypothesis as a candidate, as in Misra-Gries / Space-Saving candidate replacement. (6) u5 is the one-pass inlier reabsorption / outlier-buffer re-check after a model change. (7) r1 is the K-slot FIFO exact-match cache (hard equality-kernel attention). (8) r2 is the decode of the incumbent model at the query, softmax(-beta ||E[v] - mu_*(x_q)||^2): a Gaussian-kernel output layer around the analogy completion. The completion itself is the parallel-transport analogy of computational anatomy (transporting a displacement from one base point to another, as in Schild's ladder / Lorenzi-Pennec). The connection is linear in the displacement and Rodrigues-exponentiated per SO(3) block. (9) The pretraining losses L_tr, L_sep and L_out are contrastive margin hinge losses on the inlier residual plus softmax cross-entropy: metric / model learning for the RANSAC model family. Nothing is learned in context. Numeric check: reduction claim other_known (verified): numeric check confirms equivalence (max_abs_diff 5.218048215738236e-15) Critic's argument: Checking the broken invariants against the equations: u1 is indeed a non-transitive pairwise residual with no common feature space, u4/u5 do keep an exemplar rather than (N, LS), and r2 is non-affine in E[x_q]. So the parent's centroid-based BSAS/BIRCH mapping no longer fits literally, and the card's rebuttal of the per-token gauge repair is correct. However, the card attacked the wrong repair. None of the three invariants is essential to the parent family. Hartigan's leader algorithm and BSAS with point representatives keep exemplar leaders and accept arbitrary, non-metric dissimilarities, because they only ever compare a leader with a point. Online one-point RANSAC is exactly the scheme here: an exemplar instantiates a hypothesis, Pred is the inlier test on the hypothesis' prediction residual, support counts decide which hypothesis is kept, and inliers are reabsorbed after a change. Non-transitivity of Pred is normal for RANSAC inlier relations and does not distinguish the mechanism. The card's RANSAC rebuttal lists only a learned hypothesis class, online operation, no refitting and order-dependent switching. These are bookkeeping and model-class choices, not a new update law. The query-dependent transport decode is the parallel-transport analogy from geometric statistics, now with a learned connection. The closest repair, and the one that maps, is online exemplar-leader / one-point RANSAC with a learned model class, an outlier buffer, a FIFO cache and a transport-analogy decode. The argument does not hold: this is a hand-assembled symbolic pipeline of known parts with a more expressive learned residual, and it would not surprise a researcher in those areas.",
+          "evidence": [
+            {
+              "kind": "reduction_critic",
+              "ref": "run-20261011T011300Z/artifacts/reduction_critic/card-bd36b4f5-v7-728a9e.json",
+              "sha256": "b73a2a5b6a4adb1da83a1476ef21255c42335782669f6765aec7993bff3226aa"
+            },
+            {
+              "kind": "prior_art",
+              "ref": "run-20261011T011300Z/artifacts/prior_art/card-bd36b4f5-v7-bd81d6.json",
+              "sha256": "7bd594fd6b692b9f0cf6507ed49c47a3d97d229346c1b862a7606b395dae385e"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T011300Z/call-a950240b738f"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T011300Z/call-4a9cd1d8a3bb"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T011300Z/call-749b3db70dab"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T011300Z/call-ff0e3cf6cdb6"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T011300Z/job-1b1074739a8c"
+            }
+          ],
+          "id": "oc-4acac46b8e81/reduces_to_known:other_known"
+        }
+      ],
+      "exact_signature": false,
+      "jaccard": 0.6154,
+      "kill_codes": [
+        "reduces_to_known:other_known"
+      ],
+      "kill_detail": "reduced to other_known: Repair the parent's mapping with exemplar-based leader clustering (Hartigan's leader algorithm, or BSAS with a point representative and an arbitrary proximity measure).",
+      "legacy": true,
+      "outcome": "dead",
+      "override": false,
+      "record_id": "oc-4acac46b8e81",
+      "run": "run-20261011T011300Z",
+      "terminal_stage": "S2",
+      "tfidf": 0.0453,
+      "title": "Holonomy-Gated Consolidation: an in-context rule is held as one exemplar that is parallel-transported to each query along a learned non-abelian connection, consolidated by pairwise transport agreement, and returned to the episodic store when outvoted"
+    },
+    {
+      "card_id": "card-c8ef549e",
+      "causes": [
+        {
+          "code": "obligation_failed:capacity_exact_recall_orthonormal_and_random_codes",
+          "detail": "executed check violated stated obligation 'capacity_exact_recall_orthonormal_and_random_codes' (replayed): Orthonormal d=64 recall over K=1..64 (20 random bijections each) has minimum 1.0000; random unit codes at d=64 pooled over 5000 episodes give mean recall 0.7651 at K=8 and 0.6245 at K=64; log2(K!) is 15.3 and 296.0 bits against 262144 state bits.; counterexample {\"failures\": [\"random K=8 mean recall 0.7651 < 0.9\", \"random K=64 mean recall 0.6245 > 0.5\"], \"d\": 64, \"orthonormal_min_recall\": 1.0, \"orthonormal_worst_K\": null, \"random_mean_recall_K8\": 0.76505, \"random_mean_recall_K64\": 0.62446875, \"seeds\": [0, 1, 2, 3, 4], \"episodes_per_seed\": 1000}",
+          "evidence": [
+            {
+              "kind": "s3_gate",
+              "ref": "run-20261011T042400Z/artifacts/s3_gate/card-c8ef549e-v8-b109c6.json",
+              "sha256": "3604b6ecce22441a79faf304e5a614d9937e4a9259447bbada29808de706bd66"
+            },
+            {
+              "kind": "judges",
+              "ref": "run-20261011T042400Z/artifacts/judges/card-c8ef549e-v8-440d6b.json",
+              "sha256": "1abd650651b47ba3ef3f4da218750975337e6b9f7e03301739aaca4b4117cd32"
+            },
+            {
+              "kind": "disproof",
+              "ref": "run-20261011T042400Z/artifacts/disproof/card-c8ef549e-v8-8a303c.json",
+              "sha256": "5f703e95839fb1a3eb81ca217a70b47ca57f73d26ecff6f5f6f56c1414fb6695"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-2afb261b4f9f"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-cbd48a5fe4ed"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-86ce4f896e9e"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-a2dba821f704"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-fc07ee8b38ea"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-5f0f04ebd775"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-ab87589c6ed0"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-6474f86e02c5"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-edf799471264"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-6cfcc5485ec5"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-365f57b356ab"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-7d6facf3b740"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-65d4eed470c4"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-8593b4b93051"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-e59f7c7977a1"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-fac88f0482c5"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-b5208cd4d0b5"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-52adbf15a24d"
+            }
+          ],
+          "id": "oc-3a20482beb85/obligation_failed:capacity_exact_recall_orthonormal_and_random_codes"
+        },
+        {
+          "code": "obligation_failed:elimination_inference_theorem_and_empirical_gap",
+          "detail": "executed check violated stated obligation 'elimination_inference_theorem_and_empirical_gap' (replayed): Exhaustive over all 40320 bijections of 8 orthonormal letters (7 shown pairs in fixed key order, WLOG by letter relabeling) found no failure; random unit codes at d=64 over 5000 episodes give accuracy 0.5626 on the unshown letter, against the 0.9 threshold.; counterexample {\"random_codes_d\": 64, \"K\": 8, \"accuracy\": 0.5626, \"episodes\": 5000, \"seeds\": [0, 1, 2, 3, 4]}",
+          "evidence": [
+            {
+              "kind": "s3_gate",
+              "ref": "run-20261011T042400Z/artifacts/s3_gate/card-c8ef549e-v8-b109c6.json",
+              "sha256": "3604b6ecce22441a79faf304e5a614d9937e4a9259447bbada29808de706bd66"
+            },
+            {
+              "kind": "judges",
+              "ref": "run-20261011T042400Z/artifacts/judges/card-c8ef549e-v8-440d6b.json",
+              "sha256": "1abd650651b47ba3ef3f4da218750975337e6b9f7e03301739aaca4b4117cd32"
+            },
+            {
+              "kind": "disproof",
+              "ref": "run-20261011T042400Z/artifacts/disproof/card-c8ef549e-v8-8a303c.json",
+              "sha256": "5f703e95839fb1a3eb81ca217a70b47ca57f73d26ecff6f5f6f56c1414fb6695"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-2afb261b4f9f"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-cbd48a5fe4ed"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-86ce4f896e9e"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-a2dba821f704"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-fc07ee8b38ea"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-5f0f04ebd775"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-ab87589c6ed0"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-6474f86e02c5"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-edf799471264"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-6cfcc5485ec5"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-365f57b356ab"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-7d6facf3b740"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-65d4eed470c4"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-8593b4b93051"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-e59f7c7977a1"
+            },
+            {
+              "kind": "job",
+              "ref": "run-20261011T042400Z/job-fac88f0482c5"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-b5208cd4d0b5"
+            },
+            {
+              "kind": "call",
+              "ref": "run-20261011T042400Z/call-52adbf15a24d"
+            }
+          ],
+          "id": "oc-3a20482beb85/obligation_failed:elimination_inference_theorem_and_empirical_gap"
+        }
+      ],
+      "exact_signature": false,
+      "jaccard": 0.6,
+      "kill_codes": [
+        "obligation_failed:capacity_exact_recall_orthonormal_and_random_codes",
+        "obligation_failed:elimination_inference_theorem_and_empirical_gap"
+      ],
+      "kill_detail": "gate rule: check_violation; executed check violated stated obligation 'capacity_exact_recall_orthonormal_and_random_codes' (replayed): Orthonormal d=64 recall over K=1..64 (20 random bijections each) has minimum 1.0000; random unit codes at d=64 pooled over 5000 episodes give mean recall 0.7651 at K=8 and 0.6245 at K=64; log2(K!) is 15.3 and 296.0 bits against 262144 state bits.; counterexample {\"failures\": [\"random K=8 mean recall 0.7651 < 0.9\", \"random K=64 mean recall 0.6245 > 0.5\"], \"d\": 64, \"orthonormal_min_recall\": 1.0, \"orthonormal_worst_K\": null, \"random_mean_recall_K8\": 0.76505, \"r...",
+      "legacy": true,
+      "outcome": "dead",
+      "override": false,
+      "record_id": "oc-3a20482beb85",
+      "run": "run-20261011T042400Z",
+      "terminal_stage": "S3",
+      "tfidf": 0.1194,
+      "title": "Householder Rebinding Memory: in-context bijections by minimal isometric writes"
+    }
+  ],
+  "signature": {
+    "signature": "sig-2c533464000dbc1c",
+    "skeleton": {
+      "learn": [
+        "gradient_training",
+        "in_context_write",
+        "no_training"
+      ],
+      "read": [
+        "argmax_select",
+        "bilinear_product",
+        "count_increment",
+        "outer_product_write",
+        "softmax_read",
+        "threshold_branch"
+      ],
+      "state": [
+        [
+          "V",
+          "d"
+        ],
+        [
+          "2d"
+        ],
+        [
+          "d",
+          "d"
+        ],
+        [
+          "d",
+          "d"
+        ],
+        [
+          1
+        ]
+      ],
+      "write": [
+        "additive_accumulate",
+        "append_slot",
+        "argmax_select",
+        "bilinear_product",
+        "distance_kernel",
+        "normalize",
+        "outer_product_write",
+        "threshold_branch"
+      ]
+    },
+    "source": "extracted",
+    "tokens": [
+      "w:additive_accumulate",
+      "w:append_slot",
+      "w:argmax_select",
+      "w:bilinear_product",
+      "w:distance_kernel",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:threshold_branch",
+      "r:argmax_select",
+      "r:bilinear_product",
+      "r:count_increment",
+      "r:outer_product_write",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "l:no_training",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+    ],
+    "version": 1
+  }
+}

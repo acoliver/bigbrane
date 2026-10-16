@@ -1,0 +1,43 @@
+{
+  "confidence": 0.55,
+  "difference_if_any": "At rho < 1 the write is a soft, state-dependent version of the bimap insert. Displaced entries keep a fraction (1 - rho x_i) or (1 - rho y_j), and the new cell's increment rho(x_i y_j + x_i col_j + y_j row_i) is quadratic in the state. This produces 2x2 cross-ratios of C that depend on other cells and on write order. The difference is real at the level of the memory matrix. The card claims nothing at the readout level, and every listed capability (one-shot recall, overwrite, ownership transfer, elimination, capacity) is already produced by the hard bimap cache with a free-value fallback. The learning rule is BPTT on the rates, which is standard, so there is no LEARNING_RULE difference.",
+  "family": "exact_match_cache",
+  "family_why": "With rho near 1, each pulse stores (w_{t-1} -> w_t) in a capped content-addressed table and removes the conflicting entries in the row and the column. The readout returns the value stored under the query key, so this is a soft bijective exact-match cache. The soft weights and state-dependent factors act like gates or decays on that form.",
+  "mapping": "Known form: a capacity-capped, one-to-one (bimap) bigram cache with soft confidence weights. It is an exact-match key->value table with an inverse-uniqueness constraint, so writing key->value deletes any other key holding that value and any other value held by that key. The card's symbols map onto it as follows. The key is w_{t-1} = i and the value is w_t = j. The record (i, j, C_ij, tau_ij) is a table entry whose weight is C_ij. The gate rho_ij > kappa decides which type pairs are cached. P_max with min-weight eviction is the capacity policy. The readout p(v) = C[q,v] + x_q g(v) returns the value stored under key q, and the leftover mass falls back to values not yet owned (y_v > 0), which is the bimap's inverse lookup. Exact coincidence at rho -> 1: (1) Fresh pair: C_ij = 1. (2) i bound to a, j free: C_ij += row_i = 1 and C_ia *= (1 - y_j) = 0, so map[i] := j. (3) j bound to q, i free: C_ij += col_j = 1 and C_qj *= (1 - x_i) = 0, so the inverse is reassigned and q is released. (4) Both committed: x_i = y_j = 0, so nothing is written. This gives the textbook bimap insert with 'skip if both sides are owned'. For rho in [0.9, 1), the trained regime of A1, every entry differs from that hard table by O(1 - rho) residual weights. That residual is the only source of the cross-ratio order dependence.",
+  "prior_art_delta": null,
+  "radical_enough": false,
+  "reduces_to": "other_known",
+  "reduction_check": {
+    "comparisons": [
+      {
+        "comparator": "hard capped bimap bigram cache (bijective exact-match key->value table, skip if both sides owned, oldest-first eviction) with free-value fallback routing u*(y+eta)",
+        "counted": true,
+        "family": "other_known",
+        "inputs_tested": 200,
+        "kind": "claimed_known_form",
+        "max_abs_diff": 0.08733750181398439,
+        "reference": "textbook bidirectional map (bimap) insert with inverse-uniqueness, used as a capped bigram/exact-match cache",
+        "within_tolerance": false
+      },
+      {
+        "comparator": "confidence-weighted capped bimap cache: entry weight rho_ij on insert, conflicting entries deleted, residual 1-w routed to free values; min-weight eviction",
+        "counted": true,
+        "family": "other_known",
+        "inputs_tested": 200,
+        "kind": "repaired_known_form",
+        "max_abs_diff": 0.0791589588327527,
+        "reference": "bimap cache extended with per-entry confidence weights (soft cache entries) and weight-based eviction",
+        "within_tolerance": false
+      }
+    ],
+    "job_id": "job-bf095b15bbd6",
+    "notes": "Outputs are next-token probabilities (order one), compared at every step over all V. Key->value rho ~0.9-0.99 (A1); all other type pairs are gated. Order 1-rho differences are expected away from the rho->1 limit.",
+    "outcome": "refuted",
+    "reduces_to": "other_known",
+    "tolerance": 1e-06
+  },
+  "reduction_outcome": "refuted",
+  "textbook_transplant": true,
+  "textbook_why": "The source construction is the explicit-Euler integration of mass-action rate equations for binding plus two strand-displacement (exchange) reactions under stoichiometric conservation, as written in the reaction-network literature. The card keeps that update unchanged. It triggers one unit-time step per token pair (the token stream substituted for continuous time), parameterizes the rate as k/(1+k) with a low-rank prior, caps the number of species and adds a readout. None of these changes the kinetics.",
+  "why": "Check 1: the broken invariant is true of update step 4 as written. The increment to C_ij and the factors (1 - rho x_i) and (1 - rho y_j) read the state, so the recursion is quadratic and the writes do not commute. Any per-cell-kernel Sinkhorn plan has fixed cross-ratios, and C does not, so the separation from the parent's count-cache/Sinkhorn family holds.\n\nCheck 2, repairs within out-of-scope families: the closest repair I tried is two delta rules on a slack-augmented matrix. One acts on row i with beta = rho y_j and target e_j; the other acts on column j with beta' = rho x_i and target e_i. It reproduces the row and column displacement factors. It fails on the increment: the delta rule gives rho y_j(1 - C_ij) + rho x_i(1 - C_ij), while the card gives rho[y_j(1 - C_ij) + x_i col_j]. It also fails on the free-mass factor, and its betas would have to be read from the state, which no gated DeltaNet or SSM does. Linear attention, SSMs and one-sided delta rules fail for the reasons the card gives, so the why_unrepairable argument holds against them.\n\nWhy it still reduces: the argument does not address the data-structure reading. In the trained regime (rho >= 0.9) the pulse is a soft bimap insert into a capped bigram table, and at rho -> 1 it equals that insert exactly. The novel residue is O(1 - rho) order dependence in the memory, which no capability uses. That is a softened textbook data structure, not a mechanism that would surprise someone who knows caches and assignment networks.\n\nHistory: the earlier runs of this card died at S3 on the equal-rho eviction claim and on the 3000-sequence training budget. This version changes both claims (rho-ordered survivors and a budget of 10,000 sequences), so it does not repeat those recorded causes. Neighbours f37de377 and d694c9fe are different mechanisms (autocatalytic attractors; equilibrium binding with Hebbian writes)."
+}

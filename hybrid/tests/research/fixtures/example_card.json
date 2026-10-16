@@ -1,0 +1,100 @@
+{
+  "id": "card-5a1e0c7d",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-7f3a9c2e1b04",
+  "lens": "toy-fixture",
+  "title": "[TOY FIXTURE, NOT A RESEARCH RESULT] Phase-bound running sum",
+  "summary": "Test fixture only. A single complex accumulator where each token adds its value rotated by a fixed key phase. It shows the card shape and a runnable toy example. It makes no claim about sequence learning.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "S",
+        "type": "complex scalar",
+        "shape": [],
+        "meaning": "Running sum of all written values, each rotated by its key phase."
+      },
+      {
+        "name": "N_slots",
+        "type": "integer constant",
+        "shape": [],
+        "meaning": "Number of distinct key phases on the unit circle. Fixed by the design, not learned."
+      }
+    ],
+    "update": [
+      {
+        "name": "write",
+        "latex": "S_t = S_{t-1} + v_t\\, e^{i\\theta(k_t)}",
+        "plain": "S_t = S_{t-1} + v_t * exp(i * theta(k_t))"
+      },
+      {
+        "name": "phase",
+        "latex": "\\theta(k) = \\frac{2\\pi k}{N_{\\text{slots}}}",
+        "plain": "theta(k) = 2 * pi * k / N_slots"
+      }
+    ],
+    "readout": [
+      {
+        "name": "recall",
+        "latex": "\\hat{y}(q) = \\operatorname{Re}\\left(S_T\\, e^{-i\\theta(q)}\\right)",
+        "plain": "y_hat(q) = Re(S_T * exp(-i * theta(q)))"
+      }
+    ],
+    "learning": {
+      "description": "No parameters are learned. The phase map theta is a fixed codebook.",
+      "few_shot_argument": "Toy only. A fixed codebook needs no training data to bind a key to a phase, so one write is enough for exact recall when a single pair is stored. The card makes no claim beyond that case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1) in n and d",
+      "memory": "O(1) complex scalar",
+      "total_sequence": "O(n)",
+      "constants_notes": "One complex multiply-add per token for the write and one per query for the readout."
+    },
+    "sample_efficiency": {
+      "mechanism": "The key codebook is fixed, so no examples are needed to learn the binding.",
+      "prediction": {
+        "metric": "writes_to_exact_recall_single_pair",
+        "value": 1,
+        "statement": "With one stored pair, the readout at its key returns its value after one write."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "single key-value recall after one write",
+        "prediction": "Exact recall of the stored value at its own key. Accuracy >= 0.9 at m = 2."
+      },
+      {
+        "task": "recall with three stored pairs",
+        "prediction": "Interference from other pairs is reported by the toy example and is not zero."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "Fourier-feature linear attention",
+      "relation": "A running sum of key-feature-weighted values with a fixed feature map.",
+      "claimed_difference": "The state is a single complex scalar, not an outer-product matrix. This is a toy difference and is not a claim of novelty."
+    }
+  ],
+  "falsifiers": [
+    "With one pair stored, the readout at its key differs from the stored value by more than 1e-9. The candidate beats the n-gram by less than 0.1 accuracy at m = 1.",
+    "With three pairs stored, the readout error at any key exceeds the sum of the absolute values of the other stored values."
+  ],
+  "toy_example": {
+    "description": "Stores three pairs, then reads each key back and reports the state norm.",
+    "python": "import cmath, json, math\nN_SLOTS = 8\n\ndef phase(k):\n    return cmath.exp(1j * 2 * math.pi * k / N_SLOTS)\n\npairs = [(0, 1.0), (3, -0.5), (5, 2.0)]\nstate = 0j\nfor k, v in pairs:\n    state += v * phase(k)\n\ndef recall(q):\n    return (state * phase(q).conjugate()).real\n\nexpected = {\"recall_key_0\": recall(0), \"recall_key_3\": recall(3), \"recall_key_6\": recall(6), \"state_norm\": abs(state)}\nprint(json.dumps({k: round(v, 9) for k, v in expected.items()}, sort_keys=True))\n",
+    "expected": {
+      "recall_key_0": -0.060660172,
+      "recall_key_3": -1.207106781,
+      "recall_key_6": 1.767766953,
+      "state_norm": 1.768807411
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

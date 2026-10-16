@@ -1,0 +1,73 @@
+# Known limits for arm A2, "break an assumption of a known limit" (DISCOVERY-PIPELINE-PLAN.md section 6.1).
+#
+# Each limit names its source and lists its assumptions by id. An A2 card must name one limit and one assumption id,
+# quote that assumption's text, and state how its mechanism breaks it and what the break costs. The G stage checks
+# the quote against the text below, so the card cannot break an assumption the result never made. Texts of the
+# copy, Dyck, INDEX and sample laws follow hybrid/math/conservation.py, where stage C checks the same laws.
+# Add limits over time; keep ids stable, since cards and outcome records cite them.
+
+[[limits]]
+id = "jelassi_copy"
+name = "Copying needs state that grows with the string (Jelassi et al. 2024, Theorem 2.7)"
+source = "Jelassi, Brandfonbrener, Kakade, Malach, 'Repeat After Me: Transformers are Better than State Space Models at Copying', ICML 2024, arXiv 2402.01032"
+statement = "A model that reads a string into a state of S bits and then writes the copy from that state has per-string error above 1 - 2^S / D^L on uniform strings of length L over D tokens."
+assumptions = [
+  { id = "uniform_strings", text = "the string is uniform over D^L values" },
+  { id = "state_only", text = "the output depends on the input only through the state after the separator (a fixed-state or generalized state space model)" },
+  { id = "per_string_accuracy", text = "accuracy is per string (every token of the copy right)" },
+]
+
+[[limits]]
+id = "hahn_2020"
+name = "Self-attention cannot robustly model parity or Dyck-2 at fixed size (Hahn 2020)"
+source = "Hahn, 'Theoretical Limitations of Self-Attention in Neural Sequence Models', TACL 8, 2020, https://aclanthology.org/2020.tacl-1.11/"
+statement = "Transformers with a fixed number of layers and heads cannot model parity or Dyck-2 robustly as the input length grows, because changing one input symbol moves the output by an amount that shrinks with length."
+assumptions = [
+  { id = "fixed_depth_heads", text = "the number of layers and heads is fixed and does not grow with the input length" },
+  { id = "bounded_attention", text = "attention weights are soft or hard attention whose influence of a single position is bounded as length grows" },
+  { id = "single_pass", text = "the model reads the input once with fixed computation per position, with no intermediate steps written out" },
+]
+
+[[limits]]
+id = "merrill_sabharwal_tc0"
+name = "Log-precision transformers sit in uniform TC0 (Merrill and Sabharwal 2023)"
+source = "Merrill and Sabharwal, 'The Parallelism Tradeoff: Limitations of Log-Precision Transformers', TACL 2023, arXiv 2207.00729"
+statement = "Transformers whose arithmetic uses O(log n) bits of precision are simulated by constant-depth logspace-uniform threshold circuits (uniform TC0), so they cannot solve problems outside TC0 (unless TC0 = NC1 and related collapses) such as composing permutations or evaluating boolean formulas."
+assumptions = [
+  { id = "log_precision", text = "arithmetic uses O(log n) bits of precision" },
+  { id = "constant_depth", text = "the computation has constant depth: a fixed number of layers independent of the input length" },
+  { id = "no_scratchpad", text = "the answer is produced without intermediate tokens (no chain of thought), so compute per answer is fixed" },
+]
+
+[[limits]]
+id = "chomsky_finite_state"
+name = "Finite-state models cannot generate unbounded center embedding (Chomsky 1956)"
+source = "Chomsky, 'Three models for the description of language', IRE Transactions on Information Theory 2(3), 1956"
+statement = "A finite-state Markov process cannot generate a language with unbounded nested dependencies (a^n b^n, center embedding), because it would need a distinct state for each depth."
+assumptions = [
+  { id = "finite_states", text = "the process has a finite number of states fixed before the input is seen" },
+  { id = "unbounded_nesting", text = "the language allows nesting to any depth" },
+  { id = "exact_generation", text = "the model must generate exactly the strings of the language, with no error allowed at large depth" },
+]
+
+[[limits]]
+id = "streaming_index"
+name = "INDEX: one-pass memory lower bound (Kremer, Nisan, Ron 1999)"
+source = "Kremer, Nisan, Ron, 'On randomized one-round communication complexity', Computational Complexity 8, 1999, doi 10.1007/s000370050018"
+statement = "A stream holds n bits x, then one query i asks for x_i. A single left-to-right pass with S bits of state answers with error at most e on every query only if S >= n * (1 - h2(e)); S >= n for e = 0."
+assumptions = [
+  { id = "uniform_after", text = "x is uniform over {0,1}^n and the query comes after all of x" },
+  { id = "one_pass", text = "one pass, no access to x after the state is written (one-way communication from the stream prefix to the query)" },
+  { id = "per_query_error", text = "e < 1/2 is the error on each query; h2 is the binary entropy" },
+]
+
+[[limits]]
+id = "sample_bound"
+name = "Identifying a hypothesis needs log2|H| bits of evidence (counting and Fano)"
+source = "counting and Fano's inequality, as stated in hybrid/math/conservation.py law 'sample' (plan section 5.2)"
+statement = "Identifying one of |H| hypotheses needs log2|H| bits. With m examples of at most c bits each and P bits supplied by the prior or built-in structure, exact identification needs m >= (log2|H| - P) / c."
+assumptions = [
+  { id = "uniform_target", text = "the target is uniform over H (worst case over the class is at least this)" },
+  { id = "bits_per_example", text = "each example carries at most c bits about the target (for a label from k classes, c <= log2 k)" },
+  { id = "prior_counted", text = "built-in structure, pretrained parts and hand-set primitives count as prior bits P" },
+]

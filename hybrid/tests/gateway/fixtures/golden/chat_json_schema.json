@@ -1,0 +1,9 @@
+{
+  "model": "MODEL",
+  "messages": [
+    {"role": "system", "content": "Answer as JSON."},
+    {"role": "user", "content": "Capital of France?"}
+  ],
+  "response_format": {"type": "json_schema", "json_schema": {"name": "capital", "strict": true, "schema": {
+    "type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"], "additionalProperties": false}}}
+}

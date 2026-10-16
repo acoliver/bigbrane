@@ -1,0 +1,86 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Sorted archive with appended episodes",
+  "summary": "Every episode is appended to an archive that stays sorted by its first coordinate; a probe finds the nearest archived episode by position in the sorted order.",
+  "core_idea": "Append episodes to a sorted archive and answer probes by sorted position.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "tessaly",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Archive of episodes, appended in arrival order and kept sorted by the first coordinate."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "tessaly_t = sort(append(tessaly_(t-1), e_t))",
+        "plain": "tessaly_t = sort(append(tessaly_(t-1), e_t))"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = tessaly_t[rank(q_t)]",
+        "plain": "y_t = tessaly_t[rank(q_t)]"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is learned; the archive keeps every episode.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(log n)",
+      "memory": "O(n d)",
+      "total_sequence": "O(n log n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "One stored pair is read back exactly."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "single pair recall",
+        "prediction": "Exact recall of the stored value at its own key, for every stored pair."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Sorted archives are a common index structure.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A stored pair is read back wrongly.",
+    "The archive loses an episode."
+  ],
+  "toy_example": {
+    "description": "Sorts three episodes.",
+    "python": "import json\narc = sorted([(3, 'c'), (1, 'a'), (2, 'b')])\nprint(json.dumps({'first': arc[0][1], 'size': len(arc)}))\n",
+    "expected": {
+      "first": "a",
+      "size": 3
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

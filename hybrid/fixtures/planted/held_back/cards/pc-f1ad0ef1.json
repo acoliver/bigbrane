@@ -1,0 +1,155 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Ninety-six square byte tape with a stepping write pointer and a forward read pointer",
+  "summary": "A circular tape of 96 byte squares receives string symbols from a write pointer that steps once per symbol; after the separator a read pointer starts at the first written square and steps forward, emitting one symbol per step. Pairs are written at the square named by the address. A 20-bit word tracks bracket types. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Lay a string on a circular byte tape with a stepping write pointer and replay it with a forward read pointer; pairs use squares named by their addresses.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Tb",
+        "type": "circular array of bytes",
+        "shape": [
+          96
+        ],
+        "meaning": "Tape of 96 squares of 8 bits."
+      },
+      {
+        "name": "hw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Write pointer, a square index modulo 96."
+      },
+      {
+        "name": "hr",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Read pointer, a square index modulo 96."
+      },
+      {
+        "name": "bw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket word of open types, 20 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "string write",
+        "latex": "Tb[hw] \\leftarrow s_t,\\; hw \\leftarrow (hw - 1) \\bmod 96",
+        "plain": "for a string symbol: Tb[hw] = code of s_t, then hw = (hw - 1) mod 96; at a start mark hw = 0"
+      },
+      {
+        "name": "pair write",
+        "latex": "Tb[\\mathrm{id}(z_t)] \\leftarrow y_t",
+        "plain": "for a pair: Tb[id(address)] = y_t (48 + id for the second table)"
+      },
+      {
+        "name": "bracket word",
+        "latex": "bw \\leftarrow 2\\,bw + b,\\quad bw \\leftarrow \\lfloor bw/2 \\rfloor",
+        "plain": "an opener of type b: bw = 2 bw + b; a closer: bw = floor(bw / 2)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "replay",
+        "latex": "\\hat{s} = Tb[hr],\\; hr \\leftarrow (hr + 1) \\bmod 96",
+        "plain": "at the separator hr = 0, the square of the first symbol; each output is Tb[hr], then hr = (hr + 1) mod 96"
+      },
+      {
+        "name": "pair read",
+        "latex": "\\hat{y} = Tb[\\mathrm{id}(a)]",
+        "plain": "a probe a reads its square; chained assignments and f(g(x)) reread the named square, at most 8 times"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = bw \\bmod 2",
+        "plain": "the legal closer has the type in the lowest bit of bw"
+      }
+    ],
+    "learning": {
+      "description": "The role of each symbol is the role with the highest posterior given m example episodes, from a uniform prior and a likelihood of 1 for consistent answers and a small floor otherwise.",
+      "few_shot_argument": "A single consistent episode pins each symbol's role; m = 6 example episodes per task suffice in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "One square access and one pointer step per symbol; 96 bytes, two pointers and the bracket word, fixed in n."
+    },
+    "sample_efficiency": {
+      "mechanism": "Posterior over symbol roles from m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction: the write pointer lays the L symbols down and the read pointer replays them from the first one; exact at L = 8, 32 and 64 over up to 256 symbols."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Each address id below 96 owns a square; exact at K = 8, 32 and 64."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "Bracket word: exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Table g in squares 48..79 and table f in squares 0..31; two reads; exact at sizes 4, 16 and 32. At most 8 chained reads; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "Strings longer than 96 symbols overwrite their own start on the circular tape: exact copy fails at L = 97."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The role posterior learns every small case from m = 6 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A copy episode at L = 64 is replayed with an error.",
+    "A pair write changes a square other than the one its address names."
+  ],
+  "toy_example": {
+    "description": "Writing a four-symbol string and the positions of the write pointer.",
+    "python": "import json\nTb = [0] * 96\nhw = 0\npointers = []\nfor s in [12, 200, 7, 33]:\n    Tb[hw] = s\n    hw = (hw - 1) % 96\n    pointers.append(hw)\nprint(json.dumps({\"pointers\": pointers, \"square_0\": Tb[0]}))\n",
+    "expected": {
+      "pointers": [
+        95,
+        94,
+        93,
+        92
+      ],
+      "square_0": 12
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

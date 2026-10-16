@@ -1,0 +1,113 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Shrink a square map, then nudge it toward the new payload by the size of its miss",
+  "summary": "A square map is read with a unit-length probe by a matrix-vector product. Before that, at every symbol, the map is first scaled down by a factor computed from the symbol, its guess for the symbol's unit-length locator is compared with the symbol's payload, and the map moves toward the payload by a step-sized share of the miss along that locator.",
+  "core_idea": "Scale a square map by a symbol-dependent factor and correct it along the new locator by a share of the prediction error toward the new payload, reading it with a unit-length probe.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "G",
+        "type": "real matrix",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "meaning": "Square map from unit-length locator vectors to payload vectors; scaled and corrected once per symbol."
+      }
+    ],
+    "update": [
+      {
+        "name": "map correction",
+        "latex": "G_t = \\rho_t G_{t-1} + \\eta_t (p_t - \\rho_t G_{t-1} l_t) l_t^{\\top}",
+        "plain": "G_t = rho_t G_(t-1) + eta_t * outer(p_t - rho_t G_(t-1) l_t, l_t): the prediction error times the locator"
+      },
+      {
+        "name": "per-symbol quantities",
+        "latex": "l_t = \\frac{U_l h_t}{\\lVert U_l h_t \\rVert},\\; p_t = U_p h_t,\\; \\rho_t = \\sigma(u_\\rho^{\\top} h_t),\\; \\eta_t = \\sigma(u_\\eta^{\\top} h_t)",
+        "plain": "locator l_t = U_l h_t scaled to unit length, payload p_t = U_p h_t, scale factor rho_t = sigmoid(u_rho . h_t), step eta_t = sigmoid(u_eta . h_t); h_t = Emb[s_t]"
+      }
+    ],
+    "readout": [
+      {
+        "name": "prediction",
+        "latex": "\\hat{s}_{t+1} = \\arg\\max_j (Z o_t)_j",
+        "plain": "scores Z o_t over the V symbols for the next symbol"
+      },
+      {
+        "name": "probe reading",
+        "latex": "o_t = G_t f_t,\\; f_t = \\frac{U_f h_t}{\\lVert U_f h_t \\rVert}",
+        "plain": "o_t = G_t f_t with the unit-length probe f_t"
+      }
+    ],
+    "learning": {
+      "description": "All projection matrices and offsets are fitted by gradient descent on the cross-entropy of the following symbol over a training corpus, with backpropagation through the full sequence.",
+      "few_shot_argument": "Nothing in the design helps with few examples; recall of 4 pairs takes about 2600 training sequences."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d^2 + d V)",
+      "memory": "Theta(d^2)",
+      "total_sequence": "Theta(n d^2 + n d V)",
+      "constants_notes": "Per symbol: one matrix-vector product for the guess, one rank-one correction, one reading, and the output map."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent; nothing in the design helps with few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 2600,
+        "statement": "Starting from random weights, 2600 training sequences of 4 pairs over 16 symbols reach recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "overwriting a binding",
+        "prediction": "With eta = 1, a locator written twice reads back the second payload exactly, since the correction cancels the first."
+      },
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "With hand-set orthonormal locators, rho = 1 and eta = 1, recall is exact for K <= d, and a rewritten locator replaces its earlier payload."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The operation count grows faster than linearly in n with d and V fixed.",
+    "With rho = eta = 1 and orthonormal locators, reading a rewritten locator returns a blend of its old and new payloads."
+  ],
+  "toy_example": {
+    "description": "One locator written twice, then a second locator at scale 0.25, with the first locator read back.",
+    "python": "import json\nG = [[0.0, 0.0], [0.0, 0.0]]\ndef step(G, l, p, rho, eta):\n    guess = [rho * (G[i][0] * l[0] + G[i][1] * l[1]) for i in range(2)]\n    miss = [p[i] - guess[i] for i in range(2)]\n    return [[rho * G[i][j] + eta * miss[i] * l[j] for j in range(2)] for i in range(2)]\nG = step(G, [0.0, 1.0], [4.0, -2.0], 1.0, 1.0)\nG = step(G, [0.0, 1.0], [1.0, 6.0], 1.0, 1.0)\nG = step(G, [1.0, 0.0], [2.0, 2.0], 0.25, 1.0)\no = [G[i][1] for i in range(2)]\nprint(json.dumps({\"reading_second_locator\": o, \"map\": G}))\n",
+    "expected": {
+      "reading_second_locator": [
+        0.25,
+        1.5
+      ],
+      "map": [
+        [
+          2.0,
+          0.25
+        ],
+        [
+          2.0,
+          1.5
+        ]
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

@@ -1,0 +1,20 @@
+{
+ "evidence_then": "learner failed at seed 0: KeyError: '__import__'",
+ "learner": "PARAMS = {}\n\ndef learn(layout, examples, seed):\n    K = 16\n    D = int(layout[\"D\"])\n    SEP = int(layout[\"SEP\"])\n    V = max(D, SEP) + 1\n    seqs = []\n    for ex in examples:\n        seq = [int(t) for t in ex[\"tokens\"]]\n        qs = ex[\"queries\"] if \"queries\" in ex else []\n        for r in range(len(qs)):\n            for q in qs:\n                pos = int(q[0])\n                if pos + 1 == len(seq):\n                    seq.append(int(q[1]))\n        for t in seq:\n            if t + 1 > V:\n                V = t + 1\n        seqs.append(seq)\n    rng = np.random.default_rng(seed)\n    A = rng.uniform(0.0, 1.0, (K, K))\n    A = A / A.sum(axis=1, keepdims=True)\n    B = rng.uniform(0.0, 1.0, (K, V))\n    B = B / B.sum(axis=1, keepdims=True)\n    prev = None\n    for it in range(100):\n        TA = np.zeros((K, K))\n        TB = np.zeros((K, V))\n        paths = []\n        for seq in seqs:\n            z = 0\n            path = []\n            for x in seq:\n                zn = int(np.argmax(A[z] * B[:, x]))\n                TA[z, zn] += 1.0\n                TB[zn, x] += 1.0\n                path.append(zn)\n                z = zn\n            paths.append(path)\n        if prev is not None and paths == prev:\n            break\n        prev = paths\n        for s in range(K):\n            ta = TA[s].sum()\n            if ta > 0:\n                A[s] = TA[s] / ta\n            tb = TB[s].sum()\n            if tb > 0:\n                B[s] = TB[s] / tb\n    return {\"A\": A.tolist(), \"B\": B.tolist(), \"V\": int(V)}\n\ndef init(layout, params):\n    PARAMS[\"A\"] = np.array(params[\"A\"], dtype=float)\n    PARAMS[\"B\"] = np.array(params[\"B\"], dtype=float)\n    PARAMS[\"V\"] = int(params[\"V\"])\n    return 0\n\ndef update(state, token):\n    A = PARAMS[\"A\"]\n    B = PARAMS[\"B\"]\n    x = int(token)\n    if x >= PARAMS[\"V\"] or x < 0:\n        x = PARAMS[\"V\"] - 1\n    z = int(state)\n    win = 0\n    best = -1.0\n    for j in range(16):\n        p = float(A[z, j]) * float(B[j, x])\n        if p > best:\n            best = p\n            win = j\n    return win\n\ndef predict(state):\n    A = PARAMS[\"A\"]\n    B = PARAMS[\"B\"]\n    z = int(state)\n    win = 0\n    best = -1.0\n    for v in range(PARAMS[\"V\"]):\n        s = float(A[z, 0]) * float(B[0, v])\n        for j in range(1, 16):\n            s = s + float(A[z, j]) * float(B[j, v])\n        if s > best:\n            best = s\n            win = v\n    return win\n",
+ "source": "runs/calibration-math-20261013T082935Z/k3-run1 O4.a attempt 3 (Claude Opus)",
+ "spec": {
+  "examples": 400,
+  "params": {
+   "D": 4
+  },
+  "seeds": [
+   0,
+   1,
+   2
+  ],
+  "size": 2,
+  "task": "copy",
+  "test_count": 500,
+  "threshold": 0.99
+ }
+}

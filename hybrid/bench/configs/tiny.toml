@@ -1,0 +1,57 @@
+# Small config for tests: every task, two train sizes, short budget, short scaling probe.
+seed = 1
+model_seed = 0
+n_test = 64
+train_sizes = [8, 32]
+baselines = ["gru"]
+parallel_jobs = 3
+image = "localhost/bigbrane/executor@sha256:7fa94b73a3f6fbd6b6544d075e24ff8bf28fae2662771e577a332348d4a00f1b"
+
+[budget]
+max_steps = 30
+max_epochs = 10
+batch_size = 16
+lr = 0.003
+
+[caps.candidate]
+wall_s = 600
+memory_mb = 2048
+pids = 128
+tmp_mb = 64
+
+[caps.evaluator]
+wall_s = 300
+memory_mb = 1024
+pids = 64
+tmp_mb = 64
+
+[scaling]
+task = "hmm"
+train_size = 8
+lengths_log2 = [6, 9]
+batch = 2
+repeats = 3
+warmup = 1
+seed = 7
+stop_after_s = 5.0
+tolerance = 0.5
+tail_points = 3
+
+[tasks.hmm]
+params = { n_states = 3, vocab = 6, rho = 0.9, eta = 0.6, length = 32 }
+target = { metric = "kl", op = "<=", value = 0.1 }
+
+[tasks.vom]
+params = { vocab = 4, split_probs = [1.0, 0.5, 0.3], alpha = 0.4, length = 48 }
+
+[tasks.recall]
+n_test = 32
+params = { k_values = [2, 8], n_keys = 16, n_values = 8, n_queries = 4 }
+target = { metric = "acc", op = ">=", value = 0.3, group = "2" }
+
+[tasks.compose]
+params = { n_types = 2, n_fillers = 3, max_depth = 3, length = 40 }
+
+[tasks.fewshot]
+n_test = 32
+params = { modulus = 7, shots = [2, 4], n_queries = 2, test_fraction = 0.3 }

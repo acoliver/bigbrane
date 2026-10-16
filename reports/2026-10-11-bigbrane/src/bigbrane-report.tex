@@ -1,0 +1,439 @@
+\input{preamble}
+\usepackage{amsmath,amssymb}
+\usepackage{needspace}
+\usetikzlibrary{positioning}
+\title{\vspace{-1.2cm}\color{palA}\Huge Bigbrane research report\\[3pt]\large Findings, methods, validation, and next decisions}
+\author{Prepared for Andrew Oliver}
+\date{October 11, 2026}
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tldr{\textbf{TL;DR.} We built a system that proposes new mathematical designs for small, efficient language models and then tries hard to prove each one wrong. Across five runs it produced 230 proposals. Most turned out to be methods that already exist, and the system showed that with executed numeric checks. Two proposals survived every check, were built as small models and were benchmarked against five standard models. Neither beat them, so no new theory has been found yet. The system is useful now as a filter: it catches rediscoveries and broken math, and it keeps every step on record. The next step is a test interface that gives hand-built models demonstrations and queries in the form their claims describe.}
+
+\section{Executive summary}
+
+Bigbrane started with one question: can a model with more built-in structure learn sequences from fewer examples than small neural networks? Experiment 1 tested a narrow version of it. We generated sequences from known hidden-state processes, so the exact correct next-symbol probabilities were available, and compared a four-state hidden Markov model (HMM) with a tiny recurrent neural network (RNN) and a tiny attention model. With little training data, the HMM predicted better than both, passing a rule fixed before the run. The advantage was narrow. The HMM reached the target error with less data than both controls on only one of eight generators, and when the hidden process was changed to depend on the two previous states, the advantage reversed.
+
+The later research loop pursued candidate mechanisms. Its main outcome is methodological. It reduces many proposals to known algorithms, numerically checks mappings where possible, and sends explicit counterexamples through a staged pipeline. Across five runs, S2 assessed 196 cards: 21 passed, 122 reduced to known work, 51 failed, and two were undecided. S3 assessed 21: two passed, 16 were recorded infeasible, and three were undecided. Only two cards reached S6. Neither beat the baselines.
+
+The strongest result from an individual proposal is a timing measurement. Two-Sheet Residual Rewriting ran in time proportional to sequence length, as it claimed, but on its falsifier tasks it never predicted better than trivial reference predictors. Conjugate Sewing had a full-range timing slope near its claim, while its tail slope missed the stated tolerance, it produced non-finite predictions on a falsifier, and its learned benchmark did not establish the proposed mechanism.
+
+The next decision should be about protocol fidelity. Hand-built rules need a candidate interface that receives the demonstrations and queries they claim to use. A task that does not train the candidate cannot decide whether the claimed learning mechanism works. The recall investigation found exactly this failure mode and led to stricter task-validity gates. A larger benchmark run is useful only after those interfaces and controls match the claims.
+
+\begin{table}[ht]
+\centering\small
+\caption{The central results distinguish a narrow controlled finding from the later search-loop outcome.}
+\begin{tabular}{p{3.1cm}p{5.1cm}p{5.4cm}}
+\toprule
+Question & Evidence & Reading \\
+\midrule
+Does a structured prior help in Experiment 1? & Low-data HMM contrast passed both predefined gates. & Yes, for the specified synthetic generators and controls; stress results limit generalization. \\
+Did the discovery loop find a winning learner? & Two cards reached S6 in run 4. & No candidate beat the baselines. \\
+What works in the loop? & Numeric reductions, replayed checks, independent falsifiers, hashed records. & Evidence handling and rejection are stronger than demonstrated discovery performance. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{How the research loop works}
+
+The loop turns literature and research lenses into testable proposals, then feeds failures back into later proposals. Figure~\ref{fig:loop} shows that cycle. A lens is a topic or mathematical viewpoint, such as kernel methods or cellular automata, used to find relevant papers and possible constructions. Claude Opus and GPT explorer models write theory cards. Each card is a short structured proposal: it states what information the method keeps, how that state changes, how predictions are made, what claims follow, and what observation could prove a claim wrong.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=1.35cm, every node/.style={draw,rounded corners,align=center,text width=3.1cm,minimum height=1cm}, >=stealth]
+\node (sources) {Lenses and papers};
+\node (explore) [right=of sources] {Claude Opus and GPT explorers\\write a theory card};
+\node (gates) [right=of explore,text width=3.3cm] {S0 to S6 gates\\screen, test, build, score};
+\node (feedback) [below=of gates] {Graveyard and escape feedback};
+\draw[->,thick] (sources)--(explore);
+\draw[->,thick] (explore)--(gates);
+\draw[->,thick] (gates)--(feedback);
+\draw[->,thick] (feedback.west) -| (explore.south);
+\end{tikzpicture}
+\caption{Research sources produce cards, and evidence from gate outcomes changes later exploration.}
+\label{fig:loop}
+\end{figure}
+
+S0 checks whether a card is well-formed and new. S1 asks whether its definitions and claims are clear and self-consistent, using a worked toy. S2 asks whether the idea is already known. A literature search is paired with a reduction critic that tries to rewrite the proposal as a known method and executes a numeric equivalence check on a finite fixture. S3 asks whether the claims are mathematically feasible. Two judges from different model families inspect the same evidence, and available check programs run. S4 builds the model. S5 benchmarks it in a sealed container against five baselines. S6 decides each claim using the rules and evidence linked to it.
+
+Cards evolve through revision, mutation, crossing, escape, or the graveyard. Revision repairs definitions; mutation changes one part of a proposal; crossing combines parents. An escape child is asked to break the exact invariant that let S2 reduce its parent. The graveyard gives explorers prior failed or reduced ideas and their reasons.
+
+The lineage of card-779795a5 makes escape concrete. It escaped card-98f9b374 after S2 had reduced that parent to an order-2 affine projection algorithm. Card-03fa1d38 crossed card-3e8a2b47, an escape child that failed S2, with card-6327b32c. This history explains how ideas were generated and changed; later sections report whether their claims survived tests.
+
+\section{How the project developed}
+
+
+
+The first literature pass distinguished Bayesian filtering with known parameters from learning a generator. It considered predictive-state representations, spectral HMM identification, information bottleneck, minimum description length (MDL), and multiscale coarse graining. The practical next step was a controlled HMM versus tiny-RNN versus attention experiment with exact predictive distributions. Experiment 1 fitted 384 matched and 192 stress candidate fits. The HMM prior reduced low-data prediction error against both controls under the fixed acceptance rule. Yet crossing the target error earlier than both controls occurred on only one of eight generators. At higher data, the HMM curve worsened, leaving fitting adequacy unresolved.
+
+The platform screen then separated scientific search, orchestration, and literature synthesis. It considered maintained research tools and excluded or discouraged options based on maintenance status. A scripted Mac trial exercised RD-Agent and DeerFlow, including invalid attempts and recovery in a new process. It made zero live model calls, leaving discovery quality unmeasured. Bigbrane retained authority over schemas, execution, scoring, records, budgets, and confirmation boundaries.
+
+An October 9 plan proposed a swappable controller comparison and retained a thin custom loop unless RD-Agent won a matched test. That comparison remained a plan. A constrained Linux/arm64 executor probe came before the loop build. Literature reviews on harness design, agent skills, and failures in AI mathematics shaped explicit obligations and evidence records, without proving Bigbrane effective.
+
+On October 10 the prototype combined a Podman executor, a host model gateway with private credential files, an asynchronous scheduler, stage prompts and schemas, an exact-oracle benchmark, literature search, and inspectable records. An early bridge run produced four cards and 12 calls, stopped after S1 without a recorded stop reason, and exposed card-size and keychain-prompt problems. A gateway port brought over browser sign-in behavior, request headers, tool conversion, model-specific reasoning, retries, and cache behavior. Research calls went through Bigbrane's own provider code inside the gateway.
+
+Run 1 explored 23 cards in 233 calls. S2 reduced most to known methods. The graveyard fed failures back to explorers. An escape operator required a child card to identify and break the reduction invariant. Both cards entering S3 were escape children. Run 2 explored 19 cards in 178 calls and produced no S3 entrant. Empty literature results had previously counted as novelty, so the changed gate broadened queries and returned ``undetermined'' when searches remained empty.
+
+Overnight, a separate ChatGPT sign-in restored GPT as an additional model family. Local arXiv harvesting, validated falsifier tasks, and executed/replayed S3 obligation checks were added. Run 3 had 47 cards and 438 calls; six entered S3, five were refuted, and one remained undecided. Run 4 had 103 cards and 1,046 calls; two cards reached S6. It stopped at an independent 600-call model budget, then resumed after that cap was raised. A provider model-list preflight stalled and later received a timeout and cache. The arXiv harvest also stalled on computer-science pages, then completed after deferral and retries with 1,419,455 records across 15 sets. Run 5 had 38 cards and 205 calls; its only S2 survivor was refuted at S3. The fixed S6 rule received no new entrant to exercise it.
+
+\section{Mathematical models studied}
+\subsection{Experiment 1: a known hidden-state generator}
+
+The synthetic sequence has four hidden states and eight visible symbols. A transition matrix controls hidden-state changes; an emission matrix controls which symbols each state produces. Each sequence contains 64 tokens. Two regimes use $(\rho,\eta)=(0.60,0.80)$ and $(0.95,0.40)$, with four independent generators per regime.
+\begin{equation}
+A=\rho I+(1-\rho)R,\qquad B_{iv}=\eta S_{iv}+(1-\eta)/8,\qquad \pi A=\pi,\quad \sum_i\pi_i=1.
+\end{equation}
+Here $R$ supplies random transitions, $S$ favors two symbols per state, and $\pi$ is the stationary distribution, the state probabilities unchanged by one transition. It defines the generator's starting mixture. The equation defines how persistence and symbol informativeness shape each generator.
+\begin{equation}
+P(z_{1:L},x_{1:L})=\pi_{z_1}B_{z_1x_1}\prod_{t=2}^{L}A_{z_{t-1}z_t}B_{z_tx_t}.
+\end{equation}
+This is the probability of a complete hidden-state path and its observed symbols: start in state $z_1$, then transition and emit at each step.
+
+The oracle predicts before seeing the target token. A probability vector $q_t$ represents belief over the current hidden state.
+\begin{equation}
+q_1=\pi,\quad p_t^*(v)=\sum_iq_t(i)B_{iv},\quad b_t(i)=\frac{q_t(i)B_{i,x_t}}{p_t^*(x_t)},\quad q_{t+1}=b_tA.
+\end{equation}
+First it predicts a symbol, then updates state belief after observing the actual symbol, then advances one state transition. This causal ordering prevents future-token leakage.
+
+The learned HMM used unrestricted initial, transition, and emission probabilities with maximum-a-posteriori (MAP) Baum-Welch fitting. MAP chooses parameters with the highest posterior probability after the prior is included. Baum-Welch alternates between estimating hidden-state responsibilities and updating transition/emission probabilities; this equation-based fit tests whether the structured prior predicts better under limited data. Forward-backward calculations estimate state and transition probabilities. The prior was a symmetric Dirichlet with pseudocount $\epsilon=0.001$. A Dirichlet prior is a probability distribution over probability vectors; its small pseudocount keeps every estimated probability above zero. The fitted HMM stored 52 entries and had 43 free parameters. The RNN used an 8-wide embedding and hidden layer, with 280 scalars:
+\begin{equation}
+e_t=E[u_t],\quad h_0=0,\quad h_t=\tanh(W_ee_t+W_hh_{t-1}+b_h),\quad p_t=\operatorname{softmax}(W_yh_t+b_y).
+\end{equation}
+Softmax converts a vector of scores into probabilities that sum to one. The RNN compresses the prefix into a learned hidden vector, then maps that vector to next-symbol probabilities. Inputs are shifted so each prediction uses only earlier tokens.
+
+The attention control had width 8, one head, feed-forward width 16, and 712 scalars. It forms token-position vectors, compares each position with earlier positions, and applies a causal mask:
+\begin{equation}
+C=\operatorname{softmax}_{row}(QK^T/\sqrt8+M),\qquad M_{ts}=\begin{cases}0&s\le t,\\-\infty&s>t.\end{cases}
+\end{equation}
+This causal mask gives later positions zero influence on earlier predictions. The model combines attended values and a feed-forward transformation through residual connections.
+
+The primary score was the average Kullback-Leibler (KL) divergence from the exact next-symbol distribution to the learned prediction:
+\begin{equation}
+E_m=\frac{1}{128L}\sum_{a=1}^{128}\sum_{t=1}^{L}\sum_{v=0}^{7}p_t^*(v\mid x_{<t}^{(a)})\log\frac{p_t^*(v\mid x_{<t}^{(a)})}{p_m(v\mid x_{<t}^{(a)})}.
+\end{equation}
+KL measures the extra log loss from using the model's distribution in place of the oracle's. Lower is better, and the reported unit is nats per target. A nat is one unit of log loss when natural logarithms are used. The score directly measures the prediction penalty relevant to the comparison. The low-data contrast averaged each control's error minus HMM error at 512 and 2,048 training tokens. Acceptance required mean advantage of at least 0.02, positive results in both regimes, at least six of eight generators, and a positive lower endpoint of a descriptive 95\% generator bootstrap interval. A bootstrap interval resamples the independent generators to show how the contrast varies across them; it summarizes uncertainty under this sampling design.
+
+The HMM passed against RNN with contrast 0.02292 and interval [0.01200, 0.03208], favorable on 7/8 generators. Against attention it passed with 0.06235 and interval [0.05350, 0.07242], favorable on 8/8. Crossing the target KL of 0.05 earlier than both controls happened once. Under stress, transitions depended on the previous two states while the learned HMM remained four-state. The advantage reversed against RNN at both sizes and against attention at the larger size. The result supports only the specified low-data comparison. It does not establish that HMMs learn language better in general.
+
+\subsection{Benchmark baselines and tasks}
+
+The research loop used five separate baselines. A Witten-Bell 4-gram counts short contexts and backs off to shorter ones. A gated recurrent unit (GRU) updates a fixed hidden state using learned reset and update gates. A transformer uses causal attention across the prefix. A diagonal state-space model (SSM) uses a persistent recurrence, implemented for whole prefixes with a fast Fourier transform (FFT), an algorithm for computing many frequency components efficiently. Here it evaluates whole-prefix convolution. Linear attention uses a fixed-size associative accumulator. The recorded default/quick scaling-fixture counts were respectively 7,146/5,003 occupied n-gram entries, 76,812/76,812 GRU parameters, 101,644/101,644 transformer parameters, 51,724/51,724 SSM parameters, and 101,644/101,644 linear-attention parameters. N-gram counts report occupied entries. Dense tensor parameter counts use a different convention.
+
+For an n-gram, the next-symbol probability interpolates counts with a shorter context:
+\begin{equation}
+P(w\mid h)=\frac{c(h,w)+T(h)P(w\mid h')}{c(h)+T(h)},\qquad P_0(w)=\frac{c(w)+1}{\sum_vc(v)+V}.
+\end{equation}
+Here $h'$ drops the oldest context symbol and $T(h)$ counts distinct successors. If a context is absent, the estimate backs off.
+
+The benchmark's SSM has a diagonal complex recurrence:
+\begin{equation}
+h_t=\lambda\odot h_{t-1}+Bu_t,\quad y_t=\operatorname{Re}(Ch_t)+D\odot u_t,\quad \lambda=\exp(-\exp(\nu)+i\exp(\vartheta)).
+\end{equation}
+Each input updates persistent state, and the output combines that state with a direct input path. Although the recurrence can stream, the implementation computes whole-prefix convolution with FFT, so its implemented cost is not exactly linear in prefix length.
+
+Linear attention stores feature-key/value outer products and reads them with a query:
+\begin{equation}
+S_t=S_{t-1}+\phi(k_t)v_t^T,\quad z_t=z_{t-1}+\phi(k_t),\quad y_t=\frac{\phi(q_t)^TS_t}{\phi(q_t)^Tz_t+10^{-6}},\quad \phi(x)=\operatorname{elu}(x)+1.
+\end{equation}
+The accumulated matrix summarizes prior bindings at fixed width. This implementation has no positional encoding, and its additive accumulator does not establish arbitrary order sensitivity.
+
+Five exact-oracle tasks ask different questions: HMM sequence prediction, variable-order Markov prediction, associative key-value recall, typed bracket composition, and few-shot affine-rule induction modulo 13. The last task has chance accuracy 1/13. A fingerprint is a compact set of measured behaviors used to characterize a candidate. It combines recall capacity, runtime scaling, memory growth, longer-prefix behavior, few-shot gains, and similarity to baseline predictions. These signals help diagnose behavior. They do not prove mechanism identity. Transformer and linear attention remained difficult to distinguish on this benchmark.
+
+\subsection{Families, lenses, and concrete reductions}
+
+Explorers received equations for recurring known families. For example, a delta-rule or fast-weight memory updates a matrix toward the desired value for a key:
+\begin{equation}
+S_t=S_{t-1}+\beta_t(v_t-S_{t-1}k_t)k_t^T,\qquad y_t=S_tq_t.
+\end{equation}
+The correction term subtracts the current prediction before writing the new value. This catches proposals that redescribe error-correcting associative memory.
+
+A least-squares operator estimate is another recurring form:
+\begin{equation}
+G_t=\sum_i k_ik_i^T,\quad C_t=\sum_i k_iv_i^T,\quad y_t=C_t^T(G_t+\lambda I)^{-1}q_t.
+\end{equation}
+It fits an operator to key-value examples and applies that operator to a query. Other signatures included kernel/Hopfield retrieval, linear state dynamics, recursive least squares, exact-match caches, tries, stacks, and union-find constraint closure. The 23 active exploration lenses ranged from reservoir computing and tensor networks to Bayesian program induction and chemical reaction networks. A lens supplies possible mathematical constructions and sources. Its use makes no claim about biological or physical implementation.
+
+Two-Sheet Residual Rewriting packs rules whose addresses match the current code, while preventing a rule from claiming units already used by an earlier rule. Its readout applies code-sheet rules first and selected image-sheet rules second:
+\begin{equation}
+\begin{aligned}
+s_j&=[a_j\le c][a_j^TU=0],\\
+U&\leftarrow U+s_ja_j,\\
+P(S,c)&=\left(c+\sum_{j\in S}s_j(b_j-a_j),U\right).
+\end{aligned}
+\end{equation}
+The indicator terms decide whether each rule fires; the updated code and occupied-unit mask become the input to the next rule. The card claims that demonstrated remaps transfer across stamped classes and compose on unseen combinations. Its learned token implementation did not test that central rule.
+
+Conjugate Sewing updates a base involution by conjugation with shears built to preserve protected examples:
+\begin{equation}
+F_{m+1}=T^{-1}\circ F_m\circ T,\qquad T=J\circ H.
+\end{equation}
+An involution is a function that returns the starting point when applied twice, so it binds pairs in both directions. Conjugation wraps a function with an invertible coordinate change $T$ and its inverse, and the result is still an involution. That identity guarantees the pairing structure. The card's learning and generalization claims need separate evidence. Its exact one-pair rational check worked; multi-binding capacity timed out.
+
+Sticky-Bound Latent Causes keeps evidence for each candidate rule and retires a rule whose evidence reaches the lower bound:
+\begin{equation}
+\delta_{p,t}=\log p_p(x_t\mid x_{t-1})-\log h(x_t\mid x_{t-1}),\qquad z_p\leftarrow\min(z_p+\delta_{p,t},\theta).
+\end{equation}
+The evidence increment compares a rule's prediction with a habit model, then clips the accumulated score at its upper bound. The broad one-shot permutation claim was refuted, although a narrower shift-family assumption changes identifiability.
+
+Five run-1 examples had executed numerical reduction checks. Koopman dictionary fitting reduced to weighted recursive least squares and a delta rule, with maximum difference $1.84\times10^{-11}$. A hashed residual slot reduced to a gated delta rule, difference $6.11\times10^{-16}$. A parity reservoir reduced to labeled union-find, exact on the fixture. An exact FIFO cache plus integer differences reduced to a one-dimensional consistent lattice learner, with exact fixture agreement. A phasor memory reduced to diagonal linear attention, difference $2.66\times10^{-15}$. Finite fixture agreement supports these mappings for the tested cases; it does not prove universal equivalence.
+
+\section{How the loop checks claims}
+
+The loop uses stages S0 through S6. A stage pass records completion of that stage. Scientific claims receive separate verdicts. Table~\ref{tab:gates} lists each stage's purpose and the accumulated reach across the five runs. Each row counts assessments for its stated category. Categories across rows can overlap.
+
+\begin{table}[ht]
+\centering\scriptsize
+\caption{Run totals show that most proposed cards were reduced or rejected before implementation.}
+\label{tab:gates}
+\begin{tabular}{clrrrrr}
+\toprule
+Stage & Check & R1 & R2 & R3 & R4 & R5 \\
+\midrule
+S0 & Schema, grounding, duplicates, cards pass/fail & 23/0 & 17/2 & 42/5 & 100/3 & 33/5 \\
+S1 & Toy critique, revisions, cards pass & 21 & 17 & 41 & 100 & 17 \\
+S2 & Prior art and reductions assessed & 21 & 17 & 41 & 100 & 17 \\
+S2 & Reduced to known / fail / undecided & 16/3/0 & 13/2/2 & 23/12/0 & 58/30/0 & 12/4/0 \\
+S3 & Pass / infeasible / undecided & 0/1/1 & 0/0/0 & 0/5/1 & 2/9/1 & 0/1/0 \\
+S4 through S6 & Cards entering each later stage & 0 & 0 & 0 & 2 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+S0 checks card structure, source grounding, and near-duplicates. S1 critiques definitions and runs a toy. S2 searches literature and tests reductions. S3 formalizes obligations, attacks claims, executes available checks, replays decisive checks (reruns the same recorded program on the same inputs to confirm the result), and obtains blind judgments from two model families. S4 constructs and checks candidate code. S5 runs candidate and baselines in Podman with a separate scorer. S6 joins claim-level rules with benchmark evidence.
+
+The first two runs recorded 38 reduction verdicts: 36 had numeric checks, 32 equivalences were confirmed, and four proposed reductions were rejected. The largest recorded difference among confirmed mappings was $3.5\times10^{-11}$; eight were exact. S3 requires decisive executed-obligation status and counterexample to agree on replay. A non-optional reproduced violation overrides model votes. Run 4 recorded nine S3 refutations: seven judge disproofs confirmed by the other judge and two executed/replayed violations. Some obligations remained unknown even for cards that passed.
+
+A recall investigation shows why benchmark validity matters. A pipeline check gave the candidate and all five baselines zero accuracy at K=16, 32, 48, and 256. The candidate had truncated training at 128 tokens and discarded all 82 K=48 training queries. At K=256 it lacked matched-length training. A later operator control reached accuracy 1, 1, 1 and 0.70 at those four capacities for least squares at width 64, exceeding the card's claimed high-capacity limit of 0.6. The zero scores therefore did not show the intended mechanism's limit. Current gates require claim-grounded rules, explicit protocol parameters, reproducible task data, a trained threshold against uniform and unigram references, positive controls for low-score claims, and hashed harness and evaluator code. A positive control is a method known to be capable of the task; if it also scores zero, the task is broken. They do not guarantee custom analytic controls for every task.
+
+The S6 merger also changed after a specific error. Card \code{card-03fa1d38} was originally recorded as 1 supported, 1 refuted, 3 inconclusive, and 11 untested. A read-only later reconstruction changed that to 1 supported, 0 refuted, 4 inconclusive, and 11 untested because the analyst had used a task where training failed. The original run record remains unchanged. This correction still depends on the analyst naming every task it used.
+
+Each ledger is hash-chained: every event includes the previous event's hash, so editing an earlier record breaks every later link. The inspect command recomputed the hashes for all five runs and checked the recorded file digests. A hash proves the recorded bytes are unchanged. It says nothing about whether their content is correct. The full hybrid suite previously recorded 1,182 passed and 9 skipped; it was not rerun for this report. Experiment 1's separate instrument protocol called for exhaustive tiny-HMM enumeration, filtering/forward-likelihood agreement, normalized marginals, causal leakage tests, objective checks, seed reproducibility, and data-access audits. Those checks belong to the protocol. This report did not rerun them.
+
+Some judgments remain model-based: novelty, radicality, mappings without executable checks, many learnability obligations, and analysis of claims not linked to falsifier rules. Agreement between judges provides model-based evidence. Formal proof requires a proof system and checked derivation. Numeric fixture equivalence does not establish equivalence for every input.
+
+\subsection{Execution and scoring boundaries}
+
+Podman jobs have no network, use read-only inputs, run as an unprivileged UID with dropped capabilities, and face resource limits. Host oracle data is withheld from candidate jobs; a separate evaluator checks output shape and probability normalization before scoring. Local mode explicitly reports that it is untrusted. A P0 native/container bit-identical test failed because macOS and Linux BLAS produced a 10-unit-in-the-last-place (ulp) HMM score difference. An ulp is the spacing between adjacent floating-point values at that magnitude. BLAS is the numerical library used for matrix operations; Accelerate and OpenBLAS rounded one computation differently, about $1.39\times10^{-16}$. The assertion remained. Bigbrane therefore scores consistently within the container, with no mixing of platform results. Remaining weaknesses include candidate access to test prefixes during fitting, self-reported state size in capacity denominators, and no disk quota for output storage.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=.9\linewidth,height=6cm,ybar,bar width=7pt,ymin=0,ymax=65,ymajorgrids=true,grid style={rule,dashed,very thin},symbolic x coords={1,2,3,4,5},xtick=data,xlabel={Run},ylabel={Cards reduced to known family},legend style={font=\small,at={(0.5,1.03)},anchor=south,legend columns=3,column sep=6pt},tick label style={font=\small}]
+\addplot[fill=palA] coordinates {(1,12)(2,11)(3,23)(4,38)(5,10)};
+\addplot[fill=palB] coordinates {(1,3)(2,0)(3,0)(4,12)(5,0)};
+\addplot[fill=palC] coordinates {(1,1)(2,1)(3,0)(4,0)(5,1)};
+\addplot[fill=palD] coordinates {(1,0)(2,1)(3,0)(4,1)(5,0)};
+\addplot[fill=palE] coordinates {(1,0)(2,0)(3,0)(4,6)(5,0)};
+\legend{Other known,Linear attention,Hopfield/kernel,Transformer variant,RNN}
+\end{axis}
+\end{tikzpicture}
+\caption{Other known families dominate reductions, with linear attention and RNN signatures concentrated in run 4.}
+\label{fig:reductions}
+\end{figure}
+
+\section{Results across runs}
+
+Table~\ref{tab:runs} summarizes card and call volume, while Figure~\ref{fig:reach} plots how far cards advanced. Figure~\ref{fig:reductions} breaks the S2 reductions down by the known family each card matched; most matched data structures, symbolic learners or classical algorithms, grouped as other known methods. Run 4 accounts for both final-stage cards. It does not indicate a higher rate of successful learners.
+
+\begin{table}[ht]
+\centering\small
+\caption{Run 4 had the most activity and both final-stage entrants; neither entrant beat baselines.}
+\label{tab:runs}
+\begin{tabular}{lrrrrr}
+\toprule
+Measure & Run 1 & Run 2 & Run 3 & Run 4 & Run 5 \\
+\midrule
+Cards & 23 & 19 & 47 & 103 & 38 \\
+Calls & 233 & 178 & 438 & 1,046 & 205 \\
+S2 pass & 2 & 0 & 6 & 12 & 1 \\
+S3 pass & 0 & 0 & 0 & 2 & 0 \\
+S4 through S6 entrants & 0 & 0 & 0 & 2 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=.9\linewidth,height=6cm,ybar,bar width=8pt,ymin=0,ymax=110,ymajorgrids=true,grid style={rule,dashed,very thin},symbolic x coords={1,2,3,4,5},xtick=data,xlabel={Run},ylabel={Cards reaching stage},legend style={font=\small,at={(0.5,1.03)},anchor=south,legend columns=3,column sep=6pt},tick label style={font=\small}]
+\addplot[fill=palA,draw=palA] coordinates {(1,23)(2,19)(3,47)(4,103)(5,38)};
+\addplot[fill=palB,draw=palB] coordinates {(1,21)(2,17)(3,41)(4,100)(5,17)};
+\addplot[fill=palC,draw=palC] coordinates {(1,2)(2,0)(3,6)(4,12)(5,1)};
+\addplot[fill=palD,draw=palD] coordinates {(1,0)(2,0)(3,0)(4,2)(5,0)};
+\legend{Created,S2 assessed,S3 entered,S4 through S6 entered}
+\end{axis}
+\end{tikzpicture}
+\caption{Most cards stopped before S3; two entered S4 through S6, both in run 4.}
+\label{fig:reach}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=.9\linewidth,height=6cm,xmode=log,ymode=log,log basis x=10,log basis y=10,xmin=400,xmax=20000,ymin=.005,ymax=.25,grid=both,grid style={rule,dashed,very thin},xlabel={Training tokens},ylabel={KL (nats per target)},legend style={font=\small,at={(0.5,1.03)},anchor=south,legend columns=3,column sep=6pt},tick label style={font=\small}]
+\addplot[thick,color=palA,mark=*] coordinates {(512,.09345)(2048,.04307)(8192,.02943)(16384,.04497)};
+\addplot[thick,color=palB,mark=square*] coordinates {(512,.12839)(2048,.05397)(8192,.01277)(16384,.00830)};
+\addplot[thick,color=palC,mark=triangle*] coordinates {(512,.17001)(2048,.09121)(8192,.03979)(16384,.02477)};
+\legend{HMM,RNN,Attention}
+\end{axis}
+\end{tikzpicture}
+\caption{The HMM leads at low data in aggregate, while its high-data error rises at the largest sample.}
+\label{fig:exp1}
+\end{figure}
+
+Figure~\ref{fig:exp1} plots Experiment 1 aggregate KL values. The plotted HMM deterioration at 16,384 tokens is why fitting adequacy remains an open issue. Run-level activity counts how many cards moved through the gates; discovery quality needs the benchmark results. As the summary table on page one indicates, the aggregate is 230 cards and 2,100 calls. S2 assessed 196 cards, with 21 passes, 122 known-method reductions, 51 failures, and two undecided. S3 assessed 21 cards, with two passes, 16 recorded infeasible, and three undecided.
+
+\section{What looks promising}
+
+Table~\ref{tab:promising} separates evidence about the research process from evidence about candidate mathematics.
+\begin{table}[ht]
+\centering\scriptsize
+\caption{Process observations and mathematical leads have different confirmation tests.}
+\label{tab:promising}
+\begin{tabular}{p{2.7cm}p{3.1cm}p{4cm}p{4cm}}
+\toprule Candidate or observation & Why it is interesting & Evidence & What would confirm or kill it \\
+\midrule
+Known-method and bad-math detection & Early rejection saves build effort & 122 of 196 S2 assessments reduced to known work; S3 executed checks caught violations & Matched audits of reductions and independently constructed counterexamples \\
+Escape operator & Escape children supplied the deepest survivors & Both run-1 S3 entrants and one run-4 S6 entrant were escapes & Compare matched searches with and without escapes \\
+GPT explorer output & No textbook transplants were labeled in runs 3--5 & S2 critic labels across assessed GPT cards & Independent novelty review and measured downstream performance \\
+Experiment 1 structured prior & A specified low-data advantage passed its fixed rule & Contrasts .02292 and .06235, with positive lower intervals & Replicate on new generators and diagnose high-data HMM fitting \\
+card-03fa1d38 timing & Measured slope matched the claimed linear range & Tail slope .9966 against 1.0 & Repeat under protocol-matched tasks; test rule mechanism and ablations \\
+Prior-art-under-tested ideas & Several reduced ideas still contain untested properties & Koopman readout, phase-only memory, residual-slot collisions, parity learner & State a bounded new claim, then test it against known-method controls \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The supported result is a narrow structured-prior advantage in Experiment 1. It passed the fixed low-data rule, but only on known-state synthetic generators and small controls. The higher-data curve and second-order stress results call for an optimization investigation before broader conclusions.
+
+The research loop has process evidence. Escapes supplied the first two S3 entrants and one run-4 S6 entrant. GPT-originated cards received zero textbook-transplant labels in runs 3 through 5, according to the S2 critic. These observations do not show that the search strategy caused better models. Controlled replicated comparisons would be needed.
+
+Two-Sheet Residual Rewriting is worth a bounded mechanism test because its timing slope was 0.9966 against a claimed 1.0. Its falsifier candidates did not train above references, so its class-remapping and composition claims remain untested by the learned model. Conjugate Sewing's one-pair rational checks worked, but multi-binding capacity timed out, general protection was not fully executed, and its implementation produced non-finite values on a falsifier task. Neither card provides evidence of a baseline-beating mathematical lead.
+
+\section{Questions and decisions}
+
+\subsection{Literature services: OpenAlex and Semantic Scholar}
+
+S2 asks whether a proposal already exists in the literature, so it needs paper search. Bigbrane uses three sources: arXiv (preprints, now mostly from a local copy of 1,419,455 records), OpenAlex and Semantic Scholar. OpenAlex is a free, open index of scholarly works, authors, venues and citation links, covering journals and conferences as well as preprints. Bigbrane searches its metadata and follows its citation links. OpenAlex used to give better service to clients that sent a contact email (the ``polite pool''). Since February 2026 it ignores that email and expects a free API key on every request; keyless requests are meant only for demonstrations. The overnight runs sent no key, which is a likely cause of the OpenAlex skips below. A free account at openalex.org provides the key and a daily usage budget that refills at midnight UTC.
+
+Semantic Scholar is a paper-search and citation-graph service from the Allen Institute for AI. A service-issued API key identifies an application and changes its rate-limit allocation. Without a key, a client shares one rate limit with every other anonymous caller. A key gives the application its own allowance of one request per second on every endpoint, which is more than the loop's search volume needs. Keys are requested through a form on the Semantic Scholar API page and arrive by email.
+
+The loop recorded cooldown skips for Semantic Scholar/OpenAlex of 92/7 in run 1, 91/93 in run 2, 196/98 in run 3, 461/457 in run 4, and 76/77 in run 5. A skip means the client paused that source after the service answered HTTP 429, its ``too many requests'' reply; failed 429 requests are counted separately. Local arXiv harvesting later supplied 2,958 hits in run 4, and a search that returns papers can still miss the relevant one. Status and recommendation: the literature client now sends an OpenAlex key and a Semantic Scholar key when they are present, keeps Semantic Scholar at one request per second, and reads the keys from \code{\textasciitilde/.bigbrane/keys/} with owner-only permissions. Create the OpenAlex account and request the Semantic Scholar key, then compare skip counts on the next run.
+
+\subsection{S6 verdict when a falsifier fires}
+
+S6 combines claim results into a card verdict. A falsifier is an observable outcome that contradicts a stated claim, after the task itself passes validity checks. The current system can record a completed S6 stage while a linked claim is refuted. Options are to keep stage completion separate, or to make a validated falsifier fail the card verdict. Recommendation: retain distinct fields and mark the overall card failed when a valid falsifier fires.
+
+\subsection{Demonstration and query interface}
+
+Hand-built mechanisms may require explicit demonstrations followed by queries. The current consecutive-token training protocol failed to exercise the intended rules. Options are to increase training volume under the existing interface or build a demonstration/query contract. Recommendation: implement the contract first and require a same-task positive control.
+
+\subsection{Benchmark tasks for attention mechanisms}
+
+Transformer and linear attention resemble each other on the current fingerprint tasks. Options include a long-gap copy task or recall beyond fixed-state capacity. Recommendation: add protocol-matched tasks with controls that distinguish the mechanisms, then compare them in the full benchmark.
+
+\subsection{Executable S3 obligations}
+
+S3 can pass while some checkable obligations remain unknown. Options are to keep judge evidence sufficient or require declared executable obligations to pass before a claim is supported. Recommendation: block support for a claim while a required check remains unknown; preserve the existing run record and report later reconstructions separately.
+
+\subsection{Container-only scoring}
+
+Mac and Linux BLAS implementations differed by 10 ulp on one HMM fixture. Options are host-bit identity or one scoring environment. Recommendation: retain container-only scoring for comparisons and document the platform-specific rounding difference.
+
+\subsection{Benchmark configuration}
+
+Overnight runs used the quick benchmark configuration (\code{hybrid/config/bench\_quick.toml}): training sizes of 32 and 128, 200 optimizer steps, at most 20 epochs and a scaling range of 64 to 1,024 tokens. It keeps each candidate's evaluation short and gives every model little training data. Candidates that follow the target protocol should also run the full default configuration before any comparison with the baselines is reported. Recommendation: make the full configuration a requirement for any result that goes into a report.
+
+\section{Next steps}
+
+First, specify a demonstration/query contract and make candidate code consume the same protocol used by each claim. Add positive controls that establish whether a task actually trains the candidate. Then rerun the class-remapping and ablation checks for Two-Sheet Residual Rewriting; the scored token model did not exercise its central rule.
+
+Second, inspect each executed S3 obligation against the proposition it claims to test. The run-5 complexity check has a ``violated'' status while its explanation says the bound holds. Correct the checking process without rewriting historical verdicts. Consider requiring all declared checkable obligations to pass before assigning claim support.
+
+Third, preserve original ledgers and attach later S6 reconstructions with task links and correction reasons. Keep verdict completion distinct from evidence for individual claims. Fourth, investigate why HMM error rises at higher data on development generators. Freeze any broader study of unknown state counts or predictive-state learners as a separate protocol.
+
+Finally, evaluate graveyard feedback, escape slots, and explorer diversity with matched replicated runs if the goal is to claim a search-policy benefit. Current run trajectories show reach and critic labels; they do not isolate causality or show a baseline win.
+
+\section{Limitations}
+
+No candidate discovered by the loop beat a baseline. Only two candidates reached S6, both in run 4. Their judges agreed on feasibility, but some checkable obligations remained unexecuted or unknown. One card's S6 counts were corrected in a later read-only reconstruction; the original record remains as written. Run 5 also contains a contradictory complexity-check label.
+
+Experiment 1 establishes a result for its specified synthetic generators and small fixed controls. It does not settle performance on natural language, unknown latent state counts, larger neural models, or different optimization budgets. The hybrid test suite numbers are prior recorded results and were not rerun for this report. Search indexes and model judges have incomplete coverage. Hashes protect recorded byte integrity only when a trusted ledger head is retained.
+
+\clearpage
+\appendix
+\section{Glossary}
+
+\begin{longtable}{p{3.3cm}p{10.8cm}}
+\toprule Term & Meaning \\
+\midrule
+KL divergence & Expected extra log loss from predicting $q$ when the target distribution is $p$. Zero means equal distributions on the target support; direction matters. \\
+JS divergence & Symmetric distribution distance made from KL divergences to the average of two distributions. It compares outputs. It does not identify mechanisms. \\
+HMM & Hidden Markov model. An unseen finite state changes according to transition probabilities and emits visible symbols. \\
+RNN & Recurrent neural network. It updates a learned hidden state as each token arrives. \\
+GRU & Gated recurrent unit. An RNN variant with learned gates controlling state updates. \\
+Transformer & Neural architecture using attention to combine information from earlier sequence positions. \\
+SSM & State-space model. Persistent state evolves by a specified input-driven recurrence. \\
+Linear attention & Attention-like retrieval computed from a fixed-size accumulated feature-key/value matrix. \\
+Delta rule & Error-correcting associative write that adjusts a stored matrix toward a desired key-value response. \\
+Reduction & A mapping that shows how a proposed update rule can be expressed as a known method under stated assumptions; a numeric check tests selected inputs. \\
+Fingerprint & A summary of measured behaviors used to compare candidate predictions and resource use. \\
+Bootstrap interval & An uncertainty range estimated by repeatedly resampling the observed independent units. \\
+N-of-M code & A binary vector with N active positions among M possible positions. \\
+Householder transformation & An orthogonal reflection defined by a vector; the report's rebinding proposal uses a related reflection update. \\
+Replay & Rerunning a recorded check with its stored inputs and program to see whether the decision repeats. \\
+Hash-chained ledger & An event log where each record includes the previous record's hash, making later edits detectable. \\
+Oracle & Exactly known target distribution or answer for a synthetic evaluation task, withheld from candidate fitting. \\
+Falsifier & An observable outcome that would contradict a stated claim, provided the task and decision rule are valid. \\
+Prior art & Previously known methods or results relevant to a proposal. \\
+MDL & Minimum description length, a principle comparing a model's fit with the length needed to describe it. \\
+Nats & Log-loss units using natural logarithms. \\
+Lens & A research perspective supplying sources and possible constructions; its use makes no claim about a physical implementation. \\
+Escape & A child proposal asked to break the invariant that reduced its parent to a known method. \\
+Graveyard & Feedback from earlier failed or reduced cards, used to discourage rediscovery. \\
+Podman & Container engine used to run generated programs with restricted files, network, and resources. \\
+S0 through S6 & The proposal, critique, reduction, feasibility, construction, benchmark, and claim-verdict stages. A pass records stage completion. \\
+OpenAlex & Open scholarly metadata index for works, authors, venues, and citation links. \\
+Semantic Scholar & AI2 scholarly search and citation-graph service. \\
+arXiv & Repository of scholarly preprints; metadata presence does not imply peer review. \\
+OAI-PMH & Protocol for harvesting metadata records from repositories such as arXiv. \\
+SIWC & Sign in with ChatGPT, an OAuth route to a ChatGPT plan through Bigbrane's own client. \\
+\bottomrule
+\end{longtable}
+
+\section{Artifact paths and reproduction}
+
+Early internal documents contain inconsistent dates for the opening research phase; the report follows verified run ledgers for the dated build and runs.
+
+
+The report uses the fact sheet at \code{reports/2026-10-11-bigbrane/FACTS.md}. Principal sources include \code{EXPERIMENT.md}, \code{RESULT.md}, \code{FINAL-REPORT.md}, \code{MORNING-REPORT.md}, \code{hybrid/bench/README.md}, run inspect files under \code{results/morning-20261011/}, and card records under \code{runs/}. Run-specific artifacts are named in the fact sheet. Historical counts and hashes were checked there; no research run or test suite was rerun for this report.
+
+To reproduce the PDF from its source directory, run:
+\begin{verbatim}
+cd reports/2026-10-11-bigbrane/src
+tectonic bigbrane-report.tex
+\end{verbatim}
+The expected output is \code{bigbrane-report.pdf} in that source directory. The delivered copy is \code{reports/2026-10-11-bigbrane/bigbrane-report-2026-10-11.pdf}.
+
+\section{Per-card evidence}
+
+\subsection{Two-Sheet Residual Rewriting, \code{card-03fa1d38}}
+
+The proposal gives each token a distinct binary N-of-M code (a vector with N of its M positions set to one), stores a bounded list of rules, and packs matching rules in address-specific order while preventing overlapping writes. A first demonstration can recruit a code-sheet rule; later evidence can recruit an image-sheet rule. At query time it applies both eligible rule sets and chooses the token code with greatest inner product. Its offline code-learning objective penalizes rule count and query errors.
+
+S2 passed with \code{prior\_art\_undertested}; the reduction critic found no fixed kernel matching the order-dependent non-overlap packing. S3 passed after judges rated feasibility, but its artifact states that not all checkable obligations were discharged. S4 described 42 parameters and 176 state floats on a seven-symbol fixture. On recall, state was reported as 266 floats and capacity at least eight pairs. S5 tail slope was 0.9966 against claimed 1.0. It was flagged for no capacity advantage and no few-shot gain. Two validated falsifier task programs yielded three rule decisions; a third proposed task was dropped because a recency control already answered it. All three decisions were inconclusive because the candidate failed the task training gate. The original S6 counts were 1 supported, 1 refuted, 3 inconclusive, 11 untested; later reconstruction gives 1, 0, 4, 11. The supported item is finite-range sequence-time scaling. The class-remapping learning mechanism remains untested.
+
+\subsection{Conjugate Sewing, \code{card-779795a5}}
+
+This proposal updates an involution by conjugating it with two polynomial shears. Conjugation preserves the involution property when the transformation is invertible. The card gives a one-demonstration bidirectional-binding argument, while unseen continuation remains an imposed bias. Exact rational checks mapped one pair and its reverse correctly; the toy float64 maximum coordinate error was zero. Multi-binding capacity timed out, and general protection and offline learnability were not fully checked.
+
+S4 described 15 parameters and 64 state floats at vocabulary size seven; only the scalar parameter was calibrated, while token coordinates were fixed. S5's tail slope was 1.5904 against claimed 1.0, outside tolerance, although the full-range slope was 0.9952. It had no few-shot gain. One GPT-designed falsifier task produced no valid predictions because values became non-finite. S6 recorded two timing refutations, one inconclusive item, and eight untested items. Those timing outcomes do not disprove the exact-arithmetic construction.
+
+\subsection{Sticky-Bound Latent Causes, \code{card-ffcfe0e5}}
+
+This proposal maintains candidate rule codes and bounded evidence scores. Surprise can trigger a new rule; the best committed slot predicts, otherwise a habit model predicts. An idealized sticky-ceiling switch test reproduced constant latency across the tested confirmation counts, while the no-ceiling version grew in latency. The card's broader claim that one observed pair identifies an arbitrary unseen permutation was refuted: after one pair, an unseen mapping among 26 tokens has optimal accuracy 1/25. A shift-family assumption changes identifiability, so the conclusion depends on the assumed rule family. The run ended at S3 and had no candidate benchmark.
+
+\subsection{Three run-4 feasibility counterexamples}
+
+Householder Rebinding failed its random-code recall threshold: at dimension 64, measured mean recall was 0.76505 at capacity eight against a required 0.9. Committed Sign Agreements failed a claimed exact settlement condition: none of 2,001 tested committed starts reached exactly 1.0 within 300 events. Residual Reaction Nucleation could immediately evict a newly added weight-1 rule after four older rules reached weight 2. Each passed S2 before the S3 counterexample. These cases show why a prior-art pass and a mathematical feasibility result answer different questions.
+
+\end{document}

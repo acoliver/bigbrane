@@ -1,0 +1,35 @@
+# Environments and build output
+.venv/
+.venv-hybrid/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Runtime state, run records and large logs (hash-chained ledgers live here; they stay local)
+runs/
+results/
+tmp/
+var/
+data/
+platform-trials/
+
+# Caches built at runtime
+hybrid/literature/cache/
+
+# Local agent memory (holds account details)
+.llxprt/
+
+# Generated report output; the LaTeX and Markdown sources are kept
+reports/**/*.pdf
+reports/**/*.aux
+reports/**/*.log
+reports/**/*.out
+
+# Secrets never belong in the repo; tokens live under ~/.bigbrane and ~/.bigbrane-gateway
+*.token
+*.key
+.env
+
+# Rendered page previews
+reports/**/preview/

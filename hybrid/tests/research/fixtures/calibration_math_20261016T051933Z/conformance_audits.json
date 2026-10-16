@@ -1,0 +1,1101 @@
+[
+ {
+  "architecture": {
+   "hidden": "d",
+   "precision_bits": 64
+  },
+  "cost_statement": {
+   "id": "O1.a",
+   "spec": {
+    "exponent": 2,
+    "ops": "12*n*d**2 + 2*d*n*(n+1) + 4*n*(n+1) + 7*n*d + n*d*V + n*V - 3*n",
+    "sizes": {
+     "V": [
+      8,
+      32
+     ],
+     "d": [
+      8,
+      32
+     ]
+    },
+    "state": "(4*n+1)*d+1",
+    "widths": {
+     "d": "d",
+     "positions": "n",
+     "rounds": "2"
+    }
+   }
+  },
+  "job": "mathlib-1015e58ddc40",
+  "record": "runs/calibration-math-20261016T051933Z/k1-run1/artifacts/math_statements/card-ca11b001-v1-48e416.json",
+  "record_sha256": "cad4df300f8d8984d5e1763d073c7165bf8aaab17f6ac6009f5d9b364aa3e481",
+  "resources": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 64,
+    "state_bits": null
+   },
+   "cost": {
+    "d": "d",
+    "rounds": "2",
+    "sizes": [
+     "d",
+     "V"
+    ],
+    "why": "The complexity claim is stated in n, d and V for the two rounds of the mechanism."
+   },
+   "dimensions": {},
+   "learning": {
+    "composition": {
+     "d": "64",
+     "examples": 4000,
+     "rounds": "2",
+     "size": 4
+    },
+    "copy": {
+     "d": "64",
+     "examples": 3000,
+     "rounds": "2",
+     "size": 4
+    },
+    "dyck": {
+     "d": "64",
+     "examples": 1500,
+     "rounds": "2",
+     "size": 2
+    },
+    "recall": {
+     "d": "64",
+     "examples": 3000,
+     "rounds": "2",
+     "size": 4
+    }
+   },
+   "stream_symbols": [
+    "t"
+   ],
+   "tasks": {
+    "binding": {
+     "d": "16*hops+64",
+     "rounds": "hops+1",
+     "state_words": "(2*(hops+1)*(4*hops+7)+1)*(16*hops+64)+1",
+     "why": "One round per link of the chain plus the final read, as the capability claim states; t up to 4 hops+7."
+    },
+    "composition": {
+     "d": "16*T+64",
+     "rounds": "2",
+     "state_words": "(4*(5*T+3)+1)*(16*T+64)+1",
+     "why": "The first round retrieves g(x) and the second f at that point; d grows with the table size; t up to 5T+3."
+    },
+    "copy": {
+     "d": "16+8*ceiling(log(2*L)/log(2))",
+     "rounds": "2",
+     "state_words": "(8*L+1)*(16+8*ceiling(log(2*L)/log(2)))+1",
+     "why": "Copying needs a position code that separates 2L positions, so d grows with log2 of the length; two rounds (find the position, read its symbol). State: two rounds of address and content rows, one row of d numbers per position read (t up to 2L), the working vector and a position counter."
+    },
+    "dyck": {
+     "d": "16*depth+64",
+     "rounds": "depth",
+     "state_words": "(8*depth**2+1)*(16*depth+64)+1",
+     "why": "One round per nesting level, as the capability claim states; t up to 4 depth positions."
+    },
+    "recall": {
+     "d": "8*K+64",
+     "rounds": "2",
+     "state_words": "(4*(3*K+1)+1)*(8*K+64)+1",
+     "why": "The first round binds each item to the one before it and the second retrieves the item stored after the match; d grows linearly with K so every item of the max(2K, 16) possible ones gets its own direction. t up to 3K+1."
+    }
+   },
+   "why": "Two rounds at a fixed width for learning; for the hand-set tasks the width and rounds grow with the size as the capability claims state."
+  },
+  "run": "k1-run1",
+  "source": "def init(sizes, ops):\n    d = int(sizes['d'])\n    V = int(sizes['V'])\n    if 'n' in sizes:\n        npos = int(sizes['n'])\n    elif 'positions' in sizes:\n        npos = int(sizes['positions'])\n    else:\n        npos = 4096\n    s = 0.3 / (d ** 0.5)\n    params = {\n        'E': ops.np.normal((V, d), 1, 1.0),\n        'P': ops.np.normal((npos, d), 2, 0.5),\n        'Wa': ops.np.normal((2, d, d), 3, s),\n        'Wc': ops.np.normal((2, d, d), 4, s),\n        'Wp': ops.np.normal((2, d, d), 5, s),\n        'Wo': ops.np.normal((2, d, d), 6, s),\n        'U': ops.np.normal((2, d, d), 7, s),\n        'Vff': ops.np.normal((2, d, d), 8, s),\n        'O': ops.np.normal((d, V), 9, s),\n        'inv_sqrt_d': 1.0 / (d ** 0.5),\n    }\n    state = {\n        'A0': ops.np.zeros((0, d)),\n        'C0': ops.np.zeros((0, d)),\n        'A1': ops.np.zeros((0, d)),\n        'C1': ops.np.zeros((0, d)),\n        'h': ops.np.zeros((d,)),\n        't': 0,\n    }\n    return params, state\n\n\ndef update(params, state, token, ops):\n    t = state['t']\n    d = params['E'].shape[1]\n    inv = params['inv_sqrt_d']\n    h = ops.np.add(params['E'][int(token)], params['P'][t])\n    stores = [[state['A0'], state['C0']], [state['A1'], state['C1']]]\n    for layer in range(2):\n        a = ops.np.matmul(params['Wa'][layer], h)\n        c = ops.np.matmul(params['Wc'][layer], h)\n        p = ops.np.matmul(params['Wp'][layer], h)\n        A = ops.np.concatenate((stores[layer][0], a.reshape(1, d)), axis=0)\n        C = ops.np.concatenate((stores[layer][1], c.reshape(1, d)), axis=0)\n        stores[layer][0] = A\n        stores[layer][1] = C\n        scores = ops.np.multiply(ops.np.matmul(A, p), inv)\n        w = ops.np.exp(scores)\n        w = ops.np.divide(w, ops.np.sum(w))\n        r = ops.np.matmul(C.T, w)\n        g = ops.np.add(h, ops.np.matmul(params['Wo'][layer], r))\n        f = ops.np.maximum(0.0, ops.np.matmul(params['Vff'][layer], g))\n        h = ops.np.add(g, ops.np.matmul(params['U'][layer], f))\n    return {'A0': stores[0][0], 'C0': stores[0][1], 'A1': stores[1][0], 'C1': stores[1][1], 'h': h, 't': t + 1}\n\n\ndef predict(params, state, ops):\n    logits = ops.np.matmul(state['h'], params['O'])\n    return int(ops.np.argmax(logits))\n",
+  "spec": {
+   "equations": "def expected(params, sizes, tokens):\n    d = sizes['d']\n    aa = [np.empty((0,d)), np.empty((0,d))]\n    cc = [np.empty((0,d)), np.empty((0,d))]\n    result = []\n    for t, token in enumerate(tokens):\n        h = params['E'][token] + params['P'][t]\n        for layer in range(2):\n            a = params['Wa'][layer] @ h\n            c = params['Wc'][layer] @ h\n            p = params['Wp'][layer] @ h\n            aa[layer] = np.concatenate((aa[layer], a.reshape(1,d)), axis=0)\n            cc[layer] = np.concatenate((cc[layer], c.reshape(1,d)), axis=0)\n            scores = (aa[layer] @ p) * (1.0 / np.sqrt(d))\n            weights = np.exp(scores)\n            weights = weights / np.sum(weights)\n            r = cc[layer].T @ weights\n            g = h + params['Wo'][layer] @ r\n            h = g + params['U'][layer] @ np.maximum(0, params['Vff'][layer] @ g)\n        state = {'A0': aa[0].copy(), 'C0': cc[0].copy(), 'A1': aa[1].copy(), 'C1': cc[1].copy(), 'h': h.copy(), 't': t+1}\n        result.append({'state': state, 'output': int(np.argmax(h @ params['O']))})\n    return result",
+   "points": [
+    {
+     "V": 8,
+     "d": 8,
+     "n": 64
+    },
+    {
+     "V": 32,
+     "d": 32,
+     "n": 128
+    }
+   ],
+   "reference": "O1.a",
+   "streams": [
+    "repeated",
+    "distinct",
+    "random"
+   ],
+   "tolerance": 1e-09
+  },
+  "statement_id": "O2.a",
+  "statement_sha256": "e17ce4eda057a2f31267d8f82510beb071805f1d8f1c6a71ffa447373cc2f7e5"
+ },
+ {
+  "architecture": {
+   "hidden": "d",
+   "precision_bits": 64
+  },
+  "cost_statement": {
+   "id": "O1.a",
+   "spec": {
+    "exponent": 2,
+    "ops": "(2*d+4)*n*(n+1)+n*(12*d**2+7*d+d*V+V-3)",
+    "sizes": {
+     "V": [
+      8,
+      32
+     ],
+     "d": [
+      8,
+      32
+     ]
+    },
+    "state": "(4*n+1)*d+1",
+    "widths": {
+     "d": "d",
+     "positions": "n",
+     "rounds": "2"
+    }
+   }
+  },
+  "job": "mathlib-1974e5485730",
+  "record": "runs/calibration-math-20261016T051933Z/k1-run2/artifacts/math_statements/card-ca11b001-v1-8281e5.json",
+  "record_sha256": "bbb8483f5597db75dd43b07205b89486c524a05055263e912e8db5980377c7e1",
+  "resources": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 64,
+    "state_bits": null
+   },
+   "cost": {
+    "d": "d",
+    "rounds": "2",
+    "sizes": [
+     "d",
+     "V"
+    ],
+    "why": "The complexity claim is stated in n, d and V for the two rounds of the mechanism."
+   },
+   "dimensions": {},
+   "learning": {
+    "composition": {
+     "d": "64",
+     "examples": 4000,
+     "rounds": "2",
+     "size": 4
+    },
+    "copy": {
+     "d": "64",
+     "examples": 3000,
+     "rounds": "2",
+     "size": 4
+    },
+    "dyck": {
+     "d": "64",
+     "examples": 1500,
+     "rounds": "2",
+     "size": 2
+    },
+    "recall": {
+     "d": "64",
+     "examples": 3000,
+     "rounds": "2",
+     "size": 4
+    }
+   },
+   "stream_symbols": [
+    "t"
+   ],
+   "tasks": {
+    "binding": {
+     "d": "16*hops+64",
+     "rounds": "hops+1",
+     "state_words": "(2*(hops+1)*(4*hops+7)+1)*(16*hops+64)+1",
+     "why": "One round per link of the chain plus the final read, as the capability claim states; t up to 4 hops+7."
+    },
+    "composition": {
+     "d": "16*T+64",
+     "rounds": "2",
+     "state_words": "(4*(5*T+3)+1)*(16*T+64)+1",
+     "why": "The first round retrieves g(x) and the second f at that point; d grows with the table size; t up to 5T+3."
+    },
+    "copy": {
+     "d": "16+8*ceiling(log(2*L)/log(2))",
+     "rounds": "2",
+     "state_words": "(8*L+1)*(16+8*ceiling(log(2*L)/log(2)))+1",
+     "why": "Copying needs a position code that separates 2L positions, so d grows with log2 of the length; two rounds (find the position, read its symbol). State: two rounds of address and content rows, one row of d numbers per position read (t up to 2L), the working vector and a position counter."
+    },
+    "dyck": {
+     "d": "16*depth+64",
+     "rounds": "depth",
+     "state_words": "(8*depth**2+1)*(16*depth+64)+1",
+     "why": "One round per nesting level, as the capability claim states; t up to 4 depth positions."
+    },
+    "recall": {
+     "d": "8*K+64",
+     "rounds": "2",
+     "state_words": "(4*(3*K+1)+1)*(8*K+64)+1",
+     "why": "The first round binds each item to the one before it and the second retrieves the item stored after the match; d grows linearly with K so every item of the max(2K, 16) possible ones gets its own direction. t up to 3K+1."
+    }
+   },
+   "why": "Two rounds at a fixed width for learning; for the hand-set tasks the width and rounds grow with the size as the capability claims state."
+  },
+  "run": "k1-run2",
+  "source": "def init(sizes, ops):\n    d = sizes['d']\n    V = sizes['V']\n    N = 4096\n    s = 1.0 / (d ** 0.5)\n    params = {\n        'E': ops.np.normal((V, d), 1, 1.0),\n        'P': ops.np.normal((N, d), 2, 0.5),\n        'Wa': ops.np.normal((2, d, d), 3, 0.3 * s),\n        'Wc': ops.np.normal((2, d, d), 4, 0.3 * s),\n        'Wp': ops.np.normal((2, d, d), 5, 0.3 * s),\n        'Wo': ops.np.normal((2, d, d), 6, 0.3 * s),\n        'U': ops.np.normal((2, d, d), 7, 0.3 * s),\n        'Vff': ops.np.normal((2, d, d), 8, 0.3 * s),\n        'O': ops.np.normal((d, V), 9, s),\n    }\n    state = {\n        'A0': ops.np.zeros((0, d)),\n        'C0': ops.np.zeros((0, d)),\n        'A1': ops.np.zeros((0, d)),\n        'C1': ops.np.zeros((0, d)),\n        'h': ops.np.zeros(d),\n        't': 0,\n    }\n    return params, state\n\n\ndef update(params, state, token, ops):\n    pos = state['t']\n    d = state['h'].shape[0]\n    sq = d ** 0.5\n    stores_a = [state['A0'], state['A1']]\n    stores_c = [state['C0'], state['C1']]\n    h = ops.np.add(params['E'][token], params['P'][pos])\n    for layer in range(2):\n        a = ops.np.matmul(params['Wa'][layer], h)\n        c = ops.np.matmul(params['Wc'][layer], h)\n        p = ops.np.matmul(params['Wp'][layer], h)\n        stores_a[layer] = ops.np.concatenate((stores_a[layer], a.reshape(1, d)), axis=0)\n        stores_c[layer] = ops.np.concatenate((stores_c[layer], c.reshape(1, d)), axis=0)\n        scores = ops.np.divide(ops.np.matmul(stores_a[layer], p), sq)\n        weights = ops.np.exp(scores)\n        total = ops.np.sum(weights)\n        weights = ops.np.divide(weights, total)\n        r = ops.np.matmul(weights, stores_c[layer])\n        g = ops.np.add(h, ops.np.matmul(params['Wo'][layer], r))\n        act = ops.np.maximum(0, ops.np.matmul(params['Vff'][layer], g))\n        h = ops.np.add(g, ops.np.matmul(params['U'][layer], act))\n    return {\n        'A0': stores_a[0],\n        'C0': stores_c[0],\n        'A1': stores_a[1],\n        'C1': stores_c[1],\n        'h': h,\n        't': pos + 1,\n    }\n\n\ndef predict(params, state, ops):\n    logits = ops.np.matmul(state['h'], params['O'])\n    return int(ops.np.argmax(logits))\n",
+  "spec": {
+   "equations": "def expected(params, sizes, tokens):\n    d = sizes['d']\n    stores_a = [np.empty((0, d)), np.empty((0, d))]\n    stores_c = [np.empty((0, d)), np.empty((0, d))]\n    result = []\n    for pos, token in enumerate(tokens):\n        h = params['E'][token] + params['P'][pos]\n        for layer in range(2):\n            a = params['Wa'][layer] @ h\n            c = params['Wc'][layer] @ h\n            p = params['Wp'][layer] @ h\n            stores_a[layer] = np.concatenate((stores_a[layer], a.reshape(1, d)), axis=0)\n            stores_c[layer] = np.concatenate((stores_c[layer], c.reshape(1, d)), axis=0)\n            scores = (stores_a[layer] @ p) / (d ** 0.5)\n            weights = np.exp(scores)\n            weights = weights / np.sum(weights)\n            r = weights @ stores_c[layer]\n            g = h + params['Wo'][layer] @ r\n            h = g + params['U'][layer] @ np.maximum(0, params['Vff'][layer] @ g)\n        state = {'A0': stores_a[0].copy(), 'C0': stores_c[0].copy(), 'A1': stores_a[1].copy(), 'C1': stores_c[1].copy(), 'h': h.copy(), 't': pos + 1}\n        output = int(np.argmax(h @ params['O']))\n        result.append({'state': state, 'output': output})\n    return result",
+   "points": [
+    {
+     "V": 8,
+     "d": 8,
+     "n": 64
+    },
+    {
+     "V": 32,
+     "d": 32,
+     "n": 64
+    }
+   ],
+   "reference": "O1.a",
+   "streams": [
+    "repeated",
+    "distinct",
+    "random"
+   ]
+  },
+  "statement_id": "O2.a",
+  "statement_sha256": "41e76d36d5341df0e22ce781872ee7ef4585db75dcdc87bb2d04ca5b7e52df7e"
+ },
+ {
+  "architecture": {
+   "hidden": "d",
+   "precision_bits": 32
+  },
+  "cost_statement": {
+   "id": "O4.a",
+   "spec": {
+    "exponent": 1,
+    "ops": "n*(8*d**2+d*V+13*d+V-1)",
+    "sizes": {
+     "V": [
+      8,
+      32
+     ],
+     "d": [
+      8,
+      32
+     ]
+    },
+    "state": "2*d",
+    "widths": {
+     "d": "d",
+     "positions": "n",
+     "rounds": "1"
+    }
+   }
+  },
+  "job": "mathlib-5d0a3318d20d",
+  "record": "runs/calibration-math-20261016T051933Z/k2-run1/artifacts/math_statements/card-ca11b002-v1-53810b.json",
+  "record_sha256": "5227b26604e9c968902ca462ebe552a920216584c122a103d52f737f42884a80",
+  "resources": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 32,
+    "state_bits": null
+   },
+   "cost": {
+    "d": "d",
+    "rounds": "1",
+    "sizes": [
+     "d",
+     "V"
+    ],
+    "why": "The complexity claim is stated in n, d and V; one pass of the switches per token."
+   },
+   "dimensions": {},
+   "learning": {
+    "composition": {
+     "d": "64",
+     "examples": 3000,
+     "rounds": "1",
+     "size": 4
+    },
+    "copy": {
+     "d": "64",
+     "examples": 1500,
+     "rounds": "1",
+     "size": 4
+    },
+    "dyck": {
+     "d": "64",
+     "examples": 1200,
+     "rounds": "1",
+     "size": 2
+    },
+    "recall": {
+     "d": "64",
+     "examples": 2500,
+     "rounds": "1",
+     "size": 4
+    }
+   },
+   "stream_symbols": [],
+   "tasks": {
+    "binding": {
+     "d": "8*hops+16",
+     "rounds": "1",
+     "state_words": "16*hops+32",
+     "why": "Both chains of assignments are held in the store; the width grows linearly with the chain length."
+    },
+    "composition": {
+     "d": "8*T+8",
+     "rounds": "1",
+     "state_words": "16*T+16",
+     "why": "Both tables given in context are held in the store; the width grows linearly with the table size."
+    },
+    "copy": {
+     "d": "4*L+8",
+     "rounds": "1",
+     "state_words": "8*L+16",
+     "why": "The store width grows linearly with the amount to hold (L symbols), as the capability claim says the width is chosen for the listed size. State: the store s and the released output y, 2d numbers."
+    },
+    "dyck": {
+     "d": "4*depth+8",
+     "rounds": "1",
+     "state_words": "8*depth+16",
+     "why": "The open brackets are kept as a counter-like code; the width grows linearly with the depth."
+    },
+    "recall": {
+     "d": "4*K+8",
+     "rounds": "1",
+     "state_words": "8*K+16",
+     "why": "The store width grows linearly with K; 4K+8 is at least the max(2K, 16) possible keys at every K, so each possible key can have its own store entry."
+    }
+   },
+   "why": "Stored numbers are 32-bit, as the capability claims state; the learned toy cases use a fixed store width of 64."
+  },
+  "run": "k2-run1",
+  "source": "def init(sizes, ops):\n    d = sizes['d']\n    V = sizes['V']\n    params = {\n        'E': ops.np.normal((V, d), 1, 0.5),\n        'Wr': ops.np.normal((d, 2 * d), 2, 0.3),\n        'Wi': ops.np.normal((d, 2 * d), 3, 0.3),\n        'Wo': ops.np.normal((d, 2 * d), 4, 0.3),\n        'Wu': ops.np.normal((d, 2 * d), 5, 0.3),\n        'br': ops.np.normal((d,), 6, 0.1),\n        'bi': ops.np.normal((d,), 7, 0.1),\n        'bo': ops.np.normal((d,), 8, 0.1),\n        'bu': ops.np.normal((d,), 9, 0.1),\n        'O': ops.np.normal((d, V), 10, 0.5),\n    }\n    state = {'s': ops.np.zeros(d), 'y': ops.np.zeros(d)}\n    return params, state\n\n\ndef update(params, state, token, ops):\n    z = ops.np.concatenate((state['y'], params['E'][token]))\n    ar = params['Wr'] @ z + params['br']\n    ai = params['Wi'] @ z + params['bi']\n    ao = params['Wo'] @ z + params['bo']\n    au = params['Wu'] @ z + params['bu']\n    r = ops.np.sigmoid(ar)\n    i = ops.np.sigmoid(ai)\n    o = ops.np.sigmoid(ao)\n    u = ops.np.tanh(au)\n    s = r * state['s'] + i * u\n    y = o * ops.np.tanh(s)\n    return {'s': s, 'y': y}\n\n\ndef predict(params, state, ops):\n    logits = state['y'] @ params['O']\n    return int(ops.np.argmax(logits))\n",
+  "spec": {
+   "equations": "def expected(params, sizes, tokens):\n    d = sizes['d']\n    s = np.zeros(d, dtype=np.float32)\n    y = np.zeros(d, dtype=np.float32)\n    trace = []\n    for token in tokens:\n        z = np.concatenate((y, params['E'][token]))\n        ar = params['Wr'] @ z + params['br']\n        ai = params['Wi'] @ z + params['bi']\n        ao = params['Wo'] @ z + params['bo']\n        au = params['Wu'] @ z + params['bu']\n        r = 1.0 / (1.0 + np.exp(-ar))\n        i = 1.0 / (1.0 + np.exp(-ai))\n        o = 1.0 / (1.0 + np.exp(-ao))\n        u = np.tanh(au)\n        s = r * s + i * u\n        y = o * np.tanh(s)\n        answer = int(np.argmax(y @ params['O']))\n        trace.append({'state': {'s': s.copy(), 'y': y.copy()}, 'output': answer})\n    return trace\n",
+   "points": [
+    {
+     "V": 8,
+     "d": 8,
+     "n": 64
+    },
+    {
+     "V": 32,
+     "d": 8,
+     "n": 64
+    },
+    {
+     "V": 8,
+     "d": 32,
+     "n": 128
+    },
+    {
+     "V": 32,
+     "d": 32,
+     "n": 128
+    }
+   ],
+   "reference": "O4.a",
+   "streams": [
+    "repeated",
+    "distinct",
+    "random"
+   ],
+   "tolerance": 1e-06
+  },
+  "statement_id": "O5.a",
+  "statement_sha256": "8118df5fc346b2af1a366f33639d85b1541e1e64ca170863a11d0cf3d19394de"
+ },
+ {
+  "architecture": {
+   "hidden": "d",
+   "precision_bits": 32
+  },
+  "cost_statement": {
+   "id": "O1.a",
+   "spec": {
+    "exponent": 1,
+    "ops": "n*(8*d**2+d*V+13*d+V-1)",
+    "sizes": {
+     "V": [
+      8,
+      32
+     ],
+     "d": [
+      8,
+      32
+     ]
+    },
+    "state": "2*d",
+    "widths": {
+     "d": "d",
+     "positions": "n",
+     "rounds": "1"
+    }
+   }
+  },
+  "job": "mathlib-41ce39cae778",
+  "record": "runs/calibration-math-20261016T051933Z/k2-run2/artifacts/math_statements/card-ca11b002-v1-628cff.json",
+  "record_sha256": "b4a6fb610b15b6b4647df8e36e0ac9b0694a6ff997f5613e0183bb6124058021",
+  "resources": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 32,
+    "state_bits": null
+   },
+   "cost": {
+    "d": "d",
+    "rounds": "1",
+    "sizes": [
+     "d",
+     "V"
+    ],
+    "why": "The complexity claim is stated in n, d and V; one pass of the switches per token."
+   },
+   "dimensions": {},
+   "learning": {
+    "composition": {
+     "d": "64",
+     "examples": 3000,
+     "rounds": "1",
+     "size": 4
+    },
+    "copy": {
+     "d": "64",
+     "examples": 1500,
+     "rounds": "1",
+     "size": 4
+    },
+    "dyck": {
+     "d": "64",
+     "examples": 1200,
+     "rounds": "1",
+     "size": 2
+    },
+    "recall": {
+     "d": "64",
+     "examples": 2500,
+     "rounds": "1",
+     "size": 4
+    }
+   },
+   "stream_symbols": [],
+   "tasks": {
+    "binding": {
+     "d": "8*hops+16",
+     "rounds": "1",
+     "state_words": "16*hops+32",
+     "why": "Both chains of assignments are held in the store; the width grows linearly with the chain length."
+    },
+    "composition": {
+     "d": "8*T+8",
+     "rounds": "1",
+     "state_words": "16*T+16",
+     "why": "Both tables given in context are held in the store; the width grows linearly with the table size."
+    },
+    "copy": {
+     "d": "4*L+8",
+     "rounds": "1",
+     "state_words": "8*L+16",
+     "why": "The store width grows linearly with the amount to hold (L symbols), as the capability claim says the width is chosen for the listed size. State: the store s and the released output y, 2d numbers."
+    },
+    "dyck": {
+     "d": "4*depth+8",
+     "rounds": "1",
+     "state_words": "8*depth+16",
+     "why": "The open brackets are kept as a counter-like code; the width grows linearly with the depth."
+    },
+    "recall": {
+     "d": "4*K+8",
+     "rounds": "1",
+     "state_words": "8*K+16",
+     "why": "The store width grows linearly with K; 4K+8 is at least the max(2K, 16) possible keys at every K, so each possible key can have its own store entry."
+    }
+   },
+   "why": "Stored numbers are 32-bit, as the capability claims state; the learned toy cases use a fixed store width of 64."
+  },
+  "run": "k2-run2",
+  "source": "def init(sizes, ops):\n    d = int(sizes['d'])\n    V = int(sizes['V'])\n    params = {}\n    params['E'] = ops.np.normal((V, d), 11, 1.0)\n    params['W_r'] = ops.np.normal((d, 2 * d), 12, 0.3)\n    params['W_i'] = ops.np.normal((d, 2 * d), 13, 0.3)\n    params['W_o'] = ops.np.normal((d, 2 * d), 14, 0.3)\n    params['W_u'] = ops.np.normal((d, 2 * d), 15, 0.3)\n    params['b_r'] = ops.np.normal((d,), 16, 0.1)\n    params['b_i'] = ops.np.normal((d,), 17, 0.1)\n    params['b_o'] = ops.np.normal((d,), 18, 0.1)\n    params['b_u'] = ops.np.normal((d,), 19, 0.1)\n    params['O'] = ops.np.normal((d, V), 20, 1.0)\n    state = {'s': ops.np.zeros(d), 'y': ops.np.zeros(d)}\n    return params, state\n\ndef update(params, state, token, ops):\n    z = ops.np.concatenate((state['y'], params['E'][token]))\n    ar = ops.np.add(params['W_r'] @ z, params['b_r'])\n    ai = ops.np.add(params['W_i'] @ z, params['b_i'])\n    ao = ops.np.add(params['W_o'] @ z, params['b_o'])\n    au = ops.np.add(params['W_u'] @ z, params['b_u'])\n    r = ops.np.sigmoid(ar)\n    i = ops.np.sigmoid(ai)\n    o = ops.np.sigmoid(ao)\n    u = ops.np.tanh(au)\n    kept = ops.np.multiply(r, state['s'])\n    admitted = ops.np.multiply(i, u)\n    s_new = ops.np.add(kept, admitted)\n    ts = ops.np.tanh(s_new)\n    y_new = ops.np.multiply(o, ts)\n    return {'s': s_new, 'y': y_new}\n\ndef predict(params, state, ops):\n    logits = state['y'] @ params['O']\n    return ops.np.argmax(logits)\n",
+  "spec": {
+   "equations": "def expected(params, sizes, tokens):\n    d = sizes['d']\n    s = np.zeros(d, dtype=np.float32)\n    y = np.zeros(d, dtype=np.float32)\n    result = []\n    for token in tokens:\n        z = np.concatenate((y, params['E'][token])).astype(np.float32)\n        ar = (params['W_r'] @ z + params['b_r']).astype(np.float32)\n        ai = (params['W_i'] @ z + params['b_i']).astype(np.float32)\n        ao = (params['W_o'] @ z + params['b_o']).astype(np.float32)\n        au = (params['W_u'] @ z + params['b_u']).astype(np.float32)\n        r = (np.float32(1) / (np.float32(1) + np.exp(-ar))).astype(np.float32)\n        i = (np.float32(1) / (np.float32(1) + np.exp(-ai))).astype(np.float32)\n        o = (np.float32(1) / (np.float32(1) + np.exp(-ao))).astype(np.float32)\n        u = np.tanh(au).astype(np.float32)\n        s = (r*s + i*u).astype(np.float32)\n        y = (o*np.tanh(s)).astype(np.float32)\n        output = int(np.argmax(y @ params['O']))\n        result.append({'state': {'s': s.copy(), 'y': y.copy()}, 'output': output})\n    return result",
+   "points": [
+    {
+     "V": 8,
+     "d": 8,
+     "n": 64
+    },
+    {
+     "V": 8,
+     "d": 32,
+     "n": 64
+    },
+    {
+     "V": 32,
+     "d": 8,
+     "n": 128
+    },
+    {
+     "V": 32,
+     "d": 32,
+     "n": 256
+    }
+   ],
+   "reference": "O1.a",
+   "streams": [
+    "repeated",
+    "distinct",
+    "random"
+   ],
+   "tolerance": 1e-06
+  },
+  "statement_id": "O2.a",
+  "statement_sha256": "4993c2198e3e62293717d4969731d4143f1c6de6ab48d549c7d97493e7c513ab"
+ },
+ {
+  "architecture": {
+   "hidden": "d",
+   "precision_bits": 64,
+   "state_bits": 4
+  },
+  "cost_statement": {
+   "id": "O9.a",
+   "spec": {
+    "exponent": 1,
+    "ops": "n*(k*V + 2*k + V - 2)",
+    "sizes": {
+     "V": [
+      8,
+      32
+     ],
+     "k": [
+      8,
+      32
+     ]
+    },
+    "state": "1",
+    "widths": {
+     "d": "k",
+     "positions": "n",
+     "rounds": "1"
+    }
+   }
+  },
+  "job": "mathlib-14c47113682f",
+  "record": "runs/calibration-math-20261016T051933Z/k3-run1/artifacts/math_statements/card-ca11b003-v1-7e6422.json",
+  "record_sha256": "b24ca2d325b1cc681853b7c43e21f452f08e35ccc27be02b99c9733c7dd5366d",
+  "resources": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 64,
+    "state_bits": 4
+   },
+   "cost": {
+    "d": "k",
+    "rounds": "1",
+    "sizes": [
+     "k",
+     "V"
+    ],
+    "why": "The complexity claim is stated in n, k and V; the width of the tables is the number of states."
+   },
+   "dimensions": {
+    "k": "16"
+   },
+   "learning": {
+    "composition": {
+     "d": "16",
+     "examples": 400,
+     "rounds": "1",
+     "size": 2
+    },
+    "copy": {
+     "d": "16",
+     "examples": 400,
+     "rounds": "1",
+     "size": 2
+    },
+    "dyck": {
+     "d": "16",
+     "examples": 300,
+     "rounds": "1",
+     "size": 2
+    },
+    "recall": {
+     "d": "16",
+     "examples": 400,
+     "rounds": "1",
+     "size": 2
+    }
+   },
+   "stream_symbols": [],
+   "tasks": {
+    "binding": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    },
+    "composition": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    },
+    "copy": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    },
+    "dyck": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    },
+    "recall": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    }
+   },
+   "why": "k = 16 states, decoded to one state per token, so the carried state holds log2 16 = 4 bits."
+  },
+  "run": "k3-run1",
+  "source": "def init(sizes, ops):\n    k = int(sizes.get('k', sizes.get('d')))\n    V = int(sizes['V'])\n    A = ops.np.normal((k, k), 1, 1.0)\n    B = ops.np.normal((k, V), 2, 1.0)\n    params = {'A': A, 'B': B, 'z0': 0}\n    return params, {'z': 0}\n\n\ndef update(params, state, token, ops):\n    z = int(state['z'])\n    x = int(token)\n    row = params['A'][z, :]\n    col = params['B'][:, x]\n    scores = ops.np.multiply(row, col)\n    nz = int(ops.np.argmax(scores))\n    return {'z': nz}\n\n\ndef predict(params, state, ops):\n    z = int(state['z'])\n    row = params['A'][z, :]\n    scores = ops.np.matmul(row, params['B'])\n    return int(ops.np.argmax(scores))\n",
+  "spec": {
+   "equations": "def expected(params, sizes, tokens):\n    A = np.asarray(params['A'])\n    B = np.asarray(params['B'])\n    z = int(params['z0'])\n    result = []\n    for x in tokens:\n        move_scores = A[z, :] * B[:, int(x)]\n        z = int(np.argmax(move_scores))\n        prediction_scores = np.sum(A[z, :, None] * B, axis=0)\n        answer = int(np.argmax(prediction_scores))\n        result.append({'state': {'z': z}, 'output': answer})\n    return result\n",
+   "points": [
+    {
+     "V": 8,
+     "k": 8,
+     "n": 64
+    },
+    {
+     "V": 32,
+     "k": 32,
+     "n": 128
+    }
+   ],
+   "reference": "O9.a",
+   "streams": [
+    "repeated",
+    "distinct",
+    "random"
+   ],
+   "tolerance": 1e-09
+  },
+  "statement_id": "O10.a",
+  "statement_sha256": "92a3147666302df5ce5e48e17a34909a53d909a184b7e4a81ff405135ed439ab"
+ },
+ {
+  "architecture": {
+   "hidden": "d",
+   "precision_bits": 64,
+   "state_bits": 4
+  },
+  "cost_statement": {
+   "id": "O1.a",
+   "spec": {
+    "exponent": 1,
+    "ops": "n*(k*V + 2*k + V - 2)",
+    "sizes": {
+     "V": [
+      8,
+      32
+     ],
+     "k": [
+      8,
+      32
+     ]
+    },
+    "state": "1",
+    "widths": {
+     "d": "k",
+     "positions": "n",
+     "rounds": "1"
+    }
+   }
+  },
+  "job": "mathlib-08b69367d7f9",
+  "record": "runs/calibration-math-20261016T051933Z/k3-run2/artifacts/math_statements/card-ca11b003-v1-547b4f.json",
+  "record_sha256": "9dd751299bf8962fad26b26188868b158cc3bd55b7264ccb5a78daefc049fa72",
+  "resources": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 64,
+    "state_bits": 4
+   },
+   "cost": {
+    "d": "k",
+    "rounds": "1",
+    "sizes": [
+     "k",
+     "V"
+    ],
+    "why": "The complexity claim is stated in n, k and V; the width of the tables is the number of states."
+   },
+   "dimensions": {
+    "k": "16"
+   },
+   "learning": {
+    "composition": {
+     "d": "16",
+     "examples": 400,
+     "rounds": "1",
+     "size": 2
+    },
+    "copy": {
+     "d": "16",
+     "examples": 400,
+     "rounds": "1",
+     "size": 2
+    },
+    "dyck": {
+     "d": "16",
+     "examples": 300,
+     "rounds": "1",
+     "size": 2
+    },
+    "recall": {
+     "d": "16",
+     "examples": 400,
+     "rounds": "1",
+     "size": 2
+    }
+   },
+   "stream_symbols": [],
+   "tasks": {
+    "binding": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    },
+    "composition": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    },
+    "copy": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    },
+    "dyck": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    },
+    "recall": {
+     "d": "16",
+     "rounds": "1",
+     "state_words": "1",
+     "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+    }
+   },
+   "why": "k = 16 states, decoded to one state per token, so the carried state holds log2 16 = 4 bits."
+  },
+  "run": "k3-run2",
+  "source": "def init(sizes, ops):\n    k = int(sizes['k']) if 'k' in sizes else int(sizes['d'])\n    V = int(sizes['V'])\n    A = ops.np.absolute(ops.np.normal((k, k), 1, 1.0))\n    B = ops.np.absolute(ops.np.normal((k, V), 2, 1.0))\n    params = {'A': A, 'B': B}\n    state = {'z': 0}\n    return params, state\n\ndef update(params, state, token, ops):\n    A = params['A']\n    B = params['B']\n    z = state['z']\n    x = int(token)\n    scores = ops.np.multiply(A[z, :], B[:, x])\n    znew = int(ops.np.argmax(scores))\n    return {'z': znew}\n\ndef predict(params, state, ops):\n    A = params['A']\n    B = params['B']\n    z = state['z']\n    scores = A[z, :] @ B\n    return int(ops.np.argmax(scores))\n",
+  "spec": {
+   "equations": "def expected(params, sizes, tokens):\n    A = np.asarray(params['A'])\n    B = np.asarray(params['B'])\n    z = 0\n    results = []\n    for x in tokens:\n        z = int(np.argmax(A[z, :] * B[:, int(x)]))\n        scores = np.sum(A[z, :, None] * B, axis=0)\n        prediction = int(np.argmax(scores))\n        results.append({'state': {'z': z}, 'output': prediction})\n    return results\n",
+   "points": [
+    {
+     "V": 8,
+     "k": 8,
+     "n": 64
+    },
+    {
+     "V": 32,
+     "k": 32,
+     "n": 128
+    }
+   ],
+   "reference": "O1.a",
+   "streams": [
+    "repeated",
+    "distinct",
+    "random"
+   ]
+  },
+  "statement_id": "O2.a",
+  "statement_sha256": "cd6e92ee40f955fa3be8bb70a111edcd89ed8490b6c59d3ebac82f454e52d577"
+ },
+ {
+  "architecture": {
+   "hidden": "d",
+   "precision_bits": 64,
+   "state_bits": "2*ceiling(log(d)/log(2))"
+  },
+  "cost_statement": {
+   "id": "O1.a",
+   "spec": {
+    "exponent": 1,
+    "ops": "n*(V-1)",
+    "sizes": {
+     "V": [
+      8,
+      32
+     ]
+    },
+    "state": "2",
+    "widths": {
+     "d": "V",
+     "positions": "n",
+     "rounds": "1"
+    }
+   }
+  },
+  "job": "mathlib-407eb2a45e11",
+  "record": "runs/calibration-math-20261016T051933Z/k4-run1/artifacts/math_statements/card-ca11b004-v1-cbd417.json",
+  "record_sha256": "686138e303817e3de8453087add260d87be8770925f27f1e3ce01286a5e5e8ad",
+  "resources": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 64,
+    "state_bits": "2*ceiling(log(d)/log(2))"
+   },
+   "cost": {
+    "d": "V",
+    "rounds": "1",
+    "sizes": [
+     "V"
+    ],
+    "why": "The complexity claim is stated in n and V; the table is indexed by symbols."
+   },
+   "dimensions": {
+    "c": "3"
+   },
+   "learning": {
+    "composition": {
+     "d": "3*T+3",
+     "examples": 300,
+     "rounds": "1",
+     "size": 1
+    },
+    "copy": {
+     "d": "5",
+     "examples": 300,
+     "rounds": "1",
+     "size": 2
+    },
+    "dyck": {
+     "d": "4",
+     "examples": 300,
+     "rounds": "1",
+     "size": 2
+    },
+    "recall": {
+     "d": "Max(2*K, 16)+17",
+     "examples": 300,
+     "rounds": "1",
+     "size": 1
+    }
+   },
+   "stream_symbols": [],
+   "tasks": {
+    "binding": {
+     "d": "2*hops+11",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "2 hops+2 variable names, 8 constants and the separator."
+    },
+    "composition": {
+     "d": "3*T+3",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "3T symbols and three separators."
+    },
+    "copy": {
+     "d": "5",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "The width is the task's symbol count (4 symbols and the separator); the carried state is the last two symbols."
+    },
+    "dyck": {
+     "d": "4",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "Four bracket symbols."
+    },
+    "recall": {
+     "d": "Max(2*K, 16)+17",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "The width is the task's symbol count: max(2K, 16) possible keys, 16 values and the separator."
+    }
+   },
+   "why": "Order c = 3: the carried state is the last two symbols, 2 ceil(log2 d) bits for d symbols; the continuation table is fixed after training."
+  },
+  "run": "k4-run1",
+  "source": "def init(sizes, ops):\n    V = int(sizes['V'])\n    text = []\n    x = 12345\n    for i in range(8 * V * V):\n        x = (1103515245 * x + 12345) % 2147483648\n        text.append((x // 65536) % V)\n    counts = [[[0 for v in range(V)] for b in range(V)] for a in range(V)]\n    for i in range(len(text) - 2):\n        counts[text[i]][text[i + 1]][text[i + 2]] += 1\n    params = {'T': ops.np.array(counts)}\n    state = ops.np.array([0, 0])\n    return params, state\n\n\ndef update(params, state, token, ops):\n    b = int(state[1])\n    w = ops.np.array([b, int(token)])\n    return w\n\n\ndef predict(params, state, ops):\n    a = int(state[0])\n    b = int(state[1])\n    return int(ops.np.argmax(params['T'][a, b, :]))\n",
+  "spec": {
+   "equations": "def expected(params, sizes, tokens):\n    w = np.array([0, 0], dtype=np.int64)\n    result = []\n    for token in tokens:\n        w = np.array([w[1], int(token)], dtype=np.int64)\n        answer = int(np.argmax(params['T'][int(w[0]), int(w[1]), :]))\n        result.append({'state': w.copy(), 'output': answer})\n    return result\n",
+   "points": [
+    {
+     "V": 8,
+     "n": 64
+    },
+    {
+     "V": 32,
+     "n": 256
+    }
+   ],
+   "reference": "O1.a",
+   "streams": [
+    "repeated",
+    "distinct",
+    "random"
+   ]
+  },
+  "statement_id": "O2.a",
+  "statement_sha256": "46c710c93beda7c2d723419fea01e99328a2ce052d82e08d0918a584fa09794f"
+ },
+ {
+  "architecture": {
+   "hidden": "d",
+   "precision_bits": 64,
+   "state_bits": "2*ceiling(log(d)/log(2))"
+  },
+  "cost_statement": {
+   "id": "O1.a",
+   "spec": {
+    "exponent": 1,
+    "ops": "n*(V-1)",
+    "sizes": {
+     "V": [
+      8,
+      32
+     ]
+    },
+    "state": "2",
+    "widths": {
+     "d": "V",
+     "positions": "n",
+     "rounds": "1"
+    }
+   }
+  },
+  "job": "mathlib-0bc260f93e71",
+  "record": "runs/calibration-math-20261016T051933Z/k4-run2/artifacts/math_statements/card-ca11b004-v1-65a2c7.json",
+  "record_sha256": "709c9c9ae3a91211a2990af918fbdc206e510b24451e9274861a340d35e61a7a",
+  "resources": {
+   "architecture": {
+    "hidden": "d",
+    "precision_bits": 64,
+    "state_bits": "2*ceiling(log(d)/log(2))"
+   },
+   "cost": {
+    "d": "V",
+    "rounds": "1",
+    "sizes": [
+     "V"
+    ],
+    "why": "The complexity claim is stated in n and V; the table is indexed by symbols."
+   },
+   "dimensions": {
+    "c": "3"
+   },
+   "learning": {
+    "composition": {
+     "d": "3*T+3",
+     "examples": 300,
+     "rounds": "1",
+     "size": 1
+    },
+    "copy": {
+     "d": "5",
+     "examples": 300,
+     "rounds": "1",
+     "size": 2
+    },
+    "dyck": {
+     "d": "4",
+     "examples": 300,
+     "rounds": "1",
+     "size": 2
+    },
+    "recall": {
+     "d": "Max(2*K, 16)+17",
+     "examples": 300,
+     "rounds": "1",
+     "size": 1
+    }
+   },
+   "stream_symbols": [],
+   "tasks": {
+    "binding": {
+     "d": "2*hops+11",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "2 hops+2 variable names, 8 constants and the separator."
+    },
+    "composition": {
+     "d": "3*T+3",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "3T symbols and three separators."
+    },
+    "copy": {
+     "d": "5",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "The width is the task's symbol count (4 symbols and the separator); the carried state is the last two symbols."
+    },
+    "dyck": {
+     "d": "4",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "Four bracket symbols."
+    },
+    "recall": {
+     "d": "Max(2*K, 16)+17",
+     "rounds": "1",
+     "state_words": "2",
+     "why": "The width is the task's symbol count: max(2K, 16) possible keys, 16 values and the separator."
+    }
+   },
+   "why": "Order c = 3: the carried state is the last two symbols, 2 ceil(log2 d) bits for d symbols; the continuation table is fixed after training."
+  },
+  "run": "k4-run2",
+  "source": "def init(sizes, ops):\n    V = int(sizes['V'])\n    T = ops.np.normal((V, V, V), 0, 1.0)\n    params = {'T': T}\n    state = ops.np.array([0, 0])\n    return params, state\n\n\ndef update(params, state, token, ops):\n    state[0] = state[1]\n    state[1] = int(token)\n    return state\n\n\ndef predict(params, state, ops):\n    row = params['T'][int(state[0]), int(state[1])]\n    return int(ops.np.argmax(row))\n",
+  "spec": {
+   "equations": "def expected(params, sizes, tokens):\n    table = np.asarray(params['T'])\n    pair = np.array([0, 0], dtype=np.int64)\n    result = []\n    for token in tokens:\n        pair = np.array([pair[1], int(token)], dtype=np.int64)\n        answer = int(np.argmax(table[int(pair[0]), int(pair[1]), :]))\n        result.append({'state': pair.copy(), 'output': answer})\n    return result\n",
+   "points": [
+    {
+     "V": 8,
+     "n": 64
+    },
+    {
+     "V": 32,
+     "n": 128
+    }
+   ],
+   "reference": "O1.a",
+   "streams": [
+    "repeated",
+    "distinct",
+    "random"
+   ],
+   "tolerance": 1e-09
+  },
+  "statement_id": "O2.a",
+  "statement_sha256": "8170907626655e2bf8a61de173b26e1d65b4a8420c60074106f1dd1bf243d8b3"
+ }
+]

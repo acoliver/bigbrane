@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/bench_result.schema.json",
+  "title": "Bench result summary (loose)",
+  "type": "object",
+  "required": ["per_task", "baselines", "scaling_slopes"],
+  "properties": {
+    "card_id": {"type": "string", "pattern": "^card-[0-9a-f]{8}$"},
+    "per_task": {
+      "type": "object",
+      "additionalProperties": {"type": "object"}
+    },
+    "baselines": {"type": "object"},
+    "scaling_slopes": {
+      "type": "object",
+      "additionalProperties": {"type": "number"}
+    },
+    "receipts": {"type": "array"}
+  }
+}

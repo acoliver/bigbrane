@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block content %}
+{% set card = dossier.card %}
+<p><a href="{{ root }}cards.html">Cards</a> / {{ card.id }}</p>
+<h1>{{ card.title }}</h1>
+<table>
+  <tr><th>Card</th><td>{{ card.id }}</td></tr>
+  <tr><th>Latest version</th><td>{{ card.version }}</td></tr>
+  <tr><th>Lens</th><td>{{ card.lens }}</td></tr>
+  <tr><th>Stage reached</th><td>{{ dossier.reached }}</td></tr>
+  <tr><th>Parents</th><td>{% for parent in card.parent_ids %}{{ parent }}{% if not loop.last %}, {% endif %}{% else %}<span class="muted">none</span>{% endfor %}</td></tr>
+  <tr><th>Created by call</th><td>{{ card.created_by_call }}</td></tr>
+</table>
+
+{% if override and override.card_id == card.id %}
+<div class="override">
+  <h2>Provenance: copied from run {{ override.source_run_id }}, gates bypassed</h2>
+  <p>This card was copied from another run. The verdicts below were earned there. The verdicts under
+  "Verdicts" further down ({{ override.stages_run[0] }}{% if override.stages_run | length > 1 %} to {{ override.stages_run[-1] }}{% endif %}) are the only ones recorded in this run.</p>
+  {% for stage, record in override.source_verdicts.items() %}
+  <h3>{{ stage }} in the source run: {{ record.verdict if record else "none (stage never ran)" }}</h3>
+  {% if record %}<ul>{% for reason in record.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>{% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% if dossier.warnings %}
+<h2>Warnings</h2>
+<ul>{% for warning in dossier.warnings %}<li class="warn">{{ warning }}</li>{% endfor %}</ul>
+{% endif %}
+
+<h2>Summary</h2>
+<p>{{ card.summary }}</p>
+
+<h2>Mechanism</h2>
+<h3>State</h3>
+<table>
+  <tr><th>Name</th><th>Type</th><th>Shape</th><th>Meaning</th></tr>
+  {% for item in card.mechanism.state %}
+  <tr><td>{{ item.name }}</td><td>{{ item.type }}</td><td>[{{ item.shape | join(", ") }}]</td><td>{{ item.meaning }}</td></tr>
+  {% endfor %}
+</table>
+<h3>Update</h3>
+<table>
+  <tr><th>Name</th><th>LaTeX</th><th>Plain</th></tr>
+  {% for eq in card.mechanism["update"] %}<tr><td>{{ eq.name or "" }}</td><td><code>{{ eq.latex }}</code></td><td><code>{{ eq.plain }}</code></td></tr>{% endfor %}
+</table>
+<h3>Readout</h3>
+<table>
+  <tr><th>Name</th><th>LaTeX</th><th>Plain</th></tr>
+  {% for eq in card.mechanism["readout"] %}<tr><td>{{ eq.name or "" }}</td><td><code>{{ eq.latex }}</code></td><td><code>{{ eq.plain }}</code></td></tr>{% endfor %}
+</table>
+<h3>Learning</h3>
+<p>{{ card.mechanism.learning.description }}</p>
+<p><strong>Few-shot argument.</strong> {{ card.mechanism.learning.few_shot_argument }}</p>
+
+<h2>Claims</h2>
+<table>
+  <tr><th>Time per token</th><td>{{ card.claims.complexity.time_per_token }}</td></tr>
+  <tr><th>Memory</th><td>{{ card.claims.complexity.memory }}</td></tr>
+  <tr><th>Total sequence</th><td>{{ card.claims.complexity.total_sequence }}</td></tr>
+  <tr><th>Constants</th><td>{{ card.claims.complexity.constants_notes }}</td></tr>
+  <tr><th>Sample efficiency</th><td>{{ card.claims.sample_efficiency.mechanism }}<br>
+    {{ card.claims.sample_efficiency.prediction.metric }} = {{ card.claims.sample_efficiency.prediction.value }}.
+    {{ card.claims.sample_efficiency.prediction.statement }}</td></tr>
+</table>
+<table>
+  <tr><th>Capability task</th><th>Prediction</th></tr>
+  {% for cap in card.claims.capabilities %}<tr><td>{{ cap.task }}</td><td>{{ cap.prediction }}</td></tr>{% endfor %}
+</table>
+
+<h2>Known relatives</h2>
+<table>
+  <tr><th>Name</th><th>Relation</th><th>Claimed difference</th></tr>
+  {% for rel in card.known_relatives %}<tr><td>{{ rel.name }}</td><td>{{ rel.relation }}</td><td>{{ rel.claimed_difference }}</td></tr>{% endfor %}
+</table>
+
+<h2>Falsifiers</h2>
+<ul>{% for item in card.falsifiers %}<li>{{ item }}</li>{% endfor %}</ul>
+
+<h2>Toy example</h2>
+<p>{{ card.toy_example.description }}</p>
+<pre>{{ dossier.toy_python }}</pre>
+<p>Expected:</p>
+<pre>{{ dossier.expected }}</pre>
+
+<h2>Verdicts</h2>
+{% if dossier.verdicts %}
+{% for verdict in dossier.verdicts %}
+<h3>{{ verdict.stage }}: {{ verdict.verdict }} (card version {{ verdict.card_version }}, {{ verdict.ts }})</h3>
+<ul>{% for reason in verdict.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+<p>Calls behind this verdict:</p>
+<ul>
+{% for call in verdict.calls %}
+  <li>{{ call.id }} {{ call.label }}
+    {% if call.href %} | <a href="{{ call.href }}">transcript</a>
+    {% elif call.note %} | <span class="warn">{{ call.note }}</span>{% endif %}
+  </li>
+{% else %}<li class="muted">none</li>
+{% endfor %}
+</ul>
+{% endfor %}
+{% else %}<p class="muted">No verdicts recorded.</p>{% endif %}
+
+{% if dossier.obligation_checks or dossier.s3_gates %}
+<h2>Obligation checks (S3)</h2>
+<p>Each checkable obligation got a program from the obligation checker, run in the executor. A discharged or
+violated status counts only when a second run printed the same status and counterexample.</p>
+{% for gate in dossier.s3_gates %}
+<p><strong>S3 gate rule: {{ gate.rule }}</strong> gave {{ gate.verdict }} in round {{ gate.round }}
+({{ gate.ts }}). Votes {% for role, vote in (gate.votes or {}).items() %}{{ role }} {{ vote }}{% if not loop.last %}, {% endif %}{% endfor %}{% if gate.check_settles_split %}; after the checks {% for role, vote in gate.effective_votes.items() %}{{ role }} {{ vote }}{% if not loop.last %}, {% endif %}{% endfor %}, contested: {{ gate.contested | join(", ") }}{% endif %}.
+Every checkable obligation discharged: {{ "yes" if gate.all_checkable_discharged else "no" }}.</p>
+{% if gate.notes %}<ul>{% for note in gate.notes %}<li>{{ note }}</li>{% endfor %}</ul>{% endif %}
+{% endfor %}
+<table>
+  <tr><th>Obligation</th><th>Kind</th><th>Status</th><th>Evidence</th><th>Counterexample</th><th>Jobs</th></tr>
+  {% for check in dossier.obligation_checks %}
+  <tr>
+    <td>{% if check.href %}<a href="{{ check.href }}">{{ check.obligation }}</a>{% else %}{{ check.obligation }}{% endif %}{% if check.optional %} <span class="muted">(optional)</span>{% endif %}</td>
+    <td>{{ check.kind }}</td>
+    <td>{{ check.status }}{% if check.replayed %} (replayed){% endif %}</td>
+    <td>{{ check.evidence or check.why }}{% for problem in check.problems %}<br><span class="warn">{{ problem }}</span>{% endfor %}</td>
+    <td>{% if check.counterexample %}<pre>{{ check.counterexample }}</pre>{% endif %}</td>
+    <td>{{ check.jobs | join(", ") }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% for check in dossier.obligation_checks if check.program %}
+<details><summary>Program for {{ check.obligation }}</summary><pre>{{ check.program }}</pre></details>
+{% endfor %}
+{% endif %}
+
+{% if dossier.math.statements or dossier.math.verdicts %}
+<h2>Math stages (M and C)</h2>
+<p>Statements and their definitions were frozen and hashed before any proof attempt. Tiers: lean-proven and
+sympy-exact are reported as proven, z3-checked as proven up to its bound, executed-on-examples as observed on the
+listed sizes; argued never satisfies an obligation. Definitions are conventions (sampling, evaluation, accounting
+units, baseline specification) and carry no status. Premises are substantive claims a proof relies on but does not
+prove. A claim that holds at some tier while premises stay open is conditional; a claim resting on a premise that
+restates or implies it is circular and fails.</p>
+{% for verdict in dossier.math.verdicts %}
+<h3>{% if verdict.href %}<a href="{{ verdict.href }}">{{ verdict.stage }}: {{ verdict.verdict }}</a>{% else %}{{ verdict.stage }}: {{ verdict.verdict }}{% endif %}{% if verdict.kill_codes %} ({{ verdict.kill_codes | join(", ") }}){% endif %}</h3>
+<p>Models: {% for role, models in verdict.models.items() %}{{ role }} {{ models | join(", ") or "none" }}{% if not loop.last %}; {% endif %}{% endfor %}</p>
+<table>
+  <tr><th>Claim</th><th>Status</th><th>Tier</th><th>Detail</th><th>Open premises</th><th>Circular premises</th></tr>
+  {% for claim in verdict.claims %}
+  <tr><td>{{ claim.claim_id }}</td><td>{{ claim.status }}</td><td>{{ claim.label }}</td>
+    <td>{{ claim.phrase }}</td><td>{{ claim.open_premises | join(", ") }}</td>
+    <td>{{ claim.circular_premises | join(", ") }}</td></tr>
+  {% endfor %}
+</table>
+{% if verdict.conditional %}
+<p>Conditional claims: {% for claim in verdict.conditional %}{{ claim.claim_id }} (on {{ claim.open_premises | join(", ") }}){% if not loop.last %}; {% endif %}{% endfor %}.</p>
+{% endif %}
+{% if verdict.circular %}
+<p>Circular premises: {% for p in verdict.circular %}{{ p.id }} ({{ p.evidence }}){% if not loop.last %}; {% endif %}{% endfor %}.</p>
+{% endif %}
+<table>
+  <tr><th>Definition</th><th>Kind</th><th>Text</th></tr>
+  {% for d in verdict.definitions %}
+  <tr><td>{{ d.id }}</td><td>{{ d.kind }}</td><td>{{ d.text }}</td></tr>
+  {% else %}<tr><td colspan="3" class="muted">no definitions recorded</td></tr>
+  {% endfor %}
+</table>
+<table>
+  <tr><th>Premise</th><th>Status</th><th>Kind</th><th>Testable by</th><th>Does work</th><th>Added by</th><th>Used by</th><th>Text</th><th>Why needed</th><th>Basis</th><th>Evidence</th></tr>
+  {% for a in verdict.premises %}
+  <tr><td>{{ a.id }}</td><td>{% if a.status == "circular" %}<strong>circular</strong>{% else %}{{ a.status }}{% endif %}</td><td>{{ a.kind }}</td>
+    <td>{{ a.testable_by }}{% if a.measurement_plan %} (plan: {{ a.measurement_plan.measure }}; accept if {{ a.measurement_plan.accept_if }}){% endif %}{% if a.citation %} ({{ a.citation.source }}:{{ a.citation.id }}){% endif %}</td>
+    <td>{{ a.does_work }}</td><td>{{ a.added_by }}</td><td>{{ a.used_by | join(", ") }}</td>
+    <td>{{ a.text }}</td><td>{{ a.why_needed }}</td><td>{{ a.basis }}</td><td>{{ a.evidence or "" }}</td></tr>
+  {% else %}<tr><td colspan="11" class="muted">no premises</td></tr>
+  {% endfor %}
+</table>
+{% if verdict.scheduled_measurements %}
+<p>Measurements deferred to test design: {% for m in verdict.scheduled_measurements %}{{ m.premise_id }} for {{ m.claims | join(", ") }} ({{ m.measurement_plan.measure }}){% if not loop.last %}; {% endif %}{% endfor %}.</p>
+{% endif %}
+{% endfor %}
+{% if dossier.math.statements %}
+<h3>Frozen statements{% if dossier.math.statements.href %} (<a href="{{ dossier.math.statements.href }}">artifact</a>){% endif %}</h3>
+<p>{{ dossier.math.statements.dropped }} statement(s) dropped by the host checks.{% for item in dossier.math.statements.not_formalized %} Not formalized: {{ item.claim_id }} ({{ item.why }}).{% endfor %}</p>
+{% for obligation in dossier.math.statements.obligations %}
+{% for s in obligation.statements %}
+<details><summary>{{ s.id }} {{ s.form }} for {{ obligation.claim_id or ("premises " ~ (obligation.discharges | join(", "))) }}{% if s.bound %}, bound {{ s.bound }}{% endif %}; definitions {{ obligation.definitions | join(", ") or "none" }}; depends on premises {{ obligation.premises | join(", ") or "none" }}; sha256 {{ s.sha256 }}</summary><pre>{{ s.text }}</pre></details>
+{% endfor %}
+{% endfor %}
+{% endif %}
+<table>
+  <tr><th>Stage</th><th>Statement or check</th><th>Purpose</th><th>Form</th><th>Status</th><th>Evidence</th><th>Jobs</th></tr>
+  {% for check in dossier.math.checks %}
+  <tr><td>{{ check.stage }}</td>
+    <td>{% if check.href %}<a href="{{ check.href }}">{{ check.statement_id }}</a>{% else %}{{ check.statement_id }}{% endif %}</td>
+    <td>{{ check.purpose }}</td><td>{{ check.form }}</td>
+    <td>{{ check.status }}{% if not check.decided %} (undecided){% endif %}</td>
+    <td>{{ check.evidence }}</td><td>{{ check.jobs | join(", ") }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h2>Versions</h2>
+<table>
+  <tr><th>Version</th><th>Stage</th><th>File</th><th>Change from previous</th></tr>
+  {% for version in dossier.versions %}
+  <tr>
+    <td>{{ version.version }}</td><td>{{ version.stage }}</td>
+    <td><a href="{{ version.href }}">v{{ version.version }}.json</a></td>
+    <td>{% if version.diff.startswith("---") %}<pre>{{ version.diff }}</pre>{% else %}<span class="muted">{{ version.diff }}</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Literature receipts</h2>
+{% if dossier.literature %}
+<table>
+  <tr><th>Query</th><th>Source</th><th>Time</th><th>Result ids</th></tr>
+  {% for receipt in dossier.literature %}
+  <tr><td>{{ receipt.query }}</td><td>{{ receipt.source }}</td><td>{{ receipt.ts }}</td><td>{{ receipt.result_ids | join(", ") }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">No literature receipts for this card.</p>{% endif %}
+
+<h2>Artifacts</h2>
+{% if dossier.artifacts %}
+<table>
+  <tr><th>Kind</th><th>Name</th><th>Bytes</th><th>sha256</th></tr>
+  {% for artifact in dossier.artifacts %}
+  <tr>
+    <td>{{ artifact.kind }}</td>
+    <td>{% if artifact.href %}<a href="{{ artifact.href }}">{{ artifact.name }}</a>{% else %}{{ artifact.name }} <span class="warn">({{ artifact.note }})</span>{% endif %}</td>
+    <td class="num">{{ artifact.bytes }}</td><td><code>{{ artifact.sha256 }}</code></td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">No artifacts for this card.</p>{% endif %}
+
+<h2>Bench results</h2>
+{% if dossier.bench %}
+{% for result in dossier.bench %}
+<h3>{{ result.name }}</h3>
+<p>Scaling slopes:</p>
+<table>
+  <tr><th>Quantity</th><th class="num">Slope</th></tr>
+  {% for key, value in result.scaling %}<tr><td>{{ key }}</td><td class="num">{{ value }}</td></tr>{% endfor %}
+</table>
+<p>Per-task metrics (candidate):</p>
+<pre>{{ result.per_task }}</pre>
+<p>Baselines:</p>
+<pre>{{ result.baselines }}</pre>
+{% endfor %}
+{% else %}<p class="muted">No bench results for this card.</p>{% endif %}
+{% if dossier.budget %}
+{% set b = dossier.budget %}
+<h2>Loop budget</h2>
+<p>Lineage {{ b.lineage_id }} (joined {{ b.joined }}{% if b.via %} {{ b.via }}{% endif %}){% if not b.admitted %}, refused: the lineage was at its idea cap{% endif %}.
+Idea {{ b.idea_key }}: {{ b.idea_calls }} model call(s) for the idea, {{ b.calls }} on this card.
+Revisions charged to this card: {% for name, n in b.loops.items() %}{{ name }} {{ n }}{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}.</p>
+{% if b.stops %}
+<ul>{% for stop in b.stops %}<li>{{ stop.stage }} {{ stop.kill_code }} ({% if stop.terminal %}ended the card{% else %}the gate decided after it{% endif %}): {{ stop.detail }}</li>{% endfor %}</ul>
+{% endif %}
+{% endif %}
+{% endblock %}

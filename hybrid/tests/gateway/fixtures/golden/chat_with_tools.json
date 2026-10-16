@@ -1,0 +1,18 @@
+{
+  "model": "MODEL",
+  "temperature": 0.2,
+  "max_tokens": 500,
+  "messages": [
+    {"role": "system", "content": "You are terse."},
+    {"role": "user", "content": "Weather in Paris?"},
+    {"role": "assistant", "content": null, "tool_calls": [
+      {"id": "call_abc123", "type": "function", "function": {"name": "get_weather", "arguments": "{\"city\":\"Paris\"}"}}
+    ]},
+    {"role": "tool", "tool_call_id": "call_abc123", "content": "18C, sunny"},
+    {"role": "user", "content": "Thanks. Now Rome?"}
+  ],
+  "tools": [
+    {"type": "function", "function": {"name": "get_weather", "description": "Look up weather",
+      "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}}}
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/salad_critic.schema.json",
+  "title": "Salad critic output (S1)",
+  "description": "Fatal findings fail the card at once. Fixable findings send it back for revision while revisions remain.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ok", "fatal", "fixable", "notes"],
+  "properties": {
+    "ok": {"type": "boolean"},
+    "fatal": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "where", "problem"],
+        "properties": {
+          "kind": {"enum": ["dimension_error", "contradictory_definition", "unfalsifiable_central_claim"]},
+          "where": {"type": "string", "minLength": 1},
+          "problem": {"type": "string", "minLength": 10}
+        }
+      }
+    },
+    "fixable": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "where", "problem"],
+        "properties": {
+          "kind": {"enum": ["missing_definition", "notation_clash", "underspecified_step", "vague_secondary_claim",
+                            "arithmetic_slip"]},
+          "where": {"type": "string", "minLength": 1},
+          "problem": {"type": "string", "minLength": 10}
+        }
+      }
+    },
+    "notes": {"type": "string"}
+  },
+  "if": {"properties": {"ok": {"const": true}}},
+  "then": {
+    "properties": {
+      "fatal": {"maxItems": 0},
+      "fixable": {"maxItems": 0}
+    }
+  },
+  "else": {
+    "anyOf": [
+      {"properties": {"fatal": {"minItems": 1}}},
+      {"properties": {"fixable": {"minItems": 1}}}
+    ]
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Digit-path store over base-four address digits",
+  "summary": "An address is written as five base-four digits, least significant first, and each digit chooses one of four links from the current node, creating nodes on the way when writing. The node at the end of the path holds the item. A searched three-mode controller decides what goes in and what is read.",
+  "core_idea": "Spell each address in base-four digits and walk a four-way branching path to its item, under a searched three-mode controller.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Ch",
+        "type": "integer matrix",
+        "shape": [
+          "5C+1",
+          4
+        ],
+        "meaning": "Child links: Ch[v][g] is the node reached from node v by digit g, -1 if absent; at most 5C + 1 nodes for C addresses."
+      },
+      {
+        "name": "Itm",
+        "type": "integer vector",
+        "shape": [
+          "5C+1"
+        ],
+        "meaning": "Item held at each node, -1 if none."
+      },
+      {
+        "name": "ctl",
+        "type": "integer vector",
+        "shape": [
+          16
+        ],
+        "meaning": "Setting and bookkeeping words: mu, sigma, H, the joining slot p, the writing switch w, the numbering c, the output tally o, the nesting level d, plus the lists Z and A."
+      },
+      {
+        "name": "M",
+        "type": "integer map",
+        "shape": [
+          "N"
+        ],
+        "meaning": "Learned translation from a read result to an emitted symbol, at most N entries for an alphabet of N symbols."
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_t=\\sigma \\Rightarrow w\\leftarrow 0,\\, o\\leftarrow 0;\\quad \\mu=0:\\; x_t\\in Z \\Rightarrow p\\leftarrow\\varnothing;\\; w=1,\\, p=\\varnothing \\Rightarrow p\\leftarrow x_t;\\; w=1,\\, p\\neq\\varnothing \\Rightarrow \\mathrm{ins}(p, x_t),\\, p\\leftarrow\\varnothing;\\quad \\mu=1:\\; w=1,\\, x_t\\notin Z \\Rightarrow \\mathrm{ins}(c, x_t),\\, c\\leftarrow c+1;\\; w=0 \\Rightarrow o\\leftarrow o+1;\\quad \\mu=2:\\; x_t\\in A \\Rightarrow \\mathrm{del}(d, \\mathrm{get}(d)),\\, d\\leftarrow d-1;\\; x_t\\notin A \\Rightarrow d\\leftarrow d+1,\\, \\mathrm{ins}(d, x_t)",
+        "plain": "bookkeeping per incoming symbol under setting mu: twin symbols are joined and stored as one entry; a sequence is laid down entry by entry, numbered by c, until sigma, after which o tallies emitted output; an opening bracket is laid down under its nesting level d and erased again once its partner closes it",
+        "name": "controller"
+      },
+      {
+        "latex": "\\mathrm{ins}(a,b):\\; v \\leftarrow 0;\\; \\text{for } k=0..4:\\; g = \\lfloor a/4^k \\rfloor \\bmod 4,\\; v \\leftarrow Ch[v][g] \\text{ (created if absent)};\\; Itm_v \\leftarrow b",
+        "plain": "ins follows the five digits of a, creating missing nodes, and puts b at the last node; a write that would exceed C entries is dropped",
+        "name": "spell"
+      },
+      {
+        "latex": "\\mathrm{del}(a,b):\\; Itm_v \\leftarrow -1 \\text{ at the end of } a\\text{'s path}",
+        "plain": "del clears the item at the end of a's path",
+        "name": "clear"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\mu=0:\\; y_0=x_t,\\; r_j=\\mathrm{get}(y_{j-1}),\\; u=r_j \\text{ at the first } j\\le H \\text{ with } r_j\\in A,\\; u=r_{j-1} \\text{ at the first } r_j=\\varnothing;\\quad \\mu=1:\\; u=\\mathrm{get}(o);\\quad \\mu=2:\\; u=\\mathrm{get}(d);\\qquad \\hat{y}_t = M[u] \\text{ for } u\\in\\mathrm{dom}\\,M,\\; A_0 \\text{ for } u=\\varnothing,\\; u \\text{ otherwise}",
+        "plain": "output step: under setting 0 the entry stored for the incoming symbol is pulled, and pulled again from that result while it lies outside A, H pulls at most; under settings 1 and 2 the entry numbered o or the entry at level d is pulled once; M renames the pulled symbol",
+        "name": "readout"
+      },
+      {
+        "latex": "\\mathrm{get}(a):\\; \\text{follow the five digits of } a;\\; \\varnothing \\text{ at a missing link or } Itm_v = -1;\\; \\text{else } Itm_v",
+        "plain": "get follows a's digits and returns the item at the end of the path"
+      }
+    ],
+    "learning": {
+      "description": "Selection among discrete settings: symbols seen once in each demonstration are the separator candidates, demonstration outputs give A, and every setting is replayed on the m demonstrations; the renaming M keeps, for each pulled symbol, its most frequent required output, and the setting scoring best is adopted.",
+      "few_shot_argument": "Twelve demonstrations are enough in the small regimes because only a dozen or so discrete settings compete and the renaming M is read straight off the demonstrations."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(H + |A|)",
+      "memory": "O(C + N)",
+      "total_sequence": "O(n (H + |A|))",
+      "constants_notes": "Five digit steps per fetch (alphabets up to 4^5 = 1024 symbols); each address adds at most five nodes of five words."
+    },
+    "sample_efficiency": {
+      "mechanism": "Search over a handful of controller settings with a majority translation.",
+      "prediction": {
+        "metric": "examples_to_small_cases",
+        "value": 12,
+        "statement": "With m = 12 training examples the learned controller reaches accuracy at least 0.99 on copy at L = 4, recall at K = 4, nesting at depth 2, composition at T = 4 and binding at 2 hops, on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "String mode with C = L copies L = 8, 32, 64 over D = 4 with per-string accuracy 1.0 within 26C + N + 16 words."
+      },
+      {
+        "task": "associative recall",
+        "prediction": "Pair mode with C = K and H = 1 answers K = 8, 32, 64 with per-query accuracy 1.0 within 26C + N + 16 words (N = 2K + 17 at K = 64 with V = 16)."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Nesting mode with C = depth predicts the legal closer at depth 2, 4, 8, 16 with accuracy 1.0 within 26C + N + 16 words."
+      },
+      {
+        "task": "two-hop composition",
+        "prediction": "Pair mode with C = 2T and H = 2 answers f(g(x)) at T = 4, 16, 32 with accuracy 1.0 within 26C + N + 16 words."
+      },
+      {
+        "task": "variable binding",
+        "prediction": "Pair mode with C = 2(hops + 1) and H = hops + 1 resolves chains of 1, 4, 8 hops with accuracy 1.0 within 26C + N + 16 words."
+      },
+      {
+        "task": "learning in the small cases",
+        "prediction": "The search learner reaches 0.99 from m = 12 examples on seeds 0, 1, 2 for copy at L = 4, recall at K = 4, depth 2, composition at T = 4 and binding at 2 hops."
+      },
+      {
+        "task": "limit",
+        "prediction": "For any fixed capacity C, recall of K = C + 1 distinct pairs over V = 16 symbols fails on some instance: the store holds at most C pairs, so one probe's item is absent and is answered from at most 16 guesses (at C = 64 this is K = 65, above every P2 size)."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A P2 instance at the listed sizes that the hand-set controller with this store answers wrongly, or that needs more than 26C + N + 16 words.",
+    "A seed on which 12 small-case examples leave the learned controller below 0.99."
+  ],
+  "toy_example": {
+    "description": "Three addresses spelled in base four; node count and fetches.",
+    "python": "import json\nCh = [[-1] * 4]; Itm = [-1]\ndef digits(a):\n    return [(a // 4 ** k) % 4 for k in range(5)]\ndef walk(a, grow):\n    v = 0\n    for g in digits(a):\n        if Ch[v][g] < 0:\n            if not grow:\n                return -1\n            Ch.append([-1] * 4); Itm.append(-1); Ch[v][g] = len(Ch) - 1\n        v = Ch[v][g]\n    return v\nfor a, b in [(6, 40), (22, 41), (7, 42)]:\n    Itm[walk(a, True)] = b\nprint(json.dumps({\"digits22\": digits(22), \"nodes\": len(Ch), \"get22\": Itm[walk(22, False)], \"get6\": Itm[walk(6, False)]}))\n",
+    "expected": {
+      "digits22": [
+        2,
+        1,
+        1,
+        0,
+        0
+      ],
+      "nodes": 14,
+      "get22": 41,
+      "get6": 40
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

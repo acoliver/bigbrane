@@ -1,0 +1,136 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "A base-32 numeral register with one digit per position",
+  "summary": "The register is one integer read as 64 digits in base 32. Writing a symbol at position j replaces digit j by adding the difference times 32 to the power j; reading divides by that power and takes the remainder. Pairs use the digit named by their address, and a 20-bit word tracks brackets. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Hold a string or a table as the digits of one base-32 numeral of 64 digits, replacing and reading a digit by arithmetic on powers of 32.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Rn",
+        "type": "integer in [0, 32^64)",
+        "shape": [
+          1
+        ],
+        "meaning": "The numeral register, 64 base-32 digits (320 bits)."
+      },
+      {
+        "name": "bw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket word of open types, 20 bits."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase, 7 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "digit write",
+        "latex": "Rn \\leftarrow Rn + (s - \\mathrm{dig}_j(Rn))\\, 32^{j}",
+        "plain": "Rn = Rn + (s - dig_j(Rn)) * 32^j, writing code s at digit j = sigma(z_t): pi - 1 for strings, id for pairs, 32 + id for the second table"
+      },
+      {
+        "name": "bracket word",
+        "latex": "bw \\leftarrow 2\\,bw + b,\\quad bw \\leftarrow \\lfloor bw/2 \\rfloor",
+        "plain": "an opener of type b: bw = 2 bw + b; a closer: bw = floor(bw / 2)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "digit read",
+        "latex": "\\mathrm{dig}_j(Rn) = \\lfloor Rn / 32^{j} \\rfloor \\bmod 32",
+        "plain": "dig_j(Rn) = floor(Rn / 32^j) mod 32; chained assignments and f(g(x)) reread the named digit, at most 8 times"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = bw \\bmod 2",
+        "plain": "the legal closer has the type in the lowest bit of bw"
+      }
+    ],
+    "learning": {
+      "description": "Symbol roles are counted over m example episodes, each symbol taking the role it held most often.",
+      "few_shot_argument": "One episode shows every symbol's role; m = 6 example episodes per task fix the roles in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "One digit replacement or at most 8 digit reads per symbol on a 320-bit register (a constant number of machine words). State: 320 + 20 + 7 = 347 bits, fixed in n."
+    },
+    "sample_efficiency": {
+      "mechanism": "Counting of symbol roles over m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction over an alphabet of 56 symbols, one base-32 digit per symbol: symbol i in digit i - 1, read back after the separator; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Each address below 64 owns one digit; exact at K = 8, 32 and 64 over up to 32 items."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "Bracket word: exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Table g in digits 32..63 and table f in digits 0..31; exact at sizes 4, 16 and 32. At most 8 chained reads; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "A 65th address has no digit of its own: exact recall fails at K = 65."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "Role counting learns every small case from m = 6 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A copy episode at L = 64 over 56 symbols is read back with an error.",
+    "A digit write changes another digit."
+  ],
+  "toy_example": {
+    "description": "Three digit writes and reads on the numeral register.",
+    "python": "import json\nRn = 0\ndef dig(j):\n    return (Rn // 32 ** j) % 32\nfor j, s in [(0, 7), (5, 30), (63, 1), (5, 2)]:\n    Rn = Rn + (s - dig(j)) * 32 ** j\nprint(json.dumps({\"digits\": [dig(0), dig(5), dig(63)], \"bits\": Rn.bit_length()}))\n",
+    "expected": {
+      "digits": [
+        7,
+        2,
+        1
+      ],
+      "bits": 316
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Cards</h1>
+{% if summary.cards %}
+<table>
+  <tr>
+    <th>Card</th><th>Title</th><th>Lens</th><th class="num">Version</th>
+    <th>Stage reached</th><th>Verdicts</th><th>Why</th>
+  </tr>
+  {% for card in summary.cards %}
+  <tr>
+    <td><a href="{{ root }}dossiers/{{ card.id }}.html">{{ card.id }}</a></td>
+    <td>{{ card.title }}</td>
+    <td>{{ card.lens }}</td>
+    <td class="num">{{ card.version }}</td>
+    <td>{{ card.stage }}{% if card.reached_verdict %} ({{ card.reached_verdict }}){% endif %}</td>
+    <td>{% for stage, verdict in card.verdicts %}{{ stage }}: {{ verdict }}<br>{% else %}<span class="muted">none</span>{% endfor %}</td>
+    <td>{% for reason in card.reached_reasons %}{{ reason }}<br>{% else %}<span class="muted">-</span>{% endfor %}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">No cards in this run.</p>{% endif %}
+{% endblock %}

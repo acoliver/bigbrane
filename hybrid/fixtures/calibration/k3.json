@@ -1,0 +1,185 @@
+{
+  "id": "card-ca11b003",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-ca11b0000000",
+  "lens": "neutral",
+  "title": "A latent chain with sixteen states, decoded to one state per token",
+  "summary": "A hidden chain moves between k = 16 latent states with fixed move probabilities, and each latent state has its own probability table over symbols. While reading, the model keeps a single latent state: after each symbol it moves to the successor that best explains that symbol, and it predicts the symbol the next latent state most probably produces.",
+  "core_idea": "Track text with one of sixteen latent states, moving to the best successor at every symbol.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "z",
+        "type": "integer",
+        "shape": [],
+        "meaning": "Index of the current latent state, one of k = 16; the only thing carried between tokens, so the carried information is log2 16 = 4 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "move",
+        "latex": "z_t = \\arg\\max_j A[z_{t-1}, j]\\, B[j, x_t]",
+        "plain": "z_t = argmax over j of A[z_prev, j] * B[j, x_t]; A is the k by k move table, B the k by V symbol table"
+      }
+    ],
+    "readout": [
+      {
+        "name": "predict",
+        "latex": "\\hat{y}_t = \\arg\\max_v \\sum_j A[z_t, j]\\, B[j, v]",
+        "plain": "y_hat = argmax over v of sum_j A[z_t, j] * B[j, v]"
+      }
+    ],
+    "learning": {
+      "description": "A and B are estimated from counts: decode the training text to latent states with the current tables, count moves and symbols per state, normalize, repeat.",
+      "few_shot_argument": "The tables have k^2 + kV entries and are set from counts, so a rule that fits in 16 states is learned from a few hundred examples; this card states 400 examples for copying at L = 2."
+    }
+  },
+  "resources": {
+    "architecture": {
+      "hidden": "d",
+      "precision_bits": 64,
+      "state_bits": 4
+    },
+    "stream_symbols": [],
+    "dimensions": {
+      "k": "16"
+    },
+    "cost": {
+      "sizes": [
+        "k",
+        "V"
+      ],
+      "d": "k",
+      "rounds": "1",
+      "why": "The complexity claim is stated in n, k and V; the width of the tables is the number of states."
+    },
+    "tasks": {
+      "copy": {
+        "d": "16",
+        "rounds": "1",
+        "state_words": "1",
+        "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+      },
+      "recall": {
+        "d": "16",
+        "rounds": "1",
+        "state_words": "1",
+        "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+      },
+      "dyck": {
+        "d": "16",
+        "rounds": "1",
+        "state_words": "1",
+        "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+      },
+      "composition": {
+        "d": "16",
+        "rounds": "1",
+        "state_words": "1",
+        "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+      },
+      "binding": {
+        "d": "16",
+        "rounds": "1",
+        "state_words": "1",
+        "why": "Sixteen states whatever the size: the carried state is one index, 4 bits."
+      }
+    },
+    "learning": {
+      "copy": {
+        "size": 2,
+        "examples": 400,
+        "d": "16",
+        "rounds": "1"
+      },
+      "recall": {
+        "size": 2,
+        "examples": 400,
+        "d": "16",
+        "rounds": "1"
+      },
+      "dyck": {
+        "size": 2,
+        "examples": 300,
+        "d": "16",
+        "rounds": "1"
+      },
+      "composition": {
+        "size": 2,
+        "examples": 400,
+        "d": "16",
+        "rounds": "1"
+      }
+    },
+    "why": "k = 16 states, decoded to one state per token, so the carried state holds log2 16 = 4 bits."
+  },
+  "limits": [
+    {
+      "task": "dyck",
+      "size": 5,
+      "resources": "the carried state z, one of k = 16 latent states (4 bits), at any task size",
+      "why": "Two-type bracket prefixes at depth D have 2^D different stacks of open brackets. Two prefixes with different stacks that leave the same state get the same predictions on every continuation, but closing the first stack reaches a level where the two stacks differ and the legal closer differs, so one prediction is wrong. Exact prediction at depth D needs at least 2^D distinct states; 2^5 = 32 > 16 states, so the chain fails from depth 5 on.",
+      "kind": "state"
+    }
+  ],
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(k V)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n k V)",
+      "constants_notes": "Per token: k products and k - 1 comparisons for the move, k V products and V - 1 comparisons for the prediction. The carried state is one index."
+    },
+    "sample_efficiency": {
+      "mechanism": "Count-based estimates of a small table. Example counts m this card states for its learning rule at the solvable cases, each reaching 0.99 on three seeds: 400 for copying at L = 2, 400 for recall at K = 2, 300 for bracket nesting at depth 2 and 400 for two-hop lookup at table size 2. Information account for each count, one target-rule class per task (m counts whole training instances, each with all its scored answers). Copying at L = 2. Class definition: every selector s from the output indices {0, 1} to the source positions {0, 1}; the rule answers at output index i with the source symbol at position s(i), and the target is s(i) = i. Size justification: each of the 2 output indices has 2 choices, so |H| = 2^2 = 4; two different selectors differ at some index i, and a source string with different symbols at the two selected positions gives them different answers. log2 |H| = 2. Recall at K = 2. Class definition: the K stored pairs sorted by the id of their first token as k_0 < k_1, with second tokens v_0, v_1 (the sorting only names the pairs; the input keeps its shuffled order); every selector s from {0, 1} to {0, 1}; the rule answers a request for k_i with v_s(i), and the target is s(i) = i. Size justification: each of the 2 ranks has 2 choices, so |H| = 2^2 = 4; two different selectors differ at some rank, and pairs with different second tokens at the two selected ranks give them different answers. log2 |H| = 2. Bracket nesting at depth 2. Class definition: the six nonempty stack contexts (0), (1), (0,0), (0,1), (1,0), (1,1), listed bottom to top; every map from these contexts to the two closing tokens, evaluated after each scored prefix; the target maps a context to the closer of its top bracket. Size justification: two choices for each of six contexts, so |H| = 2^6 = 64; all six contexts occur in valid depth-2 prefixes, so different maps give different answers there. log2 |H| = 6. Two-hop lookup at table size 2. Class definition: every selector s from {0, 1} to {0, 1}; given the tables g and f in the input and the request x, the rule answers f(g(s(x))), and the target is s(x) = x. Size justification: each of the 2 requests has 2 choices, so |H| = 2^2 = 4; when two selectors differ at some x, tables g and f that send the two selected arguments to different outputs give them different answers. log2 |H| = 2. Prior bits: 0, relative to these declared classes: the task protocol supplies the token encoding and the restriction to each class, and the mechanism receives no hand-set member of it. This is a restricted-class information bound, not a claim that learning the parsing or lookup operation is free. Bits per example (one whole instance): at most 4 for copying (2 answers over 4 symbols), 8 for recall (2 answers over 16 symbols), 7 for bracket nesting (7 scored closers of one bit), and 2 for two-hop lookup (2 answers over 2 symbols). The account assumes a target drawn uniformly from each class, so it bounds m from below only; the counts m above are this card's stated claim and are not derived from it.",
+      "prediction": {
+        "metric": "examples_to_copy_L2",
+        "value": 400,
+        "statement": "400 copy examples at L = 2 over 4 symbols give per-string accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Exact up to depth log2 16 = 4; deeper prefixes need at least 2^D distinct states to know the legal closer, so accuracy falls below 0.99 at depth 8 and 16; at depth 16 per-sequence accuracy is at most 16 / 2^16."
+      },
+      {
+        "task": "two-hop lookup and chained assignments",
+        "prediction": "Fails once the tables given in context hold more than 4 bits, which is already the case at the listed table sizes 4, 16 and 32."
+      },
+      {
+        "task": "copy a string after a separator",
+        "prediction": "Exact only while L log2 D is at most 4 bits; fails at the listed lengths 8 to 64, where per-string accuracy is at most 16 / D^L (16 / 4^64 at L = 64 over 4 symbols)."
+      },
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact only while K log2 V is at most 4 bits; fails at the listed K of 8 to 64; at K = 64 over 16 symbols per-query accuracy is at chance, 1/16."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A configuration with 16 states predicts the legal closer at depth 8 with accuracy at least 0.99.",
+    "The carried state after a token needs more than one integer index."
+  ],
+  "toy_example": {
+    "description": "A two-state version decoding four symbols and scoring the next symbol.",
+    "python": "import json\nA = [[0.7, 0.3], [0.4, 0.6]]\nB = [[0.9, 0.1], [0.2, 0.8]]\nz = 0\npath = []\nfor x in [1, 1, 0, 1]:\n    scores = [A[z][j] * B[j][x] for j in range(2)]\n    z = max(range(2), key=lambda j: scores[j])\n    path.append(z)\nnxt = [sum(A[z][j] * B[j][v] for j in range(2)) for v in range(2)]\nprint(json.dumps({\"final_state\": z, \"states_visited\": sum(path), \"next_symbol_score_1\": round(nxt[1], 9)},\n                 sort_keys=True))\n",
+    "expected": {
+      "final_state": 1,
+      "next_symbol_score_1": 0.52,
+      "states_visited": 3
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

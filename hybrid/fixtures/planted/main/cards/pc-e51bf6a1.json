@@ -1,0 +1,167 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Compiling one demonstrated binding into every binding the transition tables force",
+  "summary": "A symbolic learner for maps between two known transition systems with two operations each. A demonstration gives one source-to-target binding; a first-in-first-out list then pushes it through both systems, assigning F[T[a][x]] = U[a][F[x]] for each operation a, and raises a conflict flag when two targets are forced on one source. When the demonstrated symbol reaches every source symbol, one example fixes the whole map. Probes are operation words of any length, run on a register without keeping their history; the answer is a point mass on the mapped target, a uniform fallback over targets after a conflict or for an unassigned source, and the distribution is normalized in every mode.",
+  "core_idea": "Turn one demonstrated binding into every binding that commuting with the two transition tables forces, then answer operation words of any length with the resulting map.",
+  "mechanism": {
+    "learning": {
+      "description": "There are no gradient-trained parameters. Learning completes a partial natural transformation from the supplied tables A and the demonstrated bindings, using FIFO_A. If a compatible total translation exists, every assignment that closure produces agrees with every such translation that satisfies the demonstrations. The procedure is deliberately incomplete on unanchored components. It does not search over possible extensions, and it does not claim that an unassigned symbol is globally unconstrained. A detected contradiction certifies that no compatible translation satisfies all observed demonstrations.",
+      "few_shot_argument": "The mechanism is orbit generation under naturality. Suppose every source symbol is reachable from one demonstrated source through the two operations. Then repeatedly enforcing phi(T[a,i])=U[a,phi(i)] determines the target of every source, so one correct binding identifies the entire map, provided a compatible map exists. More generally, k anchors suffice if the union of their forward reachable sets covers the source system. Without such coverage, the core leaves some entries unassigned. This is a conditional one-shot identification theorem. It is not a claim about learning the transition tables, and it is not a claim about learning arbitrary language from one example."
+    },
+    "readout": [
+      {
+        "latex": "p_t(v)=\\begin{cases}\\mathbf{1}\\{v=F_t[r_t]\\},&b_t=\\mathrm{answer},\\ c_t=\\mathrm{false},\\ F_t[r_t]\\ne\\bot,\\\\\\mathbf{1}\\{v\\in\\{0,\\ldots,d-1\\}\\}/d,&b_t=\\mathrm{answer}\\text{ otherwise},\\\\1/V,&b_t\\ne\\mathrm{answer}.\\end{cases}\\qquad p_t\\leftarrow p_t\\big/\\textstyle\\sum_{w}p_t(w)",
+        "name": "Certified answer or explicit uncertainty",
+        "plain": "p_t(v) is the probability of vocabulary token v (one of V=d+5 tokens) after processing token t. The indicator 1{condition} is one when the condition holds and zero otherwise. In answer mode, if c is false and F[r] is assigned, put probability one on F[r]. Otherwise in answer mode, put probability 1/d on each numeric token and zero on the five control tokens. In every other mode, put 1/V on every token. In every mode p_t is then normalized: p_t = p_t / sum(p_t)."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "A stacks two tables, each of shape [2,d]. A[0,a,i]=T[a,i] is the source table and A[1,a,i]=U[a,i] is the target table. The first index selects source (0) or target (1). The second index a in {0,1} selects the operation: 0 is L and 1 is R. The third index i in {0,...,d-1} is a symbol, where d is the number of symbols in each system. Every entry is a symbol in {0,...,d-1}. The tables are supplied with the task and are not inferred from demonstrations. The intended unknown translation phi obeys phi(T[a,i]) = U[a,phi(i)]. The operations need not commute, be linear, or be invertible.",
+        "name": "A",
+        "shape": [
+          2,
+          2,
+          "d"
+        ],
+        "type": "fixed transition-table block"
+      },
+      {
+        "meaning": "F[i], for i in {0,...,d-1}, is either an assigned target symbol in {0,...,d-1} or the unassigned marker bottom. Every entry starts at bottom. F is a single array that is modified in place. F_{t-1} and F_t name its contents before and after input token t. F holds at most d bindings, one per source symbol.",
+        "name": "F",
+        "shape": [
+          "d"
+        ],
+        "type": "learned partial symbolic map, updated in place"
+      },
+      {
+        "meaning": "c starts false. It becomes true, permanently, when propagation requests two different targets for the same source. c_{t-1} and c_t denote its setting before and after input token t.",
+        "name": "c",
+        "shape": [
+          1
+        ],
+        "type": "persistent Boolean contradiction bit"
+      },
+      {
+        "meaning": "B=(b,r,e) holds the parser mode b, a register r, and an emitted event e. The modes are idle, demo_source, demo_target, probe_source, word, and answer. The register r stores a source symbol. The event e is either none or seed(i,j) with i,j in {0,...,d-1}. Parse_A is the deterministic transition function:\n- idle accepts D or Q and enters demo_source or probe_source.\n- demo_source stores a numeric token in r and enters demo_target.\n- demo_target, on a numeric token j, emits seed(r,j) and returns to idle.\n- probe_source stores a numeric token in r and enters word.\n- word replaces r by T[0,r] on L or by T[1,r] on R, so operations apply left to right. On ? it enters answer.\n- answer consumes one numeric answer token and returns to idle.\nEvery step first sets e=none. Invalid inputs reset the parser to idle without emitting an event. A demonstration is therefore D i j. A probe is Q i, then any number of L/R operations, then ?, then its answer.",
+        "name": "B",
+        "shape": [
+          3
+        ],
+        "type": "finite-state parser with one integer register"
+      },
+      {
+        "meaning": "W holds the source-target pairs (x,y) proposed during one call of FIFO_A. It is empty between input tokens. Each call pushes one seed. Each first assignment pushes two more pairs, and there are at most d first assignments. W therefore never holds more than 2d+1 entries.",
+        "name": "W",
+        "shape": [
+          "2d+1",
+          2
+        ],
+        "type": "transient FIFO queue of proposed bindings"
+      },
+      {
+        "meaning": "z_t is input token t, for t from 1 to n, where n is the context length. The vocabulary has the numeric tokens 0,...,d-1 and five control tokens D, Q, L, R, ?, so its size is V=d+5. Numeric tokens name source symbols in demonstrations and probes, and target symbols in answers.",
+        "name": "z",
+        "shape": [
+          1
+        ],
+        "type": "input token"
+      }
+    ],
+    "update": [
+      {
+        "latex": "B_t=\\operatorname{Parse}_A(B_{t-1},z_t)",
+        "name": "Parse and execute a compositional probe",
+        "plain": "Apply the finite-state parser specified in B to token z_t. In word mode, L and R update the register immediately through T[0,.] or T[1,.], and no operation history is kept. The output event e_t is none or seed(i,j)."
+      },
+      {
+        "latex": "(F_t,c_t)=\\begin{cases}(F_{t-1},c_{t-1}),& e_t=\\mathrm{none}\\ \\text{or}\\ c_{t-1}=\\mathrm{true},\\\\ \\operatorname{FIFO}_A(F_{t-1},(i,j)),& e_t=\\mathrm{seed}(i,j),\\ c_{t-1}=\\mathrm{false}.\\end{cases}",
+        "name": "Compile forced bindings",
+        "plain": "If e_t is none, or c is already true, leave F and c unchanged. Otherwise e_t = seed(i,j), and the procedure FIFO_A(F,(i,j)) runs. It modifies F in place, with no copy, and returns the updated (F, c):\n- Set W = [(i,j)].\n- While W is nonempty and c is false, pop (x,y) from the front of W:\n  - If F[x] is bottom, set F[x] = y, then append (T[0,x], U[0,y]) and (T[1,x], U[1,y]) to the back of W.\n  - Else if F[x] == y, do nothing.\n  - Else set c = true and empty W.\nAn assigned source is never expanded again, so the total expansion work over a whole context is O(d)."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "On the d=64 benchmark in sample_efficiency, one anchor assigns all 64 entries of F correctly. Readout accuracy over all 64 single-source queries is 1.0. Capacity limit: no number of demonstrations can assign more than d=64 entries, because F has one slot per source symbol. Storing bindings for more than d sources requires a larger d.",
+        "task": "One-anchor translation learning"
+      },
+      {
+        "prediction": "Use the benchmark with T[0,i]=(i+1) mod 64 for L and T[1,i]=2i mod 64 for R. These operations do not commute: from source i, the word LR reaches 2i+2 and the word RL reaches 2i+1 (mod 64). After one correct anchor, queries with any L/R word of length 1 through 256 have exact accuracy 1.0, including words never demonstrated. The answers to Q i L R ? and Q i R L ? are pi(2i+2 mod 64) and pi(2i+1 mod 64), which differ for every i. Longer queries take proportionally longer to process but do not increase the state size.",
+        "task": "Noncommutative compositional generalization"
+      },
+      {
+        "prediction": "Take d=64 with two disjoint 32-symbol components. Each component contains a cycle, and both operations stay inside their component. One anchor assigns exactly the 32 symbols of its own component. Every query in the other component receives probability 1/64 on each numeric target. Two correct anchors, one per component, assign all 64 entries and give accuracy 1.0.",
+        "task": "Measured coverage limit"
+      },
+      {
+        "prediction": "After a covering correct anchor, a demonstration that assigns a different target to an already assigned source sets c=true on that token. Every later answer distribution is then uniform over numeric targets. Detection is exact on this noiseless benchmark. The core cannot recover from the conflicting example without starting a new context.",
+        "task": "Contradiction certification"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "There are exactly two operations, and V=d+5. A single seed may cause O(d) propagation work. F is updated in place, and each source is expanded at most once over the whole context, so total expansion work is O(d). Each of the m <= n/3 demonstrations also costs O(1) to enqueue and check its seed, even when the source is already assigned. Total closure work is therefore O(d+m), which is O(d+n). Parser steps and query execution cost O(1) per token. Writing out each V-dimensional distribution costs O(d) per token, which gives the stated O(nd) total. If point masses and uniform distributions are returned in compressed form, the total cost is O(n+d). The supplied tables take 4d entries. No cost depends quadratically on n.",
+      "memory": "O(d)",
+      "time_per_token": "O(d)",
+      "total_sequence": "O(nd)"
+    },
+    "sample_efficiency": {
+      "mechanism": "A demonstrated binding fixes its entire forward orbit through naturality. A cyclic source system therefore has a unique compatible translation after one anchor.",
+      "prediction": {
+        "metric": "Exact target accuracy after one demonstration",
+        "statement": "Take d=64, T[0,i]=(i+1) mod 64 and T[1,i]=2i mod 64. Draw any permutation pi of {0,...,63} and set U[a,j]=pi(T[a,pi^{-1}(j)]). Provide one correct anchor D i pi(i). The core then predicts all 64 source targets with accuracy 1.0, with no pretraining and no further demonstrations.",
+        "value": 1
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "On the d=64 benchmark (T[0,i]=i+1 mod 64, T[1,i]=2i mod 64, U conjugated by a permutation) with one correct anchor, any missing entry, wrong target, or contradiction after closure refutes the one-anchor identification claim or its implementation.",
+    "After complete correct closure on that benchmark, any incorrect answer on an L/R query word refutes the compositional transport claim, including words longer than every demonstrated sequence.",
+    "If total closure work over a context with m demonstrations grows faster than O(d+m), the amortized closure claim is false. Examples are expansions of already assigned sources on repeated demonstrations, or per-demonstration O(d) copying of F. A concrete test: 1000 repeated demonstrations of the same correct anchor at d=64 must cost at most 64 expansions plus 1000 constant-time seed checks.",
+    "On the two-component d=64 benchmark with one anchor, the coverage claim is refuted by any non-uniform answer distribution on a query in the unanchored component, by any assignment of an unanchored source, or by any wrong answer in the anchored component."
+  ],
+  "toy_example": {
+    "description": "Two noncommuting operations on four source symbols are conjugated by the translation [2,0,3,1]. The program uses the core parser and in-place FIFO closure. One demonstration recovers the full map. The queries L then R and R then L give different targets. A contradictory demonstration then forces the specified uniform fallback.",
+    "python": "import json\nfrom collections import deque\n\nT = [[1, 2, 3, 0], [1, 0, 2, 3]]\nU = [[3, 2, 0, 1], [2, 1, 0, 3]]\nd = 4\nV = d + 5\nF = [None] * d\nconflict = False\nmode = 'idle'\nreg = 0\nassignments = 0\n\n\ndef close(i, j):\n    global conflict, assignments\n    if conflict:\n        return\n    queue = deque([(i, j)])\n    while queue and not conflict:\n        x, y = queue.popleft()\n        if F[x] is None:\n            F[x] = y\n            assignments += 1\n            for a in range(2):\n                queue.append((T[a][x], U[a][y]))\n        elif F[x] != y:\n            conflict = True\n            queue.clear()\n\n\ndef feed(token):\n    global mode, reg\n    numeric = isinstance(token, int) and 0 <= token < d\n    if mode == 'idle':\n        if token == 'D':\n            mode = 'demo_source'\n        elif token == 'Q':\n            mode = 'query_source'\n    elif mode == 'demo_source' and numeric:\n        reg = token\n        mode = 'demo_target'\n    elif mode == 'demo_target' and numeric:\n        close(reg, token)\n        mode = 'idle'\n    elif mode == 'query_source' and numeric:\n        reg = token\n        mode = 'word'\n    elif mode == 'word' and token in ('L', 'R'):\n        reg = T[0 if token == 'L' else 1][reg]\n    elif mode == 'word' and token == '?':\n        mode = 'answer'\n    elif mode == 'answer' and numeric:\n        mode = 'idle'\n    else:\n        mode = 'idle'\n    if mode != 'answer':\n        return [1.0 / V] * V\n    if conflict or F[reg] is None:\n        return [1.0 / d] * d + [0.0] * 5\n    p = [0.0] * V\n    p[F[reg]] = 1.0\n    return p\n\n\nfor token in ['D', 0, 2]:\n    feed(token)\nlearned = list(F)\nanswers = []\nfor word in [('L', 'R'), ('R', 'L')]:\n    feed('Q')\n    feed(0)\n    for operation in word:\n        feed(operation)\n    p = feed('?')\n    answer = p.index(1.0)\n    answers.append(answer)\n    feed(answer)\nfor token in ['D', 2, 0]:\n    feed(token)\nfor token in ['Q', 1, '?']:\n    p = feed(token)\nresult = {'learned_map': learned, 'assignments': assignments, 'LR_answer': answers[0], 'RL_answer': answers[1], 'conflict': conflict, 'fallback_distribution': [round(x, 4) for x in p]}\nprint(json.dumps(result, sort_keys=True))",
+    "expected": {
+      "LR_answer": 2,
+      "RL_answer": 3,
+      "assignments": 4,
+      "conflict": true,
+      "fallback_distribution": [
+        0.25,
+        0.25,
+        0.25,
+        0.25,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "learned_map": [
+        2,
+        0,
+        3,
+        1
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

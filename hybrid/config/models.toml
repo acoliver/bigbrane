@@ -1,0 +1,455 @@
+# Model routing for hybrid/llm.
+#
+# `routing` names the active table under [routes.<name>]. Override it with the environment variable
+# BIGBRANE_ROUTING, or per run with `python -m hybrid.research run --routing <name>` (the flag wins over the
+# variable, the variable wins over this file). Both tables route every role; the loader refuses a table
+# that misses one.
+#
+# In each table a role maps to an ordered list of backend+model entries. The first entry is used; later
+# entries are tried only after a transport failure (recorded). `model` is the id the backend receives:
+# an llxprt profile name for backend = "llxprt", the gateway model id (provider/model) for "gateway".
+#
+# Keep "llxprt" until both gateway logins are verified (hybrid/gateway/LOGIN.md).
+routing = "llxprt"
+
+[budgets]
+# Per run. Every backend request counts as one call, including schema retries
+# and fallback attempts. Tokens are input plus output as reported by the backend.
+# Raised 2026-10-11 04:28 from 600 and 40M: run 4 stopped at 600 client calls although run --max-calls was 2500.
+# This is a separate ceiling from the run budget; keep it at or above what overnight runs pass.
+max_calls = 3000
+max_tokens = 120_000_000
+
+[backends.llxprt]
+kind = "llxprt"
+concurrency = 4
+timeout_s = 900
+command = "llxprt"
+# Tools offered when a call sets allow_web = true. Nothing else is ever allowed.
+web_tools = ["exa_web_search", "direct_web_fetch"]
+# user_config_dir = "~/Library/Preferences/llxprt-code"   # default is platform specific
+
+[backends.lmstudio]
+kind = "openai_compat"
+base_url = "http://127.0.0.1:1234/v1"
+concurrency = 1
+timeout_s = 600
+# Preflight (hybrid/localmodels.py): before a research run or plumbing check starts, every model the run routes to
+# this backend must be loaded in LM Studio (GET /api/v0/models) with loaded_context_length at least this. The Phase 3
+# live card failed when Qwen had been reloaded at 8192 tokens; qwen3.6-35b-a3b-mlx needs 131072.
+min_loaded_context = 131072
+# api_key_env is omitted: local servers need no key.
+
+[backends.anthropic]
+kind = "anthropic_messages"
+base_url = "https://api.anthropic.com"
+api_key_env = "ANTHROPIC_API_KEY"
+anthropic_version = "2023-06-01"
+default_max_output_tokens = 8192
+concurrency = 4
+timeout_s = 600
+
+[backends.gateway]
+# Native gateway (hybrid/gateway, OpenAI-compatible). Start it with
+#   .venv-hybrid/bin/python -m hybrid.gateway serve --port 8765
+# The bearer token is read from BIGBRANE_GATEWAY_TOKEN, or from ~/.bigbrane-gateway/run-token when the
+# variable is unset. `run --routing gateway` checks reachability, the token and the model ids before it starts.
+kind = "gateway"
+base_url = "http://127.0.0.1:8765/v1"
+api_key_env = "BIGBRANE_GATEWAY_TOKEN"
+concurrency = 10
+timeout_s = 1500
+
+# Per-role request settings, applied to every entry of the role in both tables.
+#   effort: low | medium | high. llxprt: replaces the profile's ephemeralSettings["reasoning.effort"].
+#           gateway: sent as reasoning_effort. The ChatGPT route maps it to reasoning.effort. The Anthropic route
+#           maps it to adaptive thinking and output_config.effort on Claude 5.5 and other adaptive-capable ids,
+#           and drops it on other Claude models.
+#   max_output_tokens: llxprt: replaces ephemeralSettings["maxOutputTokens"] (and any cap in modelParams);
+#           claudecode profiles send it as max_tokens, codex profiles remove it. gateway and openai_compat:
+#           sent as max_tokens; the ChatGPT plan route drops it.
+# On Anthropic models thinking tokens count against the cap. A reply cut off by the cap fails JSON
+# validation and costs a full schema retry, so caps leave room for thinking at the chosen effort.
+# 2026-10-10 16:40: explorer caps raised from 40000 after Opus explorers on the gateway hit
+# finish_reason=length with empty content (adaptive thinking used the whole cap) on about half of calls.
+[role_settings.explorer]
+effort = "high"
+max_output_tokens = 96000
+[role_settings.explorer_alt]
+effort = "high"
+max_output_tokens = 96000
+[role_settings.formalizer]
+effort = "medium"
+max_output_tokens = 24000
+[role_settings.salad_critic]
+effort = "low"
+max_output_tokens = 16000
+[role_settings.reduction_critic]
+effort = "medium"
+max_output_tokens = 48000
+[role_settings.prior_art]
+effort = "low"
+max_output_tokens = 12000
+[role_settings.feasibility_judge_a]
+effort = "high"
+max_output_tokens = 64000
+[role_settings.feasibility_judge_b]
+effort = "high"
+max_output_tokens = 64000
+[role_settings.disprover]
+effort = "medium"
+max_output_tokens = 32000
+[role_settings.builder]
+effort = "medium"
+max_output_tokens = 64000
+[role_settings.analyst]
+effort = "low"
+max_output_tokens = 12000
+# Writes card-specific falsifier task programs for S5 (hybrid/research/stages/falsify.py). Routed to a model
+# family other than the builder's, so the tests and the implementation do not share one model's reading.
+[role_settings.falsifier_designer]
+effort = "medium"
+max_output_tokens = 32000
+# Sorts S3 obligations into kinds and writes a short sympy or numpy check program per checkable obligation
+# (hybrid/research/stages/obligation_checks.py). A cheap model: the programs are small and run in the executor.
+# 2026-10-11: at effort medium and 24000 tokens both Haiku and Sonnet hit finish_reason=length on cards with 7 to
+# 8 obligations (one reply holds every program), so effort is low and the cap matches the judges'.
+[role_settings.obligation_checker]
+effort = "low"
+max_output_tokens = 64000
+# Math roles of stages M and C (s3.mode = "math", DISCOVERY-PIPELINE-PLAN.md sections 4, 5 and 16). Families per card:
+# statement fixer and challenger GPT (fallback the local Qwen, never Claude), prover Claude, statement match local
+# Qwen, so the fixer, the prover and the matcher are three families and the challenger is not the prover's. The
+# stages check the families actually used (hybrid/research/families.py) and stop on a breach.
+[role_settings.statement_fixer]
+effort = "medium"
+max_output_tokens = 32000
+# 2026-10-14 (FIX-5): prover cap raised from 64000. At effort medium Claude Opus on the gateway returned empty content
+# at the cap (adaptive thinking used all of it) on 13 of 136 prover calls, every recent one a hand-set construction
+# call of one or two statements; its successful replies had a p90 of 43612 output tokens. The explorer cap at 96000
+# left 3 empty replies in 424 calls at effort high. At the measured ~93 tokens/s, 96000 tokens take about 1030 s,
+# inside the gateway backend's timeout_s of 1500. A reply that still ends empty at the cap is retried once on the
+# same model at effort low (hybrid/llm/client.py LOWER_EFFORT), then falls back.
+[role_settings.prover]
+effort = "medium"
+max_output_tokens = 96000
+[role_settings.challenger]
+effort = "medium"
+max_output_tokens = 32000
+[role_settings.statement_match]
+effort = "low"
+max_output_tokens = 16000
+# FIX-7 (applied after calibration PID 67935 exited): the separately recorded cross-check of the statement matcher's
+# anchored objections (hybrid/research/stages/match_adjudication.py). Claude Sonnet: it must differ from the matcher
+# and the fixer (hybrid/research/families.py); it may share the prover's family because it is supplementary and the
+# local Qwen stays the required third-family matcher. Both agree on a mismatch: blocked; they disagree: unresolved.
+[role_settings.statement_crosscheck]
+effort = "medium"
+max_output_tokens = 24000
+# FIX-17 (decision XC): the third judge of a statement-match dispute (the matcher upheld an anchored objection, the
+# cross-check rejected it). A family other than both: the gateway ChatGPT model (no fallback; Qwen is the matcher's
+# family and Claude the cross-check's). A failed call leaves the claim unresolved, never passed. Effort medium, the
+# cap of the paced ChatGPT route.
+[role_settings.statement_tiebreak]
+effort = "medium"
+max_output_tokens = 24000
+# Generation stage G (generation.mode = "arms", Phase 6, hybrid/research/stages/g_generate.py): assigns each card to
+# the five archive axes and names its closest known family. It must not be the proposer's family (Claude drafts arms
+# A1 to A3, GPT drafts A4), so it is the local Qwen model in every table, with no fallback.
+[role_settings.arm_classifier]
+effort = "low"
+max_output_tokens = 16000
+# Phase 7 (DISCOVERY-PIPELINE-PLAN.md sections 7, 8 and 16): the refinement dialogue's challenger and the S2
+# difference check, in a family other than the card's proposer. Effort medium, the cap of the paced GPT route.
+[role_settings.refine_challenger]
+effort = "medium"
+max_output_tokens = 16000
+[role_settings.refine_challenger_alt]
+effort = "medium"
+max_output_tokens = 16000
+
+[routes.llxprt]
+explorer = [
+  { backend = "llxprt", model = "opus" },
+  { backend = "llxprt", model = "gpt-sol-high" },
+]
+explorer_alt = [
+  { backend = "llxprt", model = "gpt-sol-high" },
+  { backend = "llxprt", model = "opus" },
+]
+formalizer = [
+  { backend = "llxprt", model = "sonnet" },
+  { backend = "llxprt", model = "opus" },
+]
+salad_critic = [
+  { backend = "llxprt", model = "haiku" },
+  { backend = "llxprt", model = "sonnet" },
+]
+reduction_critic = [
+  { backend = "llxprt", model = "opus" },
+  { backend = "llxprt", model = "sonnet" },
+]
+prior_art = [
+  { backend = "llxprt", model = "haiku" },
+  { backend = "llxprt", model = "sonnet" },
+]
+feasibility_judge_a = [
+  { backend = "llxprt", model = "opus" },
+  { backend = "llxprt", model = "sonnet" },
+]
+feasibility_judge_b = [
+  { backend = "llxprt", model = "gpt-sol-high" },
+  { backend = "llxprt", model = "terra" },
+]
+disprover = [
+  { backend = "llxprt", model = "sonnet" },
+  { backend = "llxprt", model = "opus" },
+]
+builder = [
+  { backend = "llxprt", model = "sonnet" },
+  { backend = "llxprt", model = "haiku" },
+]
+analyst = [
+  { backend = "llxprt", model = "haiku" },
+  { backend = "llxprt", model = "sonnet" },
+]
+falsifier_designer = [
+  { backend = "llxprt", model = "gpt-sol-high" },
+  { backend = "llxprt", model = "terra" },
+]
+obligation_checker = [
+  { backend = "llxprt", model = "haiku" },
+  { backend = "llxprt", model = "sonnet" },
+]
+statement_fixer = [
+  { backend = "llxprt", model = "gpt-sol-high" },
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+prover = [
+  { backend = "llxprt", model = "opus" },
+  { backend = "llxprt", model = "sonnet" },
+]
+challenger = [
+  { backend = "llxprt", model = "gpt-sol-high" },
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+statement_match = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+statement_crosscheck = [
+  { backend = "llxprt", model = "sonnet" },
+  { backend = "llxprt", model = "opus" },
+]
+statement_tiebreak = [
+  { backend = "llxprt", model = "gpt-sol-high" },
+]
+arm_classifier = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+# Phase 7 refinement dialogue (stage R) and the S2 difference check: never the proposer's family. refine_challenger
+# serves cards a Claude model drafted, refine_challenger_alt cards a GPT model drafted.
+# On this table each falls back inside its own family (terra, opus), as falsifier_designer does, so a judges-mode run
+# on llxprt still routes nothing to LM Studio.
+refine_challenger = [
+  { backend = "llxprt", model = "gpt-sol-high" },
+  { backend = "llxprt", model = "terra" },
+]
+refine_challenger_alt = [
+  { backend = "llxprt", model = "sonnet" },
+  { backend = "llxprt", model = "opus" },
+]
+# Not in the spec table: a local role for smoke tests and cheap bulk work.
+# model = "auto" picks the first non-embedding model reported by GET /models.
+local = [
+  { backend = "lmstudio", model = "auto" },
+]
+
+[routes.gateway]
+# Same role pattern as routes.llxprt. Judge B has no fallback: the gateway serves one OpenAI model, and a
+# fallback to Claude would put both judges in one model family.
+explorer = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+  { backend = "gateway", model = "chatgpt/gpt-6.1-sol" },
+]
+explorer_alt = [
+  { backend = "gateway", model = "chatgpt/gpt-6.1-sol" },
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+formalizer = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+salad_critic = [
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+reduction_critic = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+prior_art = [
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+feasibility_judge_a = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+feasibility_judge_b = [
+  { backend = "gateway", model = "chatgpt/gpt-6.1-sol" },
+  # Fallback added 2026-10-11 00:45: a non-Claude family when the ChatGPT route is paced out or down.
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+disprover = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+builder = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+]
+analyst = [
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+# No Claude fallback: the builder is Claude, and the designer must come from another family.
+falsifier_designer = [
+  { backend = "gateway", model = "chatgpt/gpt-6.1-sol" },
+  # Fallback added 2026-10-11 00:45: a non-Claude family when the ChatGPT route is paced out or down.
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+obligation_checker = [
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+statement_fixer = [
+  { backend = "gateway", model = "chatgpt/gpt-6.1-sol" },
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+prover = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+challenger = [
+  { backend = "gateway", model = "chatgpt/gpt-6.1-sol" },
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+statement_match = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+statement_crosscheck = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+statement_tiebreak = [
+  { backend = "gateway", model = "chatgpt/gpt-6.1-sol" },
+]
+arm_classifier = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+refine_challenger = [
+  { backend = "gateway", model = "chatgpt/gpt-6.1-sol" },
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+refine_challenger_alt = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+local = [
+  { backend = "lmstudio", model = "auto" },
+]
+
+[routes.gateway_claude_local]
+# Used while the ChatGPT plan route returns HTTP 403 (seen 2026-10-10 15:25 onward, empty body).
+# Judge B moves to a different model family running locally (Qwen in LM Studio, no key), so the two
+# feasibility judges still come from different families. explorer_alt uses Opus, so idea diversity
+# comes from lenses and papers only until ChatGPT works again.
+explorer = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+explorer_alt = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+formalizer = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+salad_critic = [
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+reduction_critic = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+prior_art = [
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+feasibility_judge_a = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+feasibility_judge_b = [
+  # qwen3.8-27b was loaded with an 8192-token context, too small for S3 inputs (HTTP 400).
+  # qwen3.6-35b-a3b-mlx was loaded at 16:58 with a 131072-token context.
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+disprover = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+builder = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+]
+analyst = [
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+# The builder is Claude; the designer runs on the local Qwen model so tests and implementation come from
+# different families (the same model as judge B, with the 131072-token context).
+falsifier_designer = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+obligation_checker = [
+  { backend = "gateway", model = "anthropic/claude-haiku-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+# No GPT in this table: the fixer and the challenger use the local Qwen model, and the statement match needs a
+# third family, so it uses the local Gemma model (gemma-4-e4b-it, listed by LM Studio; its context length and
+# quality for this role are untested).
+statement_fixer = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+prover = [
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+]
+challenger = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+statement_match = [
+  { backend = "lmstudio", model = "gemma-4-e4b-it" },
+]
+statement_crosscheck = [
+  { backend = "gateway", model = "anthropic/claude-sonnet-5-5" },
+  { backend = "gateway", model = "anthropic/claude-opus-5-5" },
+]
+# No GPT in this table: the matcher is Gemma and the cross-check Claude, so the tiebreak is the local Qwen model.
+statement_tiebreak = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+arm_classifier = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+# No GPT in this table and every explorer is Claude: both dialogue challengers are the local Qwen model.
+refine_challenger = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+refine_challenger_alt = [
+  { backend = "lmstudio", model = "qwen3.6-35b-a3b-mlx" },
+]
+local = [
+  { backend = "lmstudio", model = "auto" },
+]

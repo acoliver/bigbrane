@@ -1,0 +1,56 @@
+{
+  "max_tokens": 128000,
+  "messages": [
+    {
+      "content": [
+        {
+          "cache_control": {
+            "ttl": "1h",
+            "type": "ephemeral"
+          },
+          "text": "<system>\nAnswer as JSON.\n</system>\n\nUser provided conversation begins here:",
+          "type": "text"
+        }
+      ],
+      "role": "user"
+    },
+    {
+      "content": [
+        {
+          "cache_control": {
+            "ttl": "1h",
+            "type": "ephemeral"
+          },
+          "text": "Capital of France?",
+          "type": "text"
+        }
+      ],
+      "role": "user"
+    }
+  ],
+  "model": "claude-haiku-5-5",
+  "stream": true,
+  "system": "You are Claude Code, Anthropic's official CLI for Claude.",
+  "tool_choice": {
+    "name": "llxprt_emit_json",
+    "type": "tool"
+  },
+  "tools": [
+    {
+      "description": "Return the final answer by calling this tool with an object matching the schema.",
+      "input_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "city": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "city"
+        ],
+        "type": "object"
+      },
+      "name": "llxprt_emit_json"
+    }
+  ]
+}

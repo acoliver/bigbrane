@@ -1,0 +1,123 @@
+{
+  "gate": {
+    "check_settles_split": false,
+    "contested": [],
+    "effective_votes": {
+      "feasibility_judge_a": "infeasible",
+      "feasibility_judge_b": "infeasible"
+    },
+    "notes": [],
+    "votes": {
+      "feasibility_judge_a": "infeasible",
+      "feasibility_judge_b": "infeasible"
+    }
+  },
+  "judges": {
+    "feasibility_judge_a": {
+      "call_id": "call-710db4a4d437",
+      "confidence": 0.85,
+      "fatal_issues": [
+        "Capacity claim for K = 32 with P_max = 16 is refuted. Eviction by min(C, tau) removes the smallest-concentration record, not the oldest, because trained rho_ij = E_i·F_j / (1 + E_i·F_j) differs across pairs. A replayed executed check showed survivors other than the last 16 pairs, including cases where a just-written pair evicts itself, so the 'last 16 >= 0.9, first 16 <= 0.15' split fails.",
+        "The learned state the card relies on for its secondary sample-efficiency prediction is unreachable in the stated budget. About 93 Adam steps at lr 1e-2 cannot take the softplus-parameterized rates from k ≈ 1 to rho <= kappa = 1e-3 for non-key-value pairs (executed check: minimum rho about 0.16; even the worst-case Adam bound gives about 0.004). Key-value rho also stays well short of 'near 1'."
+      ],
+      "model": "claude-opus-5-5",
+      "obligations": [
+        {
+          "argument": "Each step does O(1) injection, an O(r) gate dot product, and O(1) free masses from the cached sums. The pulse touches at most P_max records, pruning and argmin eviction are O(P_max), and the readout is O(P_max) to gather plus O(V) to normalize g. A replayed symbolic tally gives T = 7P + V + r + 5 with no dependence on n. With r a fixed constant this matches O(V + P_max), and memory is O(Vr + P_max). BPTT training memory grows with n, but that is outside the inference claim.",
+          "name": "complexity_time_memory_total",
+          "status": "discharged"
+        },
+        {
+          "argument": "For K = 8 disjoint fresh pairs, each pulse sees x = y = 1 with no competitors, so C_ij = rho_ij and no other record is touched. K <= 16 is consistent with the index-bit capacity. The K = 32 claim requires every stored record to have exactly equal concentration, so that the tau tie-break evicts the oldest. Under the card's own equations, rho_ij = E_i·F_j / (1 + E_i·F_j) is per pair and will not be bitwise equal after training. Eviction by min(C, tau) therefore removes the smallest-rho record, which can be the record just written. The replayed check reproduced survivors other than the last 16 pairs in every sampled trial, and the check code implements the card's eviction key correctly, so the 'last 16 >= 0.9, first 16 <= 0.15' prediction fails.",
+          "name": "capacity_one_shot_recall_K8_and_P_max",
+          "status": "refuted"
+        },
+        {
+          "argument": "Part of this is stronger than the formalizer stated. A pulse on (i, j) rescales only row i and column j. Filler-involved pairs (f, f'), (v, f) and (f, k) never have a key as left species or a value as right species, so no (k, v) cell is touched, whether or not the gate closes. Eviction also cannot reach the key-value records: conservation caps the total left mass of non-key species at about 40, so fewer than the roughly 56 records needed can exceed a key-value record near 0.9. The readout still changes, because all 32 fillers enter the routing denominator with y = 1. Whether that shift keeps |acc(L) - acc(0)| <= 0.02 for every seed depends on trained rho_kv, u and eta, and those are not established.",
+          "name": "capacity_filler_robustness",
+          "status": "open"
+        },
+        {
+          "argument": "The replayed symbolic check confirms the algebra with a shared rho: C_ra = rho, C_qa = rho(1 - rho), y_a = (1 - rho)^2, and C_qb = rho. With per-pair rates, the exact equalities become rho_qa(1 - rho_ra) and similar, so the 'exact' wording needs equal rates. The readout inequalities p(a|r) >= 0.9 and p(a|q) <= 0.15 are not established. p(a|q) = 0.09 + 0.91·g(a) at rho = 0.9 depends on learned u and eta. The result also assumes the bridge (a, r) or (a, q) stays gated off, which training has not been shown to achieve.",
+          "name": "binding_exchange_algebra",
+          "status": "open"
+        },
+        {
+          "argument": "The check shows that p(v8) >= 0.35 requires eta <= 0.019 with u uniform over the values, and trained eta is unknown. There is a further structural concern that the check did not model. Every in-context key k1..k8 has a free Y species with y = 1 (nothing binds keys as right species once bridges are gated), and the single global u is also trained on value-token readouts whose successor is a random key. Keys can therefore take a large share of the routed mass, which could lower p(v8) and threaten top-1. The ablation number likewise depends on the trained u being spread over values. Nothing here is refuted, but nothing is shown either.",
+          "name": "elimination_routing_gap",
+          "status": "open"
+        },
+        {
+          "argument": "The toy cross-ratios reproduce at rho = 0.5. Part (iii) is sound, because row and column scalings cancel in a 2x2 cross-ratio. The executed check gives gaps of 3.27 at rho = 0.9 and 4.63 at rho = 0.95, far above 0.2. At rho = 0.99, eps-pruning deletes a block cell, and the line `if cA is None or cB is None: res[rho]='undefined'; bad=True` treats that as disproof. A pruned cell actually makes the ratio 0 or infinite, not below 0.2, so this attack does not refute the claim. The claim is still ill-defined near rho = 1 and unproven over all of [0.9, 1), so it stays open.",
+          "name": "order_dependence_cross_ratio",
+          "status": "open"
+        },
+        {
+          "argument": "3000 sequences at batch 32 is about 93 Adam steps. From the stated initialization (k ≈ 1, raw ≈ -0.86), typical movement of about lr per step leaves the minimum reachable rho near 0.16. Even Adam's worst-case step bound of about 3.16·lr only reaches rho ≈ 0.004, which is still above kappa = 1e-3. Typical movement also gives key-value rho near 0.8, not 'near 1'. The check's model is a fair bound on the card's parameterization, so the stated learned state (gate closure plus rho_kv near 1) cannot be reached within the budget. The literal top-1 >= 0.95 number may still be met for other reasons, since bridge pulses do not touch key-value cells even at initialization, but the card's justification for that number is refuted.",
+          "name": "learnability_rate_prior",
+          "status": "refuted"
+        },
+        {
+          "argument": "Direct algebra gives new x_i = x_i(1 - rho(y_j + col_j)), where y_j + col_j = a_j - C_ij <= 1, and the same holds for y_j. Rescale factors 1 - rho·x_i are >= 0 because rho < 1, and pruning or eviction only returns mass to the free pools. So 0 <= C, x, y <= a holds exactly, and the replayed float64 sample showed no violation. In the trained model, eta = softplus(c) > 0 and u = softmax(l) > 0 give sum(g) >= eta > 0, and sum(p) = 1 because a[q] = 1. The eta = 0 toy is an explicitly stated limiting case with some y > 0. Drift in the cached sums is an implementation matter that can be fixed by recomputation.",
+          "name": "numerical_validity_and_well_definedness",
+          "status": "discharged"
+        }
+      ],
+      "verdict": "infeasible"
+    },
+    "feasibility_judge_b": {
+      "call_id": "call-226ec5daddc5",
+      "confidence": 0.95,
+      "fatal_issues": [
+        "Eviction logic fails to preserve recency when rho varies, and K=32 exceeds index bit capacity.",
+        "Learnability check proves gate closure to kappa=1e-3 is impossible in 3000 sequences, breaking filler robustness and one-shot recall assumptions.",
+        "Cross-ratio claim fails at high rho because pruning deletes necessary cells, making the ratio undefined."
+      ],
+      "model": "qwen3.6-35b-a3b-mlx",
+      "obligations": [
+        {
+          "argument": "The obligation check confirms per-token work is O(V+P_max+r) with no n-dependence, matching the claim up to a constant factor. Memory is O(Vr+P_max) as stated, with the caveat that training memory scales with n but inference does not. The derivation matches the claimed complexity bounds.",
+          "name": "complexity_time_memory_total",
+          "status": "discharged"
+        },
+        {
+          "argument": "The executed check and disprover attack demonstrate that eviction by minimum concentration removes pairs with smaller rho rather than strictly the oldest, breaking the claim that exactly the last 16 survive for K=32. Additionally, storing 32 pairs requires approximately 192 bits of index information, exceeding the roughly 176 bits available in 16 records. The recency guarantee is therefore mathematically unsound under variable rates.",
+          "name": "capacity_one_shot_recall_K8_and_P_max",
+          "status": "refuted"
+        },
+        {
+          "argument": "The mechanism relies on all filler-involved rates falling below kappa=1e-3 to prevent disruptive pulses. However, the learnability check proves this gate closure is impossible within 3000 pretraining sequences. Without a closed gate, fillers will fire pulses that displace or evict stored bindings, violating the robustness claim.",
+          "name": "capacity_filler_robustness",
+          "status": "refuted"
+        },
+        {
+          "argument": "The symbolic obligation check verifies that the pulse recursion yields exactly C_ra=rho, C_qa=rho(1-rho), and y_a=(1-rho)^2 for the specified streams under equal rho assumptions. The algebraic structure of mass-action exchange is sound and correctly implements the claimed ownership transfer and overwrite dynamics.",
+          "name": "binding_exchange_algebra",
+          "status": "discharged"
+        },
+        {
+          "argument": "The obligation check shows the mean probability claim holds only if eta is sufficiently small, but the trained value of eta and background distribution u are unknown. The mechanism's routing logic is plausible under conservative hyperparameters, but the exact performance bounds in the trained regime remain unverified.",
+          "name": "elimination_routing_gap",
+          "status": "open"
+        },
+        {
+          "argument": "The disprover's check shows that at rho=0.99, the small off-diagonal cells drop below the pruning threshold eps=1e-4 and are deleted, making the cross-ratio undefined. This directly contradicts the claim that the property holds for every rho in [0.9, 1). The pruning rule actively destroys the mathematical invariant at high rates.",
+          "name": "order_dependence_cross_ratio",
+          "status": "refuted"
+        },
+        {
+          "argument": "The executed check calculates that 3000 sequences (94 Adam steps at lr=1e-2) can only shift raw parameters by roughly 0.94, leaving k around 0.19 and rho at 0.16, far above the required kappa=1e-3. The gate cannot close in the claimed budget, invalidating the one-shot recall and filler robustness assumptions. The secondary prediction is numerically impossible under the stated optimizer settings.",
+          "name": "learnability_rate_prior",
+          "status": "refuted"
+        },
+        {
+          "argument": "The obligation check sampled 10 streams and found no conservation violations in float64, but this is not a proof over all n. Float32 drift and the eta=0 fallback for the readout denominator remain theoretically possible but are not fatal given the softplus floor in practice. Further rigorous bounds would be needed for full discharge.",
+          "name": "numerical_validity_and_well_definedness",
+          "status": "open"
+        }
+      ],
+      "verdict": "infeasible"
+    }
+  },
+  "round": 1
+}

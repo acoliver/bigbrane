@@ -1,0 +1,227 @@
+{
+ "provenance": "Phase 6 run phase6-drafts-20261013T0611Z, A4 draft card-0427c534 (gate at ledger line 415). Sanitized: the stored v1 card with its call id zeroed and its verdicts cleared.",
+ "arm": "A4",
+ "seeds": {
+  "concepts": [
+   "fungal mycelium networks",
+   "plate tectonics"
+  ]
+ },
+ "recorded_reason": "gate: arm_structure:A4: object_map names mechanism objects that are neither state objects nor symbols of the update or readout equations: ['C_ij*(T_j-T_i)']",
+ "card": {
+  "arm": "A4",
+  "arm_structure": {
+   "closest_known": {
+    "difference": "The superficially similar diffusion update uses both a latent-heat threshold T(H) and a conductance depending on the product of neighboring state values. Its transport operator therefore depends nonlinearly on the stored evidence, not merely on the incoming token. The output is a clipped phase fraction, not a linear state readout.",
+    "family": "ssm"
+   },
+   "concepts": [
+    "fungal mycelium networks",
+    "plate tectonics"
+   ],
+   "image_equation": {
+    "latex": "H_i^{+}=H_i+\\sum_{j\\in N(i)}C_{ij}(T_j-T_i)",
+    "mechanism_ref": "update[2]",
+    "plain": "H_next[i] = H[i] + sum(C[i,j]*(T[j]-T[i]) for j in N(i)); assign H = H_next simultaneously"
+   },
+   "object_map": [
+    {
+     "mechanism_object": "H",
+     "source_object": "material or nutrient inventory in control volume i"
+    },
+    {
+     "mechanism_object": "E",
+     "source_object": "adjacency between transport control volumes"
+    },
+    {
+     "mechanism_object": "C_ij*(T_j-T_i)",
+     "source_object": "incoming material flux from j to i"
+    }
+   ],
+   "prediction": {
+    "derived_via": "Antisymmetric mapped flux implies conservation. The proposed conductance is 0.25/(1+4)=0.05; the temperature difference is -2, giving a transfer of -0.1.",
+    "metric": "positive-site enthalpy after one step",
+    "statement": "Across an opposite-label contact with initial enthalpies [2,-2], one transport step preserves total enthalpy exactly and reduces each magnitude by only 0.1.",
+    "task": "Two adjacent event coordinates, H=[2,-2], L=1, D=0.25, no new demonstration, one relaxation step.",
+    "value": 1.9
+   },
+   "shared_relation": "Nutrient transport through a mycelial network and material transport between tectonic control volumes both obey local conservation: a volume changes by the net flux crossing its boundary.",
+   "source_equation": {
+    "latex": "m_i^{+}=m_i+\\sum_{j\\in N(i)}J_{ji},\\qquad J_{ji}=-J_{ij}",
+    "plain": "m_next[i] = m[i] + sum(J[j,i] for j in N(i)); J[j,i] = -J[i,j]"
+   },
+   "source_field": "Network transport in fungal physiology and finite-volume material balance in continuum geodynamics."
+  },
+  "claims": {
+   "capabilities": [
+    {
+     "prediction": "The four unseen immediate neighbors of seeds at coordinates 2 and 9 are classified with accuracy 1.0 and target-label probability 1.",
+     "task": "Two-shot local concept transfer on a 12-coordinate path."
+    },
+    {
+     "prediction": "Starting from [2,-2], one relaxation step returns [1.9,-1.9], versus [1.5,-1.5] when contrast shielding is removed.",
+     "task": "Conflict shielding across a two-coordinate positive/negative interface."
+    },
+    {
+     "prediction": "After one positive center demonstration and two steps, both endpoint positive probabilities are 0.59375, while immediate-neighbor probabilities are 1.0; the core does not claim confident long-range extrapolation.",
+     "task": "Uncertainty outside the demonstration's local reach on a five-coordinate path."
+    },
+    {
+     "prediction": "On a path with d coordinates, seeds at least five edges apart have disjoint radius-two supports after their own two relaxation steps when isolated. This supports only O(d) spatial concept regions, not arbitrarily many independent bindings in fixed memory; sequential later relaxation can expand earlier supports and invalidate the isolation condition.",
+     "task": "Capacity of separated local concepts."
+    }
+   ],
+   "complexity": {
+    "constants_notes": "Bounded graph degree, V=2 and fixed R=2 are constants. A query costs O(1); the stated per-token cost is the demonstration worst case. Initializing the field and path costs O(d). Increasing the number of relaxation steps would multiply demonstration cost and is not part of the claims.",
+    "memory": "O(d)",
+    "time_per_token": "O(d)",
+    "total_sequence": "O(n d)"
+   },
+   "sample_efficiency": {
+    "mechanism": "Latent-heat transport spreads sufficiently strong signed evidence onto unseen neighboring coordinates without saving demonstrations.",
+    "prediction": {
+     "metric": "accuracy on the four unseen immediate neighbors",
+     "statement": "On a path of d=12 coordinates, demonstrate positive at coordinate 2 and negative at coordinate 9 once each. Query coordinates 1,3,8,10 with respective target labels +1,+1,-1,-1. With the core settings, all four predictions have target-label probability 1.",
+     "value": 1.0
+    }
+   }
+  },
+  "core_idea": "Learn spatial concepts by transporting signed demonstration enthalpy through a latent-heat field whose conductance falls specifically where opposite labels meet.",
+  "created_by_call": "call-000000000000",
+  "extensions": [],
+  "falsifiers": [
+   "The two-shot path experiment fails to produce probability 1 for any of coordinates 1,3,8,10 under the specified settings and event order.",
+   "A paired-interface test produces [1.5,-1.5] rather than [1.9,-1.9], showing that the claimed contrast shielding is absent or incorrectly implemented.",
+   "Across repeated neighboring opposite-label demonstrations, shielding gives no better retention of both labels than constant-conductance enthalpy diffusion at matched transport budget; this would undermine the proposed interface law's learning value.",
+   "An exact reduction reproduces both updates and readouts using an excluded linear recurrence, delta-rule write or fixed kernel-memory read without performing state-dependent nonlinear transport."
+  ],
+  "id": "card-0427c534",
+  "known_relatives": [
+   {
+    "claimed_difference": "The proposed learned-concept interface adds C[i,j]=D/(1+max(0,-H[i]*H[j])/L^2). This evidence-sign-dependent permeability is the core novelty claim, not the conservation equation or the numerical solver. If it offers no useful advantage over ordinary enthalpy diffusion, the radical-learning claim fails.",
+    "name": "Finite-volume Stefan enthalpy methods",
+    "relation": "The latent-heat plateau and conservative flux update are classical enthalpy-method ingredients."
+   },
+   {
+    "claimed_difference": "Here both temperature and permeability depend nonlinearly on H, and the permeability depends on pairwise evidence products. The linearized variant is explicitly excluded from the proposal.",
+    "name": "State-space models",
+    "relation": "A constant-conductance, linear-temperature variant would be a linear diffusion SSM."
+   },
+   {
+    "claimed_difference": "The learner stores a transported field, not a list of demonstrated coordinates or values. Query readout has no example-selection or example-weighting operation. Opposite signs alter subsequent transport itself, so prediction is not a fixed kernel sum over retained examples.",
+    "name": "Exact-match caches and kernel classifiers",
+    "relation": "Both can transfer labels from demonstrations to queries."
+   }
+  ],
+  "lens": "tensor_networks_language",
+  "mechanism": {
+   "learning": {
+    "description": "The field H is the learned concept state; no offline parameter training is claimed. The new constitutive proposal is contrast shielding: opposite signed evidence reduces the conductance of the edge joining it. Ordinary enthalpy diffusion supplies the conservative substrate, but does not contain this label-dependent interface law. The path geometry and four numerical parameters are declared priors. No examples, keys or token positions are retained.",
+    "few_shot_argument": "One demonstration supplies Q=8 units of enthalpy. With L=1, D=0.25 and two steps, an isolated interior seed produces H=2.25 at each adjacent, previously unseen coordinate. Its predicted label probability there is consequently 1. Two opposite demonstrations whose radius-two supports do not overlap learn two local concepts from k=2 events. This is a precise local-concept result, not a guarantee of recovering arbitrary classes or arbitrary bindings."
+   },
+   "readout": [
+    {
+     "latex": "p(v\\mid q,H)=\\frac{1+v\\operatorname{clip}(H_q/L,-1,1)}{2},\\qquad v\\in\\{-1,+1\\}",
+     "name": "Phase-fraction label distribution",
+     "plain": "For v in {-1,+1}: p[v] = (1 + v*clip(H[q]/L,-1,1))/2"
+    }
+   ],
+   "state": [
+    {
+     "meaning": "Initially zero. H[i] is accumulated signed concept evidence at coordinate i. d is the number of coordinates, indexed by i and j from 0 through d-1. Positive and negative values support the two output labels. H_next denotes its simultaneous replacement.",
+     "name": "H",
+     "shape": [
+      "d"
+     ],
+     "type": "learned signed enthalpy field"
+    },
+    {
+     "meaning": "The geometry connecting event coordinates. N(i) denotes the neighbors of i. The core experiments use a path with reflecting endpoints, so missing neighbors contribute no flux. Geometry is supplied as a prior, not inferred from demonstrations.",
+     "name": "E",
+     "shape": [
+      "d",
+      "bounded degree"
+     ],
+     "type": "fixed undirected bounded-degree geometry"
+    },
+    {
+     "meaning": "Contains L>0, the latent-heat threshold; D, the transport coefficient; Q>0, the signed injection magnitude; and positive integer R, the number of relaxation steps after a demonstration. Core settings are L=1, D=0.25, Q=8, R=2. Require D times maximum graph degree to be at most 1.",
+     "name": "theta",
+     "shape": [
+      4
+     ],
+     "type": "fixed constitutive parameter block"
+    },
+    {
+     "meaning": "An event token contains mode, x, y and q. A demonstration has mode=demo, coordinate x and observed label y in {-1,+1}; a query has mode=query and coordinate q. n counts these event tokens. The next-unit distribution p is over V=2 label tokens v in {-1,+1}. Input coordinates are not output-label vocabulary entries.",
+     "name": "I",
+     "shape": [
+      4
+     ],
+     "type": "current event interface"
+    },
+    {
+     "meaning": "Holds temperature T[i] and symmetric edge conductance C[i,j] during a relaxation step. These are recomputed from the pre-step H. sign, abs, max and clip are standard scalar functions; clip(a,-1,1) truncates a to that interval.",
+     "name": "W",
+     "shape": [
+      "d",
+      "bounded degree plus one"
+     ],
+     "type": "temporary transport workspace"
+    }
+   ],
+   "update": [
+    {
+     "latex": "H_x\\leftarrow H_x+Qy\\quad\\text{if mode=demo}",
+     "name": "Demonstration injection",
+     "plain": "If mode == demo: H[x] = H[x] + Q*y; then perform update[1] and update[2] R times. Query events leave H unchanged."
+    },
+    {
+     "latex": "T_i=\\operatorname{sign}(H_i)\\max(|H_i|-L,0),\\qquad C_{ij}=\\frac{D}{1+\\max(0,-H_iH_j)/L^2}",
+     "name": "Latent heat and contrast shielding",
+     "plain": "T[i] = sign(H[i])*max(abs(H[i])-L,0); for each undirected edge (i,j), C[i,j] = C[j,i] = D/(1+max(0,-H[i]*H[j])/(L*L))"
+    },
+    {
+     "latex": "H_i^{+}=H_i+\\sum_{j\\in N(i)}C_{ij}(T_j-T_i)",
+     "name": "Conservative relaxation",
+     "plain": "H_next[i] = H[i] + sum(C[i,j]*(T[j]-T[i]) for j in N(i)); assign H = H_next simultaneously"
+    }
+   ]
+  },
+  "references": [],
+  "status": {
+   "stage": "S0",
+   "verdicts": {}
+  },
+  "summary": "The context changes a physical field over token coordinates rather than storing token-position associations. Demonstrations inject signed enthalpy; excess enthalpy propagates beyond demonstrated coordinates, while a latent-heat plateau prevents weak evidence from spreading. A proposed contrast-dependent conductance shields conflicting concept regions. The core targets few-shot spatial concept learning, not unrestricted symbolic rule induction.",
+  "title": "Evidence-Shielded Stefan Learning",
+  "toy_example": {
+   "description": "Compute the isolated five-coordinate seed and the two-coordinate conflict interface using the same conservative, shielded transport law.",
+   "expected": {
+    "contact_total": 0.0,
+    "positive_probabilities": [
+     0.59375,
+     1.0,
+     1.0,
+     1.0,
+     0.59375
+    ],
+    "seed_enthalpy": [
+     0.1875,
+     2.25,
+     3.125,
+     2.25,
+     0.1875
+    ],
+    "seed_total": 8.0,
+    "shielded_contact": [
+     1.9,
+     -1.9
+    ]
+   },
+   "python": "import json\nimport numpy as np\n\ndef step(h, L=1.0, D=0.25):\n    t = np.sign(h) * np.maximum(np.abs(h)-L, 0.0)\n    out = h.copy()\n    for i in range(len(h)-1):\n        j = i+1\n        c = D/(1.0+max(0.0, -float(h[i]*h[j]))/(L*L))\n        flux = c*(t[j]-t[i])\n        out[i] += flux\n        out[j] -= flux\n    return out\n\nh = np.zeros(5)\nh[2] += 8.0\nfor _ in range(2):\n    h = step(h)\np = (1.0+np.clip(h, -1.0, 1.0))/2.0\ncontact = step(np.array([2.0, -2.0]))\nresult = {\n    'seed_enthalpy': [round(float(x), 6) for x in h],\n    'positive_probabilities': [round(float(x), 6) for x in p],\n    'seed_total': round(float(h.sum()), 6),\n    'shielded_contact': [round(float(x), 6) for x in contact],\n    'contact_total': round(float(contact.sum()), 6)\n}\nprint(json.dumps(result, sort_keys=True))"
+  },
+  "version": 1,
+  "parent_ids": []
+ }
+}

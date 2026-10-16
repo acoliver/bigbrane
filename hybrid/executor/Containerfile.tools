@@ -1,0 +1,67 @@
+# Bigbrane tools image (DISCOVERY-PIPELINE-PLAN.md Phase 1): Linux arm64 only.
+# Same base, user, supervisor and thread environment as the executor image (Containerfile), plus
+# Lean 4 v4.34.1, a Lake project pinned to Mathlib tag v4.34.1 with its prebuilt cache, z3-solver,
+# SymPy and NumPy. Network is used only while building; jobs run with --network=none.
+#
+# Lean v4.34.1 is a stable release after the aarch64 leantar fix (lean4 PR 13499, merged 2026-04-22,
+# backported to v4.30.0). build_info.py fails the build if any Lean-side binary is not aarch64.
+FROM docker.io/library/python@sha256:739ba32ae445e8d58f3d90feb85f83bebc8346f8dd280fa1eb5848f4ff1ed163
+
+ARG LEAN_VERSION=4.34.1
+ARG LEAN_SHA256=fdb974c2cdb4627e090d5d4007b913e09d13c4868720fb5594e22808b3de9e37
+
+RUN groupadd --gid 10001 bbjob \
+ && useradd --uid 10001 --gid 10001 --no-create-home --home-dir /nonexistent \
+            --shell /usr/sbin/nologin bbjob
+
+# git: Lake clones Mathlib and its dependencies. curl and zstd: toolchain download and unpacking.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl git zstd \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.tools.txt /opt/bigbrane/requirements.tools.txt
+RUN PIP_ROOT_USER_ACTION=ignore pip install --no-cache-dir --only-binary=:all: --require-hashes \
+        -r /opt/bigbrane/requirements.tools.txt
+
+RUN curl -fsSL -o /root/lean.tar.zst \
+        "https://github.com/leanprover/lean4/releases/download/v${LEAN_VERSION}/lean-${LEAN_VERSION}-linux_aarch64.tar.zst" \
+ && echo "${LEAN_SHA256}  /root/lean.tar.zst" | sha256sum -c - \
+ && mkdir -p /opt/lean \
+ && tar --zstd -xf /root/lean.tar.zst -C /opt/lean --strip-components=1 \
+ && rm /root/lean.tar.zst \
+ && /opt/lean/bin/lean --version
+ENV PATH=/opt/lean/bin:$PATH
+
+COPY tools/mathproj/lakefile.toml tools/mathproj/lean-toolchain /opt/mathproj/
+WORKDIR /opt/mathproj
+# Resolve Mathlib at the pinned commit, fetch the prebuilt cache, then prove the cache is complete:
+# `lake build --no-build` fails if any module would need compiling, and a file importing Mathlib must elaborate.
+RUN lake update
+RUN lake exe cache get
+RUN lake build --no-build Mathlib \
+ && lake env printenv LEAN_PATH > /opt/bigbrane/lean_path \
+ && printf 'import Mathlib\ntheorem bb_build_check (p : Nat) (hp : p.Prime) : 2 <= p := hp.two_le\n#print axioms bb_build_check\n' \
+        > /root/BuildCheck.lean \
+ && LEAN_PATH="$(cat /opt/bigbrane/lean_path)" lean /root/BuildCheck.lean \
+ && rm /root/BuildCheck.lean
+
+COPY tools/build_info.py /opt/bigbrane/build_info.py
+# The package git checkouts and the downloaded cache archives are not needed offline.
+RUN rm -rf /opt/mathproj/.lake/packages/*/.git \
+ && python3 /opt/bigbrane/build_info.py \
+ && rm -rf /root/.cache \
+ && chmod -R a+rX /opt/lean /opt/mathproj /opt/bigbrane
+
+COPY supervisor.py /opt/bigbrane/supervisor.py
+COPY tools/lean-check /opt/bigbrane/bin/lean-check
+RUN chmod 0755 /opt/bigbrane/bin/lean-check
+
+# One thread everywhere; the executor also passes these at run time.
+ENV OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+    PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HOME=/tmp \
+    PATH=/opt/bigbrane/bin:/opt/lean/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+
+WORKDIR /
+USER 10001:10001
+ENTRYPOINT ["python3", "/opt/bigbrane/supervisor.py"]

@@ -1,0 +1,186 @@
+{
+  "id": "card-ca11b004",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-ca11b0000000",
+  "lens": "neutral",
+  "title": "Continuation counts over the last two symbols",
+  "summary": "The model keeps only the last two symbols it read. A table built from training text counts, for every pair of symbols, how often each symbol followed that pair, and the prediction is the most frequent follower of the current pair.",
+  "core_idea": "Predict the next symbol from counts of what followed the same two symbols in the training text.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "w",
+        "type": "integer pair",
+        "shape": [
+          2
+        ],
+        "meaning": "The last two symbols read; nothing older is kept."
+      }
+    ],
+    "update": [
+      {
+        "name": "shift",
+        "latex": "w_t = (x_{t-1}, x_t)",
+        "plain": "w_t = (x_prev, x_t)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "predict",
+        "latex": "\\hat{y}_t = \\arg\\max_v T[w_t, v]",
+        "plain": "y_hat = argmax over v of T[w_t, v], T the table of continuation counts"
+      }
+    ],
+    "learning": {
+      "description": "T[u, w, v] counts how often v followed u, w in the training text; nothing else is learned.",
+      "few_shot_argument": "A rule that depends only on the last two symbols is learned once each pair has been seen with its follower; the card states 300 examples for a pattern decided by the last two symbols."
+    }
+  },
+  "resources": {
+    "architecture": {
+      "hidden": "d",
+      "precision_bits": 64,
+      "state_bits": "2*ceiling(log(d)/log(2))"
+    },
+    "stream_symbols": [],
+    "dimensions": {
+      "c": "3"
+    },
+    "cost": {
+      "sizes": [
+        "V"
+      ],
+      "d": "V",
+      "rounds": "1",
+      "why": "The complexity claim is stated in n and V; the table is indexed by symbols."
+    },
+    "tasks": {
+      "copy": {
+        "d": "5",
+        "rounds": "1",
+        "state_words": "2",
+        "why": "The width is the task's symbol count (4 symbols and the separator); the carried state is the last two symbols."
+      },
+      "recall": {
+        "d": "Max(2*K, 16)+17",
+        "rounds": "1",
+        "state_words": "2",
+        "why": "The width is the task's symbol count: max(2K, 16) possible keys, 16 values and the separator."
+      },
+      "dyck": {
+        "d": "4",
+        "rounds": "1",
+        "state_words": "2",
+        "why": "Four bracket symbols."
+      },
+      "composition": {
+        "d": "3*T+3",
+        "rounds": "1",
+        "state_words": "2",
+        "why": "3T symbols and three separators."
+      },
+      "binding": {
+        "d": "2*hops+11",
+        "rounds": "1",
+        "state_words": "2",
+        "why": "2 hops+2 variable names, 8 constants and the separator."
+      }
+    },
+    "learning": {
+      "copy": {
+        "size": 2,
+        "examples": 300,
+        "d": "5",
+        "rounds": "1"
+      },
+      "recall": {
+        "size": 1,
+        "examples": 300,
+        "d": "Max(2*K, 16)+17",
+        "rounds": "1"
+      },
+      "dyck": {
+        "size": 2,
+        "examples": 300,
+        "d": "4",
+        "rounds": "1"
+      },
+      "composition": {
+        "size": 1,
+        "examples": 300,
+        "d": "3*T+3",
+        "rounds": "1"
+      }
+    },
+    "why": "Order c = 3: the carried state is the last two symbols, 2 ceil(log2 d) bits for d symbols; the continuation table is fixed after training."
+  },
+  "limits": [
+    {
+      "task": "copy",
+      "size": 4,
+      "resources": "the carried state w, the last two symbols, 2 ceiling(log2 d) = 6 bits at the copy width d = 5 (64 states)",
+      "why": "When the separator is read, every later output is a function of the carried state and of the model's own outputs fed back, so exact copying needs a distinct state for each of the D^L strings over D = 4 symbols. The last two symbols take at most 2^6 = 64 values, and 4^L > 64 from L = 4, so two strings share a state and one is copied wrongly.",
+      "kind": "state"
+    }
+  ],
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(V)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n V)",
+      "constants_notes": "Per token: a shift of two symbols and V - 1 comparisons over one row of T. The carried state is two symbols; the table T, V^3 counts, is fixed after training."
+    },
+    "sample_efficiency": {
+      "mechanism": "Counting continuations of symbol pairs. Example counts m this card states for its learning rule at the solvable cases, each reaching 0.99 on three seeds: 300 for copying at L = 2, 300 for recall at K = 1, 300 for bracket nesting at depth 2 and 300 for two-hop lookup at table size 1. Information account for each count, one target-rule class per task (m counts whole training instances, each with all its scored answers). Copying at L = 2. Class definition: every selector s from the output indices {0, 1} to the source positions {0, 1}; the rule answers at output index i with the source symbol at position s(i), and the target is s(i) = i. Size justification: each of the 2 output indices has 2 choices, so |H| = 2^2 = 4; two different selectors differ at some index i, and a source string with different symbols at the two selected positions gives them different answers. log2 |H| = 2. Recall at K = 1. Class definition: the one stored pair (k_0, v_0) and the one selector s(0) = 0; the rule answers a request for k_0 with v_0, which is also the target. Size justification: with one stored pair there is one selector, so |H| = 1 and nothing about the rule is left to identify. log2 |H| = 0. Bracket nesting at depth 2. Class definition: the six nonempty stack contexts (0), (1), (0,0), (0,1), (1,0), (1,1), listed bottom to top; every map from these contexts to the two closing tokens, evaluated after each scored prefix; the target maps a context to the closer of its top bracket. Size justification: two choices for each of six contexts, so |H| = 2^6 = 64; all six contexts occur in valid depth-2 prefixes, so different maps give different answers there. log2 |H| = 6. Two-hop lookup at table size 1. Class definition: every selector s from {0} to {0}; given the tables g and f in the input and the request x, the rule answers f(g(s(x))), and the target is s(x) = x. Size justification: at T = 1 there is one selector and one possible answer, so |H| = 1. log2 |H| = 0. Prior bits: 0, relative to these declared classes: the task protocol supplies the token encoding and the restriction to each class, and the mechanism receives no hand-set member of it. This is a restricted-class information bound, not a claim that learning the parsing or lookup operation is free. Bits per example (one whole instance): at most 4 for copying (2 answers over 4 symbols), 4 for recall (1 answer over 16 symbols), 7 for bracket nesting (7 scored closers of one bit), and 1 for two-hop lookup (its one answer carries no information at T = 1; 1 is a loose positive upper bound). The account assumes a target drawn uniformly from each class, so it bounds m from below only; the counts m above are this card's stated claim and are not derived from it.",
+      "prediction": {
+        "metric": "examples_for_pair_rule",
+        "value": 300,
+        "statement": "300 examples suffice for a rule decided by the last two symbols."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "Fails for every listed length above 2: the symbol to copy lies more than two tokens back, so at L = 64 over 4 symbols per-string accuracy is at chance, 4^-64."
+      },
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Fails: the value of a queried item lies more than two tokens back; at K = 64 over 16 symbols per-query accuracy is at chance, 1/16."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Fails whenever the matching opening bracket lies more than two tokens back, which happens at every listed depth from 2; at depth 16 per-sequence accuracy is at most 2^-14."
+      },
+      {
+        "task": "two-hop lookup and chained assignments",
+        "prediction": "Fails: the tables lie outside the two-symbol window at every listed size."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A configuration that keeps two symbols copies strings of length 8 exactly.",
+    "Predictions change when a symbol three or more tokens back is changed."
+  ],
+  "toy_example": {
+    "description": "Counts continuations of symbol pairs in a nine-symbol text and predicts after (0, 1).",
+    "python": "import json\nfrom collections import Counter\ndata = [0, 1, 2, 0, 1, 2, 0, 1, 0]\ntable = Counter()\nfor a, b, c in zip(data, data[1:], data[2:]):\n    table[(a, b, c)] += 1\ndef next_symbol(a, b):\n    return max(range(3), key=lambda c: (table[(a, b, c)], -c))\nprint(json.dumps({\"after_0_1\": next_symbol(0, 1), \"count_0_1_2\": table[(0, 1, 2)], \"entries\": len(table)},\n                 sort_keys=True))\n",
+    "expected": {
+      "after_0_1": 2,
+      "count_0_1_2": 2,
+      "entries": 4
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

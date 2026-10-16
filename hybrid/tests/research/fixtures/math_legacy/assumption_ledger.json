@@ -1,0 +1,100 @@
+{
+  "assumptions": [
+    {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A1",
+      "kind": "prior",
+      "status": "open",
+      "text": "Unspecified random choices are uniform; base demonstration inputs are sampled without replacement, fresh new-rule inputs exclude the base demonstration inputs, and queries are sampled uniformly from inputs not demonstrated for the queried rule.",
+      "used_by": [
+        "O4",
+        "O5",
+        "O6",
+        "O7",
+        "O8"
+      ]
+    },
+    {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A2",
+      "kind": "other",
+      "status": "open",
+      "text": "Evaluation processes adjacent pairs beginning with (BOS,x_1), scores the post-update readout at the query token before its following separator, uses the smallest token index to break logit ties, and uses lambda=1e-6 and tau=1e3 wherever the capability settings omit them.",
+      "used_by": [
+        "O4",
+        "O5",
+        "O6",
+        "O7",
+        "O8"
+      ]
+    },
+    {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A3",
+      "kind": "other",
+      "status": "open",
+      "text": "The simulation runner returns predictions from the stated recurrence and the named baselines, with fresh RLS reset for each new rule, pooled and ablated RLS using all preceding content pairs, and no access to targets.",
+      "used_by": [
+        "O4",
+        "O5",
+        "O6",
+        "O7",
+        "O8"
+      ]
+    },
+    {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A4",
+      "kind": "other",
+      "status": "open",
+      "text": "For the otherwise underspecified Gated DeltaNet baseline, each content pair updates W from W_old to gamma*W_old+outer(u,v-W_old.T@u), initializes W=0, skips reserved pairs, and reads W.T@Phi[q], separately for each listed gamma.",
+      "used_by": [
+        "O4"
+      ]
+    },
+    {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A5",
+      "kind": "other",
+      "status": "open",
+      "text": "Complexity is measured in unit-cost scalar arithmetic and stored scalar words, with dense matrix-vector operations, streaming orbit search that retains the best transported key rather than every orbit point, and no retained context or autograd tape at inference.",
+      "used_by": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A6",
+      "kind": "other",
+      "status": "open",
+      "text": "Under the scalar accounting convention, the recurrence has a per-token worst-case accounting envelope (4M+12)d^2+3Md+8d+2Vd+V+10 operations and 6d^2+Vd+10d+V+4 peak words, including parameters and transient workspace.",
+      "used_by": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    }
+  ],
+  "card_id": "card-46dbb349",
+  "stage": "M"
+}

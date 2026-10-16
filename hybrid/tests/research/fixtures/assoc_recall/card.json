@@ -1,0 +1,391 @@
+{
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "Accuracy ≥ 0.9 for each of m = 1, 2, 3. The baseline is a matched single layer with the same RLS/EDMD update and readout W_o K_t^T Phi[q], i.e. a readout linear in the state, as in MesaNet/DeltaNet. It reaches ≥ 0.9 at m = 1 but ≤ 0.5 at m = 2 and m = 3.",
+        "task": "Iterated rule application on unseen tokens. V_c = 64 ordinal content tokens. Context: BOS, then 16 demonstrations 'a f(a) ;' of a shift-by-s rule, with s uniform in {1..63}. Query: '@m q', where '@m' is a single marker token, m ∈ {1, 2, 3}, and q is not among the demonstrated inputs. Target: q + m s mod 64. Prediction is the argmax over all V logits at q's position. Single layer, d = 16, M = 4. 500 trials per m."
+      },
+      {
+        "prediction": "Accuracy ≥ 0.95 for K ≤ 48. Accuracy ≤ 0.6 for K = 256 (4d). A d×d least-squares operator interpolates at most d linearly independent input lifts and averages beyond that, so this is a hard capacity limit of the core.",
+        "task": "Associative recall of K random token bindings. V_c = 1024 content tokens. Context: BOS, then K pairs 'a b ;' with distinct a's and b's drawn uniformly, then the query '@1 a' for a demonstrated a. Single layer, d = 64. 500 trials per K. A trial is correct iff the argmax of W_o y over all V tokens (content and reserved) at the position of a equals b."
+      },
+      {
+        "prediction": "Accuracy ≥ 0.85. This follows because c_0, c_1 and c_2 are all demonstrated inputs, so (K_t^T)^3 Phi[c_0] ≈ Phi[c_3] within the 32 ≤ d capacity. If alpha is forced onto power 1 (M = 1), accuracy is ≤ 0.1, since the readout then returns c_1.",
+        "task": "Pointer chasing. V_c = 1024 content tokens. Each trial draws 8 disjoint chains of 5 distinct tokens (c_0 → c_1 → c_2 → c_3 → c_4), giving K = 32 pairs. The 32 pairs are presented as 'c_i c_{i+1} ;' in random order after BOS. The query is '@3 c_0' for a randomly chosen chain, and the target is c_3. Prediction is the argmax over all V logits. Single layer, d = 64, M = 4. 1000 trials."
+      },
+      {
+        "prediction": "k*(V_c = 64) and k*(V_c = 256) are both ≤ 16 and differ by at most 2.",
+        "task": "Demonstration count vs vocabulary size for lift-linear rules. This is the k* protocol of claims.sample_efficiency (d = 16, query '@1 q' on undemonstrated q, argmax over all V logits, 500 trials per k, k ∈ {2, 4, ..., 32}), run at V_c = 64 and at V_c = 256."
+      }
+    ],
+    "complexity": {
+      "constants_notes": "The RLS updates of P_t and K_t cost about 4d^2 multiply-adds per token. The power readout costs M matrix-vector products, about M d^2 in total. M is a fixed small constant (≤ 4). V d is the usual output projection. At inference the recurrent state is two d×d matrices, independent of n. Training unrolls the same recurrence, so it has the same O(n (M d^2 + V d)) time. Without checkpointing it stores O(n d^2) activations for backpropagation. These are training activations, not inference state. For very long n, RLS in float32 can drift away from positive-definiteness. The optional periodic re-solve extension handles this and is not part of the core.",
+      "memory": "O(d^2 + V d)",
+      "time_per_token": "O(M d^2 + V d)",
+      "total_sequence": "O(n (M d^2 + V d))"
+    },
+    "sample_efficiency": {
+      "mechanism": "Identifying a lift-linear rule needs as many demonstrations as the rank of the lift (d), not as many as the vocabulary size (V). Once the demonstrated lifts span R^d with sigma_min^2 ≥ lambda, the least-squares solution is within eps ≤ lambda||K*||/(lambda + sigma_min^2) + ||E||/sigma_min of K*. That solution applies to all V content tokens and to all iterates.",
+      "prediction": {
+        "metric": "k*, measured by this protocol. Single layer, d = 16. Ordinal alphabet of V_c = 256 content tokens. For each k in {2, 4, 6, ..., 32}, run 500 trials. Each trial draws a shift s uniformly from {1, ..., V_c - 1}. It draws k distinct demonstrated inputs a_i uniformly without replacement and presents 'a_i (a_i + s mod V_c) ;' in random order after BOS. It then presents '@1 q', with q drawn uniformly from the content tokens not among the a_i. k* is the smallest k whose mean accuracy is ≥ 0.9, where a trial is correct if the argmax over all V logits at q's position equals q + s mod V_c.",
+        "statement": "k* ≤ 16 = d for V_c = 256, and k* stays the same within ±2 when V_c changes from 64 to 256. An in-context memory based on counting or lookup has to see each input it is queried on, so its accuracy on undemonstrated queries stays near chance at every k < V_c.",
+        "value": 16
+      }
+    }
+  },
+  "core_idea": "Treat the context as trajectory data of an unknown map, estimate that map's Koopman operator on a learned dictionary of token observables by online least squares (EDMD), and answer each query by applying a token-selected power of the operator, so that a rule seen on d linearly independent examples transfers to unseen tokens and to its own iterates through the Koopman semigroup law U_{f^m} = (U_f)^m.",
+  "created_by_call": "call-63eafb448a18",
+  "extensions": [
+    {
+      "description": "Following the history-discretization construction for delay systems, lift a window of the last L tokens so that rules depending on more than one previous token become linear on the lifted space. The state grows to (Ld)×(Ld).",
+      "equations": [
+        {
+          "latex": "u_t = [\\Phi[x_{t-1}]; \\Phi[x_{t-2}]; \\dots; \\Phi[x_{t-L}]]",
+          "plain": "u = concat(Phi[x[t-1]], ..., Phi[x[t-L]])  # positions before 0 padded with BOS"
+        }
+      ],
+      "name": "Delay (history) lift"
+    },
+    {
+      "description": "Replace integer powers by exp(tau L_t), where L_t = log K_t is the in-context generator (the neural-ODE flow view) and tau ≥ 0 is a learned clock. This allows interpolated or continuous-time iteration. Each eigendecomposition costs O(d^3), so the readout is applied only at query positions.",
+      "name": "Generator readout with fractional time"
+    },
+    {
+      "description": "Multiply the Gram and cross statistics by gamma < 1 per token, i.e. use standard exponentially weighted RLS, so that the operator tracks rule changes within a long context.",
+      "name": "Forgetting factor"
+    },
+    {
+      "description": "As a numerical safeguard for very long n in low precision, keep running sums G_t and C_t and recompute P_t = G_t^{-1} and K_t = P_t C_t every r tokens. The amortized cost is O(d^3 / r) per token.",
+      "name": "Periodic re-solve"
+    },
+    {
+      "description": "Add Gaussian noise to Phi[x] during training, following the neural SDE regularization view. The learned lift then keeps the Gram matrices well conditioned (larger sigma_min in the error bound), so the operator powers do not amplify errors.",
+      "name": "Noise-injected lift during pretraining"
+    },
+    {
+      "description": "Feed the y_t of one layer as the lift input of the next. This is for natural-language modeling, where single-layer bigram-like dynamics are insufficient.",
+      "name": "Stacked layers"
+    }
+  ],
+  "falsifiers": [
+    "On the iterated-rule task (V_c = 64, d = 16, 16 demonstrations, unseen query tokens, argmax over all V logits), the single-layer model fails to beat a matched single layer with a degree-1 readout (same RLS update, alpha forced onto power 1) by at least 0.3 absolute accuracy at m = 2. That result would mean the power readout adds nothing.",
+    "Under the k* protocol (d = 16, 500 trials per k, undemonstrated queries), k* grows roughly in proportion to V_c, for example from ≤ 16 at V_c = 64 to ≥ 50 at V_c = 256. That result would refute the argument that a Koopman-invariant lift identifies the rule.",
+    "Single-layer associative recall with d = 64 stays ≥ 0.9 at K = 4d = 256 pairs. That result would mean something other than the d×d least-squares operator stores the bindings, and the capacity analysis of the core is wrong.",
+    "EDMD residual test. Predicted mean relative residual ≤ 0.2; the theory is falsified if the mean exceeds 0.5. Setup: after pretraining, evaluate 500 held-out sequences with V_c = 64 and d = 16. Each sequence has a shift s drawn uniformly from {1..63} and 16 demonstrations 'a (a+s mod 64) ;' with a drawn without replacement (context length 49 tokens including BOS). Each sequence also has one query token q drawn uniformly from the undemonstrated content tokens. Compute ||Phi[q+s mod 64] − K_t^T Phi[q]||^2 / ||Phi[q+s mod 64]||^2 with K_t taken after the last demonstration, and average over the 500 sequences. A mean above 0.5 would mean pretraining did not produce an approximately Koopman-invariant lift, so the few-shot mechanism would not be what drives any observed accuracy."
+  ],
+  "id": "card-537e161c",
+  "known_relatives": [
+    {
+      "claimed_difference": "The novelty is confined to the readout. y = sum_m alpha_m (K_t^T)^m Phi[x_t] is a polynomial of degree up to M in the state, and the token-selected powers implement rule iterates through the Koopman semigroup law. The relative layers read out q^T S, which has degree 1, so a single layer can return only f(q) and not f^m(q) for an unseen q.",
+      "name": "Recursive least squares / Kalman filter; DeltaNet and MesaNet-style in-context least-squares layers",
+      "relation": "The update is exactly weighted RLS. As a recurrence, K_t = (I - beta_t P_t u_t u_t^T) K_{t-1} + beta_t P_t u_t v_t^T, which has the form S_t = A_t S_{t-1} + B_t x_t. The update alone is therefore an SSM/linear-attention-family recurrence (a preconditioned delta rule). MesaNet-style layers already compute the same (G + lambda I)^{-1} C solution."
+    },
+    {
+      "claimed_difference": "Linear attention has no inverse Gram, so it cannot identify a rule from d non-orthogonal demonstrations, and it has no operator powers. The unseen-token claim needs the inverse Gram, and the iterate claim needs the powers.",
+      "name": "Linear attention (Transformers are RNNs)",
+      "relation": "C_t = sum beta u v^T is the linear-attention key-value state. Its keys are the lifts of the previous tokens and its values are the lifts of the current tokens."
+    },
+    {
+      "claimed_difference": "In those models the transitions are diagonal maps or decays chosen to summarize history. Here the state is a least-squares operator estimate with a closed-form meaning: the EDMD Koopman matrix of the context's rule. The readout applies that state to itself repeatedly as a dynamical operator.",
+      "name": "Mamba / S4 / RetNet / RWKV",
+      "relation": "Linear-time recurrent state with an input-dependent transition."
+    },
+    {
+      "claimed_difference": "TTT reads out the inner model once per token. Here the inner model is treated as a Koopman operator and composed with itself m times on demand.",
+      "name": "Test-time training layers (Learning to learn at test time)",
+      "relation": "With a linear inner model and an exact least-squares inner solve, TTT reduces to the same K_t."
+    },
+    {
+      "claimed_difference": "Those methods fit one global operator offline for one system. Here the dictionary is shared across sequences and the operator is re-estimated in context for each sequence, so each context is itself the system to identify.",
+      "name": "Deep Koopman autoencoders / EDMD with learned dictionaries",
+      "relation": "A learned lift with a linear operator in the lifted space."
+    }
+  ],
+  "lens": "neural_odes_koopman",
+  "mechanism": {
+    "learning": {
+      "description": "Pretraining learns Phi, W_o, w_beta and A by minimizing next-token cross-entropy and backpropagating through the in-context EDMD estimate and its powers. The training corpus mixes text with synthetic rule-induction sequences built from vocabulary tokens. Demonstrations have the form 'a f(a) ;'. Queries have the form '@m q', where '@m' is one marker token and the target is f^m(q). Chain data use the same pair format. Training unrolls the same recurrent RLS form used at inference (backpropagation through time), with the same update-then-readout order at each position. The parallel identity below is the closed form that the recurrence computes, and it can be used to check the recurrence. No parameter is updated at inference. All in-context learning happens in P_t and K_t, which are closed-form least-squares statistics.",
+      "equations": [
+        {
+          "latex": "K_t = \\Big(\\lambda I + \\sum_{s=1}^{t} \\beta_s u_s u_s^\\top\\Big)^{-1} \\sum_{s=1}^{t} \\beta_s u_s v_s^\\top",
+          "name": "closed form computed by the recurrence",
+          "plain": "G = lambda*I + sum_{s<=t} beta_s*outer(u_s,u_s); C = sum_{s<=t} beta_s*outer(u_s,v_s); K_t = solve(G, C)"
+        },
+        {
+          "latex": "\\mathcal{L}(\\Phi, W_o, w_\\beta, A) = -\\sum_{t=1}^{n-1} \\log p(x_{t+1} \\mid x_{\\le t})",
+          "name": "pretraining loss",
+          "plain": "loss = -sum_t log p_t[x[t+1]]; gradients flow through the RLS recursion and the powers of K_t"
+        }
+      ],
+      "few_shot_argument": "The argument combines Koopman invariance with the semigroup law and gives an explicit error bound.\n\nSetup. Stack the gated pairs seen up to t as rows: U in R^{k×d} with rows sqrt(beta_s) u_s, and Y in R^{k×d} with rows sqrt(beta_s) v_s. Then K_t = (lambda I + U^T U)^{-1} U^T Y. Approximate invariance of the lift for a rule f means Y = U K* + E for some d×d K*. E holds the residuals: E = 0 under exact invariance, and pairs leaking through the gate with small beta also enter E. Let sigma_min be the smallest singular value of U. This requires k ≥ d demonstrations whose lifts span R^d. Assume sigma_min^2 ≥ lambda.\n\nOperator bound. K_t − K* = −lambda (lambda I + U^T U)^{-1} K* + (lambda I + U^T U)^{-1} U^T E. Hence\neps := ||K_t − K*||_2 ≤ lambda ||K*||_2 / (lambda + sigma_min^2) + ||E||_2 / sigma_min.\nThe second term uses max_sigma sigma/(lambda + sigma^2) ≤ 1/sigma_min for sigma ≥ sqrt(lambda).\n\nUnseen tokens. For any query q, including tokens never shown, ||K_t^T Phi[q] − Phi[f(q)]|| ≤ eps ||Phi[q]|| + r_q, where r_q = ||K*^T Phi[q] − Phi[f(q)]|| is the invariance residual at q (0 under exact invariance). Generalization goes through linearity in the lift, not lookup.\n\nIterates. Let rho = max(||K_t||_2, ||K*||_2). With E = 0, ||K_t||_2 ≤ ||K*||_2 because K_t = (I − lambda(lambda I + U^T U)^{-1}) K* and the first factor has norm ≤ 1. Telescoping gives ||(K_t^T)^m − (K*^T)^m||_2 ≤ m rho^{m−1} eps. The Koopman semigroup law U_{f∘g} = U_g U_f gives (K*^T)^m Phi[q] = Phi[f^m(q)] under exact invariance. The marker '@m' concentrates alpha on power m, so the readout evaluates f^m although f^m was never demonstrated.\n\nDecision. The argmax decode is correct whenever 2 max_j ||W_o[j]|| · m rho^{m−1} eps ||Phi[q]|| is smaller than the logit margin gamma = (W_o Phi[f^m(q)])_{f^m(q)} − max_{j ≠ f^m(q)} (W_o Phi[f^m(q)])_j.\n\nToy check. In the toy example U^T U = I, so sigma_min = 1, E = 0 and eps = lambda/(1 + lambda) ≈ 1e-3. This is exactly K = K*/1.001.\n\nBindings. For rules that are not linear on the lift, such as arbitrary bindings, the same bound holds on the span of the demonstrated lifts. This allows up to d bindings with linearly independent lifts, which is the capacity limit stated in the claims.\n\nRole of pretraining. Pretraining only has to make ||E|| and r_q small for common rule families (shifts, permutations of structured alphabets, successor relations)."
+    },
+    "readout": [
+      {
+        "latex": "\\alpha_t = \\mathrm{softmax}(A[x_{t-1}]),\\quad y_t = \\sum_{m=0}^{M} \\alpha_{t,m} \\,(K_t^\\top)^m \\,\\Phi[x_t]",
+        "name": "operator power polynomial (computed after the position-t update)",
+        "plain": "# order per position t: (1) update P, K with pair (x[t-1], x[t]); (2) read out with this K = K_t\nalpha = softmax(A[x[t-1]]); h = Phi[x[t]]; y = alpha[0]*h; for m in 1..M: h = K.T @ h; y += alpha[m]*h"
+      },
+      {
+        "latex": "p(x_{t+1} = j \\mid x_{\\le t}) = \\mathrm{softmax}(W_o y_t)_j,\\qquad \\hat{x}_{t+1} = \\arg\\max_{j \\in \\{1..V\\}} (W_o y_t)_j",
+        "name": "token distribution and decision rule",
+        "plain": "p = softmax(W_o @ y); prediction for every accuracy claim = argmax over all V logits (no restriction to content tokens)"
+      }
+    ],
+    "state": [
+      {
+        "meaning": "Lift. Row Phi[x] is the d-dimensional vector of observables of token x, where d is the lift dimension. V is the vocabulary size. The vocabulary contains the content tokens plus the reserved tokens BOS (start of sequence, prepended as x_0 to every sequence), ';' (separator) and the M marker tokens '@1', ..., '@M'. Each marker is one vocabulary token. Pretraining shapes Phi so that frequent rule families act linearly on it, i.e. its span is approximately Koopman-invariant for those rules.",
+        "name": "Phi",
+        "shape": [
+          "V",
+          "d"
+        ],
+        "type": "learned parameter matrix (dictionary of observables)"
+      },
+      {
+        "meaning": "Decoder that maps a predicted lift vector y in R^d to V logits. It may be tied to Phi, as in the toy example.",
+        "name": "W_o",
+        "shape": [
+          "V",
+          "d"
+        ],
+        "type": "learned parameter matrix"
+      },
+      {
+        "meaning": "Pair-gate weights. beta_t = sigmoid(w_beta^T [u_t; v_t]) decides whether the adjacent pair (x_{t-1}, x_t) is a transition of the rule and should enter the operator fit. It is near 0 for pairs that involve BOS, ';' or a marker '@m'. In particular the query pairs (';', '@m') and ('@m', q) get beta ≈ 0.",
+        "name": "w_beta",
+        "shape": [
+          "2d"
+        ],
+        "type": "learned parameter vector"
+      },
+      {
+        "meaning": "Iteration-coefficient table. This is the only object named A in the card; the EDMD cross statistic is called C. Row A[x] is passed through a softmax to give alpha in R^{M+1}, the weights on operator powers 0..M. M is a small fixed maximum iteration count, M = 4 in experiments. The previous token selects the row. In the query '@m q', the token '@m' precedes q, so A['@m'] sets the weights used when q is read out. Because x_0 = BOS, the row A[BOS] is used at t = 1.",
+        "name": "A",
+        "shape": [
+          "V",
+          "M+1"
+        ],
+        "type": "learned parameter matrix"
+      },
+      {
+        "meaning": "Inverse regularized Gram matrix (lambda I + sum_{1<=s<=t} beta_s u_s u_s^T)^{-1} of the gated input lifts. It is initialized to P_0 = I/lambda, where lambda > 0 is the ridge constant (1e-3 by default).",
+        "name": "P_t",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "type": "recurrent state matrix (symmetric positive definite)"
+      },
+      {
+        "meaning": "In-context Koopman (EDMD) operator estimate K_t = P_t C_t, where C_t = sum_{1<=s<=t} beta_s u_s v_s^T is the gated cross statistic (not stored separately). K_0 = 0. K_t already includes the pair (x_{t-1}, x_t). K_t^T maps the lift of a token to the predicted lift of its successor under the rule shown in the context.",
+        "name": "K_t",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "type": "recurrent state matrix"
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_0 = \\mathrm{BOS};\\quad u_t = \\Phi[x_{t-1}],\\quad v_t = \\Phi[x_t],\\quad \\beta_t = \\sigma\\!\\left(w_\\beta^\\top [u_t; v_t]\\right),\\quad t = 1,\\dots,n",
+        "name": "lift and gate",
+        "plain": "x[0] = BOS; for t in 1..n: u = Phi[x[t-1]]; v = Phi[x[t]]; beta = sigmoid(dot(w_beta, concat(u, v)))"
+      },
+      {
+        "latex": "P_t = P_{t-1} - \\frac{\\beta_t P_{t-1} u_t u_t^\\top P_{t-1}}{1 + \\beta_t u_t^\\top P_{t-1} u_t}",
+        "name": "inverse Gram (RLS) update",
+        "plain": "Pu = P @ u; P = P - beta * outer(Pu, Pu) / (1 + beta * dot(u, Pu))"
+      },
+      {
+        "latex": "K_t = K_{t-1} + \\beta_t P_t u_t \\left(v_t^\\top - u_t^\\top K_{t-1}\\right)",
+        "name": "Koopman operator (EDMD) update",
+        "plain": "K = K + beta * outer(P @ u, v - u @ K)   # uses the already-updated P; equals (lambda I + sum_{s<=t} beta_s u_s u_s^T)^{-1} sum_{s<=t} beta_s u_s v_s^T exactly"
+      }
+    ]
+  },
+  "parent_ids": [],
+  "references": [
+    {
+      "source_id": "W2735197468",
+      "why": "Source of the data-driven Koopman operator as a least-squares fit on a chosen basis of observables, and of its use as a linear model rolled forward for multi-step model-based prediction. The card uses these as the per-sequence operator and the power readout. This paper also supplies the point that the choice of basis decides what becomes linear, which becomes the learned lift Phi here."
+    },
+    {
+      "source_id": "W4386821147",
+      "why": "Koopman-MPC predicts future outputs over a horizon by applying the lifted linear model repeatedly to a nonlinear (hysteretic) system. This is the source of the readout that applies powers of the operator to get m-step-ahead predictions."
+    },
+    {
+      "source_id": "2604.03086",
+      "why": "Source of the finite-dimensional EDMD approximation of a Koopman operator together with a reconstruction map from lifted coordinates back to states, which corresponds to the decoder W_o. Its history-discretization construction motivates the delay-lift extension."
+    },
+    {
+      "source_id": "2503.15696",
+      "why": "Its view of a neural ODE flow map composed with an embedding and a projection motivates the generator/fractional-time extension, in which the iteration count becomes a continuous flow time."
+    },
+    {
+      "source_id": "W2948977392",
+      "why": "Noise injection as a regularizer of continuous-time networks motivates the noise-injected-lift extension, which keeps the in-context Gram well conditioned."
+    }
+  ],
+  "source_transplant": {
+    "change": "In the sources, the data come from one physical system and the operator is fitted offline. Five things change here. (1) The data matrix is the current context, and weighted RLS re-estimates the operator online for every sequence. (2) A learned gate weights each pair, so separators and markers do not contaminate the fit. (3) The dictionary is a token embedding learned across many sequences in pretraining, not a set of hand-chosen basis functions. (4) The rollout horizon m is not a fixed control horizon. The previous token selects it through learned coefficients. (5) The predicted lift is decoded to a distribution over V tokens.",
+    "object": "The extended dynamic mode decomposition (EDMD) least-squares estimate of the Koopman operator on a dictionary of observables, K = G^{-1} C with G = sum psi(x_t) psi(x_t)^T and C = sum psi(x_t) psi(x_{t+1})^T. It comes with its multi-step predictor psi(x_{t+m}) ≈ (K^T)^m psi(x_t), which Koopman model-predictive control uses for horizon rollouts.",
+    "source_ids": [
+      "W2735197468",
+      "W4386821147",
+      "2604.03086"
+    ]
+  },
+  "status": {
+    "stage": "S6",
+    "verdicts": {
+      "S0": {
+        "by_calls": [
+          "call-199d0c940dee"
+        ],
+        "reasons": [
+          "card validates against the theory_card schema",
+          "nearest existing card card-d1d383d5 at TF-IDF cosine 0.138 (threshold 0.6)"
+        ],
+        "verdict": "pass"
+      },
+      "S1": {
+        "by_calls": [
+          "call-efef1a8001b7",
+          "job-48fdb756ce4d"
+        ],
+        "reasons": [
+          "gate: passed with 6 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+          "residual: notation_clash (mechanism.update[0]): The symbol sigma is used for the sigmoid in beta_t = sigma(w_beta^T [u_t; v_t]) and for singular values in sigma_min and max_sigma in the few_shot_argument; rename one of them, for example to logistic() for the gate.",
+          "residual: notation_clash (mechanism.learning.few_shot_argument): The letter U denotes the k×d gated data matrix (rows sqrt(beta_s) u_s) and also the Koopman operator U_f in the semigroup law U_{f∘g} = U_g U_f; these need distinct names.",
+          "residual: missing_definition (mechanism.learning.few_shot_argument): The rule f (the token map a -> a+s mod V) and the Koopman operator U_f it induces on observables are used in the invariance and semigroup claims but are never defined, including their domain and whether invariance must hold for all tokens or only for demonstrated and query tokens.",
+          "residual: vague_secondary_claim (falsifiers[3]): The EDMD residual prediction is mean relative residual ≤ 0.2 but the falsifier fires only above 0.5, so results between 0.2 and 0.5 are neither confirmed nor refuted; set one threshold or define the intermediate outcome.",
+          "residual: vague_secondary_claim (falsifiers[1]): The statement that k* grows 'roughly in proportion to V_c' has no tolerance, and the example thresholds (≤16 at V_c=64, ≥50 at V_c=256) leave k* in 17 to 49 undecided against the prediction that k* stays within ±2 across V_c.",
+          "residual: vague_secondary_claim (claims.capabilities[1] versus falsifiers[2]): The associative-recall prediction is accuracy ≤ 0.6 at K = 256, while the falsifier only fires at accuracy ≥ 0.9, so accuracy between 0.6 and 0.9 at K = 256 would count as neither confirmation nor refutation.",
+          "toy example reproduced 8 expected value(s)"
+        ],
+        "verdict": "pass"
+      },
+      "S2": {
+        "by_calls": [
+          "call-ef0ca40242e7",
+          "call-734151dc3bc8",
+          "call-5ceb4eb76eea",
+          "call-51a9d06b3cdb",
+          "job-e2bd51a3442c"
+        ],
+        "reasons": [
+          "prior art: prior_art_undertested. The recurrence (weighted RLS/EDMD update of P_t and K_t) is the same mechanism as DeltaNet and MesaNet-style in-context least-squares layers, so the update itself is not novel. The closest work for the in-context Koopman idea is the transformer that learns transfer operators in-context (W7131246441). The distinctive claim, a token-selected polynomial readout in K_t^T that applies operator powers t",
+          "textbook transplant: yes (recorded, not gated): The core is textbook EDMD (K = G^{-1}C on a dictionary of observables) computed by standard weighted RLS, plus the standard Koopman multi-step predictor psi(x_{t+m}) ≈ (K^T)^m psi(x_t) used in Koopman MPC. The card substitutes the token stream (adjacent token pairs) for system snapshots, uses a lear",
+          "reduction claim linear_attention (verified): numeric check confirms equivalence (max_abs_diff 1.84456894203322e-11)",
+          "gate: update rule reduces to linear_attention: Key k_t := u_t = Phi[x_{t-1}] (a token-shifted key, as in RWKV token-shift or induction-style previous-token keys). Value v_t := Phi[x_t]. Write strength / gate beta_t := sigmoid(w_beta^T[k_t; v_t]), the same role as the delta-rule beta. The card's update K_t = K_{t-1} + beta_t P_t u_t (v_t^T - u_t^T K_{t-1}) with the RLS update of P_t is the preconditioned delta rule. Its closed form is K_t = (lambda I + sum beta k k^T)^{-1} sum beta k v^T. MesaNet keeps G_t = sum beta k k^T and C_t = sum beta k v^T (the linear-attention KV state) and reads out C_t^T (G_t + lambda I)^{-1} q. With q := Phi[x_t"
+        ],
+        "verdict": "reduces_to_known"
+      },
+      "S4": {
+        "by_calls": [
+          "call-9d6c1d1c29ba",
+          "job-9cc59d766b5e"
+        ],
+        "reasons": [
+          "attempt 0: static checks and executor check passed",
+          "describe: {\"params\": 584, \"state_floats_per_sequence\": 2048, \"notes\": \"Koopman power readout: d=32, M=4, lambda=1e-3, float64. State is P_t and K_t (2 d^2 floats), independent of length. Phi and A have an extra row for the virtual x_0=BOS start. Gate w_beta has no bias, init zero. Trained with Adam via BPTT through the RLS recurrence and operator powers; training sequences truncated to 128 tokens, batch cap",
+          "measured params: {'torch': 584, 'numpy_arrays': 0, 'total': 584}"
+        ],
+        "verdict": "pass"
+      },
+      "S5": {
+        "by_calls": [
+          "call-3c22405204f7",
+          "job-5e7a96f4bc64",
+          "job-a44d5855dd91",
+          "job-64506fca4326",
+          "call-1da7cf935557",
+          "job-7ed9f8c3cb70",
+          "job-b99f0d08c0e2",
+          "job-79917012bd33",
+          "job-2e3c8ee9757d",
+          "job-b1da2dafe674",
+          "job-bb0e8de92003",
+          "job-e8b71a142772",
+          "job-e46e7bcec2fe",
+          "job-4435f44fb9ad",
+          "job-60e0704bcd3c",
+          "job-e851af8139ab",
+          "job-c38f0165bb55",
+          "job-b87e5cebd797",
+          "job-ddac80f77c23",
+          "job-cd79920c55db",
+          "job-c7e54ff71409",
+          "job-e4f76b0400e9",
+          "job-4d11a3ee9e91",
+          "job-7e9bccac9e56",
+          "job-58d08b3b0795",
+          "job-3fd0f6e640fb",
+          "job-20376bd08613",
+          "job-ad75fe6a45ee",
+          "job-15181d4efea5",
+          "job-505801ae2e9b",
+          "job-41bb4b917157"
+        ],
+        "reasons": [
+          "bench results recorded (trusted=True); scaling verdict match, claimed exponent 1.0, slopes {\"candidate\": 0.9897320693735505, \"gru\": 0.9640099087410472, \"linear_attention\": 0.9610331053110368, \"ngram\": -0.007938236556203536, \"ssm\": 0.9568197111902896, \"transformer\": 1.4157532162731972}",
+          "falsifier tasks run: 3",
+          "falsifier assoc_recall_capacity rule for capability.2: refuted (rule not met, so the claim is refuted)",
+          "falsifier assoc_recall_capacity rule for capability.2, falsifier.3: supported (rule met, so the claim is supported)",
+          "falsifier iterated_rule rule for capability.1: inconclusive (the candidate did not train on this task: it does not beat the unigram reference by 0.05 nats of KL or 0.05 accuracy)",
+          "falsifier sample_efficiency_kstar rule for capability.4, sample_efficiency.prediction: refuted (rule not met, so the claim is refuted)"
+        ],
+        "verdict": "pass"
+      },
+      "S6": {
+        "by_calls": [
+          "call-f90e87aad37f"
+        ],
+        "reasons": [
+          "claims ledger: 4 supported, 3 refuted, 2 inconclusive, 4 untested; 5 decided by falsifier rules",
+          "supported [analyst]: complexity time_per_token: O(M d^2 + V d) (Candidate scaling block (candidate.scaling): claimed_exponent 1.0, time_fit_tail slope 0.9897 (R^2 0.9995), time_fit_all slope 0.9948, verdict 'match' over lengths 64 to 1024. Total time per sequence is linear in n, so the n-dependence matches. The bench did not vary d, M or V separately, so the M d)",
+          "supported [analyst]: complexity memory: O(d^2 + V d) (Candidate scaling: memory_growth 'flat', memory_slope_tail -0.0999 (memory_fit_tail r2 0.75 over 3 points), peak_rss_delta_mb_at_max_n 13.86 MB. Candidate state is P_t and K_t, 2048 floats per sequence, independent of length. This supports n-independence of the state. The V d term is not separately )",
+          "supported [analyst]: complexity total_sequence: O(n (M d^2 + V d)) (Same scaling block as time_per_token: claimed_exponent 1.0, time_fit_tail slope 0.9897, verdict 'match'. Median times grow from 0.00357 s at n=64 to 0.05486 s at n=1024, which is about linear. Training cost is not measured separately.)",
+          "refuted [analyst]: sample efficiency mechanism: Identifying a lift-linear rule needs as many demonstrations as the rank of the lift (d), not as many as the vocabulary size (V). Once the demonstrated lifts span R^d with  (sample_efficiency_kstar task (V_c=256, s=1, 50 trials per k, candidate trained: true). Candidate overall acc 0.096 (kl 5.559). Per k: k=2 0.10, k=4 0.12, k=8 0.08, k=16 0.04, k=32 0.14. The candidate does not reach the 0.9 threshold at any demonstration count. Baselines at the same k: gru 1.00 at al)",
+          "refuted [rule]: sample efficiency prediction: k* ≤ 16 = d for V_c = 256, and k* stays the same within ±2 when V_c changes from 64 to 256. An in-context memory based on counting or lookup has to see each input it is q (decided by rule (sample_efficiency_kstar rule 0: refuted))",
+          "inconclusive [rule]: capability 1: task: Iterated rule application on unseen tokens. V_c = 64 ordinal content tokens. Context: BOS, then 16 demonstrations 'a f(a) ;' of a shift-by-s rule, with s uniform in {1..63}. Query: (no rule reached a decision (iterated_rule rule 0: inconclusive))",
+          "inconclusive [rule]: capability 2: task: Associative recall of K random token bindings. V_c = 1024 content tokens. Context: BOS, then K pairs 'a b ;' with distinct a's and b's drawn uniformly, then the query '@1 a' for a  (rules disagree (assoc_recall_capacity rule 0: refuted, assoc_recall_capacity rule 1: supported))",
+          "untested [analyst]: capability 3: task: Pointer chasing. V_c = 1024 content tokens. Each trial draws 8 disjoint chains of 5 distinct tokens (c_0 → c_1 → c_2 → c_3 → c_4), giving K = 32 pairs. The 32 pairs are presented a (No pointer_chasing task appears in the bench result. Tasks run were compose, fewshot, hmm, recall, vom (for the fingerprint) and the three falsifier tasks (assoc_recall_capacity, iterated_rule, sample_efficiency_kstar). Nothing measures the chained-marker query '@3 c_0' or the M=1 ablation at d=64.)",
+          "refuted [rule]: capability 4: task: Demonstration count vs vocabulary size for lift-linear rules. This is the k* protocol of claims.sample_efficiency (d = 16, query '@1 q' on undemonstrated q, argmax over all V logit (decided by rule (sample_efficiency_kstar rule 0: refuted))",
+          "untested [analyst]: falsifier 1: On the iterated-rule task (V_c = 64, d = 16, 16 demonstrations, unseen query tokens, argmax over all V logits), the single-layer model fails to beat a matched single layer with a degree-1 (No degree-1 matched candidate (alpha forced to power 1) was run. The only candidate result on iterated_rule is m=2 acc 0.00 (n=50), so the candidate-minus-degree-1 gap cannot be computed. For reference, all entrants score ≤0.04 at m=2 except ngram (0.86), so the bench does not isolate the readout. T)",
+          "untested [analyst]: falsifier 2: Under the k* protocol (d = 16, 500 trials per k, undemonstrated queries), k* grows roughly in proportion to V_c, for example from ≤ 16 at V_c = 64 to ≥ 50 at V_c = 256. That result would  (Only V_c=256 was run (sample_efficiency_kstar, 50 trials per k, k in {2,4,8,16,32}). The V_c=64 value needed for the proportionality comparison was not measured. Candidate acc is ≤0.14 at every k ≤32, so k* is not reached inside the grid and the ≥50 bound at V_c=256 cannot be checked (k=50 not run).)",
+          "supported [rule]: falsifier 3: Single-layer associative recall with d = 64 stays ≥ 0.9 at K = 4d = 256 pairs. That result would mean something other than the d×d least-squares operator stores the bindings, and the capa (decided by rule (assoc_recall_capacity rule 1: supported))",
+          "untested [analyst]: falsifier 4: EDMD residual test. Predicted mean relative residual ≤ 0.2; the theory is falsified if the mean exceeds 0.5. Setup: after pretraining, evaluate 500 held-out sequences with V_c = 64 and d  (The bench result has no residual metric, no Phi or K_t quantities, and no 500-sequence residual evaluation. The describe blocks report only task accuracy, KL, and fingerprint statistics. The residual test was not run.)"
+        ],
+        "verdict": "pass"
+      }
+    }
+  },
+  "summary": "Pretraining learns four things: a lift Phi that maps every vocabulary token to d observables, a decoder W_o, a pair gate, and a small table of iteration coefficients. The vocabulary holds the content tokens plus the reserved tokens BOS, ';' and the M single-token iteration markers '@1'..'@M'. Each sequence starts with x_0 = BOS. Gated adjacent token pairs feed a recursive-least-squares (RLS) estimate K_t of the Koopman operator on the lift, which is the extended dynamic mode decomposition (EDMD) solution K = (lambda I + G)^{-1} C. At each position the operator is updated with the pair (x_{t-1}, x_t) first. The readout then applies a polynomial in K_t^T to the lift of the current token. The previous token selects the polynomial's coefficients, so a marker '@m' can request f, f∘f or f∘f∘f. Suppose a rule is linear on the lift, meaning the lift spans a Koopman-invariant subspace for that rule. Then k ≥ d demonstrations identify the rule on every token, including tokens never shown, with the explicit error bound ||K_t − K*|| ≤ lambda||K*||/(lambda + sigma_min^2) + ||E||/sigma_min. The rule's iterates follow from operator powers within one layer. The update is a known recurrence (RLS, a preconditioned delta rule). The new part is the readout, which has degree M in the state and is justified by Koopman semigroup composition. The state is O(d^2) and the cost is linear in n.",
+  "title": "Koopman Power Readout: in-context EDMD whose operator is iterated by the semigroup law",
+  "toy_example": {
+    "description": "Vocabulary V = 13: content tokens 0..7 on a cycle, 8 = ';', 9 = BOS, and 10, 11, 12 = the markers '@1', '@2', '@3' (M = 3). Settings: d = 2, lambda = 1e-3. A hand-fixed lift stands in for a learned one. Content tokens get Fourier features Phi[j] = (cos 2πj/8, sin 2πj/8), and reserved tokens get zero rows. A hand-set gate stands in for the learned w_beta: beta = 1 for content-content pairs and 0 otherwise. Alpha rows are set directly to one-hot vectors, the large-logit limit of the softmax. '@m' selects power m, and every other token selects power 1. W_o = Phi. The context 'BOS 0 1 ; 2 3 ;' shows two demonstrations of f(j) = j + 1 mod 8. The demonstrated lifts (1,0) and (0,1) give U^T U = I, so sigma_min = 1 and RLS gives K = K*/1.001: a 45-degree rotation shrunk by the ridge, matching the bound eps = lambda/(1+lambda). Queries are read out with the final K. This equals K_t at the query position, because the query pairs (';','@m') and ('@m', q) have beta = 0 and leave P and K unchanged. The readout gives: '@2 5' → 7, '@3 6' → 9 mod 8 = 1, '@1 4' → 5. Tokens 4, 5 and 6 never appear in the context. With a degree-1 readout ('@1 5'), the only possible answer is 6.",
+    "expected": {
+      "K": [
+        [
+          0.7064,
+          0.7064
+        ],
+        [
+          -0.7064,
+          0.7064
+        ]
+      ],
+      "logit_5_m2": 0.998,
+      "logit_6_m3": 0.997,
+      "one_step_pred_5": 6,
+      "pairs_used": 2,
+      "pred_4_m1": 5,
+      "pred_5_m2": 7,
+      "pred_6_m3": 1
+    },
+    "python": "import json\nimport numpy as np\nNC, d, lam, M = 8, 2, 1e-3, 3\nSEP, BOS = 8, 9\nAT = {1: 10, 2: 11, 3: 12}\nV = 13\nang = 2 * np.pi * np.arange(NC) / NC\nPhi = np.zeros((V, d))\nPhi[:NC] = np.stack([np.cos(ang), np.sin(ang)], axis=1)\nA = np.zeros((V, M + 1))\nA[:, 1] = 1.0\nfor m in range(1, M + 1):\n    A[AT[m]] = np.eye(M + 1)[m]\nseq = [BOS, 0, 1, SEP, 2, 3, SEP]\nP = np.eye(d) / lam\nK = np.zeros((d, d))\npairs = 0\nfor t in range(1, len(seq)):\n    a, b = seq[t - 1], seq[t]\n    beta = 1.0 if (a < NC and b < NC) else 0.0\n    u, v = Phi[a], Phi[b]\n    Pu = P @ u\n    P = P - beta * np.outer(Pu, Pu) / (1.0 + beta * (u @ Pu))\n    K = K + beta * np.outer(P @ u, v - u @ K)\n    pairs += int(beta > 0)\ndef readout(prev, q):\n    alpha = A[prev]\n    h = Phi[q]\n    y = alpha[0] * h\n    for m in range(1, M + 1):\n        h = K.T @ h\n        y = y + alpha[m] * h\n    logits = Phi @ y\n    return int(np.argmax(logits)), round(float(logits.max()), 4)\np52 = readout(AT[2], 5)\np63 = readout(AT[3], 6)\np41 = readout(AT[1], 4)\np51 = readout(AT[1], 5)\nout = {\"pairs_used\": pairs, \"K\": [[round(float(x), 4) for x in row] for row in K], \"pred_5_m2\": p52[0], \"logit_5_m2\": p52[1], \"pred_6_m3\": p63[0], \"logit_6_m3\": p63[1], \"pred_4_m1\": p41[0], \"one_step_pred_5\": p51[0]}\nprint(json.dumps(out))\n"
+  },
+  "version": 4
+}

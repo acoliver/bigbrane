@@ -1,0 +1,79 @@
+# Quality-diversity archive (MAP-Elites, Mouret and Clune 2015, arXiv 1504.04909) for generation
+# (DISCOVERY-PIPELINE-PLAN.md section 6.2, Phase 6; code in hybrid/research/archive.py).
+#
+# A cell is one value on each of the five axes below. The classifier role (prompts/arm_classifier.md, never the
+# proposer) assigns a card's values from its equations and toy code; a deterministic consistency check overrides
+# obvious contradictions. The value ids are what cards, ledger events and outcome records carry; the text is what
+# the classifier reads. Changing an id breaks the comparison with earlier runs, so add values instead of renaming.
+
+[archive]
+# Elites kept per cell, best first. Quality of a card: furthest stage passed, then the number of profile
+# obligations at tier lean or sympy_exact (0 until stage M reports them), then fewer P4 examples (unknown until
+# Phase 10, counted as 0).
+elites_per_cell = 2
+# Parent selection for mutate and cross (plan 6.2): weight 1 / (1 + visits of the cell) plus neighbour_bonus for
+# each empty neighbouring cell (one axis different, not closed).
+neighbour_bonus = 0.05
+# The stage whose pass earns the reward for a card that filled an empty cell. The plan names R (the refinement
+# dialogue, Phase 7); until R exists S1, its entry check, stands in.
+reward_stage = "S1"
+
+[axes.substrate]
+title = "Representation substrate"
+values = [
+  { id = "dense_vector", text = "dense real vectors or matrices (embeddings, hidden states, weight matrices)" },
+  { id = "sparse_binary_hypervector", text = "sparse or binary hypervectors (bit vectors, sparse codes, VSA/HDC vectors)" },
+  { id = "symbolic_graph_term", text = "symbolic graph or term (typed graphs, trees, rewrite terms, knowledge graphs)" },
+  { id = "program", text = "programs (code, lambda terms, circuits that are executed)" },
+  { id = "distribution_samples", text = "a probability distribution held as samples or particles" },
+  { id = "automaton_grammar", text = "a discrete automaton or grammar (finite-state machine, PCFG, stack automaton)" },
+  { id = "geometric_topological", text = "a geometric or topological object (manifold point, simplicial complex, persistence diagram, group element)" },
+  { id = "continuous_physical_dynamics", text = "continuous physical dynamics (an ODE or PDE state, oscillators, a field, a chemical reaction network)" },
+]
+
+[axes.learning_rule]
+title = "Learning rule"
+values = [
+  { id = "gradient_backprop", text = "gradient descent with backpropagation (end-to-end trained parameters)" },
+  { id = "local_hebbian", text = "local or Hebbian updates (each weight changes from locally available signals only)" },
+  { id = "bayesian_posterior", text = "Bayesian posterior update (exact or approximate inference over hypotheses or parameters)" },
+  { id = "search_program_induction", text = "search or program induction (enumeration, beam or MCTS search over structures)" },
+  { id = "compression_mdl", text = "compression or minimum description length (choose the model that shortens the code)" },
+  { id = "closed_form_algebraic", text = "closed-form algebraic computation (counting, solving, factorization with no iteration over a loss)" },
+  { id = "evolutionary", text = "evolutionary (mutation and selection over a population)" },
+  { id = "none_fixed", text = "none: the mechanism is fixed by hand and nothing is learned" },
+]
+
+[axes.unit]
+title = "Unit"
+values = [
+  { id = "byte_char", text = "byte or character" },
+  { id = "subword_token", text = "subword token (BPE, WordPiece, unigram LM) or an unspecified token id" },
+  { id = "morpheme", text = "morpheme" },
+  { id = "word", text = "word" },
+  { id = "chunk_phrase", text = "chunk or phrase (multi-word units)" },
+  { id = "event_sentence", text = "event or sentence" },
+  { id = "learned_segment", text = "a learned segment whose boundaries the mechanism discovers" },
+]
+
+[axes.objective]
+title = "Objective"
+values = [
+  { id = "next_unit", text = "next-unit prediction (log loss on the next token, byte or word)" },
+  { id = "masked_denoising", text = "masked or denoising reconstruction" },
+  { id = "contrastive", text = "contrastive (tell true pairs from negatives)" },
+  { id = "description_length", text = "description length of the data under the model" },
+  { id = "latent_prediction", text = "prediction in a latent space (predict representations, not units)" },
+  { id = "constraint_consistency", text = "constraint satisfaction or consistency (find a structure that satisfies the observations)" },
+  { id = "reward_prediction_error", text = "reward or prediction error driving updates (temporal difference, surprise signals)" },
+]
+
+[axes.structure_source]
+title = "Where structure comes from"
+values = [
+  { id = "learned_from_data", text = "learned from the data" },
+  { id = "builtin_prior", text = "a built-in prior with declared bits (hand-set grammar class, symmetry, primitives)" },
+  { id = "inference_search", text = "search at inference time" },
+  { id = "external_store", text = "an external store the model reads and writes (memory outside the parameters)" },
+  { id = "interaction", text = "interaction (queries to a teacher, an environment or another agent)" },
+]

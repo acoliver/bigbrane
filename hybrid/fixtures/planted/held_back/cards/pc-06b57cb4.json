@@ -1,0 +1,154 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Byte ring of ninety-six positions written by a stepping marker and replayed forwards",
+  "summary": "String symbols are placed on a ring of 96 byte positions by a write marker that steps once per symbol, starting from position 0 at the start mark. After the separator a replay marker starts at position 0 and steps forward, one symbol per step. Pairs are placed at the position named by their address. A 20-bit integer keeps the open bracket types. Episodes come in five fixed formats: a string to reproduce after a separator; address-item pairs followed by probes; two-type bracket prefixes whose next closer must be named; two tables g and f followed by probes answered f(g(x)); and chains of assignments ending in a probe variable.",
+  "core_idea": "Place a string on a ring of 96 byte positions with a stepping write marker and replay it with a forward marker from position 0.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Rb",
+        "type": "ring of bytes",
+        "shape": [
+          96
+        ],
+        "meaning": "Ninety-six positions of 8 bits on a ring."
+      },
+      {
+        "name": "mk",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Write marker, a position modulo 96."
+      },
+      {
+        "name": "rp",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Replay marker, a position modulo 96."
+      },
+      {
+        "name": "ob",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Open-bracket integer, 20 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "pair placement",
+        "latex": "Rb[\\mathrm{id}(z_t)] \\leftarrow u_t",
+        "plain": "a pair is placed at Rb[id(address)] = u_t (48 + id for the second table)"
+      },
+      {
+        "name": "open-bracket integer",
+        "latex": "ob \\leftarrow 2\\,ob + b,\\quad ob \\leftarrow \\lfloor ob/2 \\rfloor",
+        "plain": "opener of type b: ob = 2 ob + b; closer: ob = floor(ob / 2)"
+      },
+      {
+        "name": "string placement",
+        "latex": "Rb[mk] \\leftarrow s_t,\\; mk \\leftarrow (mk - 1) \\bmod 96",
+        "plain": "a string symbol is placed at Rb[mk] = code of s_t, then mk = (mk - 1) mod 96; a start mark sets mk = 0"
+      }
+    ],
+    "readout": [
+      {
+        "name": "next bracket",
+        "latex": "\\hat{b} = ob \\bmod 2",
+        "plain": "the closer to predict has the type in the lowest bit of ob"
+      },
+      {
+        "name": "replay",
+        "latex": "\\hat{s} = Rb[rp],\\; rp \\leftarrow (rp + 1) \\bmod 96",
+        "plain": "at the separator rp = 0, the position of the first symbol; each output is Rb[rp], then rp = (rp + 1) mod 96"
+      },
+      {
+        "name": "pair lookup",
+        "latex": "\\hat{u} = Rb[\\mathrm{id}(a)]",
+        "plain": "a probe a reads its position; chains and f(g(x)) read the named position again, at most 8 times"
+      }
+    ],
+    "learning": {
+      "description": "Each symbol's role is the one of highest posterior given m example episodes, starting from a uniform prior with likelihood 1 for consistent answers and a small floor otherwise.",
+      "few_shot_argument": "One consistent episode fixes each symbol's role, so m = 6 example episodes per task are enough in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "One position access and one marker step per symbol; 96 bytes, two markers and the open-bracket integer, independent of n."
+    },
+    "sample_efficiency": {
+      "mechanism": "Posterior over symbol roles from m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "By hand: the write marker places the L symbols and the replay marker reads them back from the first; exact at L = 8, 32 and 64 over up to 256 symbols."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Each address id below 96 has its own position; exact at K = 8, 32 and 64."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "The open-bracket integer is exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "g at positions 48..79 and f at 0..31; two reads; exact at sizes 4, 16 and 32. At most 8 linked reads; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "A string longer than 96 symbols overwrites its own beginning on the ring, so exact copy fails at L = 97."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The role posterior learns each small case from m = 6 example episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "An L = 64 copy episode is replayed with a wrong symbol.",
+    "Placing a pair changes a position other than the one its address names."
+  ],
+  "toy_example": {
+    "description": "Placing a three-symbol string and recording the write marker.",
+    "python": "import json\nRb = [0] * 96\nmk = 0\nmarks = []\nfor s in [90, 1, 45]:\n    Rb[mk] = s\n    mk = (mk - 1) % 96\n    marks.append(mk)\nprint(json.dumps({\"marks\": marks, \"position_0\": Rb[0]}))\n",
+    "expected": {
+      "marks": [
+        95,
+        94,
+        93
+      ],
+      "position_0": 90
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

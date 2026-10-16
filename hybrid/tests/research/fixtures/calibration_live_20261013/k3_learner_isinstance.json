@@ -1,0 +1,20 @@
+{
+ "source": "runs/calibration-math-20261013T082935Z/k3-run1 O4.a attempt 2, math_check card-ca11b003-v1-17af49.json (job mathlib-60648edd0b43)",
+ "evidence_then": "learner failed at seed 0: NameError: name 'isinstance' is not defined",
+ "spec": {
+  "examples": 400,
+  "params": {
+   "D": 4
+  },
+  "seeds": [
+   0,
+   1,
+   2
+  ],
+  "size": 2,
+  "task": "copy",
+  "test_count": 500,
+  "threshold": 0.99
+ },
+ "learner": "PARAMS = {}\n\ndef collect(obj, acc):\n    if isinstance(obj, bool):\n        return\n    if isinstance(obj, int):\n        acc.append(obj)\n    elif isinstance(obj, (list, tuple)):\n        for o in obj:\n            collect(o, acc)\n    elif isinstance(obj, dict):\n        for o in obj.values():\n            collect(o, acc)\n\ndef uniforms(seed, n):\n    m = 18446744073709551616\n    s = (int(seed) * 2654435761 + 12345) % m\n    out = []\n    for i in range(n):\n        s = (s * 6364136223846793005 + 1442695040888963407) % m\n        out.append(((s >> 11) + 0.5) / 9007199254740992.0)\n    return out\n\ndef build_seq(ex):\n    seq = [int(t) for t in ex.get('tokens', [])]\n    qs = sorted([[int(q[0]), int(q[1])] for q in ex.get('queries', [])])\n    for q in qs:\n        t = q[0] + 1\n        if 0 <= t < len(seq):\n            seq[t] = q[1]\n        else:\n            seq.append(q[1])\n    return seq\n\ndef normalize_row(row):\n    s = 0.0\n    for v in row:\n        s += v\n    return [v / s for v in row]\n\ndef learn(layout, examples, seed):\n    k = 16\n    seqs = [build_seq(ex) for ex in examples]\n    acc = []\n    collect(layout, acc)\n    for sq in seqs:\n        for t in sq:\n            acc.append(t)\n    V = (max(acc) + 1) if acc else 5\n    if V < 1:\n        V = 1\n    u = uniforms(seed, k * k + k * V)\n    A = []\n    pos = 0\n    for i in range(k):\n        A.append(normalize_row(u[pos:pos + k]))\n        pos += k\n    B = []\n    for j in range(k):\n        B.append(normalize_row(u[pos:pos + V]))\n        pos += V\n    prev = None\n    for p in range(100):\n        cA = [[0.0] * k for i in range(k)]\n        cB = [[0.0] * V for j in range(k)]\n        paths = []\n        for sq in seqs:\n            z = 0\n            path = []\n            for x in sq:\n                best = -1.0\n                bj = 0\n                for j in range(k):\n                    bx = B[j][x] if 0 <= x < V else 0.0\n                    sc = A[z][j] * bx\n                    if sc > best:\n                        best = sc\n                        bj = j\n                cA[z][bj] += 1.0\n                if 0 <= x < V:\n                    cB[bj][x] += 1.0\n                z = bj\n                path.append(bj)\n            paths.append(path)\n        if paths == prev:\n            break\n        prev = paths\n        for i in range(k):\n            s = 0.0\n            for v in cA[i]:\n                s += v\n            if s > 0:\n                A[i] = [v / s for v in cA[i]]\n        for j in range(k):\n            s = 0.0\n            for v in cB[j]:\n                s += v\n            if s > 0:\n                B[j] = [v / s for v in cB[j]]\n    return {'A': A, 'B': B, 'V': V}\n\ndef init(layout, params):\n    PARAMS['A'] = params['A']\n    PARAMS['B'] = params['B']\n    PARAMS['V'] = int(params['V'])\n    PARAMS['k'] = len(params['A'])\n    return 0\n\ndef update(state, token):\n    A = PARAMS['A']\n    B = PARAMS['B']\n    V = PARAMS['V']\n    k = PARAMS['k']\n    z = state\n    x = int(token)\n    best = -1.0\n    bj = 0\n    for j in range(k):\n        bx = B[j][x] if 0 <= x < V else 0.0\n        sc = A[z][j] * bx\n        if sc > best:\n            best = sc\n            bj = j\n    return bj\n\ndef predict(state):\n    A = PARAMS['A']\n    B = PARAMS['B']\n    V = PARAMS['V']\n    k = PARAMS['k']\n    z = state\n    best = -1.0\n    bv = 0\n    for v in range(V):\n        s = A[z][0] * B[0][v]\n        for j in range(1, k):\n            s += A[z][j] * B[j][v]\n        if s > best:\n            best = s\n            bv = v\n    return bv\n"
+}

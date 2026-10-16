@@ -1,0 +1,43 @@
+{
+  "confidence": 0.88,
+  "difference_if_any": "What remains after the mapping:\n- Per-channel phase-only normalization N(S_t) = S_t/|S_t| with a hard switch-off, applied to the diagonal state at readout. This is an elementwise nonlinearity/normalizer on a linear-attention state. Its effect is scale-free confidence under dilution, versus the 1/t-normalized ablation.\n- Hand-set group-structured (lattice or Walsh) phase tables, which make translation or XOR rules exact Hadamard multiplications.\n- The learning rule is ordinary next-token cross-entropy with Adam on the feature table, u and beta. That is not a different learning rule.",
+  "family": "linear_attention",
+  "family_why": "R_t = R_{t-1} + conj(E_{x_{t-1}}) ⊙ E_{x_t} is S_t = S_{t-1} + phi(k_t) v_t^T restricted to the diagonal, with phasor features and a shift key. The readout N(S_t) ⊙ phi(q_t) only adds a normalizer, which the family explicitly covers, as it does phasor superpositions of bound pairs.",
+  "mapping": "The card is diagonal (elementwise) linear attention with complex unit-modulus features, tied key, value and query tables, no decay, and a per-channel normalizer on the state before readout.\n- Feature map: phi(v) = E_v = exp(i Theta_v), a learned unit-modulus complex feature table.\n- Key at step t: k_t = conj(E_{x_{t-1}}), the previous token's code, i.e. the H3-style shift-key.\n- Value at step t: v_t = E_{x_t}.\n- State: S_t = R_t, keeping only the diagonal of the outer product. The write S_t = S_{t-1} + phi(k_t) v_t^T becomes R_t = R_{t-1} + conj(E_{x_{t-1}}) ⊙ E_{x_t}, which is exactly the card's update with A = I.\n- Query at step t: q_t = E_{x_t}.\n- Readout: y_t = N(S_t) ⊙ q_t, where N(z)_w = z_w/|z_w| (0 below tau) is an elementwise normalizer applied to the state.\n- Output layer: logits = u + beta * Re(conj(E) y_t)/d, a tied output embedding followed by softmax.\n- Equivalently in SSM form: h_t = I h_{t-1} + B(x_{t-1}, x_t), with B = conj(E_{x_{t-1}}) ⊙ E_{x_t} and C_t = diag(E_{x_t}) composed with the normalizer.\n\nThe equations coincide term by term. The only addition is the elementwise modulus normalization of the state, and the sidelobe and capacity behaviour follows from the fixed lattice or Walsh choice of phi, i.e. an initialization of the feature table.",
+  "prior_art_delta": null,
+  "radical_enough": false,
+  "reduces_to": "linear_attention",
+  "reduction_check": {
+    "comparisons": [
+      {
+        "comparator": "causal diagonal linear attention, key conj(E[x_{t-1}]), value E[x_t], query E[x_t], sum normalizer, tied output",
+        "counted": true,
+        "family": "linear_attention",
+        "inputs_tested": 30,
+        "kind": "claimed_known_form",
+        "max_abs_diff": 0.7632046103905968,
+        "reference": "Katharopoulos et al. 2020, Transformers are RNNs (causal linear attention), diagonal state",
+        "within_tolerance": false
+      },
+      {
+        "comparator": "linear attention state with the card's per-channel phase-only normalizer inserted",
+        "counted": false,
+        "family": "linear_attention",
+        "inputs_tested": 30,
+        "kind": "rewrite",
+        "max_abs_diff": 0.0,
+        "reference": "card equations rearranged in linear-attention notation",
+        "within_tolerance": false
+      }
+    ],
+    "job_id": "job-e284e0a16e43",
+    "notes": "Compared next-token probabilities at every position (V=10, d=8, n=12, random Theta, u, beta). The per-channel phase normalization is not part of published linear attention, so the rewrite does not establish the reduction.",
+    "outcome": "refuted",
+    "reduces_to": "linear_attention",
+    "tolerance": 1e-06
+  },
+  "reduction_outcome": "refuted",
+  "textbook_transplant": true,
+  "textbook_why": "The core is ensemble-averaged cross-correlation, as in PIV and ensemble correlation, combined with phase-only correlation (Kuglin–Hines phase correlation for image registration). In both, cross-power spectra are summed and normalized per frequency to unit modulus. The card substitutes adjacent token pairs for particle pairs and replaces peak localization with applying the normalized spectrum to the current token's code as a readout; the estimator itself is unchanged.",
+  "why": "Written out, the update is the diagonal outer-product write of linear attention. The key is the previous token's phasor code, the value is the current token's code, A = I, and the state is d complex numbers. The card's own known_relatives entry concedes this. The readout multiplies an elementwise-normalized state by the current token's code and scores it against a tied output table.\n\nThe phase-only normalization is a normalizer or elementwise nonlinearity on the state. The rule's generalization to unseen items comes from choosing phi as characters of an abelian group, a feature-map choice. Neither changes an equation of the family's form. The family definition explicitly includes holographic or phasor superpositions of bound pairs.\n\nOwn history: this exact card (card-1184f7a7, Jaccard 0.82, TF-IDF 0.98) already died at S2 with cause reduces_to_known:linear_attention under the same k = conj(E_{x_{t-1}}), v = E_{x_t} mapping. The current version leaves that update equation unchanged. It only elaborates the predictions, the complexity and the training-memory notes, so it repeats the recorded failure.\n\nThe predictions (dilution invariance, the abelian/non-abelian split, the HRR item law) are interesting consequences of FHRR algebra plus phase correlation. They are not a new mechanism."
+}

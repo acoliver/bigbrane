@@ -1,0 +1,151 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Few-example recall with a rule family handed to the learner",
+  "summary": "A small pair memory reads K pairs and answers probes. Its learner is not searching blindly: it receives the family of rules the task belongs to, which contains the rule that answers a probe with the symbol written after the probe's earlier occurrence. With the family supplied, only an output translation is left to learn.",
+  "core_idea": "Hand the learner the family that contains the target rule, so recall at small K is learned from a few dozen items.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "W",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Pair memory: C rows of (first symbol, second symbol); C = 64."
+      },
+      {
+        "name": "c",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Number of pairs in W."
+      },
+      {
+        "name": "q",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Left symbol waiting for its partner."
+      },
+      {
+        "name": "dep",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Depth counter when the memory rows serve as a push-down list."
+      },
+      {
+        "name": "pos",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter after a separator, for string reproduction."
+      },
+      {
+        "name": "Rstar",
+        "type": "rule family",
+        "shape": [
+          1
+        ],
+        "meaning": "The supplied rule family R*: here the single rule 'emit what followed the probe the last time it was seen', evaluated on the prefix."
+      },
+      {
+        "name": "T",
+        "type": "integer map",
+        "shape": [
+          "V"
+        ],
+        "meaning": "Output translation learned from the items, V = 16 entries."
+      }
+    ],
+    "update": [
+      {
+        "latex": "q=\\varnothing \\Rightarrow q \\leftarrow x_t;\\;\\text{else } W_c \\leftarrow (q, x_t),\\; c \\leftarrow c+1",
+        "plain": "pairs are written row by row",
+        "name": "write"
+      },
+      {
+        "latex": "\\text{openers: } dep \\leftarrow dep+1,\\, W_{dep} \\leftarrow (dep, x_t);\\; \\text{closers: } dep \\leftarrow dep-1;\\; \\text{after separator: } pos \\leftarrow pos+1",
+        "plain": "bracket and string bookkeeping on the same rows",
+        "name": "bookkeeping"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\rho_t = R^{*}(x_{1..t}),\\qquad \\hat{y}_t = T[\\rho_t]",
+        "plain": "rho is the supplied hypothesis applied to the prefix (the symbol after the probe's earlier occurrence); the output is T of rho; strings read W at pos and brackets read W at dep"
+      }
+    ],
+    "learning": {
+      "description": "Given R*, learning fits T by majority count over the m training items (each probe gives one (rho, answer) pair). For strings and brackets the routing is chosen by training accuracy.",
+      "few_shot_argument": "R* contains the target rule, so the hypothesis space has one member and T only needs to see each of the V = 16 symbols: m = 32 items at K = 4 (128 probes) do."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(C)",
+      "memory": "O(C + V)",
+      "total_sequence": "O(n C)",
+      "constants_notes": "Row writes are O(1); reads scan at most C rows. 2C + V + 4 words."
+    },
+    "sample_efficiency": {
+      "mechanism": "The supplied family leaves only a translation table to learn.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 32,
+        "statement": "From m = 32 recall items with K = 4 pairs over V = 16, the learned rule answers with per-query accuracy at least 0.99 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall",
+        "prediction": "Learned at K = 4 from m = 32; the hand-set memory answers K = 8, 32, 64 exactly with C = 64."
+      },
+      {
+        "task": "copy and bracket nesting",
+        "prediction": "Exact at L = 8, 32, 64 and depth 2, 4, 8, 16."
+      },
+      {
+        "task": "composition and binding",
+        "prediction": "Exact at T = 4, 16, 32 and hops 1, 4, 8 by repeated row reads."
+      },
+      {
+        "task": "limit",
+        "prediction": "The limit is a storage count: C slots of two words cannot hold more than C pairs, so at C = 64 an instance with 65 or more distinct pairs loses one of them."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "32 items at K = 4 after which recall accuracy is below 0.99 on some seed.",
+    "A recall instance with K <= 64 that the hand-set memory answers wrongly."
+  ],
+  "toy_example": {
+    "description": "The supplied rule applied to a K = 2 item.",
+    "python": "import json\ntokens = [5, 19, 2, 23, 40, 2, 5]\ndef rule(prefix):\n    probe = prefix[-1]\n    cut = prefix.index(40)\n    for i in range(0, cut, 2):\n        if prefix[i] == probe:\n            return prefix[i + 1]\n    return -1\nprint(json.dumps({\"after_2\": rule(tokens[:6]), \"after_5\": rule(tokens[:7])}))\n",
+    "expected": {
+      "after_2": 23,
+      "after_5": 19
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

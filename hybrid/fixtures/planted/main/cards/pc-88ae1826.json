@@ -1,0 +1,168 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Tag-steered slot reader for strings, pairs and nested brackets",
+  "summary": "A reader keeps C two-word slots and a few counters. Pair and string tasks are answered from the slots. For nested brackets it uses a boundary tag that arrives with every token: the bracket symbol that opened the innermost constituent still open. A small learned map turns what was read into an output symbol.",
+  "core_idea": "Answer nested-bracket prefixes from a per-token boundary tag and everything else from a fixed slot store, so nesting needs no growing structure and only a handful of training sequences.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "S",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Slot store: row i holds an address and the item written under it; C is a card parameter, set to 64 for the listed sizes."
+      },
+      {
+        "name": "f",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Fill count: number of slot rows written so far, between 0 and C."
+      },
+      {
+        "name": "p",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Pending address: the first symbol of a pair whose second symbol has not arrived."
+      },
+      {
+        "name": "o",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Offset counter: how many symbols have been emitted since the separator."
+      },
+      {
+        "name": "beta",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Boundary tag beta_t delivered alongside token t by the segmenter: the opening bracket symbol at the left edge of the innermost constituent that is still open after t, or -1."
+      },
+      {
+        "name": "Phi",
+        "type": "integer map",
+        "shape": [
+          "R"
+        ],
+        "meaning": "Output map from a read result r to an output symbol, R entries, fitted by tallying."
+      },
+      {
+        "name": "mu",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Mode setting chosen by learning: 0 pairs, 1 string, 2 tag."
+      }
+    ],
+    "update": [
+      {
+        "latex": "\\mu=0:\\; p=\\varnothing \\Rightarrow p \\leftarrow x_t;\\; \\text{else } S_f \\leftarrow (p, x_t),\\; f \\leftarrow f+1,\\; p \\leftarrow \\varnothing",
+        "plain": "pairs mode: the first symbol of a pair waits in p; the second one is written with it as row f, then f grows by one (x_t is the token at step t)",
+        "name": "pair write"
+      },
+      {
+        "latex": "\\mu=1:\\; t < t_{sep} \\Rightarrow S_f \\leftarrow (f, x_t),\\; f \\leftarrow f+1;\\quad t > t_{sep} \\Rightarrow o \\leftarrow o + 1",
+        "plain": "string mode: before the separator (step t_sep) each symbol is written under its position; after it the offset counter o counts emitted symbols",
+        "name": "string write"
+      },
+      {
+        "latex": "\\mu=2:\\; \\beta_t = \\mathrm{Seg}(x_{1..t})",
+        "plain": "tag mode: nothing is written; the segmenter output Seg(x_1..x_t) is taken as the tag beta_t",
+        "name": "tag intake"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "r_t = \\begin{cases} S[\\text{first } i: S_{i,0}=x_t]_1 \\text{ chased up to } H \\text{ times} & \\mu=0\\\\ S_{o,1} & \\mu=1\\\\ \\beta_t & \\mu=2 \\end{cases},\\qquad \\hat{y}_t = \\Phi[r_t]",
+        "plain": "read result r: in pairs mode the item stored with the current symbol, followed again while it is itself an address, at most H times; in string mode the item in row o; in tag mode the tag; the output is Phi[r]"
+      }
+    ],
+    "learning": {
+      "description": "For each of the three modes and each choice of separator symbol (symbols that occur exactly once in every training sequence), run the reader over the m training sequences, tally the pairs (read result, required output), set Phi by the majority per read result, and keep the mode with the most training outputs right.",
+      "few_shot_argument": "Only the mode, the separator and Phi are fitted. In tag mode Phi has two entries, so m = 8 sequences fix it at any depth; the other tasks use m = 12 sequences."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(C H)",
+      "memory": "O(C)",
+      "total_sequence": "O(n C H)",
+      "constants_notes": "One scan of at most C rows per chase step and at most H steps; 2C + 6 words of state. The tag is read as part of the token."
+    },
+    "sample_efficiency": {
+      "mechanism": "Mode selection plus a majority map; the tag carries the nesting structure.",
+      "prediction": {
+        "metric": "examples_to_nesting_depth16",
+        "value": 8,
+        "statement": "From m = 8 training sequences of two-type bracket nesting at depth 16, the learned reader predicts the legal closer with per-query accuracy at least 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "String mode copies L = 8, 32, 64 over D = 4 exactly with C = 64 (state 2C + 6 words)."
+      },
+      {
+        "task": "associative recall",
+        "prediction": "Pairs mode answers every key at K = 8, 32, 64 exactly with C = 64."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Tag mode predicts the legal closer at depth 2, 4, 8, 16 with accuracy 1.0 and a two-entry map."
+      },
+      {
+        "task": "two-hop composition and variable binding",
+        "prediction": "Pairs mode with H = 2 answers f(g(x)) at T = 4, 16, 32 (C = 64) and with H = 9 resolves chains of 1, 4, 8 hops."
+      },
+      {
+        "task": "limit: recall beyond the slot count",
+        "prediction": "The limit is a storage count: C slots of two words cannot hold more than C pairs, so at C = 64 an instance with 65 or more distinct pairs loses one of them."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A training set of 8 depth-16 bracket sequences after which the closer accuracy is below 0.99.",
+    "A recall instance with K <= C distinct pairs that the pairs mode answers wrongly."
+  ],
+  "toy_example": {
+    "description": "Tag mode on one depth-3 bracket word: tags come from a scan, Phi maps opener to closer.",
+    "python": "import json\nword = [0, 1, 0, 2, 3, 1, 3, 2]\ndef seg(prefix):\n    pend = []\n    for s in prefix:\n        if s in (0, 1):\n            pend.append(s)\n        else:\n            pend.pop()\n    return pend[-1] if pend else -1\nPhi = {0: 2, 1: 3}\nouts = []\nfor t in range(1, len(word) + 1):\n    tag = seg(word[:t])\n    if tag >= 0:\n        outs.append(Phi[tag])\nprint(json.dumps({\"closers\": outs, \"count\": len(outs)}))\n",
+    "expected": {
+      "closers": [
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2
+      ],
+      "count": 7
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

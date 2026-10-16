@@ -1,0 +1,324 @@
+{
+  "assumptions": [
+    {
+      "added_by": "statement_fixer",
+      "cited": null,
+      "does_work": true,
+      "id": "A1",
+      "kind": "prior",
+      "text": "Unspecified random choices are uniform; base demonstration inputs are sampled without replacement, fresh new-rule inputs exclude the base demonstration inputs, and queries are sampled uniformly from inputs not demonstrated for the queried rule."
+    },
+    {
+      "added_by": "statement_fixer",
+      "cited": null,
+      "does_work": true,
+      "id": "A2",
+      "kind": "other",
+      "text": "Evaluation processes adjacent pairs beginning with (BOS,x_1), scores the post-update readout at the query token before its following separator, uses the smallest token index to break logit ties, and uses lambda=1e-6 and tau=1e3 wherever the capability settings omit them."
+    },
+    {
+      "added_by": "statement_fixer",
+      "cited": null,
+      "does_work": true,
+      "id": "A3",
+      "kind": "other",
+      "text": "The simulation runner returns predictions from the stated recurrence and the named baselines, with fresh RLS reset for each new rule, pooled and ablated RLS using all preceding content pairs, and no access to targets."
+    },
+    {
+      "added_by": "statement_fixer",
+      "cited": null,
+      "does_work": true,
+      "id": "A4",
+      "kind": "other",
+      "text": "For the otherwise underspecified Gated DeltaNet baseline, each content pair updates W from W_old to gamma*W_old+outer(u,v-W_old.T@u), initializes W=0, skips reserved pairs, and reads W.T@Phi[q], separately for each listed gamma."
+    },
+    {
+      "added_by": "statement_fixer",
+      "cited": null,
+      "does_work": true,
+      "id": "A5",
+      "kind": "other",
+      "text": "Complexity is measured in unit-cost scalar arithmetic and stored scalar words, with dense matrix-vector operations, streaming orbit search that retains the best transported key rather than every orbit point, and no retained context or autograd tape at inference."
+    },
+    {
+      "added_by": "statement_fixer",
+      "cited": null,
+      "does_work": true,
+      "id": "A6",
+      "kind": "other",
+      "text": "Under the scalar accounting convention, the recurrence has a per-token worst-case accounting envelope (4M+12)d^2+3Md+8d+2Vd+V+10 operations and 6d^2+Vd+10d+V+4 peak words, including parameters and transient workspace."
+    }
+  ],
+  "card_id": "card-46dbb349",
+  "card_version": 1,
+  "claims": [
+    {
+      "id": "complexity.time_per_token",
+      "text": "complexity time_per_token: O(M d^2 + V d)"
+    },
+    {
+      "id": "complexity.memory",
+      "text": "complexity memory: O(d^2 + V d)"
+    },
+    {
+      "id": "complexity.total_sequence",
+      "text": "complexity total_sequence: O(n (M d^2 + V d))"
+    },
+    {
+      "id": "sample_efficiency.prediction",
+      "text": "sample efficiency prediction: k_new = 1 for this model. Each of the following baselines needs k_new >= 8 or never reaches 0.9 at k <= 16. All baselines use the same lift and lambda.\n- Fresh-mode baseline (the parent switched-Koopman / SUGS card when B is placed in its own component): an RLS operator with prior I/lambda fitted only to the k B pairs (Phi[b], Phi[b+s_B]) and read on Phi[q].\n- MesaNet / in-context least squares: one ridge operator pooled over all written content pairs.\n- Gated DeltaNet on keys Phi[x_{t-1}] and values Phi[x_t], with write strength 1 and forgetting factor tuned in {0.5, 0.7, 0.9, 0.99}.\n- The ablation with e_t fixed to 1, which is exactly RLS on the raw pairs. (metric: k_new: the smallest number of demonstrations of a new rule B at which accuracy on undemonstrated queries is >= 0.9.\n\nSetup:\n- Single layer with the reference Fourier lift: d = 16, V_c = 61 (prime cycle), V = 63, zero rows for BOS and ';'. w_beta = 0, lambda = 1e-6, tau = 1e3, M = 60.\n- 500 trials per k in {1, 2, 4, 8, 16}. Each trial draws distinct shifts s_A, s_B from {1..60}.\n- Context: BOS, then 24 demonstrations 'a a+s_A ;' with inputs drawn without replacement, then k demonstrations 'b b+s_B ;' on fresh inputs, then a query token q that was not a demonstrated input of B.\n- The target is q+s_B mod 61. The prediction is the argmax over all V = 63 logits, and a reserved-token prediction counts as wrong.; value: 1)"
+    },
+    {
+      "id": "capability.1",
+      "text": "capability 1: task: One-shot new rule. The protocol of claims.sample_efficiency with k = 1 (d = 16, V_c = 61, 500 trials). prediction: Accuracy >= 0.9. Fresh-mode baseline <= 0.2: a one-pair ridge fit maps q to a multiple of Phi[b+s_B], so it predicts b+s_B != q+s_B, or the token anti-aligned with it. Pooled MesaNet <= 0.1. Ablation e_t = 1 <= 0.1."
+    },
+    {
+      "id": "capability.2",
+      "text": "capability 2: task: Many rules without slots.\n- Context: BOS, 24 demonstrations of rule A, then 8 further shift rules B_1..B_8 in sequence. Their shifts s_1..s_8 are drawn without replacement from {1..60} \\ {s_A}, so they are nonzero, pairwise distinct and different from s_A.\n- Each B_i is given by exactly 1 demonstration 'b b+s_i ;' followed by one query 'q ;' on a token that is not its demonstrated input.\n- Then 1 cue demonstration of A and a final query.\n- Settings: reference lift, d = 16, V_c = 61, w_beta = 0, 500 trials. Scoring as in claims.sample_efficiency. prediction: Mean accuracy over the 8 new-rule queries >= 0.9. Accuracy on B_8 is at least (accuracy on B_1) - 0.1, because no rule occupies a slot. Final A recall >= 0.9. The fresh-mode baseline (one RLS operator per B_i, fitted to its single pair) gives <= 0.2 on every B_i, for the reason given in the one-shot claim."
+    },
+    {
+      "id": "capability.3",
+      "text": "capability 3: task: Semigroup membership on a composite cycle.\n- Settings: V_c = 64, Fourier lift with frequencies 1..8 (d = 16), M = 63, w_beta = 0. Context: 24 demonstrations of A, then 1 demonstration of B, then a query. Shifts are drawn from {1..63} with s_B != s_A.\n- Condition (i): s_A odd, s_B arbitrary.\n- Condition (ii): s_A even, s_B odd.\n- 500 trials each. prediction: (i) Accuracy >= 0.9, since an odd s_A is a unit mod 64, so every shift is a unique power of it. (ii) Accuracy <= 0.15, since no multiple of an even shift is odd. The duration test picks an even multiple c s_A (ties to the smallest c), and the readout lands on q + c s_A != q + s_B. No pooled, decayed or slot-based baseline predicts this odd/even split."
+    },
+    {
+      "id": "capability.4",
+      "text": "capability 4: task: Order dependence of the same pair multiset.\n- Use 28 demonstrations: 24 of A and 4 of B, with s_A != s_B drawn from {1..60}. Demonstrations are numbered 1..28 in context order, and each is the token triple 'a a+s ;'. Demonstration 28 is always a B demonstration, and it is followed by a query for B.\n- Settings: reference lift, V_c = 61, d = 16, w_beta = 0, 500 trials per order.\n- Order (i), blocked: demonstrations 1..24 are A and 25..28 are B.\n- Order (ii), interleaved: demonstrations 1, 7, 13 and 28 are B, and the other 24 are A. Only 10 A demonstrations precede demonstration 13, so the first three B demonstrations arrive before the A lifts span R^16. prediction: (i) Accuracy >= 0.9. (ii) Accuracy <= 0.6, because B pairs in unidentified directions are written as duration-1 pairs and corrupt K, and powers amplify the error. MesaNet without decay gives identical outputs for both orders, with accuracy <= 0.2 in both."
+    }
+  ],
+  "dropped": [],
+  "first_problems": [],
+  "fixer_calls": [
+    "call-393c9d5ff1d7"
+  ],
+  "fixer_model": "gpt-6.1-sol",
+  "not_formalized": [
+    {
+      "claim_id": "capability.3",
+      "why": "The residual assertion that no pooled, decayed or slot-based baseline predicts the split does not specify the quantified baseline family or what constitutes predicting a split; O7 formalizes only the explicit accuracy thresholds and arithmetic assertions."
+    },
+    {
+      "claim_id": "capability.1",
+      "why": "The explanatory alternative involving a token anti-aligned with a lift does not define anti-alignment or address zero scalar and decoder ties; O5 formalizes all numerical predictions."
+    },
+    {
+      "claim_id": "capability.2",
+      "why": "The causal phrase 'because no rule occupies a slot' has no separately specified intervention or measurable causal criterion; O6 formalizes all accuracy and recall predictions."
+    },
+    {
+      "claim_id": "capability.4",
+      "why": "The explanatory assertions that writes corrupt K and powers amplify the error do not specify an error norm, reference operator, or quantitative amplification criterion; O8 formalizes the accuracy and identical-output predictions."
+    }
+  ],
+  "obligations": [
+    {
+      "assumptions": [
+        "A5",
+        "A6"
+      ],
+      "claim_id": "complexity.time_per_token",
+      "claim_quote": "O(M d^2 + V d)",
+      "discharges": [],
+      "id": "O1",
+      "statements": [
+        {
+          "bound": null,
+          "form": "lean",
+          "id": "O1.a",
+          "sha256": "f56f3e1520be69883946ad9aaadb416d1d6d9984570a9f88b1172040126d2257",
+          "spec": "import Mathlib\n\ndef TokenEnvelope (d M V : ℕ) : ℕ := (4 * M + 12) * d ^ 2 + 3 * M * d + 8 * d + 2 * V * d + V + 10\n\ndef Claim : Prop := ∃ C : ℕ, ∀ d M V : ℕ, 1 ≤ d → 1 ≤ M → 1 ≤ V → TokenEnvelope d M V ≤ C * (M * d ^ 2 + V * d)\n"
+        }
+      ]
+    },
+    {
+      "assumptions": [
+        "A5",
+        "A6"
+      ],
+      "claim_id": "complexity.memory",
+      "claim_quote": "O(d^2 + V d)",
+      "discharges": [],
+      "id": "O2",
+      "statements": [
+        {
+          "bound": null,
+          "form": "lean",
+          "id": "O2.a",
+          "sha256": "be11935e50137c6109f072ec0d30f6d8d486338e098aa635c6172c057f50e08c",
+          "spec": "import Mathlib\n\ndef MemoryEnvelope (d V : ℕ) : ℕ := 6 * d ^ 2 + V * d + 10 * d + V + 4\n\ndef Claim : Prop := ∃ C : ℕ, ∀ d V : ℕ, 1 ≤ d → 1 ≤ V → MemoryEnvelope d V ≤ C * (d ^ 2 + V * d)\n"
+        }
+      ]
+    },
+    {
+      "assumptions": [
+        "A5",
+        "A6"
+      ],
+      "claim_id": "complexity.total_sequence",
+      "claim_quote": "O(n (M d^2 + V d))",
+      "discharges": [],
+      "id": "O3",
+      "statements": [
+        {
+          "bound": null,
+          "form": "lean",
+          "id": "O3.a",
+          "sha256": "d64b03d6878c5793dd98f6e6cfc0effd15a0d6fb3fb5285a29b5ee5cf28c54cd",
+          "spec": "import Mathlib\n\ndef SequenceEnvelope (n d M V : ℕ) : ℕ := n * ((4 * M + 12) * d ^ 2 + 3 * M * d + 8 * d + 2 * V * d + V + 10)\n\ndef Claim : Prop := ∃ C : ℕ, ∀ n d M V : ℕ, 1 ≤ n → 1 ≤ d → 1 ≤ M → 1 ≤ V → SequenceEnvelope n d M V ≤ C * (n * (M * d ^ 2 + V * d))\n"
+        }
+      ]
+    },
+    {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "claim_id": "sample_efficiency.prediction",
+      "claim_quote": "k_new = 1 for this model. Each of the following baselines needs k_new >= 8 or never reaches 0.9 at k <= 16. All baselines use the same lift and lambda.",
+      "discharges": [],
+      "id": "O4",
+      "statements": [
+        {
+          "bound": null,
+          "form": "simulation",
+          "id": "O4.a",
+          "sha256": "95fc3f58e1e6532c8c7c8a603994db88eece7b9b2aff78aef963a4bc3e10eae4",
+          "spec": {
+            "count": 1,
+            "generator": "def generate(size, rng):\n    episodes = []\n    targets = []\n    ks = [1, 2, 4, 8, 16]\n    for k in ks:\n        answers = []\n        for trial in range(500):\n            sa, sb = [int(x) for x in rng.choice(np.arange(1,61), 2, replace=False)]\n            order = [int(x) for x in rng.permutation(61)]\n            aa = order[:24]\n            bb = order[24:24+k]\n            q = int(rng.choice([x for x in range(61) if x not in bb]))\n            tokens = [62]\n            for a in aa:\n                tokens += [a, (a+sa)%61, 61]\n            boundary = len(tokens)\n            for b in bb:\n                tokens += [b, (b+sb)%61, 61]\n            position = len(tokens)\n            tokens += [q,61]\n            episodes.append({'tokens':tokens,'query_positions':[position],'fresh_boundaries':[boundary],'k':k})\n            answers.append((q+sb)%61)\n        targets.append(answers)\n    return {'input':{'episodes':episodes,'cycle':61,'frequencies':list(range(1,9)),'lift_scale':float(1/np.sqrt(8)),'reserved_rows':'zero','lambda':1e-6,'tau':1e3,'M':60,'w_beta':'zero','methods':['model','fresh','pooled','ablation','delta_0.5','delta_0.7','delta_0.9','delta_0.99'],'output_contract':'For each method, return 2500 predicted token indices in episode order.'},'target':targets}\n",
+            "metric": "def metric(given, target, output):\n    def accuracy(method, group):\n        predictions = output[method][group*500:(group+1)*500]\n        if len(predictions) != 500:\n            return -1\n        return sum(int(a == b) for a,b in zip(predictions,target[group]))/500\n    if accuracy('model',0) < 0.9:\n        return 0.0\n    for method in ['fresh','pooled','ablation','delta_0.5','delta_0.7','delta_0.9','delta_0.99']:\n        for group in [0,1,2]:\n            value = accuracy(method,group)\n            if value < 0 or value >= 0.9:\n                return 0.0\n    return 1.0\n",
+            "seed": 46001,
+            "sizes": [
+              1
+            ],
+            "threshold": 1
+          }
+        }
+      ]
+    },
+    {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "claim_id": "capability.1",
+      "claim_quote": "Accuracy >= 0.9. Fresh-mode baseline <= 0.2: a one-pair ridge fit maps q to a multiple of Phi[b+s_B], so it predicts b+s_B != q+s_B, or the token anti-aligned with it. Pooled MesaNet <= 0.1. Ablation e_t = 1 <= 0.1.",
+      "discharges": [],
+      "id": "O5",
+      "statements": [
+        {
+          "bound": null,
+          "form": "simulation",
+          "id": "O5.a",
+          "sha256": "fc8a25ad561e0dbae9e15abd0766bbdff070c9b244841aaa4c7a8deee5d8a626",
+          "spec": {
+            "count": 1,
+            "generator": "def generate(size, rng):\n    episodes = []\n    targets = []\n    for trial in range(500):\n        sa,sb = [int(x) for x in rng.choice(np.arange(1,61),2,replace=False)]\n        order = [int(x) for x in rng.permutation(61)]\n        b = order[24]\n        q = int(rng.choice([x for x in range(61) if x != b]))\n        tokens = [62]\n        for a in order[:24]:\n            tokens += [a,(a+sa)%61,61]\n        boundary = len(tokens)\n        tokens += [b,(b+sb)%61,61]\n        position = len(tokens)\n        tokens += [q,61]\n        episodes.append({'tokens':tokens,'query_positions':[position],'fresh_boundaries':[boundary]})\n        targets.append((q+sb)%61)\n    return {'input':{'episodes':episodes,'cycle':61,'frequencies':list(range(1,9)),'lift_scale':float(1/np.sqrt(8)),'reserved_rows':'zero','lambda':1e-6,'tau':1e3,'M':60,'w_beta':'zero','methods':['model','fresh','pooled','ablation'],'output_contract':'Each method returns 500 predicted token indices in episode order.'},'target':targets}\n",
+            "metric": "def metric(given, target, output):\n    values = {}\n    for method in ['model','fresh','pooled','ablation']:\n        if len(output[method]) != 500:\n            return 0.0\n        values[method] = sum(int(a == b) for a,b in zip(output[method],target))/500\n    return float(values['model'] >= 0.9 and values['fresh'] <= 0.2 and values['pooled'] <= 0.1 and values['ablation'] <= 0.1)\n",
+            "seed": 46002,
+            "sizes": [
+              1
+            ],
+            "threshold": 1
+          }
+        }
+      ]
+    },
+    {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "claim_id": "capability.2",
+      "claim_quote": "Mean accuracy over the 8 new-rule queries >= 0.9. Accuracy on B_8 is at least (accuracy on B_1) - 0.1, because no rule occupies a slot. Final A recall >= 0.9. The fresh-mode baseline (one RLS operator per B_i, fitted to its single pair) gives <= 0.2 on every B_i, for the reason given in the one-shot claim.",
+      "discharges": [],
+      "id": "O6",
+      "statements": [
+        {
+          "bound": null,
+          "form": "simulation",
+          "id": "O6.a",
+          "sha256": "fb30a0e9bc29dcefbf57cf2f07978e230d1acd7e54e793f2a067ffd6dc69263b",
+          "spec": {
+            "count": 1,
+            "generator": "def generate(size, rng):\n    episodes = []\n    targets = []\n    for trial in range(500):\n        shifts = [int(x) for x in rng.choice(np.arange(1,61),9,replace=False)]\n        aa = [int(x) for x in rng.choice(61,24,replace=False)]\n        tokens = [62]\n        for a in aa:\n            tokens += [a,(a+shifts[0])%61,61]\n        positions = []\n        boundaries = []\n        answers = []\n        for s in shifts[1:]:\n            b = int(rng.choice([x for x in range(61) if x not in aa]))\n            q = int(rng.choice([x for x in range(61) if x != b]))\n            boundaries.append(len(tokens))\n            tokens += [b,(b+s)%61,61]\n            positions.append(len(tokens))\n            tokens += [q,61]\n            answers.append((q+s)%61)\n        a = int(rng.integers(61))\n        q = int(rng.choice([x for x in range(61) if x != a]))\n        tokens += [a,(a+shifts[0])%61,61]\n        positions.append(len(tokens))\n        tokens += [q,61]\n        answers.append((q+shifts[0])%61)\n        episodes.append({'tokens':tokens,'query_positions':positions,'fresh_boundaries':boundaries})\n        targets.append(answers)\n    return {'input':{'episodes':episodes,'cycle':61,'frequencies':list(range(1,9)),'lift_scale':float(1/np.sqrt(8)),'reserved_rows':'zero','lambda':1e-6,'tau':1e3,'M':60,'w_beta':'zero','methods':['model','fresh'],'output_contract':'model returns 500 rows of 9 predictions; fresh returns 500 rows of 8 predictions, independently resetting for each B rule.'},'target':targets}\n",
+            "metric": "def metric(given, target, output):\n    if len(output['model']) != 500 or len(output['fresh']) != 500:\n        return 0.0\n    if any(len(row) != 9 for row in output['model']) or any(len(row) != 8 for row in output['fresh']):\n        return 0.0\n    acc = [sum(int(output['model'][t][j] == target[t][j]) for t in range(500))/500 for j in range(9)]\n    fresh = [sum(int(output['fresh'][t][j] == target[t][j]) for t in range(500))/500 for j in range(8)]\n    return float(sum(acc[:8])/8 >= 0.9 and acc[7] >= acc[0]-0.1 and acc[8] >= 0.9 and all(x <= 0.2 for x in fresh))\n",
+            "seed": 46003,
+            "sizes": [
+              8
+            ],
+            "threshold": 1
+          }
+        }
+      ]
+    },
+    {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "claim_id": "capability.3",
+      "claim_quote": "(i) Accuracy >= 0.9, since an odd s_A is a unit mod 64, so every shift is a unique power of it. (ii) Accuracy <= 0.15, since no multiple of an even shift is odd.",
+      "discharges": [],
+      "id": "O7",
+      "statements": [
+        {
+          "bound": null,
+          "form": "simulation",
+          "id": "O7.a",
+          "sha256": "52803e9c7b681aa52f4c7494e24b92247f97fc87baffd6ce895ea5a344e1f748",
+          "spec": {
+            "count": 1,
+            "generator": "def generate(size, rng):\n    episodes = []\n    targets = []\n    for condition in [1,2]:\n        answers = []\n        for trial in range(500):\n            sa = int(rng.choice(np.arange(1,64,2) if condition == 1 else np.arange(2,64,2)))\n            choices = [s for s in range(1,64) if s != sa and (condition == 1 or s%2 == 1)]\n            sb = int(rng.choice(choices))\n            order = [int(x) for x in rng.permutation(64)]\n            b = order[24]\n            q = int(rng.choice([x for x in range(64) if x != b]))\n            tokens = [65]\n            for a in order[:24]:\n                tokens += [a,(a+sa)%64,64]\n            tokens += [b,(b+sb)%64,64]\n            position = len(tokens)\n            tokens += [q,64]\n            episodes.append({'tokens':tokens,'query_positions':[position],'condition':condition})\n            answers.append((q+sb)%64)\n        targets.append(answers)\n    return {'input':{'episodes':episodes,'cycle':64,'frequencies':list(range(1,9)),'lift_scale':float(1/np.sqrt(8)),'reserved_rows':'zero','lambda':1e-6,'tau':1e3,'M':63,'w_beta':'zero','output_contract':'Return 1000 model predictions, condition (i) first and condition (ii) second.'},'target':targets}\n",
+            "metric": "def metric(given, target, output):\n    if len(output) != 1000:\n        return 0.0\n    first = sum(int(a == b) for a,b in zip(output[:500],target[0]))/500\n    second = sum(int(a == b) for a,b in zip(output[500:],target[1]))/500\n    return float(first >= 0.9 and second <= 0.15)\n",
+            "seed": 46004,
+            "sizes": [
+              64
+            ],
+            "threshold": 1
+          }
+        },
+        {
+          "bound": null,
+          "form": "lean",
+          "id": "O7.b",
+          "sha256": "e35fd668188758327227e5faff0c446f2b346ab09fc7f4bfac32c69d5698b516",
+          "spec": "import Mathlib\n\ndef Claim : Prop := (∀ a : ℕ, a < 64 → a % 2 = 1 → ∀ b : ℕ, 1 ≤ b → b < 64 → ∃! c : ℕ, 1 ≤ c ∧ c < 64 ∧ (c * a) % 64 = b) ∧ (∀ a c b : ℕ, a % 2 = 0 → b % 2 = 1 → (c * a) % 64 ≠ b % 64)\n"
+        }
+      ]
+    },
+    {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "claim_id": "capability.4",
+      "claim_quote": "(i) Accuracy >= 0.9. (ii) Accuracy <= 0.6, because B pairs in unidentified directions are written as duration-1 pairs and corrupt K, and powers amplify the error. MesaNet without decay gives identical outputs for both orders, with accuracy <= 0.2 in both.",
+      "discharges": [],
+      "id": "O8",
+      "statements": [
+        {
+          "bound": null,
+          "form": "simulation",
+          "id": "O8.a",
+          "sha256": "35379a0f81a353cef7a92d60d483ab958c063e37d690144bc1d23c6b8125c157",
+          "spec": {
+            "count": 1,
+            "generator": "def generate(size, rng):\n    episodes = []\n    targets = []\n    for trial in range(500):\n        sa,sb = [int(x) for x in rng.choice(np.arange(1,61),2,replace=False)]\n        order = [int(x) for x in rng.permutation(61)]\n        aa = order[:24]\n        bb = order[24:28]\n        q = int(rng.choice([x for x in range(61) if x not in bb]))\n        versions = []\n        for slots in [[25,26,27,28],[1,7,13,28]]:\n            tokens = [62]\n            ai = 0\n            bi = 0\n            for position in range(1,29):\n                if position in slots:\n                    a = bb[bi]\n                    bi += 1\n                    s = sb\n                else:\n                    a = aa[ai]\n                    ai += 1\n                    s = sa\n                tokens += [a,(a+s)%61,61]\n            query_position = len(tokens)\n            tokens += [q,61]\n            versions.append({'tokens':tokens,'query_positions':[query_position]})\n        episodes.append(versions)\n        targets.append((q+sb)%61)\n    return {'input':{'paired_episodes':episodes,'cycle':61,'frequencies':list(range(1,9)),'lift_scale':float(1/np.sqrt(8)),'reserved_rows':'zero','lambda':1e-6,'tau':1e3,'M':60,'w_beta':'zero','methods':['model','pooled'],'output_contract':'Each method returns 500 rows [blocked_prediction,interleaved_prediction]; each episode initializes its own state.'},'target':targets}\n",
+            "metric": "def metric(given, target, output):\n    for method in ['model','pooled']:\n        if len(output[method]) != 500 or any(len(row) != 2 for row in output[method]):\n            return 0.0\n    model = [sum(int(output['model'][t][j] == target[t]) for t in range(500))/500 for j in range(2)]\n    pooled = [sum(int(output['pooled'][t][j] == target[t]) for t in range(500))/500 for j in range(2)]\n    same = all(row[0] == row[1] for row in output['pooled'])\n    return float(model[0] >= 0.9 and model[1] <= 0.6 and same and pooled[0] <= 0.2 and pooled[1] <= 0.2)\n",
+            "seed": 46005,
+            "sizes": [
+              28
+            ],
+            "threshold": 1
+          }
+        }
+      ]
+    }
+  ]
+}

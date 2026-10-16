@@ -1,0 +1,199 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Ranking a fixed rule library by the stationary mass of a chain of rules imitating one another",
+  "summary": "A learner for demonstration pairs (x, y) followed by probes x_q over V tokens. It holds M rule tables F and a learned M by M matrix B, where B[i, j] is the number of bits rule i needs to imitate rule j. The context enters only through a patch cost D[j], which adds gamma bits for each demonstration rule j gets wrong. At a probe, moving from rule i to rule j costs B[i, j] + D[j] bits, the transition probabilities are 2 to the minus cost normalized per row, and the rules are weighted by the chain's unique stationary vector, found by an exact linear solve. The answer mixes the rules' outputs on the probe with these weights, adds eps / V to every token and is renormalized. When B is additive the weighting reduces to averaging with a fixed prior; otherwise the ratio of two equally good rules depends on which other rules were eliminated.",
+  "core_idea": "Weight each rule of a learned library by its stationary mass in a chain where every rule imitates every other at a learned code length plus the bits needed to patch the target rule's errors on the context, so evidence re-ranks rules by simplicity relative to the surviving ones.",
+  "mechanism": {
+    "learning": {
+      "description": "F is built offline by counting rules in the meta-training tasks.\n\nB is learned by projected gradient descent on the probe log-loss over meta-training episodes. Each episode is a set of demonstrations followed by one probe, and D is reset to 0 per episode. After every step, B is clipped to [0, 6] bits so that the bounds in the claims hold. In all claims gamma is fixed at 4, and learning it is optional through l3. eps is fixed at 0.05 throughout meta-training and testing and receives no gradient. It enters the loss only through r1, which scales the mixture by (1-eps) and floors every probability at eps/V. The loss gradient with respect to pi_j is therefore -(1-eps)[F_{j,x_q}=y_q] / p(y_q|x_q).\n\nThe gradient of pi uses the stochastic-chain fundamental matrix (l2), the standard perturbation theory for an irreducible chain. The gradient of T comes from the normalized-exponential derivative of u2 (l3). In l3, the path to gamma runs through D_j = gamma * m_j.\n\nB starts at the additive Bayes point B[i,j] = b_j, with b = -log2(empirical rule frequency), shifted and clipped into [0,6]. Training therefore begins from exact fixed-prior averaging, and B moves away from that point only if the non-additive part lowers the loss.",
+      "equations": [
+        {
+          "latex": "\\mathcal{L}(B,\\gamma) = -\\sum_{e} \\log p(y_q^{e}\\mid x_q^{e}, \\text{demos}^{e})",
+          "name": "l1_loss",
+          "plain": "Loss = minus the sum, over meta-training episodes e, of log r1 evaluated at the correct probe answer, with eps fixed."
+        },
+        {
+          "latex": "d\\pi = \\pi\\,(dT)\\,(I - T + \\mathbf{1}\\pi)^{-1}",
+          "name": "l2_stationary_gradient",
+          "plain": "Differential of the stationary vector: dpi = pi @ dT @ inv(I - T + ones_column @ pi_row), with dT from l3. Cost O(M^3) per probe during training."
+        },
+        {
+          "latex": "dT_{ij} = -\\ln 2\\; T_{ij}\\Big(dC_{ij} - \\sum_{l} T_{il}\\, dC_{il}\\Big),\\quad dC_{ij} = dB_{ij} + m_j\\, d\\gamma,\\quad m_j = D_j/\\gamma",
+          "name": "l3_transition_gradient",
+          "plain": "Let C[i,j] = B[i,j] + D[j] be the transition cost in u2. Then dT[i,j] = -ln(2) * T[i,j] * (dC[i,j] - sum_l T[i,l] * dC[i,l]). The cost differential is dC[i,j] = dB[i,j] + m[j] * dgamma, because D[j] = gamma * m[j], where m[j] is rule j's misfit count from u1. With gamma fixed, dgamma = 0."
+        }
+      ],
+      "few_shot_argument": "The mechanism is that patch costs enter every transition into a wrong rule multiplicatively, as 2^-(gamma m).\n\nSuppose the correct rule c fits all demonstrations (D_c = 0) and every other rule mispredicts at least m of them. Then for every row i, T[i,c] = 1/(1 + sum_{j != c} 2^(B[i,c] - B[i,j] - D_j)) >= 1/(1 + (M-1) 2^(Delta - gamma m)), where Delta = max over i,j of (B[i,c] - B[i,j]) <= rho <= 6. Since pi_c = sum_i pi_i T[i,c] >= min_i T[i,c], it follows that pi_c >= 1/(1 + (M-1) 2^(Delta - gamma m)).\n\nTake M = 64, Delta = 6 and gamma = 4. Then m = 3 gives pi_c >= 0.504 > 1/2, which forces argmax r1 to equal c's answer, and m = 4 gives pi_c >= 0.94. A rule shown k times is therefore picked up once every competitor has paid about (Delta + log2(M-1))/gamma patches. This takes few demonstrations when rules disagree on most inputs. The bound holds for any B in [0,6], so it does not depend on training.\n\nAmong rules that are still tied, the choice is made by the relative code lengths B between the survivors, not by a global prior. In the two-survivor limit (all other D_l -> infinity), pi_a/pi_b = K_ba w_a (K_aa w_a + K_ab w_b) / (K_ab w_b (K_bb w_b + K_ba w_a)), with K = 2^-B and w = 2^-D.\n\nThe capacity limit is that only rules in the M-row library can be represented. The mean probability given to the correct answer of an out-of-library target is at most (1-eps) A_max + eps/V, where A_max is the best agreement of any library rule with the target."
+    },
+    "readout": [
+      {
+        "latex": "p(y\\mid x_q) = (1-\\epsilon)\\sum_{j=1}^{M} \\pi_j\\,[F_{j,x_q} = y] + \\frac{\\epsilon}{V},\\qquad p\\leftarrow p\\big/\\textstyle\\sum_{y'}p(y'\\mid x_q)",
+        "name": "r1_stationary_mixture",
+        "plain": "For probe token x_q: p[y] = eps/V + (1-eps) * (sum of pi[j] over rules j with F[j, x_q] == y). Then renormalize, p = p / sum(p), so this is a distribution over all V tokens. The predicted token is argmax_y p[y]."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "Rule library. M is the number of library rules and V is the vocabulary size. F[j,x] in {0..V-1} is the output of rule j on input token x. It is built offline from the M most frequent rules in the meta-training task distribution.",
+        "name": "F",
+        "shape": [
+          "M",
+          "V"
+        ],
+        "type": "integer table (offline, fixed during a sequence)"
+      },
+      {
+        "meaning": "Emulation code lengths. B[i,j] is the learned number of bits for rule i to emulate rule j. B is asymmetric in general and its diagonal is free. Its non-additive part separates the model from Bayes. Two measures of it are used. The pairwise cycle defect is B[i,j]+B[j,i]-B[i,i]-B[j,j]. The double-centered residual is H B H, where H = I - (1/M) 1 1^T is the M x M centering matrix. rho = max(B) - min(B) <= 6 denotes the range of B.",
+        "name": "B",
+        "shape": [
+          "M",
+          "M"
+        ],
+        "type": "real matrix, learned parameters (bits), entries constrained to [0, 6]"
+      },
+      {
+        "meaning": "Patch cost: the number of bits charged for overwriting one demonstrated output that the target rule gets wrong. It is roughly log2 V plus position overhead.",
+        "name": "gamma",
+        "shape": [
+          1
+        ],
+        "type": "positive real scalar (bits); fixed at 4 in all claims, optionally learned"
+      },
+      {
+        "meaning": "Smoothing mass spread uniformly over the V tokens in the readout, so the predictive distribution has full support. eps is held fixed during both meta-training and testing. The claims use eps = 0.05; the toy example uses eps = 0.2.",
+        "name": "eps",
+        "shape": [
+          1
+        ],
+        "type": "real scalar in (0,1), fixed (never learned)"
+      },
+      {
+        "meaning": "Context patch code length. D[j] = gamma * m_j, where m_j is the number of demonstrations seen so far in this sequence on which rule j's output differs from the demonstrated output. D is updated at demonstration tokens only.",
+        "name": "D",
+        "shape": [
+          "M"
+        ],
+        "type": "real vector (per-sequence state), reset to 0 at the start of every sequence"
+      },
+      {
+        "meaning": "Stationary distribution of the context-priced emulation chain: the long-run fraction of time a random emulation process spends at each rule, given the context. It is a deterministic function of D (and of B and gamma), computed by u2-u3. It is recomputed at a probe token if D has changed since the last computation and reused otherwise. It is cleared at the start of every sequence, and no entry from another sequence is ever read.",
+        "name": "pi",
+        "shape": [
+          "M"
+        ],
+        "type": "real probability vector (per-sequence state)"
+      }
+    ],
+    "update": [
+      {
+        "latex": "D_j \\leftarrow D_j + \\gamma\\,[F_{j,x_t} \\neq y_t]\\quad \\forall j",
+        "name": "u1_patch_cost",
+        "plain": "At each demonstration pair (x_t, y_t), for every rule j: D[j] += gamma if F[j, x_t] != y_t; otherwise leave D[j] unchanged. Cost O(M). Nothing else is done at demonstration tokens."
+      },
+      {
+        "latex": "T_{ij} = \\frac{2^{-(B_{ij} + D_j)}}{\\sum_{l=1}^{M} 2^{-(B_{il} + D_l)}}",
+        "name": "u2_emulation_chain",
+        "plain": "At a probe token (if D changed since the last probe), form the transition matrix: W[i,j] = 2^(-(B[i,j] + D[j])); T[i,j] = W[i,j] / sum_l W[i,l]. Row i is the probability that rule i next emulates rule j, priced by emulation bits plus the target's context-patch bits. Cost O(M^2)."
+      },
+      {
+        "latex": "\\pi\\,(T - I) = 0,\\quad \\pi\\,\\mathbf{1} = 1",
+        "name": "u3_stationary",
+        "plain": "Solve exactly for the unique stationary vector: A = T.T - I; replace the last row of A with all ones; b = zeros(M) with b[M-1] = 1; pi = solve(A, b). Cost O(M^3). T is strictly positive, so the solution is unique, and the replaced system is nonsingular."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "Mean accuracy is >= 0.9 at k = 6 and >= 0.99 at k = 8. In every episode, the measured stationary mass of the true rule is >= 1/(1 + (M-1) 2^(Delta - gamma m)), where m is the realized minimum misfit count over the wrong rules and Delta = max_{i,j}(B[i,c] - B[i,j]).",
+        "task": "In-library rule selection. M = 64 random permutation rules over V = 16, with gamma = 4, eps = 0.05 and B in [0,6] bits. The model sees k i.i.d. uniform demonstrations, then one query on a fresh input. 1000 episodes."
+      },
+      {
+        "prediction": "In every episode and for every k, the measured mean correct-answer probability is <= (1-eps) A_max + eps/16 (up to 1e-12). This is exact, because the mean equals (1-eps) sum_j pi_j A_j + eps/16. Agreement counts of random permutations are approximately Poisson(1), so the maximum over 64 rules averages about 4 of 16 inputs. The 1000-episode mean of A_max should therefore lie in [0.22, 0.28], far below the in-library accuracy. More demonstrations cannot raise this ceiling.",
+        "task": "Capacity limit. The target is a fresh random permutation of V = 16 tokens that is not in the 64-rule library. The model sees k = 8 demonstrations, with eps = 0.05. A_max is the largest fraction of the 16 inputs on which any library rule agrees with the target. The measured quantity is the mean, over all 16 possible query inputs, of the probability r1 assigns to the target's answer. 1000 episodes."
+      },
+      {
+        "prediction": "Whenever the cycle defect B[a,b]+B[b,a]-B[a,a]-B[b,b] is nonzero, pi_a/pi_b changes after c is eliminated, while any Bayes mixture keeps it fixed. In the toy instance (defect 3 bits, gamma = 4) it moves from 0.6633 to 0.6066. In the two-survivor check, the measured ratio matches K_ba w_a (K_aa w_a + K_ab w_b) / (K_ab w_b (K_bb w_b + K_ba w_a)) to within 1e-6 relative error, because the other rules' total stationary mass is below 62 * 2^-34.",
+        "task": "Context-relative Occam probe (breaking Luce's choice axiom). Two rules a and b fit every demonstration. Rule c is eliminated by adding one demonstration (x, y) with F[a,x] = F[b,x] = y and F[c,x] != y. This raises D_c by gamma while D_a and D_b are unchanged. Second part, the two-survivor check: set D_a = D_b = 0 and D_l = 40 bits (10 misfits at gamma = 4) for every other rule l, with B in [0,6] bits."
+      },
+      {
+        "prediction": "After meta-training on this regime, r(B) >= 0.2. Query log-loss is at least 0.05 nats lower than the best fixed-prior Bayes mixture over the same library, with that prior fitted on the same episodes. When B is trained instead on i.i.d. random-demonstration episodes, r(B) < 0.1 and log-loss matches the fitted Bayes mixture to within 0.01 nats.",
+        "task": "Teacher-selected demonstrations. Each demonstration input is chosen to eliminate the currently most probable wrong rule. Same 64-permutation library, V = 16, gamma = 4, eps = 0.05, k = 3 demonstrations, then a query. The non-additivity of B is measured by the residual ratio r(B) = ||H B H||_F / ||B H||_F, with H = I - (1/M) 1 1^T. Here H B H = B minus row means minus column means plus the grand mean, which is zero exactly when B is additive. B H removes the row offsets a_i, which do not affect T."
+      }
+    ],
+    "complexity": {
+      "constants_notes": "n is the sequence length and q <= n is the number of query tokens. A demonstration token runs only u1 and costs O(M). A query token runs u2 (O(M^2)) and the exact solve u3 (O(M^3)), then r1 (O(M + V)). It runs u2-u3 only if D changed since the last query; otherwise it reuses pi. The stated worst-case per-token cost is therefore O(M^3), which is deterministic and independent of n and D. Total cost is O(n M + q M^3), at most O(n M^3), and linear in n. Parameters are M^2 for B, M V for F, and 2 scalars. The warm-started power-iteration extension costs O(R M^2) per query. Its proven bound, from the Dobrushin coefficient, is R <= ln(2/tau) * 2^(2 rho). That is about 8.8e4 at rho = 6 and tau = 1e-9, so it is useful only when it is measured to be smaller than M. No measured value of R is claimed.",
+      "memory": "O(M^2 + M V)",
+      "time_per_token": "O(M^3)",
+      "total_sequence": "O(n M + q M^3)"
+    },
+    "sample_efficiency": {
+      "mechanism": "The mechanism is the patch-cost lower bound pi_c >= 1/(1 + (M-1) 2^(Delta - gamma m)) from the few-shot argument. With M = 64, Delta <= 6 and gamma = 4, any episode in which every wrong rule has m >= 3 misfits has pi_c > 1/2, so the argmax answer is correct.\n\nRandom permutations over V = 16 agree with the target on about 1/16 of inputs. Each wrong rule's misfit count after k i.i.d. uniform demonstrations is therefore about Binomial(k, 15/16).\n- At k = 6, P(m <= 2) is about 2.1e-4 per rule, so all 63 wrong rules have m >= 3 in about 98.7% of episodes.\n- At k = 8, P(m <= 2) is about 1.5e-6 per rule, so this holds in about 99.99% of episodes.",
+      "prediction": {
+        "metric": "Query argmax accuracy at exactly k = 6 i.i.d. uniform random demonstrations, averaged over 1000 episodes. Setup: library of M = 64 random permutations of V = 16 tokens, gamma = 4, eps = 0.05, B entries in [0, 6] bits, target rule drawn uniformly from the library, query input uniform and fresh.",
+        "statement": "Mean query accuracy over 1000 episodes is at least 0.9 at k = 6 demonstrations (the bound predicts about 0.98) and at least 0.99 at k = 8. No gradient steps are taken at test time; only the meta-trained B, clipped to [0,6], is used.",
+        "value": 0.9
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "On the 64-permutation library over V = 16 (gamma = 4, eps = 0.05, B in [0,6] bits), mean query accuracy over 1000 episodes at k = 6 i.i.d. random demonstrations is below 0.9. Also refuting: some episode has a true-rule stationary mass below the stated bound 1/(1 + (M-1) 2^(Delta - gamma m)).",
+    "On i.i.d. random-demonstration episodes, the meta-trained B keeps a residual ratio ||H B H||_F / ||B H||_F above 0.2 (H = I - (1/M) 1 1^T) while matching or beating the fitted Bayes mixture. This would contradict the claim that the chain collapses toward the additive Bayes subspace when the likelihood principle is optimal.",
+    "On teacher-selected demonstrations, the trained stationary model fails to beat the best fixed-prior Bayes mixture over the same library by at least 0.05 nats of query log-loss. This would show that the context-relative (non-additive) emulation costs carry no usable information.",
+    "A pair of tied survivors with nonzero cycle defect keeps the same measured pi_a/pi_b after a demonstration that only rule c mispredicts. Also refuting: with D_l = 40 bits for all other rules, the ratio deviates from the two-survivor formula by more than 1e-6 relative error.",
+    "Running the toy example does not print the stated expected JSON."
+  ],
+  "toy_example": {
+    "description": "V = 4 tokens and M = 3 rules:\n- F0 = successor [1,2,3,0]\n- F1 = [1,2,0,3]\n- F2 = [1,0,3,2]\n\nB is asymmetric with a cycle defect of 3 bits between rules 0 and 1. gamma = 4 and eps = 0.2.\n\nContext A is one demonstration (0 -> 1), which all three rules fit. Context B adds (1 -> 2), on which rules 0 and 1 answer 2 and rule 2 answers 0. This eliminates rule 2 only, so D = [0,0,4].\n\nThe program computes the exact stationary distributions (u3 exact solve) and the query readout at x_q = 2, where rules 0 and 2 answer 3 and rule 1 answers 0. Rules 0 and 1 fit both contexts equally, yet the stationary ratio pi0/pi1 moves from 65/98 = 0.6633 to 4825/7954 = 0.6066. A Bayes mixture with prior pi_A would keep it at 0.6633.\n\nHand solution: pi_A ∝ [65, 98, 121] and pi_B ∝ [9650, 15908, 511].",
+    "python": "import json\nimport numpy as np\nV, M, gamma, eps = 4, 3, 4.0, 0.2\nF = np.array([[1, 2, 3, 0], [1, 2, 0, 3], [1, 0, 3, 2]])\nB = np.array([[0.0, 1.0, 3.0], [2.0, 0.0, 1.0], [3.0, 2.0, 0.0]])\ndef stationary(T):\n    A = T.T - np.eye(M)\n    A[-1, :] = 1.0\n    b = np.zeros(M)\n    b[-1] = 1.0\n    return np.linalg.solve(A, b)\ndef run(demos):\n    D = np.zeros(M)\n    for x, y in demos:\n        D += gamma * (F[:, x] != y)\n    W = 2.0 ** (-(B + D[None, :]))\n    T = W / W.sum(axis=1, keepdims=True)\n    return D, stationary(T)\ndef readout(pi, xq):\n    p = np.full(V, eps / V)\n    for j in range(M):\n        p[F[j, xq]] += (1 - eps) * pi[j]\n    return p / p.sum()\nDA, piA = run([(0, 1)])\nDB, piB = run([(0, 1), (1, 2)])\npost = piA * 2.0 ** (-DB)\npost = post / post.sum()\nr = lambda v: [round(float(u), 4) for u in v]\nout = dict(DB=r(DB), piA=r(piA), piB=r(piB), ratioA=round(float(piA[0] / piA[1]), 4), ratioB=round(float(piB[0] / piB[1]), 4), bayes_ratioB=round(float(post[0] / post[1]), 4), pA_query=r(readout(piA, 2)), pB_query=r(readout(piB, 2)), defect01=float(B[0, 1] + B[1, 0] - B[0, 0] - B[1, 1]))\nprint(json.dumps(out))\n",
+    "expected": {
+      "DB": [
+        0.0,
+        0.0,
+        4.0
+      ],
+      "piA": [
+        0.2289,
+        0.3451,
+        0.4261
+      ],
+      "piB": [
+        0.3702,
+        0.6102,
+        0.0196
+      ],
+      "ratioA": 0.6633,
+      "ratioB": 0.6066,
+      "bayes_ratioB": 0.6633,
+      "pA_query": [
+        0.3261,
+        0.05,
+        0.05,
+        0.5739
+      ],
+      "pB_query": [
+        0.5382,
+        0.05,
+        0.05,
+        0.3618
+      ],
+      "defect01": 3.0
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

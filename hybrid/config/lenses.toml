@@ -1,0 +1,160 @@
+# Lenses for S0 explorers. Names match hybrid/literature/seed.py LENSES (the 24 seed lenses).
+# A lens with explore = false is never assigned to an explorer; the known-alternatives lens is
+# shown to every explorer as the list of known architectures to avoid reinventing.
+# [[pairings]] are cross-lens assignments: the explorer reads papers from both lenses and must
+# build one mechanism that needs both.
+
+[[lenses]]
+name = "reservoir_computing"
+explore = true
+description = "Fixed or slowly adapted high-dimensional dynamics hold memory; only a readout is fit. Ask what dynamics carry exactly the information a sequence task needs."
+
+[[lenses]]
+name = "vector_symbolic_hyperdimensional"
+explore = true
+description = "Binding, bundling and permutation in very high-dimensional spaces. Ask what algebra of composition gives structured memory with fixed size and graceful capacity."
+
+[[lenses]]
+name = "holographic_reduced_representations"
+explore = true
+description = "Circular convolution and correlation as bind and unbind. Ask what capacity and noise laws follow and how they could be beaten."
+
+[[lenses]]
+name = "modern_hopfield_networks"
+explore = true
+description = "Energy-based associative memory with exponential capacity. Beware: softmax retrieval over stored items is attention; look for a different route to capacity."
+
+[[lenses]]
+name = "predictive_coding"
+explore = true
+description = "Hierarchies that pass prediction errors and learn locally. Ask how local error minimization yields fast in-context adaptation."
+
+[[lenses]]
+name = "active_inference"
+explore = true
+description = "Free energy minimization and generative models that act to reduce surprise. Ask what a sequence model that infers latent causes online would update per token."
+
+[[lenses]]
+name = "dendritic_spiking_computation"
+explore = true
+description = "Dendritic branches as nonlinear subunits, spikes and timing codes. Ask what event-driven computation buys in cost per token and in sample efficiency."
+
+[[lenses]]
+name = "neural_odes_koopman"
+explore = true
+description = "Continuous-time dynamics and Koopman lifts that linearize nonlinear systems. Ask what operator-theoretic state can represent nonlinear sequence structure."
+
+[[lenses]]
+name = "tensor_networks_language"
+explore = true
+description = "Matrix product states, tree tensor networks and entanglement as a model of correlation structure in language."
+
+[[lenses]]
+name = "renormalization_multiscale"
+explore = true
+description = "Coarse graining, fixed points and scale separation. Ask how a multiscale state could summarize long contexts without attention."
+
+[[lenses]]
+name = "kernel_gaussian_processes"
+explore = true
+description = "Kernels, reproducing kernel Hilbert spaces and Bayesian nonparametrics. Ask what posterior update per token gives principled few-shot behavior at bounded cost."
+
+[[lenses]]
+name = "bayesian_program_induction"
+explore = true
+description = "Learning programs or rules from few examples with a prior over structure. Ask how program-like hypotheses can be maintained and updated online."
+
+[[lenses]]
+name = "cellular_automata"
+explore = true
+description = "Local update rules with emergent global behavior. Ask what local rule on a fixed lattice could store and compose sequence information."
+
+[[lenses]]
+name = "optimal_transport"
+explore = true
+description = "Transport plans, Sinkhorn iterations and Wasserstein geometry. Ask what transport between token distributions or memories gives a learning rule."
+
+[[lenses]]
+name = "sheaves_category_models"
+explore = true
+description = "Sheaves, functors and compositional semantics. Ask what consistency conditions over local sections give composition and generalization."
+
+[[lenses]]
+name = "compression_mdl"
+explore = true
+description = "Minimum description length and prediction as compression. Ask what online code with a growing model class gives fast learning from few examples."
+
+[[lenses]]
+name = "algorithmic_information"
+explore = true
+description = "Kolmogorov complexity, Solomonoff induction and computable approximations. Ask what tractable approximation keeps the few-shot power."
+
+[[lenses]]
+name = "sparse_distributed_memory"
+explore = true
+description = "Kanerva memories: sparse addresses in huge spaces, distributed writes. Ask what addressing scheme gives capacity beyond a dense fixed state."
+
+[[lenses]]
+name = "complementary_learning_systems"
+explore = true
+description = "Fast hippocampal episodic learning plus slow cortical consolidation. Ask what two-timescale mechanism gives one-shot binding and later generalization."
+
+[[lenses]]
+name = "hyperbolic_geometry"
+explore = true
+description = "Negatively curved spaces embed hierarchies with low distortion. Ask what state geometry fits nested and hierarchical sequence structure."
+
+[[lenses]]
+name = "quantum_inspired"
+explore = true
+description = "Density matrices, interference and tensor products used classically. Ask what classical computation with these objects gives new memory or composition laws."
+
+[[lenses]]
+name = "chemical_reaction_networks"
+explore = true
+description = "Mass-action kinetics and molecular computation. Ask what concentration dynamics can integrate evidence and learn from few exposures."
+
+[[lenses]]
+name = "morphogenesis"
+explore = true
+description = "Reaction-diffusion, positional information and self-organizing growth. Ask how a structure that grows with the data could model sequences."
+
+[[lenses]]
+name = "known_llm_alternatives_to_avoid_reinventing"
+explore = false
+description = "Linear attention, Mamba and other SSMs, RWKV, RetNet, Hyena, xLSTM, BitNet, large concept models, test-time training layers. Shown to every explorer as the list to avoid."
+
+[[pairings]]
+name = "pair:vsa+renormalization"
+lenses = ["vector_symbolic_hyperdimensional", "renormalization_multiscale"]
+description = "Compose high-dimensional binding with coarse graining: a multiscale symbolic memory."
+
+[[pairings]]
+name = "pair:kernel+program_induction"
+lenses = ["kernel_gaussian_processes", "bayesian_program_induction"]
+description = "Combine a nonparametric posterior over functions with a prior over programs: few-shot rule learning with calibrated uncertainty."
+
+[[pairings]]
+name = "pair:sdm+cls"
+lenses = ["sparse_distributed_memory", "complementary_learning_systems"]
+description = "A sparse episodic store written in one shot plus a slow consolidating learner."
+
+[[pairings]]
+name = "pair:tensor+hyperbolic"
+lenses = ["tensor_networks_language", "hyperbolic_geometry"]
+description = "Tensor network contractions laid out on a hierarchy with hyperbolic geometry."
+
+[[pairings]]
+name = "pair:crn+predictive_coding"
+lenses = ["chemical_reaction_networks", "predictive_coding"]
+description = "Mass-action dynamics that implement local prediction-error learning."
+
+[[pairings]]
+name = "pair:koopman+mdl"
+lenses = ["neural_odes_koopman", "compression_mdl"]
+description = "Operator lifts chosen by description length: grow the lifted state only when it pays for itself in code length."
+
+[[pairings]]
+name = "pair:ca+sheaves"
+lenses = ["cellular_automata", "sheaves_category_models"]
+description = "Local update rules constrained by sheaf consistency so local sections glue into global structure."

@@ -1,0 +1,155 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "A two-coordinate teaching map that squeezes the rule coordinate and pushes the excess into a nuisance coordinate",
+  "summary": "One scalar rule is learned from teaching tokens by a nonlinear map of two coordinates that preserves area. Each teaching write pulls the readable coordinate a quarter of the way toward the demonstrated coefficient, moves the displaced error into a nuisance coordinate by a cubic term, and kicks the readable coordinate back by the cube of the nuisance coordinate. The output probability is the readable coordinate times the input, clipped to [0, 1] and normalized. Learning is fast at first, and repeated teaching has a finite budget before the nuisance coordinate takes over.",
+  "core_idea": "Contract a readable rule coordinate on every teaching token with an area-preserving nonlinear map that moves the displaced error into a second, growing coordinate, and read the rule coordinate times the input as a normalized probability.",
+  "mechanism": {
+    "learning": {
+      "description": "The proposed learned-memory mechanism is the fixed in-context teaching law. The feature table theta can be fitted outside the episode by supervised reconstruction of event flags and numeric features, with flags constrained to {0,1}; it is frozen in context. Decoded rows still undergo the explicit runtime validation. Because this is a lookup table, it cannot decode unseen token identities, and no such generalization is claimed. Exact-feature experiments supply rows explicitly and test only the plasticity law. Extracting c=y/x is classical sufficient-statistic extraction, not the proposed novelty. No gradient descent, regression-statistic solve, or example retrieval occurs during an episode.",
+      "few_shot_argument": "Consider two valid noiseless teaching events with y=r*x, |r|<=1, and 1/2<=|x|<=2, starting from zero state. Each event supplies c=r regardless of its input. The first write gives a_1=3r/4-r^9/262144 and b_1=-r^3/64, so |a_1-r|<=1/4+1/262144<0.250003815. The second squeeze obeys |A_2-r|<0.062500954. Hence |B_2|<=4|b_1|+|A_2-r|^3<0.0625+0.062500954^3<0.063. Finally |a_2-r|<=|A_2-r|+|B_2|^3<0.062500954+0.063^3=0.062751001<0.063. Probe prediction then uses this single coefficient at inputs not used in demonstrations, without storing demonstration inputs. This proves bounded two-shot acquisition, not convergence under repeated writes. With c held fixed, the real-arithmetic teaching map differentiated with respect to the old a,b has determinant one: the squeeze, apical update, and basal shear have Jacobian determinants 1/4, 4, and 1 respectively. Thus readable contraction is balanced by expansion elsewhere; volume preservation is not a claim of entropy conservation after floating-point rounding."
+    },
+    "readout": [
+      {
+        "latex": "p_1=\\operatorname{clip}(ax,0,1),\\qquad p_0=1-p_1,\\qquad p\\leftarrow p\\big/\\textstyle\\sum_{j} p_j,\\qquad p_j=0\\ \\text{for }2\\le j<V",
+        "name": "Post-token Bernoulli readout",
+        "plain": "After every valid token, use the resulting persistent a and that same token's decoded x. Allocate V zero probabilities, set p[1]=clip(a*x,0,1), set p[0]=1-p[1], and then normalize: p = p / sum(p). This runs after the complete teaching write when m=1 and after the state-preserving no-op when m=0. Teaching-token outputs are defined but are not scored in the rule-transfer task. For V=2 this is the full Bernoulli distribution."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "a is the readable scalar rule coordinate and b is the nuisance coordinate. Both initialize to zero at an episode boundary. n denotes context length. r denotes the fixed target rule coefficient used in evaluation, not an additional stored coordinate.",
+        "name": "h=(a,b)",
+        "shape": [
+          2
+        ],
+        "type": "persistent real state"
+      },
+      {
+        "meaning": "V>=2 is the vocabulary size, with token indices 0,...,V-1. E_theta is the decoder defined by E_theta(i)=theta[i,:] for vocabulary index i. Each row contains an event flag m and scalar features x,y. Rows are frozen during an episode and validated before use. Controlled numerical claims use supplied exact rows; these do not establish learned numeric decoding.",
+        "name": "theta",
+        "shape": [
+          "V",
+          3
+        ],
+        "type": "learned event-feature table"
+      },
+      {
+        "meaning": "At token position t in {1,...,n}, token_t is the current vocabulary index and z is its table row. m=1 means teaching; m=0 means probe or irrelevant event. All three features must be finite, m must belong to {0,1}, teaching inputs must satisfy 1/2<=|x|<=2, and nonteaching inputs must satisfy |x|<=1. Invalid events raise an error before changing persistent state or emitting a distribution. x in readout always denotes this current token's decoded feature.",
+        "name": "z=(m,x,y)",
+        "shape": [
+          3
+        ],
+        "type": "current event features"
+      },
+      {
+        "meaning": "c, A and B are individually named temporary scalar registers written directly by the teaching equations; there is no separate register named u. c=y/x is the coefficient implied by a valid teaching event, A is the squeezed coordinate, and B is the new nuisance coordinate. In noiseless evaluation c equals the external target r. Subscripts 1 and 2 in the learning argument denote quantities after the first and second teaching writes.",
+        "name": "(c,A,B)",
+        "shape": [
+          3
+        ],
+        "type": "three temporary scalar registers"
+      },
+      {
+        "meaning": "p is emitted after every valid token, following that token's state update or nonteaching no-op. It assigns probability only to tokens 0 and 1; all other entries are zero. Its entries are denoted p_j for vocabulary index j. clip truncates a scalar to [0,1]. This restricted output family is a Bernoulli predictor, not arbitrary-vocabulary language modeling. If arithmetic produces a nonfinite persistent state, execution reports numerical failure rather than emitting an invalid distribution.",
+        "name": "p",
+        "shape": [
+          "V"
+        ],
+        "type": "next-token probability vector"
+      }
+    ],
+    "update": [
+      {
+        "latex": "(m,x,y)=E_\\theta(\\mathrm{token}_t)=\\theta[\\mathrm{token}_t,:]",
+        "name": "Decode and validate event",
+        "plain": "Validate that token_t is an integer vocabulary index, then read its three table entries. Before any state update, reject the event with an error if any entry is nonfinite, if m is not exactly 0 or 1, if m=1 and abs(x) is outside [0.5,2], or if m=0 and abs(x)>1. Thus a teaching event with x=0 is rejected before division. On a valid m=0 event, perform no assignment to a or b and proceed directly to readout."
+      },
+      {
+        "latex": "c=y/x,\\qquad A=c+(a-c)/4\\quad\\text{if }m=1",
+        "name": "Teaching squeeze",
+        "plain": "On a validated teaching event only, assign the temporary registers c=y/x and A=c+(a-c)/4."
+      },
+      {
+        "latex": "B=4b+(A-c)^3\\quad\\text{if }m=1",
+        "name": "Apical uncertainty export",
+        "plain": "On a validated teaching event, assign the temporary register B=4*b+(A-c)**3, using the old persistent b."
+      },
+      {
+        "latex": "(a,b)\\leftarrow(A+B^3,B)\\quad\\text{if }m=1",
+        "name": "Basal nonlinear kick",
+        "plain": "On a validated teaching event, simultaneously assign a=A+B**3 and b=B. If computation overflows or the resulting persistent state is nonfinite, report numerical failure and stop. Otherwise proceed to readout."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "For r in [0,1], two valid noiseless teaching events satisfying 1/2<=|x|<=2 followed by any valid nonteaching query with x in [0,1] produce absolute Bernoulli probability error below 0.063 relative to r*x, with exact event features. The query distribution is emitted after its no-op state update.",
+        "task": "Two-shot scalar-rule transfer"
+      },
+      {
+        "prediction": "After two teaching writes, insert 100000 valid events with m=0. In IEEE 754 binary64 with round-to-nearest, ties-to-even, and no assignments to a,b on this branch, their bit patterns and the distribution for an identical subsequent query remain unchanged.",
+        "task": "Retention through irrelevant context"
+      },
+      {
+        "prediction": "For a complete valid teaching write, differentiate the final pair (a,b) with respect to the pre-write pair (a,b), holding the event x,y and hence c=y/x fixed. The real-arithmetic determinant is exactly 1. For reproducible float64 checking, use teaching x=1,y=c and form each Jacobian column by evaluating the complete squeeze-apical-basal composition at pre-write states displaced by +0.000001 and -0.000001 in that column's coordinate, subtracting their final pairs, and dividing by 0.000002. At every grid point with each of pre-write a,b,c in {-0.5,-0.25,0,0.25,0.5}, the absolute error between this central-difference determinant and 1 should be below 0.00001.",
+        "task": "Volume-conservation test"
+      },
+      {
+        "prediction": "The state supports one scalar rule, not independent bindings. Starting from zero and repeatedly teaching with x=1,y=1, at least one of the first 12 writes has |a-1|>0.1 or reports numerical failure from nonfinite binary64 arithmetic. Thus the two-shot guarantee does not imply stable unlimited consolidation.",
+        "task": "Finite capacity and overteaching"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "The persistent working state has two scalar coordinates and the parameter table has V rows of three features. Validation, teaching arithmetic, and table lookup cost O(1). Explicitly emitting a dense V-entry probability vector after every valid token costs O(V); with V=2 the sequence cost is O(n). Bounds assume fixed-width arithmetic, apply up to any reported numerical failure, and exclude offline table fitting. Arbitrary-precision arithmetic would invalidate constant-word state costs as the nuisance coordinate expands.",
+      "memory": "O(V)",
+      "time_per_token": "O(V)",
+      "total_sequence": "O(n V)"
+    },
+    "sample_efficiency": {
+      "mechanism": "Two teaching writes contract a shared coefficient while a determinant-one nonlinear transformation expands the nuisance coordinate.",
+      "prediction": {
+        "metric": "Maximum absolute coefficient error after two noiseless demonstrations",
+        "statement": "With exact valid event rows, zero initial state, y=r*x, r in [-1,1], and 1/2<=|x|<=2 at each teaching event, two writes give |a-r|<0.063. Test at least 10001 equally spaced target coefficients using IEEE 754 binary64 arithmetic with round-to-nearest, ties-to-even. This tests a one-dimensional rule family and not end-to-end language learning.",
+        "value": 0.063
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "An exact-feature grid test under the stated teaching-input restrictions finds a target r in [-1,1] with two-write coefficient error at least 0.063.",
+    "The real-arithmetic complete teaching transformation, differentiated with respect to its pre-write a,b at fixed c, has Jacobian determinant other than 1, or any point in the specified central-difference grid experiment has determinant error at least 0.00001.",
+    "A fixed finite-dimensional, token-independent coordinate transformation maps every full teaching write and its readout exactly into a listed affine-state family.",
+    "The x=1,y=1 overteaching test stays finite and within coefficient error 0.1 throughout the first 12 writes.",
+    "Any claimed end-to-end conceptual-learning result depends on task-specific encoder rows containing the answer or on unseen-token numeric decoding that this lookup encoder cannot perform."
+  ],
+  "toy_example": {
+    "description": "One validated exact teaching event with x=0.5,y=0.5 supplies c=1, followed by a validated nonteaching query at x=1. Readout runs after each token; the printed distribution is the second token's output. The Jacobian factors differentiate the complete teaching composition with respect to pre-write a,b at fixed c. This tests one write, not the two-write guarantee.",
+    "python": "import json\nimport numpy as np\n\n# Exact feature rows: teaching token 0, nonteaching query token 1.\ntheta = np.array([[1.0, 0.5, 0.5], [0.0, 1.0, 0.0]])\na = 0.0\nb = 0.0\n\ndef decode(token):\n    if not isinstance(token, int) or not 0 <= token < len(theta):\n        raise ValueError('invalid token')\n    m, x, y = theta[token, :]\n    if not np.isfinite([m, x, y]).all() or m not in (0.0, 1.0):\n        raise ValueError('invalid features')\n    if m == 1.0 and not 0.5 <= abs(x) <= 2.0:\n        raise ValueError('invalid teaching input')\n    if m == 0.0 and abs(x) > 1.0:\n        raise ValueError('invalid nonteaching input')\n    return m, x, y\n\ndef readout(a, b, x):\n    if not np.isfinite([a, b]).all():\n        raise FloatingPointError('nonfinite state')\n    p1 = min(1.0, max(0.0, a*x))\n    p = [1.0-p1, p1]\n    total = sum(p)\n    return [v / total for v in p]\n\nm, x, y = decode(0)\nc = y / x\nA = c + (a-c)/4.0\nB = 4.0*b + (A-c)**3\na, b = A + B**3, B\np = readout(a, b, x)\n\n# Factors differentiate the full write with c held fixed.\nJ_squeeze = np.array([[0.25, 0.0], [0.0, 1.0]])\nJ_apical = np.array([[1.0, 0.0], [3.0*(A-c)**2, 4.0]])\nJ_basal = np.array([[1.0, 3.0*B**2], [0.0, 1.0]])\ndeterminant = float(np.linalg.det(J_basal @ J_apical @ J_squeeze))\nm, x, y = decode(1)\n# m=0: no assignment to persistent state; emit this token's readout.\np = readout(a, b, x)\nresult = {\n    'rule_coordinate': round(a, 6),\n    'nuisance_coordinate': round(b, 6),\n    'coefficient_error': round(abs(a-c), 6),\n    'next_token_distribution': [round(v, 6) for v in p],\n    'jacobian_determinant': round(determinant, 6)\n}\nprint(json.dumps(result, sort_keys=True))",
+    "expected": {
+      "coefficient_error": 0.250004,
+      "jacobian_determinant": 1.0,
+      "next_token_distribution": [
+        0.250004,
+        0.749996
+      ],
+      "nuisance_coordinate": -0.015625,
+      "rule_coordinate": 0.749996
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

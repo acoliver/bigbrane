@@ -1,0 +1,1 @@
+OUTCOME STORE (dead ideas from earlier runs nearest to this task, with the recorded kill codes and cause ids). Each line is a mechanism that was tried and the exact reason it died. A card that reuses one of these mechanisms must change what the cause names; renaming it, or changing something else, will be caught by its signature and killed again:

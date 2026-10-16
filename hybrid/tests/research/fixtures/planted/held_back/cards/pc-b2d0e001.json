@@ -1,0 +1,85 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Exponential weighting over a growing list of traces",
+  "summary": "Every symbol leaves a trace in a growing list; a probe weights each trace by the exponential of its similarity and returns the normalized weighted mix.",
+  "core_idea": "Weight stored traces by the exponential of their similarity to a probe and mix them.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "halbrook",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Growing list of traces, one per symbol read."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "halbrook_t = append(halbrook_(t-1), x_t)",
+        "plain": "halbrook_t = append(halbrook_(t-1), x_t)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = normalize(exp(s(q_t, halbrook_t)))",
+        "plain": "y_t = normalize(exp(s(q_t, halbrook_t)))"
+      }
+    ],
+    "learning": {
+      "description": "The similarity s is a fixed scaled product.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(n d)",
+      "memory": "O(n d)",
+      "total_sequence": "O(n^2 d)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "A unique trace is read after one write."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "trace retrieval",
+        "prediction": "Accuracy >= 0.9 with eight traces."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Similarity-weighted mixing is widespread.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Accuracy below 0.5 with eight traces.",
+    "Weights do not sum to one."
+  ],
+  "toy_example": {
+    "description": "Two traces weighted.",
+    "python": "import json\nimport math\nw = [math.exp(v) for v in (0.0, 1.0)]\nprint(json.dumps({'w1': round(w[1] / sum(w), 9)}))\n",
+    "expected": {
+      "w1": 0.731058579
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

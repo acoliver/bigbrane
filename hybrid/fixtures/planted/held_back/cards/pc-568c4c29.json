@@ -1,0 +1,135 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Sixty-four base-32 digits of a single integer as positional storage",
+  "summary": "A single integer is read as 64 digits in base 32. To put a symbol at digit position j, the integer gains the difference between the new code and the old digit, times 32 to the power j; to read position j, divide by that power and keep the remainder. Pairs use the digit position named by their address. A 20-bit integer keeps open bracket types. Episodes come in five fixed formats: a string to reproduce after a separator; address-item pairs followed by probes; two-type bracket prefixes whose next closer must be named; two tables g and f followed by probes answered f(g(x)); and chains of assignments ending in a probe variable.",
+  "core_idea": "Use the 64 base-32 digits of one integer as positional storage, changing and reading a digit with arithmetic on powers of 32.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Zr",
+        "type": "integer in [0, 32^64)",
+        "shape": [
+          1
+        ],
+        "meaning": "The digit integer: 64 base-32 digits, 320 bits."
+      },
+      {
+        "name": "ob",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Open-bracket integer, 20 bits."
+      },
+      {
+        "name": "ctr",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Step counter inside a string, 7 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "open-bracket integer",
+        "latex": "ob \\leftarrow 2\\,ob + b,\\quad ob \\leftarrow \\lfloor ob/2 \\rfloor",
+        "plain": "opener of type b: ob = 2 ob + b; closer: ob = floor(ob / 2)"
+      },
+      {
+        "name": "put a digit",
+        "latex": "Zr \\leftarrow Zr + (s - \\mathrm{dig}_j(Zr))\\, 32^{j}",
+        "plain": "Zr = Zr + (s - dig_j(Zr)) * 32^j puts code s at position j = sigma(z_t): ctr - 1 for strings, id for pairs, 32 + id for the second table"
+      }
+    ],
+    "readout": [
+      {
+        "name": "next bracket",
+        "latex": "\\hat{b} = ob \\bmod 2",
+        "plain": "the closer to predict has the type in the lowest bit of ob"
+      },
+      {
+        "name": "read a digit",
+        "latex": "\\mathrm{dig}_j(Zr) = \\lfloor Zr / 32^{j} \\rfloor \\bmod 32",
+        "plain": "dig_j(Zr) = floor(Zr / 32^j) mod 32; chains and f(g(x)) read the named position again, at most 8 times"
+      }
+    ],
+    "learning": {
+      "description": "Each symbol is given the role it was observed in most often over m example episodes.",
+      "few_shot_argument": "Each symbol shows its role in one episode, so m = 6 example episodes per task settle the roles in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "One digit change or at most 8 digit reads per symbol on a 320-bit integer (a constant number of machine words). State: 320 + 20 + 7 = 347 bits, independent of n."
+    },
+    "sample_efficiency": {
+      "mechanism": "Most frequent observed role per symbol over m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "By hand over an alphabet of 56 symbols, one base-32 digit per symbol: symbol i at position i - 1, read back after the separator; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Each address below 64 has its own digit position; exact at K = 8, 32 and 64 over up to 32 items."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "The open-bracket integer is exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "g at positions 32..63 and f at 0..31; exact at sizes 4, 16 and 32. At most 8 linked reads; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "A 65th address has no digit position, so exact recall fails at K = 65."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The observed-role rule learns each small case from m = 6 example episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "An L = 64 copy episode over 56 symbols is read back with a wrong symbol.",
+    "Changing one digit changes another digit."
+  ],
+  "toy_example": {
+    "description": "Two digit changes and reads on the digit integer.",
+    "python": "import json\nZr = 0\ndef dig(j):\n    return (Zr // 32 ** j) % 32\nfor j, s in [(2, 19), (40, 31), (2, 4)]:\n    Zr = Zr + (s - dig(j)) * 32 ** j\nprint(json.dumps({\"digits\": [dig(2), dig(40)], \"bits\": Zr.bit_length()}))\n",
+    "expected": {
+      "digits": [
+        4,
+        31
+      ],
+      "bits": 205
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

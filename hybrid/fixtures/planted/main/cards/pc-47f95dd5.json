@@ -1,0 +1,143 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "A row of sixty-four six-bit registers whose upper item bits come from the register's position class",
+  "summary": "Sixty-four registers of six bits each are addressed by the identity of an address symbol. A register keeps an item's lowest six bits, and when the item is read the two upper bits are taken from the register's index modulo four. A 20-bit integer keeps the open bracket types. Episodes come in five fixed formats: a string to reproduce after a separator; address-item pairs followed by probes; two-type bracket prefixes whose next closer must be named; two tables g and f followed by probes answered f(g(x)); and chains of assignments ending in a probe variable.",
+  "core_idea": "Put the lowest six bits of each item in the register named by its address and supply the upper bits on reading from that register's index modulo four.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Rg",
+        "type": "array of 6-bit registers",
+        "shape": [
+          64
+        ],
+        "meaning": "Sixty-four registers of 6 bits (384 bits); register j holds the lowest six bits of the item stored under address j."
+      },
+      {
+        "name": "ob",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Open-bracket integer, 20 bits."
+      },
+      {
+        "name": "ctr",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Step counter inside a string, 7 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "open-bracket integer",
+        "latex": "ob \\leftarrow 2\\,ob + b,\\quad ob \\leftarrow \\lfloor ob/2 \\rfloor",
+        "plain": "opener of type b: ob = 2 ob + b; closer: ob = floor(ob / 2)"
+      },
+      {
+        "name": "register write",
+        "latex": "Rg[j_t] \\leftarrow u_t \\bmod 64",
+        "plain": "Rg[j] = u_t mod 64 with j_t = sigma(z_t): ctr - 1 for string symbols, id for pair addresses, 32 + id for the second table; u_t is the item code"
+      }
+    ],
+    "readout": [
+      {
+        "name": "next bracket",
+        "latex": "\\hat{b} = ob \\bmod 2",
+        "plain": "the closer to predict has the type in the lowest bit of ob"
+      },
+      {
+        "name": "register read",
+        "latex": "\\hat{u} = Rg[j] + 64\\,(j \\bmod 4)",
+        "plain": "an item read from register j is Rg[j] + 64 (j mod 4): low bits from the register, upper bits from its index class"
+      },
+      {
+        "name": "follow links",
+        "latex": "j \\leftarrow \\hat{u} \\bmod 32 \\text{ while the item names a variable}",
+        "plain": "a chained assignment reads the register of the named variable again, at most 8 times; f(g(x)) reads register 32 + id(x) and then the register of the result"
+      }
+    ],
+    "learning": {
+      "description": "The register layout is fixed; each symbol is assigned the role it was observed in most often over m example episodes.",
+      "few_shot_argument": "One episode shows each symbol in its role, so m = 6 example episodes per task settle all roles in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "One register write or at most 8 register reads per symbol. State: 64 six-bit registers (384 bits), the 20-bit open-bracket integer and a 7-bit counter, 411 bits, independent of n."
+    },
+    "sample_efficiency": {
+      "mechanism": "Most frequent observed role per symbol over m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "By hand over at most 64 symbols: symbol i goes to register i - 1 and is read back after the separator; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "By hand with V = 256 items: an address's register keeps the lowest six bits of its item and the index class supplies the upper two, so recall over 256 items is exact at K = 8, 32 and 64."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "The open-bracket integer is exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "g in registers 32..63 and f in 0..31 (entries below 32 need no upper bits); exact at sizes 4, 16 and 32. At most 8 linked reads over 32 variables; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "A 65th address has no register of its own, so exact recall fails at K = 65."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The observed-role rule learns each small case from m = 6 example episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Some item is read back wrong in a recall episode at K = 64 over 256 items.",
+    "A register write alters another register."
+  ],
+  "toy_example": {
+    "description": "Two register writes and their reads.",
+    "python": "import json\nRg = [0] * 64\nfor j, u in [(3, 200), (8, 40)]:\n    Rg[j] = u % 64\nprint(json.dumps({\"registers\": [Rg[3], Rg[8]], \"reads\": [Rg[j] + 64 * (j % 4) for j in (3, 8)]}))\n",
+    "expected": {
+      "registers": [
+        8,
+        40
+      ],
+      "reads": [
+        200,
+        40
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

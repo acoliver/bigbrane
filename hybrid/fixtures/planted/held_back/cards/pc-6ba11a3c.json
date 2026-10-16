@@ -1,0 +1,99 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "A width-by-channel buffer shrunk by one symbol-driven exponential factor",
+  "summary": "Every symbol multiplies the whole d by N buffer by the same factor exp(-span * k_r), where the span is computed from the symbol and k_r is a learned positive constant, then adds the symbol's channel vector along a symbol-dependent writing direction scaled by the span. The output reads the buffer along a symbol-dependent reading direction.",
+  "core_idea": "Shrink the whole buffer by one symbol-dependent factor exp(-span * k_r), so the transition is a scalar times the identity, with symbol-dependent writing and reading directions.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Bf",
+        "type": "real matrix",
+        "shape": [
+          "d",
+          "N"
+        ],
+        "meaning": "Buffer of d channels by N writing coordinates, all shrunk by one shared factor per symbol."
+      }
+    ],
+    "update": [
+      {
+        "name": "buffer",
+        "latex": "Bf_t = \\exp(-\\tau_t k_r) Bf_{t-1} + \\tau_t\\, h_t w_t^{\\top}",
+        "plain": "Bf_t = exp(-tau_t * k_r) * Bf_(t-1) + tau_t * outer(h_t, w_t), with k_r > 0 a learned constant"
+      },
+      {
+        "name": "span and directions",
+        "latex": "\\tau_t = \\mathrm{softplus}(u_\\tau^{\\top} h_t + c_0),\\; w_t = U_w h_t,\\; r_t = U_r h_t",
+        "plain": "tau_t = softplus(u_tau . h_t + c_0) is a single scalar span; w_t = U_w h_t and r_t = U_r h_t lie in R^N; h_t = Emb[s_t]"
+      }
+    ],
+    "readout": [
+      {
+        "name": "output",
+        "latex": "o_t = Bf_t r_t",
+        "plain": "o_t = Bf_t r_t; the scores for the next symbol are Z o_t"
+      }
+    ],
+    "learning": {
+      "description": "All projection matrices and offsets are fitted by gradient descent on the cross-entropy of the following symbol over a training corpus, with backpropagation through the full sequence. The constant k_r stays positive because its logarithm is the stored parameter.",
+      "few_shot_argument": "Nothing in the design helps with few examples; recall of 4 pairs takes about 3700 training sequences."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d N + d V)",
+      "memory": "Theta(d N)",
+      "total_sequence": "Theta(n d N + n d V)",
+      "constants_notes": "Per symbol one exponential, a d by N scaling, one rank-one write and one reading; the buffer holds d N numbers."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent; nothing in the design helps with few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 3700,
+        "statement": "Starting from random weights, 3700 training sequences of 4 pairs over 16 symbols reach recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "skipping filler symbols",
+        "prediction": "A filler symbol whose span is near 0 leaves the buffer unchanged up to the factor exp(-tau k_r), which is close to 1."
+      },
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact for K <= N with hand-set orthogonal writing directions and spans near 0 on filler symbols."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The operation count grows faster than linearly in n with d, N and V fixed.",
+    "A filler symbol with span near 0 moves the buffer by more than tau times the norm of its write."
+  ],
+  "toy_example": {
+    "description": "A one by two buffer over three symbols with k_r = 0.5.",
+    "python": "import json, math\nkr = 0.5\nBf = [0.0, 0.0]\nfor h, raw, w in [(2.0, 0.5, [0.0, 1.0]), (-1.0, -3.0, [1.0, 0.0]), (1.5, 0.0, [0.5, -0.5])]:\n    tau = math.log1p(math.exp(raw))\n    Bf = [math.exp(-tau * kr) * Bf[j] + tau * h * w[j] for j in range(2)]\nr = [0.5, 1.0]\nprint(json.dumps({\"buffer\": [round(v, 6) for v in Bf], \"out\": round(Bf[0] * r[0] + Bf[1] * r[1], 6)}))\n",
+    "expected": {
+      "buffer": [
+        0.485504,
+        0.82463
+      ],
+      "out": 1.067382
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

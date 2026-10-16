@@ -1,0 +1,85 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Circular convolution bank",
+  "summary": "A bank binds each symbol to its position by circular convolution and superposes the results; a probe unbinds by circular correlation through a fast transform.",
+  "core_idea": "Bind symbols to positions by circular convolution and unbind by correlation.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "gantrel",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Superposed bank of circular convolutions of symbol and position codes."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "gantrel_t = gantrel_(t-1) + circular convolution(p_t, x_t) via fft",
+        "plain": "gantrel_t = gantrel_(t-1) + circular convolution(p_t, x_t) via fft"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = circular correlation(p_q, gantrel_t)",
+        "plain": "y_t = circular correlation(p_q, gantrel_t)"
+      }
+    ],
+    "learning": {
+      "description": "Codes are fixed random vectors.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(d log d)",
+      "memory": "O(d)",
+      "total_sequence": "O(n d log d)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "One bound pair is read back."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "position recall",
+        "prediction": "Recalls the symbol at a position among 64 bound pairs."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Circular binding is a known vector technique.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Recall fails with two pairs.",
+    "The bank norm is zero after a write."
+  ],
+  "toy_example": {
+    "description": "One circular convolution.",
+    "python": "import json\na = [1.0, 0.0, 0.0]\nb = [0.0, 2.0, 0.0]\nc = [sum(a[j] * b[(i - j) % 3] for j in range(3)) for i in range(3)]\nprint(json.dumps({'c1': c[1]}))\n",
+    "expected": {
+      "c1": 2.0
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

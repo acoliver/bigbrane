@@ -1,0 +1,114 @@
+{
+  "attempts": [
+    {
+      "backend": "gateway",
+      "effort": "medium",
+      "error": "gateway: empty message content (finish_reason='length')",
+      "index": 0,
+      "kind": "request",
+      "latency_s": 685.878,
+      "max_output_tokens": 64000,
+      "outcome": "TransportError",
+      "requested_model": "anthropic/claude-opus-5-5"
+    },
+    {
+      "backend": "gateway",
+      "effort": "medium",
+      "error": "gateway: empty message content (finish_reason='length')",
+      "index": 1,
+      "kind": "request",
+      "latency_s": 540.725,
+      "max_output_tokens": 64000,
+      "outcome": "TransportError",
+      "requested_model": "anthropic/claude-sonnet-5-5"
+    }
+  ],
+  "call_id": "call-k2o7a00000",
+  "error": "TransportError: all backend entries failed for role 'prover': gateway:anthropic/claude-opus-5-5: gateway: empty message content (finish_reason='length'); gateway:anthropic/claude-sonnet-5-5: gateway: empty message content (finish_reason='length')",
+  "gateway_meter": [
+    {
+      "dropped": [],
+      "latency_s": 685.844,
+      "model": "anthropic/claude-opus-5-5",
+      "status": "ok",
+      "ts": "2026-10-14T01:45:59.307145Z",
+      "usage": {
+        "cached": 2154,
+        "input": 8252,
+        "output": 64000
+      }
+    },
+    {
+      "dropped": [],
+      "latency_s": 540.717,
+      "model": "anthropic/claude-sonnet-5-5",
+      "status": "ok",
+      "ts": "2026-10-14T01:55:00.053541Z",
+      "usage": {
+        "cached": 0,
+        "input": 8252,
+        "output": 64000
+      }
+    }
+  ],
+  "json_schema": {
+    "additionalProperties": false,
+    "properties": {
+      "attempts": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "notes": {
+              "type": "string"
+            },
+            "proof": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "statement_id": {
+              "enum": [
+                "O7.a"
+              ]
+            }
+          },
+          "required": [
+            "statement_id",
+            "proof",
+            "source",
+            "notes"
+          ],
+          "type": "object"
+        },
+        "maxItems": 1,
+        "minItems": 1,
+        "type": "array"
+      }
+    },
+    "required": [
+      "attempts"
+    ],
+    "type": "object"
+  },
+  "role": "prover",
+  "routing": "gateway",
+  "source": "runs/calibration-smoke-20261013T222017Z/k2-run1/llm/calls/call-0b9584165fe4.json and the gateway meter (~/.bigbrane-gateway/usage.jsonl); call id replaced",
+  "statement_ids": [
+    "O7.a"
+  ],
+  "system_chars": 6381,
+  "usage_recorded": {
+    "cached": 0,
+    "input": 0,
+    "output": 0
+  },
+  "user_chars": 14898,
+  "user_sent_chars": 15895
+}

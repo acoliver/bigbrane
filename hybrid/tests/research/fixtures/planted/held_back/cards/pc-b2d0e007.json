@@ -1,0 +1,87 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Enumerating candidate rules and keeping the consistent ones",
+  "summary": "A small family of candidate rules is enumerated once; each new example removes the candidates it contradicts, and the readout applies the first candidate that remains.",
+  "core_idea": "Enumerate a few candidate rules and drop the ones an example contradicts.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "ashgrove",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Set of candidate rules still consistent with every example so far."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "ashgrove_t = {h in ashgrove_(t-1) : h agrees with example x_t} (enumerate candidates)",
+        "plain": "ashgrove_t = {h in ashgrove_(t-1) : h agrees with example x_t} (enumerate candidates)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = first candidate in ashgrove_t applied to q_t",
+        "plain": "y_t = first candidate in ashgrove_t applied to q_t"
+      }
+    ],
+    "learning": {
+      "description": "Elimination of contradicted candidates; no gradient.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(H)",
+      "memory": "O(H)",
+      "total_sequence": "O(n H)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "One example removes every contradicted candidate."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "rule induction",
+        "prediction": "Finds the generating rule among eight after three examples."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Candidate elimination is a classical idea.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A contradicted candidate survives.",
+    "The consistent rule is dropped."
+  ],
+  "toy_example": {
+    "description": "Two candidates, one example.",
+    "python": "import json\nrules = {'add1': lambda v: v + 1, 'dbl': lambda v: 2 * v}\nalive = [n for n, f in rules.items() if f(2) == 3]\nprint(json.dumps({'alive': alive}))\n",
+    "expected": {
+      "alive": [
+        "add1"
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

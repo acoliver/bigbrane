@@ -1,0 +1,63 @@
+{
+  "format": "bigbrane.planted/1",
+  "set": "fixture_held_back",
+  "cards": {
+    "pc-b2d0e001": {
+      "type": "T1",
+      "spec": "exponential weighting of a growing trace list",
+      "source_family": "weighted trace mixing",
+      "aliases": [],
+      "batch": 1
+    },
+    "pc-b2d0e002": {
+      "type": "T2",
+      "spec": "the bucket tally of card-0000d002 with eviction added",
+      "source_family": "bucket tally",
+      "aliases": [],
+      "batch": 1,
+      "origin": {
+        "run": "run-20260901T000000Z",
+        "card_id": "card-0000d002"
+      }
+    },
+    "pc-b2d0e003": {
+      "type": "T3",
+      "spec": "recall resting on a free successor graph",
+      "source_family": "edge successor map",
+      "aliases": [],
+      "batch": 1
+    },
+    "pc-b2d0e004": {
+      "type": "T4",
+      "subtype": "cost_exponent",
+      "spec": "a cost claim the code does not meet",
+      "source_family": "holographic binding",
+      "aliases": [],
+      "batch": 1
+    },
+    "pc-b2d0e005": {
+      "type": "T5",
+      "spec": "a pointer tree bracket matcher",
+      "source_family": "parent pointer stack",
+      "aliases": [],
+      "batch": 1
+    },
+    "pc-b2d0e006": {
+      "type": "T6",
+      "spec": "pc-b2d0e001 under new names",
+      "source_family": "weighted trace mixing",
+      "aliases": [],
+      "batch": 2,
+      "origin": {
+        "planted": "pc-b2d0e001"
+      }
+    },
+    "pc-b2d0e007": {
+      "type": "T7",
+      "spec": "candidate elimination that passes every check",
+      "source_family": "version space",
+      "aliases": [],
+      "batch": 1
+    }
+  }
+}

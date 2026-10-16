@@ -1,0 +1,113 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "A shrinking square store written with content-address products",
+  "summary": "A square store is multiplied by a fixed constant below one at every symbol and then receives the product of the symbol's content vector and its address vector. A probe vector is multiplied into the store to read out a sum of earlier contents, each weighted by its address match and by how long ago it was written.",
+  "core_idea": "Multiply a square store by a fixed constant below one per symbol, add the content-address product of the symbol, and read by multiplying the store with a probe vector.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "S",
+        "type": "real matrix",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "meaning": "Square store: the sum of earlier content-address products, each shrunk by the constant gamma once per later symbol."
+      }
+    ],
+    "update": [
+      {
+        "name": "projections",
+        "latex": "k_t = W_k e_t,\\; u_t = W_u e_t",
+        "plain": "address k_t = W_k e_t and content u_t = W_u e_t, where e_t = E[x_t] is the embedding of symbol x_t"
+      },
+      {
+        "name": "store",
+        "latex": "S_t = \\gamma S_{t-1} + u_t k_t^{\\top}",
+        "plain": "S_t = gamma * S_(t-1) + outer(u_t, k_t), where gamma in (0, 1) is a fixed decay constant"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = S_t q_t,\\; q_t = W_q e_t",
+        "plain": "y_t = S_t q_t with the probe q_t = W_q e_t"
+      },
+      {
+        "name": "symbol",
+        "latex": "\\hat{x}_{t+1} = \\arg\\max_v (O y_t)_v",
+        "plain": "next symbol scores O y_t over the V symbols"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence. The constant gamma is fixed before training (gamma = 0.97).",
+      "few_shot_argument": "No structure for few examples; the card states 4000 training sequences for recall of 4 pairs."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d^2 + d V)",
+      "memory": "Theta(d^2)",
+      "total_sequence": "Theta(n d^2 + n d V)",
+      "constants_notes": "One scaling and one rank-one write of a d by d store and one d by d product per symbol, plus the output map."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 4000,
+        "statement": "From random weights, 4000 training sequences of 4 pairs over 16 symbols give recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact recall with hand-set orthogonal addresses when K <= d and the shrink factor gamma^K stays above the readout margin."
+      },
+      {
+        "task": "long-range retention",
+        "prediction": "A pair written L symbols before its probe contributes with weight gamma^L, so retention falls off geometrically with distance."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A pair written 200 symbols before its probe is recalled as well as a pair written 2 symbols before it, at gamma = 0.97.",
+    "The counted operations grow faster than linearly in n at fixed d and V."
+  ],
+  "toy_example": {
+    "description": "Three writes into a two by two store with gamma = 0.5 and one probe.",
+    "python": "import json\ng = 0.5\nS = [[0.0, 0.0], [0.0, 0.0]]\nfor u, k in [([1.0, 0.0], [1.0, 0.0]), ([0.0, 1.0], [0.0, 1.0]), ([1.0, 1.0], [1.0, -1.0])]:\n    S = [[g * S[i][j] + u[i] * k[j] for j in range(2)] for i in range(2)]\nq = [1.0, 0.0]\ny = [S[i][0] * q[0] + S[i][1] * q[1] for i in range(2)]\nprint(json.dumps({\"read\": y, \"store\": S}))\n",
+    "expected": {
+      "read": [
+        1.25,
+        1.0
+      ],
+      "store": [
+        [
+          1.25,
+          -1.0
+        ],
+        [
+          1.0,
+          -0.5
+        ]
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

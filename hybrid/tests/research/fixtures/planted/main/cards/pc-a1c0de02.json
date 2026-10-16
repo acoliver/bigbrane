@@ -1,0 +1,86 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Counting table with a threshold and a hashed bucket",
+  "summary": "A table counts how often each bucket has been seen; buckets come from hashing the symbol, and the readout returns the most counted bucket once its count passes a threshold.",
+  "core_idea": "Count hashed symbol buckets in a table and read the bucket whose count passes a threshold.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "quorrel",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Table of counts, one per bucket, incremented whenever a symbol lands in that bucket."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "quorrel[hash(x_t)] = quorrel[hash(x_t)] + 1 (count, lookup table)",
+        "plain": "quorrel[hash(x_t)] = quorrel[hash(x_t)] + 1 (count, lookup table)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = lookup(quorrel) if count >= theta, sum over buckets",
+        "plain": "y_t = lookup(quorrel) if count >= theta, sum over buckets"
+      }
+    ],
+    "learning": {
+      "description": "The threshold theta is set by hand; nothing is trained.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(B)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "A bucket seen twice is read after two symbols."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "frequent symbol report",
+        "prediction": "Reports the most frequent bucket once it is seen twice."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Counting tables are a standard data structure.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The reported bucket is not the most counted one.",
+    "Counts decrease without any input."
+  ],
+  "toy_example": {
+    "description": "Counts five symbols into four buckets.",
+    "python": "import json\ncounts = {}\nfor x in [3, 1, 3, 2, 3]:\n    counts[x % 4] = counts.get(x % 4, 0) + 1\nprint(json.dumps({'top': max(counts, key=counts.get), 'n': counts[3]}))\n",
+    "expected": {
+      "top": 3,
+      "n": 3
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

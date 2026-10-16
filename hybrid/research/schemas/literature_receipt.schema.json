@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/literature_receipt.schema.json",
+  "title": "Literature search receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query", "source", "ts", "result_ids"],
+  "properties": {
+    "query": {"type": "string", "minLength": 1},
+    "source": {"enum": ["arxiv", "arxiv_local", "openalex", "semantic_scholar"]},
+    "ts": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"},
+    "result_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "card_id": {"type": "string", "pattern": "^card-[0-9a-f]{8}$"},
+    "snapshot_date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "record_count": {"type": "integer", "minimum": 0},
+    "index_complete": {"type": "boolean"},
+    "note": {"type": "string", "minLength": 1}
+  }
+}

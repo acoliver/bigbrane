@@ -1,0 +1,116 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Constant shrink and error-driven correction after a short causal filter",
+  "summary": "Inputs first pass through a short causal filter over the last four embeddings. The filtered vector gives a unit-length address, a content and a step size. The square store is shrunk by one learned constant per layer and then corrected toward the content along the address by the misprediction of the shrunk store.",
+  "core_idea": "Filter the last four inputs causally, then shrink a square store by a learned constant and correct it along the new address by the prediction error of the new content.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "S",
+        "type": "real matrix",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "meaning": "Square store from addresses to contents; shrunk by the constant alpha and corrected at every symbol."
+      },
+      {
+        "name": "F",
+        "type": "ring buffer of real vectors",
+        "shape": [
+          4,
+          "d"
+        ],
+        "meaning": "The last four input embeddings, used by the causal filter."
+      }
+    ],
+    "update": [
+      {
+        "name": "filter",
+        "latex": "v_t = \\sum_{j=0}^{3} w_j \\odot e_{t-j}",
+        "plain": "v_t = sum over j = 0..3 of w_j * e_(t-j), elementwise filter weights w_j, with e_t = E[x_t]"
+      },
+      {
+        "name": "projections",
+        "latex": "k_t = \\frac{W_k v_t}{\\lVert W_k v_t \\rVert},\\; u_t = W_u v_t,\\; \\beta_t = \\sigma(w_\\beta^{\\top} v_t)",
+        "plain": "k_t = W_k v_t normalized to unit length; u_t = W_u v_t; beta_t = sigmoid(w_beta . v_t)"
+      },
+      {
+        "name": "correction",
+        "latex": "S_t = \\alpha S_{t-1} + \\beta_t (u_t - \\alpha S_{t-1} k_t) k_t^{\\top}",
+        "plain": "S_t = alpha S_(t-1) + beta_t * outer(u_t - alpha S_(t-1) k_t, k_t), with alpha in (0, 1] one learned constant (decay)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = S_t \\frac{W_q v_t}{\\lVert W_q v_t \\rVert}",
+        "plain": "y_t = S_t times the unit-length probe W_q v_t / norm; next symbol scores O y_t"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence.",
+      "few_shot_argument": "No structure for few examples; about 2400 training sequences are needed for recall of 4 pairs."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d^2 + d V)",
+      "memory": "Theta(d^2)",
+      "total_sequence": "Theta(n d^2 + n d V)",
+      "constants_notes": "A four-tap filter, three projections, one misprediction product, one rank-one correction and one read per symbol; the store is d^2 numbers plus the 4 d buffer."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 2400,
+        "statement": "From random weights, 2400 training sequences of 4 pairs over 16 symbols give recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact with hand-set orthonormal addresses, alpha = 1 and beta = 1 when K <= d."
+      },
+      {
+        "task": "pairs spread over two symbols",
+        "prediction": "The filter lets an address depend on the previous symbol, so a pair written as two adjacent symbols is bound with no extra layer."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "With alpha = beta = 1 and orthonormal addresses, rewriting an address leaves a mixture of contents.",
+    "The counted operations grow faster than linearly in n at fixed d and V."
+  ],
+  "toy_example": {
+    "description": "One address written twice with alpha = 0.9 and beta = 1, then read.",
+    "python": "import json\na = 0.9\nS = [[0.0, 0.0], [0.0, 0.0]]\ndef step(S, k, u):\n    pred = [a * (S[i][0] * k[0] + S[i][1] * k[1]) for i in range(2)]\n    return [[a * S[i][j] + (u[i] - pred[i]) * k[j] for j in range(2)] for i in range(2)]\nS = step(S, [1.0, 0.0], [1.0, 1.0])\nS = step(S, [0.0, 1.0], [2.0, 0.0])\nS = step(S, [1.0, 0.0], [0.0, 3.0])\nprint(json.dumps({\"read_first\": [round(S[0][0], 6), round(S[1][0], 6)], \"read_second\": [round(S[0][1], 6), round(S[1][1], 6)]}))\n",
+    "expected": {
+      "read_first": [
+        0.0,
+        3.0
+      ],
+      "read_second": [
+        1.8,
+        0.0
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

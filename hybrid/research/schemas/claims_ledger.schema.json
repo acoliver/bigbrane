@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/claims_ledger.schema.json",
+  "title": "S6 claims ledger: mechanical falsifier decisions plus the analyst's commentary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["card_id", "claims", "counts", "falsifier_tasks"],
+  "properties": {
+    "card_id": {"type": "string", "pattern": "^card-[0-9a-f]{8}$"},
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supported", "refuted", "inconclusive", "untested"],
+      "properties": {
+        "supported": {"type": "integer", "minimum": 0},
+        "refuted": {"type": "integer", "minimum": 0},
+        "inconclusive": {"type": "integer", "minimum": 0},
+        "untested": {"type": "integer", "minimum": 0}
+      }
+    },
+    "falsifier_tasks": {"type": "array", "items": {"type": "string"}},
+    "falsified_by": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim_id", "task_id", "rule_index"],
+        "properties": {
+          "claim_id": {"type": "string", "pattern": "^falsifier\\.[0-9]+$"},
+          "task_id": {"type": "string"},
+          "rule_index": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim_id", "claim", "status", "decided_by", "rules", "analyst_status", "evidence"],
+        "properties": {
+          "claim_id": {"type": "string", "minLength": 1},
+          "claim": {"type": "string", "minLength": 1},
+          "status": {"enum": ["supported", "refuted", "inconclusive", "untested"]},
+          "decided_by": {"enum": ["rule", "analyst"]},
+          "decision_note": {"type": "string"},
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["task_id", "rule_index", "outcome", "reason", "quote", "conditions", "if_met"],
+              "properties": {
+                "task_id": {"type": "string"},
+                "rule_index": {"type": "integer", "minimum": 0},
+                "outcome": {"enum": ["supported", "refuted", "inconclusive"]},
+                "reason": {"type": "string"},
+                "quote": {"type": "string"},
+                "if_met": {"enum": ["supported", "refuted"]},
+                "conditions": {"type": "array", "items": {"type": "object"}}
+              }
+            }
+          },
+          "analyst_status": {"enum": ["supported", "refuted", "untested", null]},
+          "analyst_tasks": {"type": "array", "items": {"type": "string"}},
+          "analyst_override": {"type": "string"},
+          "gated_by": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["task_id", "reason"],
+              "properties": {"task_id": {"type": "string"}, "reason": {"type": "string"}}
+            }
+          },
+          "evidence": {"type": "string"}
+        }
+      }
+    }
+  }
+}

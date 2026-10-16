@@ -1,0 +1,293 @@
+{
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "Accuracy >= 0.9. Fresh-mode baseline <= 0.2: a one-pair ridge fit maps q to a multiple of Phi[b+s_B], so it predicts b+s_B != q+s_B, or the token anti-aligned with it. Pooled MesaNet <= 0.1. Ablation e_t = 1 <= 0.1.",
+        "task": "One-shot new rule. The protocol of claims.sample_efficiency with k = 1 (d = 16, V_c = 61, 500 trials)."
+      },
+      {
+        "prediction": "Mean accuracy over the 8 new-rule queries >= 0.9. Accuracy on B_8 is at least (accuracy on B_1) - 0.1, because no rule occupies a slot. Final A recall >= 0.9. The fresh-mode baseline (one RLS operator per B_i, fitted to its single pair) gives <= 0.2 on every B_i, for the reason given in the one-shot claim.",
+        "task": "Many rules without slots.\n- Context: BOS, 24 demonstrations of rule A, then 8 further shift rules B_1..B_8 in sequence. Their shifts s_1..s_8 are drawn without replacement from {1..60} \\ {s_A}, so they are nonzero, pairwise distinct and different from s_A.\n- Each B_i is given by exactly 1 demonstration 'b b+s_i ;' followed by one query 'q ;' on a token that is not its demonstrated input.\n- Then 1 cue demonstration of A and a final query.\n- Settings: reference lift, d = 16, V_c = 61, w_beta = 0, 500 trials. Scoring as in claims.sample_efficiency."
+      },
+      {
+        "prediction": "(i) Accuracy >= 0.9, since an odd s_A is a unit mod 64, so every shift is a unique power of it. (ii) Accuracy <= 0.15, since no multiple of an even shift is odd. The duration test picks an even multiple c s_A (ties to the smallest c), and the readout lands on q + c s_A != q + s_B. No pooled, decayed or slot-based baseline predicts this odd/even split.",
+        "task": "Semigroup membership on a composite cycle.\n- Settings: V_c = 64, Fourier lift with frequencies 1..8 (d = 16), M = 63, w_beta = 0. Context: 24 demonstrations of A, then 1 demonstration of B, then a query. Shifts are drawn from {1..63} with s_B != s_A.\n- Condition (i): s_A odd, s_B arbitrary.\n- Condition (ii): s_A even, s_B odd.\n- 500 trials each."
+      },
+      {
+        "prediction": "(i) Accuracy >= 0.9. (ii) Accuracy <= 0.6, because B pairs in unidentified directions are written as duration-1 pairs and corrupt K, and powers amplify the error. MesaNet without decay gives identical outputs for both orders, with accuracy <= 0.2 in both.",
+        "task": "Order dependence of the same pair multiset.\n- Use 28 demonstrations: 24 of A and 4 of B, with s_A != s_B drawn from {1..60}. Demonstrations are numbered 1..28 in context order, and each is the token triple 'a a+s ;'. Demonstration 28 is always a B demonstration, and it is followed by a query for B.\n- Settings: reference lift, V_c = 61, d = 16, w_beta = 0, 500 trials per order.\n- Order (i), blocked: demonstrations 1..24 are A and 25..28 are B.\n- Order (ii), interleaved: demonstrations 1, 7, 13 and 28 are B, and the other 24 are A. Only 10 A demonstrations precede demonstration 13, so the first three B demonstrations arrive before the A lifts span R^16."
+      }
+    ],
+    "complexity": {
+      "constants_notes": "Cost per written pair:\n- The orbit costs M matrix-vector products with K^T, about M d^2 multiply-adds.\n- The write is one RLS step, about 4 d^2.\n- The readout applies K^T e_t <= M times and then the V×d decoder.\n\nM is a fixed maximum duration (60 for V_c = 61), independent of n. Skipped pairs (all pairs containing BOS or ';', and content pairs closed by the gate) cost only the readout.\n\nThe inference state is K, P and e_t: 2 d^2 + 1 numbers, independent of n.\n\nThe discrete duration choice makes the recurrence non-associative, so there is no parallel scan. Training is backpropagation through time at the same O(n (M d^2 + V d)) cost. Large M can use square-and-multiply powers (see extensions).",
+      "memory": "O(d^2 + V d)",
+      "time_per_token": "O(M d^2 + V d)",
+      "total_sequence": "O(n (M d^2 + V d))"
+    },
+    "sample_efficiency": {
+      "mechanism": "Once one rule has identified the flow (about d demonstrations), a new rule needs only its duration, a single integer. One demonstration fixes it by the orbit-matching test, because the powers of the identified operator land on distinct token lifts. Models that fit an operator per rule, or one pooled operator, must identify d^2 numbers again from fresh demonstrations.",
+      "prediction": {
+        "metric": "k_new: the smallest number of demonstrations of a new rule B at which accuracy on undemonstrated queries is >= 0.9.\n\nSetup:\n- Single layer with the reference Fourier lift: d = 16, V_c = 61 (prime cycle), V = 63, zero rows for BOS and ';'. w_beta = 0, lambda = 1e-6, tau = 1e3, M = 60.\n- 500 trials per k in {1, 2, 4, 8, 16}. Each trial draws distinct shifts s_A, s_B from {1..60}.\n- Context: BOS, then 24 demonstrations 'a a+s_A ;' with inputs drawn without replacement, then k demonstrations 'b b+s_B ;' on fresh inputs, then a query token q that was not a demonstrated input of B.\n- The target is q+s_B mod 61. The prediction is the argmax over all V = 63 logits, and a reserved-token prediction counts as wrong.",
+        "statement": "k_new = 1 for this model. Each of the following baselines needs k_new >= 8 or never reaches 0.9 at k <= 16. All baselines use the same lift and lambda.\n- Fresh-mode baseline (the parent switched-Koopman / SUGS card when B is placed in its own component): an RLS operator with prior I/lambda fitted only to the k B pairs (Phi[b], Phi[b+s_B]) and read on Phi[q].\n- MesaNet / in-context least squares: one ridge operator pooled over all written content pairs.\n- Gated DeltaNet on keys Phi[x_{t-1}] and values Phi[x_t], with write strength 1 and forgetting factor tuned in {0.5, 0.7, 0.9, 0.99}.\n- The ablation with e_t fixed to 1, which is exactly RLS on the raw pairs.",
+        "value": 1
+      }
+    }
+  },
+  "core_idea": "Treat every rule in the context as the same in-context-identified Koopman flow run for a different, unknown integer duration. For each demonstration, the model infers the duration by matching the demonstration against powers of the current operator, then writes it back into that single operator as a one-step pair transported along the inferred orbit. Once one rule has identified the flow, every other rule in its cyclic semigroup is learned from a single example.",
+  "created_by_call": "call-ec5945c3cf2a",
+  "extensions": [
+    {
+      "description": "For large M, compute candidate powers by repeated squaring of K^T and search the duration by bisection on a monotone phase proxy. This costs O(d^3 log M) per written pair instead of O(M d^2). It is outside the core.",
+      "name": "Square-and-multiply orbit"
+    },
+    {
+      "description": "Keep two operators K_1, K_2 and infer a duration pair (c_1, c_2) per demonstration, so that rules in the abelian semigroup they generate are one-shot (for example row and column shifts on a grid alphabet). A new generator is opened when the minimum orbit error exceeds a threshold.",
+      "equations": [
+        {
+          "latex": "(e^{(1)}_t,e^{(2)}_t)=\\arg\\min_{c_1,c_2}\\|v_t-(K_1^\\top)^{c_1}(K_2^\\top)^{c_2}u_t\\|^2",
+          "plain": "e1, e2 = argmin over (c1, c2) of ||v - K1.T^c1 @ K2.T^c2 @ u||^2"
+        }
+      ],
+      "name": "Several commuting generators"
+    },
+    {
+      "description": "Replace integer powers by exp(tau log K), with tau searched on a grid. This handles flows sampled at real-valued times, as in continuous-time channel prediction.",
+      "name": "Continuous durations"
+    },
+    {
+      "description": "During pretraining, replace the argmin by a Gumbel-softmax over -||v - z_c||^2, with straight-through hard selection in the forward pass, so that the lift receives gradient from duration decisions.",
+      "name": "Soft durations for training"
+    }
+  ],
+  "falsifiers": [
+    "On the one-shot new-rule task (d = 16, V_c = 61, reference Fourier lift, w_beta = 0, M·eps < delta_min^2/4 verified), accuracy is below 0.9, or the e_t = 1 ablation comes within 0.1 of it. Either result means duration inference over powers of the identified flow does not carry rules.",
+    "In the composite-cycle test, condition (ii) (even base, odd new shift) exceeds accuracy 0.15, or condition (i) (odd base) is below 0.9. Either result means the predictions do not come from the cyclic semigroup generated by the base operator.",
+    "In the many-rules task, accuracy on B_8 is more than 0.1 below accuracy on B_1. That would mean the state stores rules in a capacity-limited way, contrary to the single-operator analysis.",
+    "In the order-dependence task, the blocked order (i) is below 0.9, or the interleaved order (ii) exceeds 0.6. Either result means the identification test and transported writes do not make the state order-dependent as the theory requires.",
+    "Pretrain on cyclic-rule episodes, then test on a 26-letter Caesar task with M = 25 and base shifts s_A coprime to 26 (odd and != 13). For such s_A, every nonzero shift is c* s_A mod 26 for a unique c* in {1..25}, so the duration test has a unique target.\n- Measure eps = ||K - T||_2. K is the in-context operator after 24 demonstrations of shift s_A. T is the ridge fit of the 26 pairs (Phi[a], Phi[a+s_A mod 26]) on the trained lift.\n- Compute delta_min as the minimum over letters a != b of ||Phi[a] - Phi[b]||, on the 26 trained rows each rescaled to unit norm as the margin argument assumes.\n- Check gate condition (G): w_beta^T[Phi[a]; Phi[a+s]] >= 0 for every demonstration pair used in the test.\nIf M·eps >= delta_min^2/4, or (G) fails on any test pair, pretraining does not make cyclic rules into a single gated linear flow, which the few-shot argument requires."
+  ],
+  "id": "card-46dbb349",
+  "known_relatives": [
+    {
+      "claimed_difference": "SUGS keeps independent components. Each is a conjugate regression on the raw pairs assigned to it, and a pair changes only its own component. This card has one operator, and the candidate 'components' are its powers K^c. They are tied, nonlinear (degree c) in the state, and have no conjugate posterior each. A pair of duration 3 is written with the key z = (K^T)^2 u, which is not its own raw lift, and it changes the prediction of every duration. In the toy example, the parent's fresh mode predicts 4 for the one-shot rule, and this card predicts the correct 0.",
+      "name": "Parent card / SUGS greedy CRP mixture of conjugate Bayesian linear regressions (Mixture-of-Memories MesaNet with a likelihood router)",
+      "relation": "Both infer a discrete latent per demonstration by a predictive-error test and update a least-squares operator."
+    },
+    {
+      "claimed_difference": "Here the keys are z_t = (K_{t-1}^T)^{e_t-1} u_t. They are computed from the state by repeated application of the current operator, with e_t chosen by a state-dependent test. They are not a function of the tokens, so the statistics are not a sum of per-token writes.",
+      "name": "MesaNet / in-context least squares / RLS / preconditioned DeltaNet",
+      "relation": "With e_t fixed to 1, the core is exactly RLS, i.e. MesaNet with keys Phi[x_{t-1}] and values Phi[x_t]."
+    },
+    {
+      "claimed_difference": "There, the power is given by a marker in the query, and the operator is plain RLS on raw pairs (multi-step read only). Here, durations are latent, inferred from each demonstration, and they change what is written.",
+      "name": "Koopman Power Readout (card-537e161c in this run)",
+      "relation": "It also applies powers of an in-context operator."
+    },
+    {
+      "claimed_difference": "TTT takes a gradient step on a per-token loss such as ||(K^T)^e u - v||^2 with a known e. This card takes no gradient of the power. It infers e by discrete orbit matching, then performs an exact RLS write of the transported one-step pair (z_{e-1}, v). The two give different K after the same pair.",
+      "name": "Test-time training with a matrix-power inner model",
+      "relation": "Fast parameters K are fitted to the context during inference."
+    },
+    {
+      "claimed_difference": "Here the sampling times are unknown and are inferred online per demonstration. The operator is identified in the same pass from keys transported along the inferred orbit, and the lift is learned so that token rules become a flow. The group is not given: it is the semigroup of an operator identified in context.",
+      "name": "Generator estimation from irregularly sampled trajectories (continuous-time Koopman/DMD with known time stamps; the matrix-root / embedding problem for Markov chains; discrete logarithm by exhaustive search)",
+      "relation": "The same flow is observed at different elapsed times, and an exponent is recovered by search over powers."
+    },
+    {
+      "claimed_difference": "That card computes an integer translation subgroup from exact-match labeled positions. This card has no labels or exact matches. Its group element is a d×d operator on a learned lift, and its powers are compared in lift space.",
+      "name": "Episodic Congruence Compiler (card-14429dbc in this run)",
+      "relation": "Both exploit cyclic-group structure of rules."
+    }
+  ],
+  "lens": "neural_odes_koopman",
+  "mechanism": {
+    "learning": {
+      "description": "Pretraining learns Phi and w_beta by minimizing next-token cross-entropy through the same sequential recurrence used at inference. The training mix is text plus synthetic cyclic-rule episodes: Caesar-type shifts on letters, digits, days, months and notes, with several shift rules per context and queries on undemonstrated tokens. Gradients flow through the RLS statistics and the orbit powers. The gate is hard in the forward pass. In the backward pass beta_t is replaced by the straight-through surrogate logistic(w_beta^T[u_t; v_t]), which multiplies the writes in u[3] and u[4]. The discrete choices e_t and the identification test are piecewise constant in the parameters and are treated as constants in the backward pass. lambda, tau and M are fixed constants. No parameter changes at inference: all in-context learning lives in K, P and e_t.",
+      "equations": [
+        {
+          "latex": "K_t=\\Big(\\lambda I+\\sum_{s\\le t,\\ \\beta_s=1} z_s z_s^\\top\\Big)^{-1}\\sum_{s\\le t,\\ \\beta_s=1} z_s v_s^\\top,\\qquad z_s=(K_{s-1}^\\top)^{e_s-1}u_s\\ \\text{computed in order } s=1,2,\\dots,t",
+          "name": "ridge identity for the keys produced by the recursion (not a fixed point)",
+          "plain": "Run the recursion forward: for s = 1..t, z_s and e_s are computed from K_{s-1}, which is already fixed. Given that sequence of keys, K_t equals solve(lam*I + sum_s outer(z_s, z_s), sum_s outer(z_s, v_s)) over written s. This is the standard RLS = ridge identity with P_0 = I/lam and K_0 = 0, so no fixed-point iteration is involved."
+        },
+        {
+          "latex": "\\mathcal L(\\Phi,w_\\beta)=-\\sum_{t=1}^{n-1}\\log p(x_{t+1}\\mid x_{\\le t})",
+          "name": "pretraining loss",
+          "plain": "loss = -sum_t log p_t[x[t+1]]"
+        }
+      ],
+      "few_shot_argument": "Notation. x_t is a token. u = Phi[x_{t-1}] and v = Phi[x_t] are lifts. z_c = (K^T)^c u are orbit points.\n\nSetting. Content tokens form a cycle Z_p. Rule f_s maps a to a+s mod p. A demonstration is the token triple 'a a+s ;', and a query is 'q ;' with no answer shown. Every pair containing ';' or BOS is skipped.\n\nGate condition (G). w_beta^T[Phi[a]; Phi[b]] >= 0 for every content pair (a, b) that occurs as a demonstration in the test, so each such pair is written with beta = 1. The reference setting uses w_beta = 0, which satisfies (G) for all pairs. For a pretrained model, (G) is checked directly (falsifier 5). If (G) fails for a pair, that pair is skipped. A skipped base demonstration only shrinks the spanning set. A skipped B demonstration leaves e_t unchanged, so the one-shot claim fails for that rule.\n\nLift assumption. The lift linearizes the base rule: Phi[a+s_A] = T^T Phi[a] for all a, with T orthogonal and unit-norm lifts. Then Phi[a + c s_A] = (T^T)^c Phi[a]. Write delta_min for the minimum of ||Phi[a] - Phi[b]|| over distinct content tokens. For the reference Fourier lift Phi[a] = (1/sqrt 8)(cos 2 pi m a/p, sin 2 pi m a/p)_{m=1..8} (d = 16) with zero reserved rows, delta^2 = 2 - (1/4) sum_m cos(2 pi m Delta/p). Its minimum is at Delta = ±1: delta_min^2 ≈ 0.260 for p = 61 and ≈ 0.237 for p = 64.\n\n(1) Identification of the flow. While a pair has u^T P u >= tau, it is written with duration 1, so its key is z_0 = u. Suppose the k_A demonstrations of rule A come first and their lifts span R^d. Then K is their ridge fit, and eps := ||K - T|| <= lambda/(lambda + sigma_min^2), where sigma_min is the smallest singular value of the stacked keys. This is about 1e-5 for lambda = 1e-6 and 24 Fourier demonstrations. After that, every unit lift has u^T P u <= 1/(lambda + sigma_min^2) < tau, so later pairs go through the duration test.\n\n(2) One-shot duration inference for a new rule B. If s_A is a unit mod p (any s_A != 0 when p is prime), there is a unique c* in {1..p-1} with s_B = c* s_A mod p. For a demonstration (a, a+s_B):\n- The orbit point z_{c*} satisfies ||z_{c*} - Phi[a+s_B]|| <= ||(K^T)^{c*} - (T^T)^{c*}|| <= (1+eps)^{c*} - 1 ≈ c* eps. This is the global error of a one-step map iterated c* times, as in 2605.00836.\n- For c != c*, z_c is within c eps of Phi[a + c s_A] != Phi[a+s_B], so ||v - z_c|| >= delta_min - c eps.\n- Hence e_t = c* whenever 2 M eps < delta_min.\n\n(3) Correct prediction on unseen tokens. The pairs around the query contain ';' and are skipped, so e_t = c* persists. The query q is read as y = (K^T)^{c*} Phi[q], which is within M eps of Phi[q+s_B]. With unit-norm lifts, the noiseless logit margin of the correct token over any other content token b is ||Phi[q+s_B] - Phi[b]||^2/2 >= delta_min^2/2. The perturbation changes each logit difference by at most 2 M eps, so the argmax over content tokens is correct when M eps < delta_min^2/4. That bound is about 0.065 for p = 61, and it also implies the condition of step 2. The reference values give M eps ≈ 60 × 1e-5 = 6e-4, about two orders of magnitude inside the bound. Reserved tokens have zero rows in the reference lift, so their logits are 0, while the correct logit is >= 1 - M eps > 0. Reserved tokens therefore never win the argmax over all V.\n\n(4) Transported writes do not contaminate. The written pair is (z_{c*-1}, v), with z_{c*-1} ≈ Phi[a + (c*-1) s_A] and v = Phi[a + c* s_A]. That is a correct one-step demonstration of the base flow, often on a token never shown, so K stays at T and P only shrinks. A later single cue of rule A gives e = 1 by the same argument. Recall after interruption is therefore immediate, and the state holds no per-rule slot that could fill up.\n\nSo about d demonstrations identify the flow once. After that, 1 demonstration identifies each further rule in the cyclic semigroup {T^c : c <= M}. The mechanism is the semigroup law, not re-fitting.\n\nLimits.\n- Pairs of another rule that arrive before the base spans R^d are written with duration 1 and corrupt K.\n- A rule outside the semigroup generated by the base gets the nearest power (ties to the smallest c), which predicts wrongly. Its transported pair is then a wrong base demonstration. Examples are a reflection a -> -a, or an odd shift when p = 64 and s_A is even.\n- Errors grow linearly in the duration, so M eps must stay below delta_min^2/4.\n- The core holds one generator."
+    },
+    "readout": [
+      {
+        "latex": "y_t=(K_t^\\top)^{e_t}\\,\\Phi[x_t]",
+        "name": "flow for the inferred duration (after the position-t update)",
+        "plain": "y = Phi[x[t]]   # lift of the current token\nrepeat e_t times: y = K_t.T @ y"
+      },
+      {
+        "latex": "p(x_{t+1}=j\\mid x_{\\le t})=\\mathrm{softmax}(\\Phi\\,y_t)_j,\\qquad \\hat x_{t+1}=\\arg\\max_{j\\in\\{1..V\\}}(\\Phi y_t)_j",
+        "name": "token distribution and decision",
+        "plain": "logits = Phi @ y; p = softmax(logits); prediction = argmax over all V logits (reserved tokens included; in evaluation a reserved-token prediction counts as wrong)"
+      }
+    ],
+    "state": [
+      {
+        "meaning": "Row Phi[x] is the d-dimensional lift of token x. V is the vocabulary size: the V_c content tokens plus the two reserved tokens BOS (prepended as x_0) and ';' (separator), so V = V_c + 2. d is the lift dimension. Phi is also the output projection (logits = Phi y). Pretraining shapes Phi so that cyclic alphabets (letters, digits, days, months) lie on lifts on which the successor map acts linearly. The reference lift used in the claims and the toy has zero rows for the reserved tokens.",
+        "name": "Phi",
+        "shape": [
+          "V",
+          "d"
+        ],
+        "type": "learned parameter matrix (dictionary of observables, tied as decoder)"
+      },
+      {
+        "meaning": "Defines the write gate beta_t in {0,1}. beta_t = 0 when x_{t-1} or x_t is a reserved token (BOS or ';'), whatever their lift rows are. Otherwise beta_t = 1 if w_beta^T [u_t; v_t] >= 0 and 0 if not. A pair with beta_t = 0 changes nothing: K_t = K_{t-1}, P_t = P_{t-1}, e_t = e_{t-1}. Every written pair therefore has weight exactly 1. The reference setting (claims and toy) uses w_beta = 0, so every content-content pair is written.",
+        "name": "w_beta",
+        "shape": [
+          "2d"
+        ],
+        "type": "learned parameter vector (hard pair gate)"
+      },
+      {
+        "meaning": "K_t^T maps the lift of a token to the predicted lift of its successor under the base flow. Applying K_t^T c times runs the flow for duration c. K_0 = 0. M is the maximum duration, a fixed constant: M = V_c - 1 for a cycle of V_c content tokens, and M = 4 in the toy.",
+        "name": "K",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "type": "recurrent state matrix (the single in-context Koopman operator)"
+      },
+      {
+        "meaning": "P_t = (lambda I + sum over written s <= t of z_s z_s^T)^{-1}, where z_s := z_{s,e_s-1} is the transported key written at step s. P_0 = I/lambda. lambda > 0 is the ridge constant: 1e-6 in the claims, 1e-3 in the toy. u^T P u measures how unidentified the direction u is. tau is a fixed identification threshold, chosen between 1/sigma_min(G) of a spanning set and 1/lambda: 1e3 in the claims, 30 in the toy.",
+        "name": "P",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "type": "recurrent state matrix (inverse regularized Gram of the transported keys)"
+      },
+      {
+        "meaning": "The inferred duration of the most recent written pair, in {1..M}, with e_0 = 1. It equals the matched power c itself, not c+1. It persists unchanged across skipped pairs (every pair containing BOS or ';', so in particular the pairs around a query token) and sets how many times the flow is applied in the readout.",
+        "name": "e_t",
+        "shape": [
+          1
+        ],
+        "type": "recurrent integer"
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_0=\\mathrm{BOS};\\; u_t=\\Phi[x_{t-1}],\\; v_t=\\Phi[x_t];\\; \\beta_t=\\begin{cases}0 & x_{t-1}\\in\\{\\mathrm{BOS},;\\}\\ \\text{or}\\ x_t\\in\\{\\mathrm{BOS},;\\}\\\\ \\mathbf 1[w_\\beta^\\top[u_t;v_t]\\ge 0] & \\text{otherwise}\\end{cases};\\;\\text{if }\\beta_t=0:\\ K_t=K_{t-1},P_t=P_{t-1},e_t=e_{t-1}\\text{ and skip u[1]-u[4]}",
+        "name": "lift and hard gate",
+        "plain": "u = Phi[x[t-1]]; v = Phi[x[t]]   # x[t] are tokens\nbeta = 0 if (x[t-1] in RESERVED or x[t] in RESERVED) else (1 if dot(w_beta, concat(u, v)) >= 0 else 0)\nif beta == 0: keep K, P, e unchanged and skip the rest"
+      },
+      {
+        "latex": "z_{t,0}=u_t,\\qquad z_{t,c}=K_{t-1}^\\top z_{t,c-1}\\quad (c=1..M)",
+        "name": "orbit of the previous operator",
+        "plain": "zs = [u]; for c in 1..M: zs.append(K_prev.T @ zs[-1])   # zs[c] = (K_prev.T)^c u"
+      },
+      {
+        "latex": "e_t=\\begin{cases}1 & u_t^\\top P_{t-1} u_t\\ge \\tau\\\\ \\arg\\min_{c\\in\\{1..M\\}}\\|v_t-z_{t,c}\\|^2\\ \\text{(ties to the smallest } c) & \\text{otherwise}\\end{cases}",
+        "name": "duration inference",
+        "plain": "if u @ P_prev @ u >= tau: e = 1   # direction not yet identified: bootstrap as duration 1\nelse: e = the c in 1..M minimizing ||v - zs[c]||^2, ties to the smallest c   # in 0-based code with errs[i] = ||v - zs[i+1]||^2 this is e = 1 + argmin(errs)"
+      },
+      {
+        "latex": "z_t:=z_{t,e_t-1},\\qquad P_t=P_{t-1}-\\frac{\\beta_t P_{t-1} z_t z_t^\\top P_{t-1}}{1+\\beta_t\\, z_t^\\top P_{t-1} z_t}",
+        "name": "inverse Gram update with the transported key",
+        "plain": "z = zs[e-1]; Pz = P_prev @ z; P_new = P_prev - beta*outer(Pz, Pz)/(1 + beta*(z @ Pz))   # beta = 1 whenever this runs"
+      },
+      {
+        "latex": "K_t=K_{t-1}+\\beta_t P_t\\, z_t\\,(v_t^\\top-z_t^\\top K_{t-1})",
+        "name": "operator update with the transported key",
+        "plain": "K_new = K_prev + beta*outer(P_new @ z, v - K_prev.T @ z)   # gain uses the updated P_t; equals beta*P_prev z/(1+beta z^T P_prev z)"
+      }
+    ]
+  },
+  "non_reduction_argument": {
+    "broken_invariant": "The SUGS mapping relies on two facts.\n- (a) The components are independent conjugate linear-Gaussian regressions. Each has sufficient statistics sum_{i: assigned to j} (u_i u_i^T, u_i v_i^T) over the raw regressor/target pairs assigned to it. The bank is therefore a sum of per-pair writes, with u_i a function of token x_{i-1} only.\n- (b) A pair assigned to component j changes only component j's predictive.\n\nThis card breaks both in updates u[1] to u[4].\n- There is one operator K. The candidate components are its powers K^c, whose predictive (K^T)^c u is a degree-c polynomial in the state, so no per-component conjugate posterior exists.\n- The write uses the key z_t = (K_{t-1}^T)^{e_t-1} u_t, the previous operator applied e_t - 1 times. The statistics are therefore sum_s (z_s z_s^T, z_s v_s^T) over keys that depend on the whole prefix, not on one token each.\n- A duration-3 pair changes the predictions for every duration at once.\n\nThe toy example shows the break. The B pair (1,4) is written with key ≈ Phi[3], a token absent from the pair. The one-shot query is answered correctly (0), where the SUGS fresh component answers 4.",
+    "known_family": "other_known: sequential greedy (SUGS) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions (Mixture-of-Memories MesaNet with a likelihood router)",
+    "why_unrepairable": "Repair 1 (strongest): SUGS with one component per duration c, i.e. M independent conjugate regressions routed by predictive likelihood. Each component would be fitted only from pairs routed to it, so a rule seen once has a one-pair posterior. That is exactly the fresh_mode_pred = 4 baseline in the toy. To match the card, the posterior mean of component c would have to equal the c-th power of component 1's mean, and every pair routed to c would have to update component 1 through the transported key. No conjugate mixture has that nonlinear tie.\n\nRepair 2: MesaNet or linear attention with a learned key map. The key z_t = (K_{t-1}^T)^{e_t-1} Phi[x_{t-1}] depends on the operator identified so far and on a discrete test against it, so no feature map of the tokens produces it. In the toy, input token 1 would get key Phi[1] if the base were unidentified or if e = 1, and it gets key ≈ Phi[3] here.\n\nRepair 3: Mixture-of-Memories with a likelihood router, or a lifted state enumerating durations. Both store separate per-duration statistics, so neither can transfer one demonstration of rule A^3 into the operator of A.\n\nRepair 4: TTT on the loss ||(K^T)^e u - v||^2. This needs e as an input, and it takes a gradient step through the power instead of an exact RLS write of the transported pair, so it gives a different K after the same pair. A critic can check this on the toy's third write.\n\nRepair 5: a discrete-logarithm or subgroup routine over given group labels. No group or labels are given. The group is the semigroup of an operator identified in context on a learned lift, and identification and exponent inference are coupled through the transported keys.\n\nThe observable differences are the claims themselves:\n- one-shot new rules without slots, where MesaNet and SUGS fail;\n- the odd/even split on a cycle of 64, which no mixture predicts;\n- order dependence, where MesaNet is order-invariant."
+  },
+  "parent_ids": [],
+  "references": [
+    {
+      "source_id": "2209.09977",
+      "why": "Koopman-generator view of the dynamics of observables. A single generator defines the family of Koopman operators at all elapsed times, and data from one system determine it. The card takes the semigroup structure of that family and identifies its discrete generator in context."
+    },
+    {
+      "source_id": "2307.16518",
+      "why": "Continuous-time prediction at arbitrary, irregular intra-frame times from one learned flow, with a low-dimensional learnable transform of the observations. The card takes the idea that samples at different elapsed times come from the same flow, and makes the elapsed time a latent inferred per demonstration."
+    },
+    {
+      "source_id": "2605.00836",
+      "why": "The Taylor-based local-to-global error analysis of one-step integrators, in which a local error eps compounds to about c·eps after c steps. The card uses it to state the precondition M·eps < delta_min^2/4 under which powers of the identified operator separate tokens."
+    }
+  ],
+  "source_transplant": {
+    "change": "In the sources, the elapsed time of each sample is known, and the flow is fitted offline or learned by gradient descent across trajectories. Four things change here.\n(1) Each demonstration in the context is treated as a sample of one unknown flow at an unknown integer duration e in {1..M}. The duration is inferred online by comparing the observed successor lift v with the orbit z_c = (K^T)^c u of the current in-context operator.\n(2) The operator is identified in context by recursive least squares on keys transported along the inferred orbit. A duration-e sample is written as the one-step pair (z_{e-1}, v), which couples identification and duration inference.\n(3) The duration is set to 1 while the pair lies in unidentified directions, which bootstraps the flow.\n(4) Prediction runs the flow for the most recently inferred duration and decodes through the tied lift.\nThe error accumulation from 2605.00836 is used only to state the precondition M·eps < delta_min^2/4.",
+    "object": "The Koopman semigroup law of an autonomous system, K^{tau_1+tau_2} = K^{tau_1} K^{tau_2}: the Koopman family generated by a single generator and evaluated at arbitrary elapsed times. 2209.09977 uses it as the Koopman-generator view of the dynamics of observables. 2307.16518 uses it for continuous-time prediction at arbitrary, irregular intra-frame times from one learned flow. 2605.00836 supplies the local-to-global error accumulation of a one-step map iterated c times.",
+    "source_ids": [
+      "2209.09977",
+      "2307.16518",
+      "2605.00836"
+    ]
+  },
+  "status": {
+    "stage": "S1",
+    "verdicts": {
+      "S0": {
+        "by_calls": [
+          "call-ec5945c3cf2a"
+        ],
+        "reasons": [
+          "card validates against the theory_card schema",
+          "nearest existing card - at TF-IDF cosine 0.000 (threshold 0.6)",
+          "live check: copied from run-20261010T181300Z/cards/card-46dbb349/v9.json (no model call drafted it in this run)"
+        ],
+        "verdict": "pass"
+      },
+      "S1": {
+        "by_calls": [
+          "call-a0c9db6c7bac",
+          "job-36b0edea4934"
+        ],
+        "reasons": [
+          "gate: entry check passed; 5 fixable finding(s) go to the refinement dialogue",
+          "residual: notation_clash (few_shot_argument (lift assumption) vs falsifiers[4]): The symbol T denotes the orthogonal base transition in 'Phi[a+s_A] = T^T Phi[a]' but is redefined in the Caesar falsifier as 'T is the ridge fit of the 26 pairs', so the same letter names two different objects.",
+          "residual: missing_definition (few_shot_argument (lift assumption)): The transition T in 'Phi[a + s_A] = T^T Phi[a], with T orthogonal' is never given a shape or a construction in mechanism.state or the claims, so an implementer cannot tell whether T is the true flow or something the lift is trained to satisfy.",
+          "residual: underspecified_step (mechanism.state (P) and few_shot_argument (1)): The threshold tau is said to lie 'between 1/sigma_min(G) of a spanning set and 1/lambda' with values 1e3 and 30, but no rule for choosing tau from the data or the lift is given, so a reimplementation on a different lift cannot set it.",
+          "residual: vague_secondary_claim (claims.capabilities[0].prediction): The fresh-mode baseline prediction ('maps q to a multiple of Phi[b+s_B] ... or the token anti-aligned with it') states no single predicted output, so the <= 0.2 threshold is not tied to a definite baseline computation.",
+          "residual: vague_secondary_claim (claims.capabilities[3].prediction): The claim that pooled MesaNet without decay gives 'identical outputs for both orders, with accuracy <= 0.2 in both' is stated without the pooled readout equation or the query-side scoring used to reach 0.2.",
+          "toy example reproduced 5 expected value(s)"
+        ],
+        "verdict": "pass"
+      }
+    }
+  },
+  "summary": "Notation: x_t is always a token, u_t = Phi[x_{t-1}] and v_t = Phi[x_t] are token lifts, and z_{t,c} are orbit points (write keys).\n\nPretraining learns a token lift Phi, tied as the decoder, and a hard pair gate w_beta. At inference the whole in-context state is one operator K (d×d), its inverse Gram matrix P, and an integer duration e_t.\n\nPairs that contain a reserved token (BOS or ';') are always skipped. Content pairs with w_beta^T[u_t; v_t] < 0 are also skipped. For each written adjacent pair (x_{t-1}, x_t), the model forms the orbit z_{t,c} = (K_{t-1}^T)^c u_t for c = 0..M.\n- If u_t lies in directions the operator has not identified yet (u_t^T P_{t-1} u_t >= tau), the duration is taken to be 1.\n- Otherwise the duration e_t is the power c in {1..M} whose orbit point z_{t,c} lands closest to v_t.\n\nThe pair is then written into K by recursive least squares. The key is the transported orbit point z_{t,e_t-1}, not the raw lift, so that K^T z_{t,e_t-1} ≈ v_t. A demonstration of rule B = A^3 therefore becomes a one-step demonstration of A at a token that may never have appeared.\n\nPrediction applies the operator for the most recently inferred duration: y_t = (K_t^T)^{e_t} Phi[x_t].\n\nConsequences:\n- After about d demonstrations of one rule identify the flow, each further rule in the cyclic semigroup it generates (every shift on a prime cycle) is used correctly after one demonstration.\n- The number of rules is not capped by slots.\n- Group-theoretic predictions follow. For example, on a cycle of 64 an even base shift cannot express an odd new shift.\n\nThe write key depends on the prefix through powers of the current operator, and the 'components' (the powers K^c) are tied rather than independent. So the state is neither a sum of per-token writes nor a mixture of independent conjugate regressions. Cost is O(M d^2 + V d) per token.",
+  "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes",
+  "toy_example": {
+    "description": "Setup:\n- Prime cycle of p = 5 content tokens 0..4. The reserved tokens are 5 = ';' and 6 = BOS, so V = 7, and d = 2.\n- The lift is a hand-fixed Fourier lift Phi[j] = (cos 2πj/5, sin 2πj/5), with zero rows for the reserved tokens.\n- lambda = 1e-3, tau = 30, M = 4, w_beta = 0.\n- The gate follows the core definition. Pairs containing a reserved token are skipped. For content-content pairs w_beta^T[u;v] = 0 >= 0, so beta = 1, and the code writes every content-content pair directly with weight 1.\n- In the code, the list xs holds the orbit points z_{t,c}, and x = xs[e-1] is the transported key z_t. The variables a, b are tokens.\n\nThe context is 'BOS 0 1 ; 2 3 ; 1 4 ; 2 ; 3 4 ; 1'.\n- Rule A (+1) appears twice and identifies the flow. Both pairs are in unidentified directions (u^T P u = 1000 and 346), so their duration is 1.\n- Rule B (+3) appears once, as the pair (1,4). Its direction is identified (u^T P u ≈ 5.2 < 30), and the orbit search finds duration e = 3, the matched power itself. It is written with the transported key z_{t,2} ≈ Phi[3], a token not in the pair.\n- The query 2 is read as (K^T)^3 Phi[2] ≈ Phi[0], so the prediction is 0 (2+3 mod 5). The argmax runs over all 7 logits. The reserved logits are 0 and do not win.\n- The cue (3,4) gets duration 1, and the query 1 then predicts 2.\n\nIn the code, errs[i] holds the error of power c = i+1, so e = 1 + argmin(errs) equals the matched c.\n\nBaselines on the same pairs:\n- The fresh-mode baseline (RLS fitted to the single B pair, as in the parent card) predicts 4 for query 2.\n- The pooled least-squares operator (MesaNet) over the three pairs predicts 3.",
+    "expected": {
+      "exponents": [
+        1,
+        1,
+        3,
+        1
+      ],
+      "fresh_mode_pred": 4,
+      "pooled_pred": 3,
+      "preds": [
+        0,
+        2
+      ],
+      "searched": [
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    "python": "import json\nimport numpy as np\np, SEP, BOS, V, d = 5, 5, 6, 7, 2\nlam, tau, M = 1e-3, 30.0, 4\nang = 2 * np.pi * np.arange(p) / p\nPhi = np.zeros((V, d))\nPhi[:p] = np.stack([np.cos(ang), np.sin(ang)], axis=1)\nseq = [BOS, 0, 1, SEP, 2, 3, SEP, 1, 4, SEP, 2, SEP, 3, 4, SEP, 1]\nqueries = [10, 15]\nK = np.zeros((d, d)); P = np.eye(d) / lam; e = 1\nexps, searched, preds, pairs = [], [], [], []\nfor t in range(1, len(seq)):\n    a, b = seq[t - 1], seq[t]\n    if a < p and b < p:\n        u, v = Phi[a], Phi[b]\n        pairs.append((u, v))\n        xs = [u]\n        for c in range(M):\n            xs.append(K.T @ xs[-1])\n        if float(u @ P @ u) >= tau:\n            e = 1; searched.append(False)\n        else:\n            errs = [float(np.sum((v - xs[c]) ** 2)) for c in range(1, M + 1)]\n            e = 1 + int(np.argmin(errs)); searched.append(True)\n        x = xs[e - 1]\n        Px = P @ x\n        P = P - np.outer(Px, Px) / (1.0 + x @ Px)\n        K = K + np.outer(P @ x, v - K.T @ x)\n        exps.append(e)\n    if t in queries:\n        y = Phi[seq[t]]\n        for c in range(e):\n            y = K.T @ y\n        preds.append(int(np.argmax(Phi @ y)))\nq = Phi[2]\nu1, v1 = pairs[2]\nP1 = np.eye(d) / lam\nPu = P1 @ u1\nP1 = P1 - np.outer(Pu, Pu) / (1.0 + u1 @ Pu)\nKB = np.outer(P1 @ u1, v1)\nfresh = int(np.argmax(Phi @ (KB.T @ q)))\nG = lam * np.eye(d); C = np.zeros((d, d))\nfor u, v in pairs[:3]:\n    G += np.outer(u, u); C += np.outer(u, v)\npooled = int(np.argmax(Phi @ (np.linalg.solve(G, C).T @ q)))\nprint(json.dumps({\"exponents\": exps, \"searched\": searched, \"preds\": preds, \"fresh_mode_pred\": fresh, \"pooled_pred\": pooled}))\n"
+  },
+  "version": 3
+}

@@ -1,0 +1,141 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Probe constituents bracketed by an input segmenter",
+  "summary": "An input segmenter groups the context into constituents. For a probe x it supplies the constituent x, g(x), f(g(x)) and marks its right edge, so the reader emits the symbol at that edge. Other tasks use a double-ended list of stored symbols.",
+  "core_idea": "Read two-table compositions off the right edge of the constituent an input segmenter forms around each probe.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "L2",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Double-ended list of C stored (address, symbol) entries, C = 64."
+      },
+      {
+        "name": "m2",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Entries stored."
+      },
+      {
+        "name": "wt",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Symbol waiting for its partner."
+      },
+      {
+        "name": "lev",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket level; the list's back end serves as push-down."
+      },
+      {
+        "name": "edge",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Right-edge symbol of the constituent the segmenter forms around the current probe, delivered with the probe."
+      },
+      {
+        "name": "Mp",
+        "type": "integer map",
+        "shape": [
+          "T"
+        ],
+        "meaning": "Learned map from edge symbol to output."
+      }
+    ],
+    "update": [
+      {
+        "latex": "edge_t = \\mathrm{Seg}_{\\rightarrow}(x_{1..t})",
+        "plain": "the segmenter delivers the right-edge symbol of the probe's constituent",
+        "name": "edge"
+      },
+      {
+        "latex": "wt=\\varnothing \\Rightarrow wt \\leftarrow x_t;\\;\\text{else push-back } (wt, x_t),\\; m2 \\leftarrow m2+1",
+        "plain": "pairs are pushed on the back of the list",
+        "name": "push-back"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\hat{y}_t = Mp[edge_t] \\text{ (compositions)};\\; \\text{entry of } x_t \\text{ in } L2 \\text{ (other pairs)}",
+        "plain": "a composition probe emits Mp of the edge symbol; recall and chains read the list entry stored for x_t, followed again for chains; brackets read the back entry"
+      }
+    ],
+    "learning": {
+      "description": "Mp by majority over the m training items; routing chosen by training accuracy.",
+      "few_shot_argument": "Mp is the identity on 16 symbols; m = 12 items of 16 probes cover them."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(C)",
+      "memory": "O(C)",
+      "total_sequence": "O(n C)",
+      "constants_notes": "List reads scan at most C entries; the edge arrives with the probe."
+    },
+    "sample_efficiency": {
+      "mechanism": "Segmenter edges leave only Mp to learn.",
+      "prediction": {
+        "metric": "examples_to_composition_T16",
+        "value": 12,
+        "statement": "From m = 12 composition items at T = 16, per-query accuracy is at least 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "two-hop composition",
+        "prediction": "Exact at T = 4, 16, 32 from edge symbols."
+      },
+      {
+        "task": "recall, copy, nesting, binding",
+        "prediction": "Exact at K = 8, 32, 64; L = 8, 32, 64; depth 2, 4, 8, 16; hops 1, 4, 8 with C = 64."
+      },
+      {
+        "task": "limit",
+        "prediction": "The limit is a storage count: C slots of two words cannot hold more than C pairs, so at C = 64 an instance with 65 or more distinct pairs loses one of them."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "12 items at T = 16 after which composition accuracy is below 0.99.",
+    "A recall instance with K <= 64 answered wrongly."
+  ],
+  "toy_example": {
+    "description": "Edges for T = 2 tables computed by a scan.",
+    "python": "import json\ng = {0: 1, 1: 1}\nf = {0: 4, 1: 5}\nedges = [f[g[x]] for x in (0, 1)]\nprint(json.dumps({\"edges\": edges}))\n",
+    "expected": {
+      "edges": [
+        5,
+        5
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "id": "card-ca11b002",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-ca11b0000000",
+  "lens": "neutral",
+  "title": "A running store regulated by multiplicative switches",
+  "summary": "A store vector is carried from token to token. Three switch vectors, each a squashed linear function of the previous output and the current symbol, decide how much of the store is kept, how much of a new candidate is admitted and how much of the squashed store is released as output.",
+  "core_idea": "Carry a fixed-size store whose keeping, admitting and releasing are each set per token by learned multiplicative switches.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "s",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "The store carried from token to token; kept, overwritten or added to under the switches."
+      },
+      {
+        "name": "y",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "The released output of the previous token, fed back into the switches and the candidate."
+      }
+    ],
+    "update": [
+      {
+        "name": "switches",
+        "latex": "r_t = \\sigma(W_r [y_{t-1}; e_t] + b_r),\\; i_t = \\sigma(W_i [y_{t-1}; e_t] + b_i),\\; o_t = \\sigma(W_o [y_{t-1}; e_t] + b_o)",
+        "plain": "retain r, admit i and release o switches: sigma of a linear map of [y_prev; e_t], e_t = E[x_t]"
+      },
+      {
+        "name": "candidate",
+        "latex": "u_t = \\tanh(W_u [y_{t-1}; e_t] + b_u)",
+        "plain": "u = tanh(W_u [y_prev; e_t] + b_u)"
+      },
+      {
+        "name": "store",
+        "latex": "s_t = r_t \\odot s_{t-1} + i_t \\odot u_t",
+        "plain": "s = r * s_prev + i * u, elementwise"
+      },
+      {
+        "name": "release",
+        "latex": "y_t = o_t \\odot \\tanh(s_t)",
+        "plain": "y = o * tanh(s), elementwise"
+      }
+    ],
+    "readout": [
+      {
+        "name": "readout",
+        "latex": "\\hat{y}_t = \\arg\\max_v (y_t O)_v",
+        "plain": "y_hat = argmax(y O) over the V symbols"
+      }
+    ],
+    "learning": {
+      "description": "All matrices and offsets are learned by gradient descent on the cross-entropy of the next symbol, through time.",
+      "few_shot_argument": "No structure for few examples; the card states 1500 examples for copying at L = 4."
+    }
+  },
+  "resources": {
+    "architecture": {
+      "hidden": "d",
+      "precision_bits": 32,
+      "state_bits": null
+    },
+    "stream_symbols": [],
+    "dimensions": {},
+    "cost": {
+      "sizes": [
+        "d",
+        "V"
+      ],
+      "d": "d",
+      "rounds": "1",
+      "why": "The complexity claim is stated in n, d and V; one pass of the switches per token."
+    },
+    "tasks": {
+      "copy": {
+        "d": "4*L+8",
+        "rounds": "1",
+        "state_words": "8*L+16",
+        "why": "The store width grows linearly with the amount to hold (L symbols), as the capability claim says the width is chosen for the listed size. State: the store s and the released output y, 2d numbers."
+      },
+      "recall": {
+        "d": "4*K+8",
+        "rounds": "1",
+        "state_words": "8*K+16",
+        "why": "The store width grows linearly with K; 4K+8 is at least the max(2K, 16) possible keys at every K, so each possible key can have its own store entry."
+      },
+      "dyck": {
+        "d": "4*depth+8",
+        "rounds": "1",
+        "state_words": "8*depth+16",
+        "why": "The open brackets are kept as a counter-like code; the width grows linearly with the depth."
+      },
+      "composition": {
+        "d": "8*T+8",
+        "rounds": "1",
+        "state_words": "16*T+16",
+        "why": "Both tables given in context are held in the store; the width grows linearly with the table size."
+      },
+      "binding": {
+        "d": "8*hops+16",
+        "rounds": "1",
+        "state_words": "16*hops+32",
+        "why": "Both chains of assignments are held in the store; the width grows linearly with the chain length."
+      }
+    },
+    "learning": {
+      "copy": {
+        "size": 4,
+        "examples": 1500,
+        "d": "64",
+        "rounds": "1"
+      },
+      "recall": {
+        "size": 4,
+        "examples": 2500,
+        "d": "64",
+        "rounds": "1"
+      },
+      "dyck": {
+        "size": 2,
+        "examples": 1200,
+        "d": "64",
+        "rounds": "1"
+      },
+      "composition": {
+        "size": 4,
+        "examples": 3000,
+        "d": "64",
+        "rounds": "1"
+      }
+    },
+    "why": "Stored numbers are 32-bit, as the capability claims state; the learned toy cases use a fixed store width of 64."
+  },
+  "limits": [
+    {
+      "task": "recall",
+      "size": 4225,
+      "resources": "the width fixed at d = 264, the width the card states for K = 64 (4K + 8), so the carried state is the store and the released output, 2d = 528 numbers of 32 bits, 16896 bits",
+      "why": "After the K pairs are read, every answer to the later key queries is a function of the carried state, because the queries carry no value information. Two value assignments that leave the same state get the same answers, so recall that is exact for every assignment needs a distinct state for each of the 16^K assignments of values from V = 16. That is 4K bits; with 16896 bits of state, 4K > 16896 from K = 4225, so some two assignments share a state and one of them is answered wrongly. The card's own width grows as 4K + 8, so this limit concerns the fixed-width model, beyond the P2 sizes.",
+      "kind": "state"
+    }
+  ],
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d^2 + d V)",
+      "memory": "Theta(d)",
+      "total_sequence": "Theta(n d^2 + n d V)",
+      "constants_notes": "Four products of a d by 2d matrix with a 2d vector per token, plus the d by V readout. The carried state is 2d numbers whatever the length."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent through time, with no structure for few examples. Example counts m this card states for its learning rule at the solvable cases, each reaching 0.99 on three seeds: 1500 for copying at L = 4, 2500 for recall at K = 4, 1200 for bracket nesting at depth 2 and 3000 for two-hop lookup at table size 4. Information account for each count, one target-rule class per task (m counts whole training instances, each with all its scored answers). Copying at L = 4. Class definition: every selector s from the output indices {0,...,3} to the source positions {0,...,3}; the rule answers at output index i with the source symbol at position s(i), and the target is s(i) = i. Size justification: each of the 4 output indices has 4 choices, so |H| = 4^4 = 256; two different selectors differ at some index i, and a source string with different symbols at the two selected positions gives them different answers. log2 |H| = 8. Recall at K = 4. Class definition: the K stored pairs sorted by the id of their first token as k_0 < ... < k_3, with second tokens v_0, ..., v_3 (the sorting only names the pairs; the input keeps its shuffled order); every selector s from {0,...,3} to {0,...,3}; the rule answers a request for k_i with v_s(i), and the target is s(i) = i. Size justification: each of the 4 ranks has 4 choices, so |H| = 4^4 = 256; two different selectors differ at some rank, and pairs with different second tokens at the two selected ranks give them different answers. log2 |H| = 8. Bracket nesting at depth 2. Class definition: the six nonempty stack contexts (0), (1), (0,0), (0,1), (1,0), (1,1), listed bottom to top; every map from these contexts to the two closing tokens, evaluated after each scored prefix; the target maps a context to the closer of its top bracket. Size justification: two choices for each of six contexts, so |H| = 2^6 = 64; all six contexts occur in valid depth-2 prefixes, so different maps give different answers there. log2 |H| = 6. Two-hop lookup at table size 4. Class definition: every selector s from {0,...,3} to {0,...,3}; given the tables g and f in the input and the request x, the rule answers f(g(s(x))), and the target is s(x) = x. Size justification: each of the 4 requests has 4 choices, so |H| = 4^4 = 256; when two selectors differ at some x, tables g and f that send the two selected arguments to different outputs give them different answers. log2 |H| = 8. Prior bits: 0, relative to these declared classes: the task protocol supplies the token encoding and the restriction to each class, and the mechanism receives no hand-set member of it. This is a restricted-class information bound, not a claim that learning the parsing or lookup operation is free. Bits per example (one whole instance): at most 8 for copying (4 answers over 4 symbols), 16 for recall (4 answers over 16 symbols), 7 for bracket nesting (7 scored closers of one bit), and 8 for two-hop lookup (4 answers over 4 symbols). The account assumes a target drawn uniformly from each class, so it bounds m from below only; the counts m above are this card's stated claim and are not derived from it.",
+      "prediction": {
+        "metric": "examples_to_copy_L4",
+        "value": 1500,
+        "statement": "From random weights, 1500 copy examples at L = 4 over 4 symbols give per-string accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "Exact copying with hand-set weights when L log2 D is below the bits of the store (d numbers at 32 bits); beyond that no setting copies every string."
+      },
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact recall with hand-set weights when K log2 V is below the bits of the store; the store width d is chosen for the listed K."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "The legal closer is predicted exactly up to the listed depths by keeping the open brackets as a counter-like code in the store; fixed precision bounds the depth."
+      },
+      {
+        "task": "two-hop lookup and chained assignments",
+        "prediction": "Tables given in context are held in the store and composed at the query; exact at the listed sizes when the store is wide enough."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A hand-set configuration copies strings whose length times log2 D exceeds the store's bits.",
+    "The counted operations of the reference code grow faster than linearly in n at fixed d."
+  ],
+  "toy_example": {
+    "description": "Three tokens through a one-dimensional store with fixed switch weights.",
+    "python": "import json, math\ndef sig(x):\n    return 1.0 / (1.0 + math.exp(-x))\ns, y = 0.0, 0.0\ntrace = []\nfor x in [1.0, -1.0, 2.0]:\n    r = sig(2.0 * y + 1.0 * x + 0.5)\n    i = sig(-1.0 * y + 1.5 * x)\n    o = sig(0.5 * y + 0.5 * x + 1.0)\n    u = math.tanh(1.0 * y + 2.0 * x)\n    s = r * s + i * u\n    y = o * math.tanh(s)\n    trace.append(y)\nprint(json.dumps({\"store_final\": round(s, 9), \"out_final\": round(y, 9), \"out_first\": round(trace[0], 9)},\n                 sort_keys=True))\n",
+    "expected": {
+      "out_final": 0.774960568,
+      "out_first": 0.537447203,
+      "store_final": 1.321082407
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Squaring the symmetric product of a concept shape and each demonstrated direction",
+  "summary": "One positive concept is learned from teaching tokens and used to answer yes or no on later tokens. The concept is a positive semidefinite angular shape A with unit trace. The first teaching token seeds A with its direction; each later one replaces A by the trace-normalized square of A P + P A, where P is the projector on the new direction, so two examples strengthen their shared direction and weaken the direction on which they disagree. A token is accepted when its radius reaches r0 and its quadratic angular score reaches a radius-dependent threshold; the YES and NO probabilities are then normalized. Memory does not grow with the context.",
+  "core_idea": "Replace the concept shape by the normalized square of its symmetric product with each demonstrated direction, so aligned examples build a shared cone, and accept tokens by a radius-dependent quadratic boundary.",
+  "mechanism": {
+    "learning": {
+      "description": "Offline training uses supplied episodes containing positive teaching tokens and binary-labeled probe tokens. Reset A and b at each episode, execute the exact writes, and compute the following named surrogate only at labeled probe positions: a product-of-logistic membership surrogate with fixed slope 10. Define s_t and theta_t as in the workspace, and set tilde_p_t=epsilon+(1-2*epsilon)*b*sigmoid(10*(r_t-r0))*sigmoid(10*(s_t-theta_t)). Minimize binary cross-entropy L=-(1/Q) times the sum over the Q labeled probes of z_t*log(tilde_p_t)+(1-z_t)*log(1-tilde_p_t). Given an initial E and a supplied episode batch, one reproducible optimization step is full-batch gradient descent with step size 0.001 on the angular and radial columns of E; repeat for a specified number of steps. H, cone constants, epsilon, and the switch column remain fixed. Differentiate through the branch actually taken by each write, assigning zero derivative through a skipped write; training batches must avoid branch-boundary interactions with Z_t=0 if differentiability is required. The sigmoid can be implemented with its usual sign-split stable exponential formula. At deployment, freeze E and use the hard readout, with no gradient optimization in context. No success claim is made for this optimizer on language; the benchmark specifies encoded inputs directly.",
+      "few_shot_argument": "Cross-example spectral polarization is the acquisition mechanism. Starting from the first unit direction, a second direction with inner product c in (0,1) produces sum and difference eigenvectors with eigenvalues (1+c)^2/[2(1+c^2)] and (1-c)^2/[2(1+c^2)]. For c=0.6 these are 16/17 and 1/17. Thus an unseen shared direction can cross a membership threshold after two demonstrations. This is an exact conditional result for the encoded geometry, not identification of arbitrary concepts from two examples. Orthogonal evidence produces no write, and later demonstrations can erase earlier structure."
+    },
+    "readout": [
+      {
+        "latex": "I_t=\\mathbf 1\\!\\left[b=1\\land r_t\\ge r_0\\land u_t^{\\mathsf T}Au_t\\ge 1-\\frac{\\kappa}{\\sinh^2 r_t}\\right].",
+        "name": "Quadratic hyperbolic cone decision",
+        "plain": "After the write, accept the current token if a concept exists, its radius reaches r0, and its angular quadratic score reaches the radius-dependent threshold. Apply this same rule to both teaching and probe tokens. Before initialization, nonteaching tokens have I_t=0; a first teaching token is evaluated against its newly seeded shape. This is a designed quadratic boundary."
+      },
+      {
+        "latex": "p_t(v)=\\begin{cases}\\epsilon+(1-2\\epsilon)I_t,&v=y_{\\mathrm{plus}},\\\\1-\\epsilon-(1-2\\epsilon)I_t,&v=y_{\\mathrm{minus}},\\\\0,&\\text{otherwise}.\\end{cases}\\qquad p_t\\leftarrow p_t\\big/\\textstyle\\sum_{w}p_t(w)",
+        "name": "Next-token distribution",
+        "plain": "At every position, including teaching positions, assign YES probability 1-epsilon for membership and epsilon otherwise. Assign the complementary probability to NO and zero to every other token, then normalize: p_t = p_t / sum(p_t). Teaching-position outputs are defined but need not be scored by the training task. This core is a binary-response sequence model."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "Angular concept shape, initially zero. The integer d>=2 is the angular embedding dimension. After initialization A has trace one. A context contains n tokens and expresses one positive concept. Within each token, the update equations execute first and the readout equations then use the updated A.",
+        "name": "A",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "type": "context-dependent positive semidefinite matrix"
+      },
+      {
+        "meaning": "Initialization flag, initially zero and set to one by the first positive teaching token. Readout always uses its post-write setting.",
+        "name": "b",
+        "shape": [],
+        "type": "Boolean context state"
+      },
+      {
+        "meaning": "V is vocabulary size. Each row contains d raw angular coordinates, one raw radial coordinate, and one teaching-switch coordinate. The switch column is fixed by the teaching/probe token protocol; the angular and radial columns can be learned offline.",
+        "name": "E",
+        "shape": [
+          "V",
+          "d+2"
+        ],
+        "type": "learned encoder table, frozen during a context"
+      },
+      {
+        "meaning": "H is a fixed orthogonal matrix defining the angular frame; its first column is the shared hemisphere pole. kappa>0 and r0>0 are fixed cone constants. epsilon is fixed in (0,1/2). y_plus and y_minus are distinct vocabulary indices for YES and NO. This tuple is not a rectangular parameter tensor.",
+        "name": "configuration",
+        "shape": [
+          "H: d by d; kappa,r0,epsilon: scalars; y_plus,y_minus: indices"
+        ],
+        "type": "heterogeneous tuple of fixed geometry, scalars, and output indices"
+      },
+      {
+        "meaning": "x_t is the input vocabulary index at position t, where 1<=t<=n. e_t=E[x_t] and e_{t,j} is its jth coordinate. w_t is the unnormalized angular vector, u_t its unit normalization, r_t its positive radius, and g_t its Boolean teaching switch. P_t is the angular projector, J_t the Jordan interaction, and Z_t its squared Frobenius norm. I_t is membership and p_t(v) is next-token probability for vocabulary index v. The norm is Euclidean, tr is trace, superscript T is transpose, exp and log are natural exponential and logarithm, sinh is hyperbolic sine, and 1[condition] is the Boolean indicator. Offline-only scalar workspace consists of s_t=u_t^T A u_t, theta_t=1-kappa/sinh(r_t)^2, the soft YES probability tilde_p_t, binary probe target z_t, and average training loss L; Q is the number of labeled probe positions in the supplied training batch. sigmoid(a)=1/(1+exp(-a)) for a real scalar argument a.",
+        "name": "token and algebraic workspace",
+        "shape": [
+          "x_t: scalar; e_t: d+2; w_t,u_t: d; r_t,g_t,Z_t,I_t: scalars; P_t,J_t: d by d; p_t: V"
+        ],
+        "type": "ephemeral input and intermediate quantities"
+      }
+    ],
+    "update": [
+      {
+        "latex": "e_t=E[x_t],\\quad w_t=H(\\exp(e_{t,1}),e_{t,2},\\ldots,e_{t,d})^{\\mathsf T},\\quad u_t=w_t/\\|w_t\\|_2,\\quad r_t=\\max(e_{t,d+1},0)+\\log(1+\\exp(-|e_{t,d+1}|)),\\quad g_t=\\mathbf 1[e_{t,d+2}>0].",
+        "name": "Decode token geometry and teaching role",
+        "plain": "Look up the row. Exponentiate its first angular coordinate, retain the other angular coordinates, multiply by H, and normalize. Compute radius as max(raw_radius,0)+log1p(exp(-abs(raw_radius))), the stable softplus formula, and decode the teaching bit by a strict zero threshold. The first angular coordinate is strictly positive before rotation, so every decoded direction lies in the open hemisphere whose pole is the first column of H. Angular raw coordinates must remain in a finite, representable range; the stable radial formula does not remove angular exponential overflow."
+      },
+      {
+        "latex": "P_t=u_tu_t^{\\mathsf T},\\qquad J_t=AP_t+P_tA,\\qquad Z_t=\\operatorname{tr}(J_t^2).",
+        "name": "Construct the cross-example interaction",
+        "plain": "Using the pre-write A, form the angular outer product, multiply the current shape by it in both orders, add, and compute the trace of the square. A times u_t and rank-two outer-product formulas suffice; dense matrix-matrix multiplication is unnecessary."
+      },
+      {
+        "latex": "(A,b)\\leftarrow\\begin{cases}(P_t,1),&g_t=1\\land b=0,\\\\(J_t^2/Z_t,1),&g_t=1\\land b=1\\land Z_t>0,\\\\(A,b),&\\text{otherwise}.\\end{cases}",
+        "name": "Jordan-square teaching write",
+        "plain": "Ignore nonteaching tokens. Seed an empty concept with the first demonstrated direction. Subsequently replace A by the normalized square of its Jordan interaction with the new demonstration. If the interaction is exactly zero, leave the state unchanged. Complete this write before evaluating either readout equation, including on teaching tokens."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "In B2, the shared query receives angular score 16/17 and the disagreement query 1/17, each within 1e-10 in float64. Neither query equals either demonstration.",
+        "task": "Two-shot abstraction beyond exact example matching"
+      },
+      {
+        "prediction": "Using B2's H, seed A with (1,0) and then teach (0,1). Both directions are valid hemisphere directions. Z is zero and A remains exactly diag(1,0); the core cannot acquire their union from this sequence.",
+        "task": "Rejection of orthogonal positive evidence"
+      },
+      {
+        "prediction": "Seed A=diag(1,0) and use query direction (sqrt(0.8),sqrt(0.2)), teaching gate zero, kappa=1 and r0=1. It is accepted at radius asinh(2), threshold 0.75, and rejected at radius asinh(3), threshold 8/9.",
+        "task": "Depth-dependent specificity"
+      },
+      {
+        "prediction": "Concrete float64 test: start empty with d=3, use H equal to B2's rotation on the first two coordinates and the identity on the third, and teach exactly two directions (1,0,0) and (0.6,0.8,0), each at radius asinh(2). The sole normalized replacement has Z=0.9792 within 1e-12, and the third eigenvalue of its output has absolute value below 1e-10. Its Frobenius distance from I_3/3 is at least sqrt(1/6)-1e-10. Separately, the exact-arithmetic invariant holds for any number of demonstrations: every nonzero Jordan-square replacement has rank at most two, and seeds have rank one. Every initialized trace-one shape therefore has Frobenius distance at least sqrt(1/6), approximately 0.408248, from the full-rank isotropic target I_3/3. Here I_3 is the 3 by 3 identity. The general invariant is not an unconditional floating-point error bound.",
+        "task": "Rank-limited concept capacity"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "These deployment costs use dense A, explicit H, and explicitly materialized vocabulary probabilities. E costs V(d+2) storage. J has rank at most two: with a=A u, J=a u^T+u a^T, so its square can be formed from rank-two outer products in O(d^2). No past-token buffer grows with n. A sparse representation of the two-entry distribution removes the V output term. Offline differentiation can require episode-length storage and is not included in the deployment memory claim.",
+      "memory": "O(d^2+Vd)",
+      "time_per_token": "O(d^2+V)",
+      "total_sequence": "O(n(d^2+V))"
+    },
+    "sample_efficiency": {
+      "mechanism": "Two demonstrations polarize the angular spectrum toward their shared direction; the query need not equal either example.",
+      "prediction": {
+        "metric": "Argmax accuracy on the two queries in benchmark B2",
+        "statement": "B2 starts from empty state with d=2, kappa=1, r0=1, epsilon=0.01, and H the planar rotation by pi/12. Teach u=(1,0) and v=(0.6,0.8), both at radius asinh(2). Then query (u+v)/||u+v|| with label YES and (u-v)/||u-v|| with label NO, both at the same radius and with teaching gates zero. Accuracy is exactly 1 and correct-label probability is 0.99. Rows of E realize each direction by applying H^T, taking the logarithm of its positive first coordinate, and retaining its second coordinate; the radial raw coordinate is log(exp(asinh(2))-1). Teaching rows have gate coordinate +1 and query rows -1. All four directions lie strictly inside the configured hemisphere. Readout follows each write; only the two query outputs are scored. This measures acquisition from encoded inputs, not total offline data efficiency.",
+        "value": 1
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A direct float64 implementation of B2 produces either angular score more than 1e-10 from its stated value, or either argmax decision is incorrect.",
+    "For the orthogonal-teaching task, an exact implementation changes A or produces nonzero Z; this refutes the stated orthogonal-evidence rejection.",
+    "The specified two-demonstration d=3 test produces Z more than 1e-12 from 0.9792, a third eigenvalue with magnitude above 1e-10, or Frobenius distance from I_3/3 below sqrt(1/6)-1e-10. Alternatively, an exact-arithmetic nonzero write with rank greater than two refutes the general capacity invariant.",
+    "An exact reduction of the general write and readout to a listed excluded family is exhibited with fixed finite state size, without approximating the normalized quadratic update; this refutes the proposed architectural distinction."
+  ],
+  "toy_example": {
+    "description": "Computes B2's two-shot shape and post-write query decisions in physical angular coordinates, and checks rejection of an orthogonal teaching write. It also verifies that the teaching, query, and orthogonal-test directions lie in the configured hemisphere. Inputs are already encoded; this does not demonstrate learning E.",
+    "python": "import json\nimport numpy as np\n\nu = np.array([1.0, 0.0])\nv = np.array([0.6, 0.8])\nA = np.outer(u, u)\nP = np.outer(v, v)\nJ = A @ P + P @ A\nA = (J @ J) / np.trace(J @ J)\nq_shared = (u + v) / np.linalg.norm(u + v)\nq_disagree = (u - v) / np.linalg.norm(u - v)\north = np.array([0.0, 1.0])\nangle = np.pi / 12.0\nH = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])\nfor direction in (u, v, q_shared, q_disagree, orth):\n    local = H.T @ direction\n    assert local[0] > 0.0\n    raw = np.array([np.log(local[0]), local[1]])\n    decoded = H @ np.array([np.exp(raw[0]), raw[1]])\n    decoded /= np.linalg.norm(decoded)\n    assert np.allclose(decoded, direction)\ns_shared = float(q_shared @ A @ q_shared)\ns_disagree = float(q_disagree @ A @ q_disagree)\nr = float(np.arcsinh(2.0))\nthreshold = 1.0 - 1.0 / np.sinh(r)**2\n\ndef yes_probability(score):\n    return 0.99 if r >= 1.0 and score >= threshold else 0.01\n\nA_seed = np.outer(u, u)\nP_orth = np.outer(orth, orth)\nJ_orth = A_seed @ P_orth + P_orth @ A_seed\nz_orth = float(np.trace(J_orth @ J_orth))\nA_after = A_seed if z_orth == 0.0 else (J_orth @ J_orth) / z_orth\nout = {\n    'shape': np.round(A, 6).tolist(),\n    'shared_score': round(s_shared, 6),\n    'disagreement_score': round(s_disagree, 6),\n    'threshold': round(float(threshold), 6),\n    'yes_probabilities': [yes_probability(s_shared), yes_probability(s_disagree)],\n    'orthogonal_write_unchanged': bool(np.array_equal(A_seed, A_after))\n}\nprint(json.dumps(out, sort_keys=True))",
+    "expected": {
+      "disagreement_score": 0.058824,
+      "orthogonal_write_unchanged": true,
+      "shape": [
+        [
+          0.764706,
+          0.352941
+        ],
+        [
+          0.352941,
+          0.235294
+        ]
+      ],
+      "shared_score": 0.941176,
+      "threshold": 0.75,
+      "yes_probabilities": [
+        0.99,
+        0.01
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

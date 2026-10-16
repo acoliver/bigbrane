@@ -1,0 +1,5 @@
+CANDIDATE CONTRACT ADDITIONS (these apply on top of the instructions above; the construct check enforces them):
+
+- describe() must also report "hyper": a non-empty dict of the model's integer hyperparameters by name, for example {"d": 64, "M": 4}. Use the card's own symbols for sizes the card names (d, M, K, and so on) and report the value you actually built with. Card falsifier tasks compare these values with the sizes their protocol needs, and a task whose protocol needs a different size than the one you built is not decided.
+- describe() must also report "train_max_len": an int, the length of the longest training sequence that fit() uses in full. fit() must use every token of every training sequence up to that length, answers at the end of the sequence included. If fit() never truncates, report 2048. Do not truncate or window training sequences to a shorter length than the one you report: a task whose training sequences are longer than train_max_len is not decided, because the answer at the end of a truncated sequence is never trained.
+- Both fields must be plain ints (no bools, floats or numpy scalars; convert with int()).

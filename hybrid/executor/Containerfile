@@ -1,0 +1,23 @@
+# Bigbrane P0 executor image: Linux arm64 only.
+# The base is pinned by the per-platform (linux/arm64/v8) manifest digest of
+# python:3.12-slim-bookworm (3.12.15), not by the multi-arch index, so the
+# build cannot silently resolve to amd64.
+FROM docker.io/library/python@sha256:739ba32ae445e8d58f3d90feb85f83bebc8346f8dd280fa1eb5848f4ff1ed163
+
+RUN groupadd --gid 10001 bbjob \
+ && useradd --uid 10001 --gid 10001 --no-create-home --home-dir /nonexistent \
+            --shell /usr/sbin/nologin bbjob
+
+COPY requirements.txt /opt/bigbrane/requirements.txt
+RUN PIP_ROOT_USER_ACTION=ignore pip install --no-cache-dir --only-binary=:all: \
+        -r /opt/bigbrane/requirements.txt
+
+COPY supervisor.py /opt/bigbrane/supervisor.py
+
+# One thread everywhere; the executor also passes these at run time.
+ENV OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
+    PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HOME=/tmp
+
+USER 10001:10001
+ENTRYPOINT ["python3", "/opt/bigbrane/supervisor.py"]

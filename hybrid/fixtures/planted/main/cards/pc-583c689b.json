@@ -1,0 +1,117 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Mixture of continuation frequencies over the last two, the last one and no earlier symbols",
+  "summary": "Three tallies record how often each symbol followed each ordered pair of symbols, each single symbol, and nothing at all. The next-symbol distribution mixes the three relative frequencies with fixed weights, and the weight of a context that was never seen moves to the shorter contexts.",
+  "core_idea": "Predict the next symbol by a fixed-weight mixture of its relative frequency after the last two symbols, after the last symbol, and overall, all counted in context.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "N3",
+        "type": "integer array",
+        "shape": [
+          "V",
+          "V",
+          "V"
+        ],
+        "meaning": "N3[u, v, w] is how often w followed the ordered pair (u, v) so far."
+      },
+      {
+        "name": "N2",
+        "type": "integer array",
+        "shape": [
+          "V",
+          "V"
+        ],
+        "meaning": "N2[v, w] is how often w followed v so far."
+      },
+      {
+        "name": "N1",
+        "type": "integer vector",
+        "shape": [
+          "V"
+        ],
+        "meaning": "N1[w] is how often w occurred so far."
+      }
+    ],
+    "update": [
+      {
+        "name": "tallies",
+        "latex": "N3[x_{t-2}, x_{t-1}, x_t] \\mathrel{+}= 1,\\; N2[x_{t-1}, x_t] \\mathrel{+}= 1,\\; N1[x_t] \\mathrel{+}= 1",
+        "plain": "N3[x_(t-2), x_(t-1), x_t] += 1; N2[x_(t-1), x_t] += 1; N1[x_t] += 1 (each count incremented when the symbol arrives)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "relative frequencies",
+        "latex": "f_3(w) = \\frac{N3[u, v, w]}{\\sum_{w'} N3[u, v, w']},\\; f_2(w) = \\frac{N2[v, w]}{\\sum_{w'} N2[v, w']},\\; f_1(w) = \\frac{N1[w] + 1}{t + V}",
+        "plain": "with (u, v) = (x_(t-1), x_t): f3(w) = N3[u,v,w] / sum N3[u,v,:], f2(w) = N2[v,w] / sum N2[v,:], f1(w) = (N1[w] + 1) / (t + V)"
+      },
+      {
+        "name": "mixture",
+        "latex": "p(w) = \\lambda_3 f_3(w) + \\lambda_2 f_2(w) + \\lambda_1 f_1(w)",
+        "plain": "p(w) = l3 f3(w) + l2 f2(w) + l1 f1(w); if a context total is zero its weight is added to the next shorter context"
+      }
+    ],
+    "learning": {
+      "description": "The tallies are counted in context; nothing else changes during a sequence. The three weights are chosen once by grid search on held-out text and then fixed.",
+      "few_shot_argument": "A continuation seen once after a pair already gets probability at least l3; no other generalization across symbols exists."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(V)",
+      "memory": "Theta(V^3)",
+      "total_sequence": "Theta(n V)",
+      "constants_notes": "Three increments per symbol and V-entry normalizations for the readout; the tallies hold V^3 + V^2 + V integers whatever the length."
+    },
+    "sample_efficiency": {
+      "mechanism": "Counting with fixed mixture weights.",
+      "prediction": {
+        "metric": "examples_to_memorize_pair_continuation",
+        "value": 1,
+        "statement": "After one occurrence of the pair (u, v) followed by w, p(w | u, v) is at least l3 = 0.6."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "continuation of a repeated phrase",
+        "prediction": "After a phrase occurs once, each of its continuations given the previous two symbols is predicted with probability at least l3."
+      },
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Fails when the probe is separated from its pair by other symbols, since only the last two symbols condition the prediction."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "Recall of a pair separated from its probe by 5 filler symbols is above chance.",
+    "After one occurrence of (u, v, w), p(w | u, v) is below l3."
+  ],
+  "toy_example": {
+    "description": "Counting a short sequence over three symbols and mixing with l3, l2, l1 = 0.6, 0.3, 0.1.",
+    "python": "import json\nV = 3\nseq = [0, 1, 2, 0, 1, 2, 0, 1]\nN3 = {}\nN2 = {}\nN1 = [0] * V\nfor t, w in enumerate(seq):\n    N1[w] += 1\n    if t >= 1:\n        N2[(seq[t - 1], w)] = N2.get((seq[t - 1], w), 0) + 1\n    if t >= 2:\n        N3[(seq[t - 2], seq[t - 1], w)] = N3.get((seq[t - 2], seq[t - 1], w), 0) + 1\nu, v = seq[-2], seq[-1]\nl3, l2, l1 = 0.6, 0.3, 0.1\nt3 = sum(N3.get((u, v, w), 0) for w in range(V))\nt2 = sum(N2.get((v, w), 0) for w in range(V))\np = []\nfor w in range(V):\n    f3 = N3.get((u, v, w), 0) / t3\n    f2 = N2.get((v, w), 0) / t2\n    f1 = (N1[w] + 1) / (len(seq) + V)\n    p.append(round(l3 * f3 + l2 * f2 + l1 * f1, 6))\nprint(json.dumps({\"p\": p}))\n",
+    "expected": {
+      "p": [
+        0.036364,
+        0.036364,
+        0.927273
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

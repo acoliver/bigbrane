@@ -1,0 +1,86 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Bracket matcher with a push and pop store",
+  "summary": "Opening symbols are pushed onto a store and closing symbols pop it; the readout predicts the closer that matches the top of the store.",
+  "core_idea": "Push openers, pop on closers, and predict the closer of the top opener.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "dunmore",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Store of the openers not yet closed, newest on top."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "dunmore_t = push(dunmore_(t-1), x_t) if x_t opens, else pop(dunmore_(t-1))",
+        "plain": "dunmore_t = push(dunmore_(t-1), x_t) if x_t opens, else pop(dunmore_(t-1))"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = closer(top(dunmore_t))",
+        "plain": "y_t = closer(top(dunmore_t))"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is learned; the opener and closer pairs are given.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(n)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "Predicts the right closer after one example of each pair."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "bracket closing",
+        "prediction": "Predicts the legal closer at any depth."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Push-down stores are textbook machinery.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A legal closer is mispredicted.",
+    "The store grows on a closer."
+  ],
+  "toy_example": {
+    "description": "Two pushes and one pop.",
+    "python": "import json\nstore = []\nfor s in '([':\n    store.append(s)\nstore.pop()\nprint(json.dumps({'depth': len(store), 'top': store[-1]}))\n",
+    "expected": {
+      "depth": 1,
+      "top": "("
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

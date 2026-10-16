@@ -1,0 +1,167 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Interpolating polynomial over a prime field as an in-context register",
+  "summary": "Every address-item pair seen in context becomes one more node of a polynomial over the field of integers modulo 257, kept in Newton form so that a new node costs one product over the earlier nodes and one evaluation. Reading evaluates the polynomial at the probe's point. Brackets are tracked by a binary numeral of open types. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Hold the pairs of a context as the nodes of one interpolating polynomial over GF(257) in Newton form, extend it by one coefficient per pair and read by evaluating it at the probe.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "c",
+        "type": "vector over GF(257)",
+        "shape": [
+          "R"
+        ],
+        "meaning": "Newton coefficients c_0..c_(r-1) of the interpolating polynomial P_r; R = 96 entries, each an integer modulo p = 257."
+      },
+      {
+        "name": "a",
+        "type": "vector over GF(257)",
+        "shape": [
+          "R"
+        ],
+        "meaning": "Nodes a_0..a_(r-1): the field points already written, all distinct."
+      },
+      {
+        "name": "r",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Number of nodes written so far, at most R."
+      },
+      {
+        "name": "w",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket numeral: the types (0 or 1) of the open brackets as binary digits, the innermost in the lowest bit; at most H = 20 bits."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase, reset at every start mark and separator."
+      }
+    ],
+    "update": [
+      {
+        "name": "point and item",
+        "latex": "x_t = \\kappa(z_t),\\; y_t = 2\\,\\mathrm{id}(z'_t) + \\lambda_t",
+        "plain": "x_t = kappa(z_t) is the field point of the current address token z_t: pi for string symbols, 1 + id for a pair address, 65 + id for an address of the second table; y_t = 2 id(z'_t) + lambda_t encodes the item token z'_t, with lambda_t = 1 for a final symbol and 0 for an item that names another variable"
+      },
+      {
+        "name": "Newton write",
+        "latex": "c_r = \\bigl(P_r(x_t) - y_t\\bigr)\\Bigl(\\prod_{i<r}(x_t - a_i)\\Bigr)^{-1} \\bmod p,\\; a_r = x_t,\\; r \\leftarrow r + 1",
+        "plain": "c_r = (P_r(x_t) - y_t) * inverse(prod over i < r of (x_t - a_i)) mod p; then a_r = x_t and r = r + 1"
+      },
+      {
+        "name": "bracket numeral",
+        "latex": "w \\leftarrow 2w + b \\text{ (push opener of type } b),\\quad w \\leftarrow \\lfloor w/2 \\rfloor \\text{ (pop at a closer)}",
+        "plain": "push: w = 2w + b for an opener of type b; pop: w = floor(w / 2) at a closer"
+      }
+    ],
+    "readout": [
+      {
+        "name": "evaluate",
+        "latex": "P_r(x) = \\sum_{k<r} c_k \\prod_{i<k}(x - a_i) \\bmod p",
+        "plain": "P_r(x) = sum over k < r of c_k * prod over i < k of (x - a_i), mod p, computed by nested multiplication from the innermost coefficient; the item is floor(P_r(x) / 2) and its flag is P_r(x) mod 2"
+      },
+      {
+        "name": "chains and two hops",
+        "latex": "x \\leftarrow 1 + \\lfloor P_r(x)/2 \\rfloor \\text{ while the flag is } 0,\\ \\text{at most 8 times}",
+        "plain": "for a chained assignment, if the flag is 0 the item names a variable: set x = 1 + floor(P_r(x) / 2) and evaluate again, at most 8 times; for f(g(x)) evaluate at 65 + id(x), then at 1 + the result"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = w \\bmod 2",
+        "plain": "the legal closer has type w mod 2, the type of the innermost open bracket"
+      }
+    ],
+    "learning": {
+      "description": "The field arithmetic has no parameters. What is learned is the role of each vocabulary symbol (address, item, final item, start mark, separator, opener of type 0 or 1, closer): from m example episodes per task, each symbol's role is the role it took most often across its occurrences, a count per symbol and role.",
+      "few_shot_argument": "Every symbol of a task episode occurs in a fixed role, so one occurrence already fixes its role; m = 6 example episodes per task leave every symbol of the small cases with a count above zero, and the register itself needs no examples at all: a pair is stored exactly the first time it is written."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(R)",
+      "memory": "Theta(R)",
+      "total_sequence": "Theta(n R)",
+      "constants_notes": "A write is one evaluation of P_r (r <= R products) and one product of r differences plus one modular inverse; a read is at most 8 evaluations. State is 2R + 3 words: 2R field elements of 9 bits, the 20-bit bracket numeral and two counters; R = 96 and p = 257 are constants."
+    },
+    "sample_efficiency": {
+      "mechanism": "Counting of symbol roles over m example episodes; the register stores pairs exactly with no examples.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction: the string symbols are written at the points pi = 1..L, and after the separator the copy is read at pi = 1..L. Exact at L = 8, 32 and 64 over up to 128 symbols, using 64 of the R = 96 nodes."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Hand-set construction: each address is written at 1 + id and each probe evaluates there. Exact at K = 8, 32 and 64 over V up to 128 items."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "The bracket numeral holds the open types; the closer prediction w mod 2 is exact at depths 2, 4, 8 and 16 (H = 20 bits)."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Table g is written at 65 + id and table f at 1 + id, so f(g(x)) is two evaluations; exact at table sizes 4, 16 and 32 (64 nodes). Each assignment is one node; a probe follows at most 8 links; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "Recall of K > R pairs with distinct addresses is impossible: the register has R nodes, and a polynomial of degree below R fixed on R nodes cannot also take a free value at an (R+1)-th point; exact recall therefore fails for K = R + 1 = 97, consistent with the constructions above, which stay at or below 64 pairs."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "The role counts learn every task in its small case from m = 6 example episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "After writing 64 distinct pairs, evaluating the polynomial at a written node returns an item other than the one written there.",
+    "The counted operations of a write grow with n at fixed R."
+  ],
+  "toy_example": {
+    "description": "Three pairs written into the register over GF(257), and the bracket numeral after two pushes and one pop.",
+    "python": "import json\np = 257\nc, a = [], []\ndef P(x):\n    v = 0\n    for k in range(len(c) - 1, -1, -1):\n        v = (v * (x - a[k]) + c[k]) % p\n    return v\ndef write(x, y):\n    prod = 1\n    for ai in a:\n        prod = prod * (x - ai) % p\n    c.append((P(x) - y) * pow(prod, -1, p) % p)\n    a.append(x)\nfor x, y in [(1, 10), (2, 14), (3, 7)]:\n    write(x, y)\nw = 0\nfor b in [1, 0]:\n    w = 2 * w + b\nw = w // 2\nprint(json.dumps({\"coefficients\": c, \"nodes\": a, \"bracket_numeral\": w}))\n",
+    "expected": {
+      "coefficients": [
+        247,
+        233,
+        96
+      ],
+      "nodes": [
+        1,
+        2,
+        3
+      ],
+      "bracket_numeral": 1
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

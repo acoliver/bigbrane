@@ -1,0 +1,143 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Bracket closing learned in six examples from a supplied rule shape",
+  "summary": "A counter-and-buffer reader handles strings, pairs and brackets. For brackets the learning step receives the shape of the target rule: the next closer is determined by the opener of the innermost unmatched bracket. With the shape given, six example words are enough to fix the two-entry output map.",
+  "core_idea": "Give the learner the rule shape 'answer from the innermost unmatched opener', so nesting is learned from six examples.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "buf",
+        "type": "integer vector",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Buffer of C symbols; strings are written in order, openers at the current depth; C = 64."
+      },
+      {
+        "name": "pr",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Pair rows for pair tasks: (first symbol, partner)."
+      },
+      {
+        "name": "dd",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Current bracket depth."
+      },
+      {
+        "name": "np",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Count of pair rows."
+      },
+      {
+        "name": "Gamma",
+        "type": "rule shape",
+        "shape": [
+          1
+        ],
+        "meaning": "Supplied rule shape: the output is a function of the innermost unmatched opener, read off the prefix."
+      },
+      {
+        "name": "omega",
+        "type": "integer map",
+        "shape": [
+          2
+        ],
+        "meaning": "Two-entry output map from opener type to closer, learned."
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_t \\text{ opener}: dd \\leftarrow dd+1,\\, buf_{dd} \\leftarrow x_t;\\quad x_t \\text{ closer}: dd \\leftarrow dd - 1",
+        "plain": "openers are pushed at the new depth, closers pop and lower the depth",
+        "name": "depth"
+      },
+      {
+        "latex": "\\text{pairs: } pr_{np} \\leftarrow (x_{t-1}, x_t),\\; np \\leftarrow np + 1",
+        "plain": "pair tasks write each completed pair as a row",
+        "name": "pairs"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\hat{y}_t = \\omega[\\Gamma(x_{1..t})] \\text{ (brackets)};\\; pr[\\text{row of } x_t]_1 \\text{ (pairs)}",
+        "plain": "bracket output: omega of the innermost unmatched opener given by the supplied shape; pair probes read the partner stored with x_t; strings read buf in order"
+      }
+    ],
+    "learning": {
+      "description": "With Gamma supplied, omega is the majority closer per opener type, by count over the m training words. Pair and string routing are chosen by accuracy on the training items.",
+      "few_shot_argument": "Gamma removes the search over rules; omega has two entries, so m = 6 words at depth 2 suffice on every seed."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(C)",
+      "memory": "O(C)",
+      "total_sequence": "O(n C)",
+      "constants_notes": "Buffer and row writes O(1); pair reads scan C rows; 3C + 4 words."
+    },
+    "sample_efficiency": {
+      "mechanism": "The supplied rule shape leaves a two-entry map.",
+      "prediction": {
+        "metric": "examples_to_nesting_depth2",
+        "value": 6,
+        "statement": "From m = 6 bracket words of depth 2, the learned reader predicts the legal closer with accuracy at least 0.99 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Learned at depth 2 from m = 6; exact at depth 2, 4, 8, 16 with C = 64."
+      },
+      {
+        "task": "recall, copy",
+        "prediction": "Exact at K = 8, 32, 64 and L = 8, 32, 64 with C = 64."
+      },
+      {
+        "task": "composition, binding",
+        "prediction": "Exact at T = 4, 16, 32 and hops 1, 4, 8 by chained row reads."
+      },
+      {
+        "task": "limit",
+        "prediction": "Depth beyond C cannot be tracked: at C = 64 a word that opens 65 brackets before closing loses the outermost opener."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "6 training words of depth 2 after which closer accuracy is below 0.99.",
+    "A depth-16 word whose closer the hand-set buffer predicts wrongly."
+  ],
+  "toy_example": {
+    "description": "The supplied shape on a depth-2 word, with omega learned from it.",
+    "python": "import json\nword = [1, 0, 2, 0, 2, 3]\nanswers = [3, 2, 3, 2, 3]\ndef gamma(prefix):\n    pend = []\n    for s in prefix:\n        if s < 2:\n            pend.append(s)\n        else:\n            pend.pop()\n    return pend[-1]\nomega = {}\nfor t in range(5):\n    omega[gamma(word[:t + 1])] = answers[t]\nprint(json.dumps({\"omega0\": omega[0], \"omega1\": omega[1]}))\n",
+    "expected": {
+      "omega0": 2,
+      "omega1": 3
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

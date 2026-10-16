@@ -1,0 +1,357 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/theory_card.schema.json",
+  "title": "Bigbrane theory card",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "version", "parent_ids", "created_by_call", "lens", "title", "summary",
+    "mechanism", "claims", "known_relatives", "falsifiers", "toy_example", "references", "status"
+  ],
+  "properties": {
+    "id": {"$ref": "#/$defs/card_id"},
+    "version": {"type": "integer", "minimum": 1},
+    "parent_ids": {"type": "array", "items": {"$ref": "#/$defs/card_id"}, "uniqueItems": true},
+    "created_by_call": {"$ref": "#/$defs/call_id"},
+    "lens": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "summary": {"type": "string", "minLength": 20},
+    "core_idea": {"type": "string", "minLength": 10, "description": "The core idea in one sentence."},
+    "source_transplant": {
+      "type": "object",
+      "description": "Where the idea comes from: the specific mathematical object or law taken from the cited paper(s).",
+      "additionalProperties": false,
+      "required": ["object", "source_ids", "change"],
+      "properties": {
+        "object": {"type": "string", "minLength": 3},
+        "source_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "change": {"type": "string", "minLength": 1}
+      }
+    },
+    "non_reduction_argument": {
+      "type": "object",
+      "description": "Escape cards only (required for them, optional in general): why this mechanism does not reduce to the known family its parent reduced to.",
+      "additionalProperties": false,
+      "required": ["known_family", "broken_invariant", "why_unrepairable"],
+      "properties": {
+        "known_family": {"type": "string", "minLength": 3},
+        "broken_invariant": {"type": "string", "minLength": 20},
+        "why_unrepairable": {"type": "string", "minLength": 40}
+      }
+    },
+    "extensions": {
+      "type": "array",
+      "description": "Optional additions outside the core mechanism. They do not count toward the claims.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "description"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "equations": {"$ref": "#/$defs/equations"}
+        }
+      }
+    },
+    "mechanism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "update", "readout", "learning"],
+      "properties": {
+        "state": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/state_object"}},
+        "update": {"$ref": "#/$defs/equations"},
+        "readout": {"$ref": "#/$defs/equations"},
+        "learning": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["description", "few_shot_argument"],
+          "properties": {
+            "description": {"type": "string", "minLength": 1},
+            "few_shot_argument": {"type": "string", "minLength": 1},
+            "equations": {"$ref": "#/$defs/equations"}
+          }
+        }
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["complexity", "sample_efficiency", "capabilities"],
+      "properties": {
+        "complexity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["time_per_token", "memory", "total_sequence", "constants_notes"],
+          "properties": {
+            "time_per_token": {"$ref": "#/$defs/complexity_expr"},
+            "memory": {"$ref": "#/$defs/complexity_expr"},
+            "total_sequence": {"$ref": "#/$defs/complexity_expr"},
+            "constants_notes": {"type": "string", "minLength": 1}
+          }
+        },
+        "sample_efficiency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mechanism", "prediction"],
+          "properties": {
+            "mechanism": {"type": "string", "minLength": 1},
+            "prediction": {"$ref": "#/$defs/numeric_prediction"}
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["task", "prediction"],
+            "properties": {
+              "task": {"type": "string", "minLength": 1},
+              "prediction": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "description": "FIX-16: the mechanism's own resources, which the math stage's statement fixer copies and the host verifies. Formulas use numbers, + - * / ** and ceiling, floor, log, sqrt, Max, Min. tasks: per P2 task, the width d, the rounds or layers and the peak state words as formulas in the task's size (copy L, recall K, dyck depth, composition T, binding hops), with any other shape symbol under symbols. learning: per P4 task, the solvable size, the example count m and d and rounds there. cost: the size parameters other than n of the P1 cost formula and d and rounds in them. Optional for cards made before FIX-16; stage M refuses to formalize a profile card without a complete section (kill code card_incomplete).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hidden": {"type": "string", "minLength": 1, "description": "feed-forward hidden width as a formula in d"},
+            "precision_bits": {"enum": [16, 32, 64]},
+            "state_bits": {"type": ["string", "number", "null"], "description": "carried-state budget in bits of a finite-state mechanism (a number or a formula in d); null for continuous state"}
+          }
+        },
+        "stream_symbols": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "shape symbols that count the tokens read so far (set by the task's stream)"},
+        "dimensions": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}, "description": "other dimensions of the mechanism's equations that do not depend on the task size, as formulas"},
+        "cost": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sizes": {"type": "array", "items": {"type": "string", "minLength": 1}},
+            "d": {"type": "string", "minLength": 1},
+            "rounds": {"type": "string", "minLength": 1},
+            "why": {"type": "string"}
+          }
+        },
+        "tasks": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "copy": {"$ref": "#/$defs/task_resources"},
+            "recall": {"$ref": "#/$defs/task_resources"},
+            "dyck": {"$ref": "#/$defs/task_resources"},
+            "composition": {"$ref": "#/$defs/task_resources"},
+            "binding": {"$ref": "#/$defs/task_resources"}
+          }
+        },
+        "learning": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "copy": {"$ref": "#/$defs/learning_resources"},
+            "recall": {"$ref": "#/$defs/learning_resources"},
+            "dyck": {"$ref": "#/$defs/learning_resources"},
+            "composition": {"$ref": "#/$defs/learning_resources"},
+            "binding": {"$ref": "#/$defs/learning_resources"}
+          }
+        },
+        "why": {"type": "string"}
+      }
+    },
+    "limits": {
+      "description": "FIX-18 (decision L): the card's own P3 limits, each a task family the mechanism cannot solve within stated resources, at the mechanism level (decision P3: it follows from the state, the update or the readout, never only from the output vocabulary or the task encoding). task: a P2 task (copy, recall, dyck, composition, binding) or other; size: the task size from which the limit holds (null when it is not a size of a P2 task); resources: the resources the limit holds within; why: the derivation in words; kind: the part of the mechanism it follows from. The math stage's statement fixer formalizes these limits and invents none. Optional for cards made before FIX-18; stage M refuses to formalize a profile card without a stated limit (kill code card_incomplete).",
+      "type": "array",
+      "items": {"$ref": "#/$defs/card_limit"}
+    },
+    "known_relatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "relation", "claimed_difference"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "relation": {"type": "string", "minLength": 1},
+          "claimed_difference": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "falsifiers": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"type": "string", "minLength": 10}
+    },
+    "toy_example": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "python", "expected"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "python": {"type": "string", "minLength": 20},
+        "expected": {"type": "object", "minProperties": 1}
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "why"],
+        "properties": {
+          "source_id": {"type": "string", "minLength": 1},
+          "why": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "arm": {
+      "description": "Generation arm that drafted the card (Phase 6, hybrid/config/generation.toml). Orchestrator-filled; absent on cards made before Phase 6 or by an operator task.",
+      "type": "string", "pattern": "^A[1-5]$"
+    },
+    "arm_structure": {
+      "description": "The arm's required output, checked at G (hybrid/research/stages/g_generate.py). Its shape depends on the arm.",
+      "type": "object"
+    },
+    "commitments": {
+      "description": "The five archive axes, assigned by the classifier role (never the proposer), after the deterministic consistency check. Value ids from hybrid/config/archive.toml.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["substrate", "learning_rule", "unit", "objective", "structure_source"],
+      "properties": {
+        "substrate": {"type": "string", "minLength": 1},
+        "learning_rule": {"type": "string", "minLength": 1},
+        "unit": {"type": "string", "minLength": 1},
+        "objective": {"type": "string", "minLength": 1},
+        "structure_source": {"type": "string", "minLength": 1}
+      }
+    },
+    "difference_statement": {
+      "description": "Difference statement written at S2 (Phase 7, schemas/difference.schema.json): closest prior works, what was tried, why it failed, the precise change, the changed equation and the outcome-store cause ids it addresses. Stage-filled; never part of an explorer draft.",
+      "type": "object"
+    },
+    "archive_cell": {
+      "description": "Archive cell of the card: the commitments joined with '|' in axis order, and whether the cell was empty when the card arrived.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "new_cell"],
+      "properties": {
+        "key": {"type": "string", "minLength": 9},
+        "new_cell": {"type": "boolean"}
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "verdicts"],
+      "properties": {
+        "stage": {"type": "string", "enum": ["S0", "S1", "R", "S2", "S3", "M", "C", "S4", "S5", "S6"]},
+        "verdicts": {
+          "type": "object",
+          "propertyNames": {"pattern": "^(S[0-6]|R|M|C)$"},
+          "additionalProperties": {"$ref": "#/$defs/verdict_entry"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "card_id": {"type": "string", "pattern": "^card-[0-9a-f]{8}$"},
+    "call_id": {"type": "string", "pattern": "^call-[0-9a-f]{12}$"},
+    "job_or_call_id": {"type": "string", "pattern": "^(call|job|lean|mathlib)-[0-9a-f]{12}$"},
+    "state_object": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "shape", "meaning"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "type": {"type": "string", "minLength": 1},
+        "shape": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {"type": "integer", "minimum": 1},
+              {"type": "string", "minLength": 1}
+            ]
+          }
+        },
+        "meaning": {"type": "string", "minLength": 10}
+      }
+    },
+    "equation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latex", "plain"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "latex": {"type": "string", "minLength": 1},
+        "plain": {"type": "string", "minLength": 1}
+      }
+    },
+    "equations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/equation"}
+    },
+    "task_resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "d": {"type": "string", "minLength": 1},
+        "rounds": {"type": "string", "minLength": 1},
+        "state_words": {"type": "string", "minLength": 1},
+        "symbols": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+        "why": {"type": "string"}
+      }
+    },
+    "learning_resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "size": {"type": "integer", "minimum": 1},
+        "examples": {"type": "integer", "minimum": 1},
+        "d": {"type": "string", "minLength": 1},
+        "rounds": {"type": "string", "minLength": 1},
+        "symbols": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+        "why": {"type": "string"}
+      }
+    },
+    "card_limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task", "size", "resources", "why", "kind"],
+      "properties": {
+        "task": {"enum": ["copy", "recall", "dyck", "composition", "binding", "other"]},
+        "size": {"type": ["integer", "null"], "minimum": 1},
+        "resources": {"type": "string", "minLength": 1},
+        "why": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["state", "update", "readout"]}
+      }
+    },
+    "complexity_expr": {"type": "string", "pattern": "^(O|Theta|Omega)\\(.+\\)"},
+    "numeric_prediction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric", "value", "statement"],
+      "properties": {
+        "metric": {"type": "string", "minLength": 1},
+        "value": {"type": "number"},
+        "statement": {"type": "string", "minLength": 1}
+      }
+    },
+    "verdict_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "reasons", "by_calls"],
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "revise", "infeasible_proved", "reduces_to_known", "undetermined"]},
+        "reasons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "by_calls": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/job_or_call_id"}}
+      }
+    }
+  }
+}

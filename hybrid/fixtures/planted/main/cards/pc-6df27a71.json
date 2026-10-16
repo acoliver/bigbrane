@@ -1,0 +1,148 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Write log with Hamming-neighbourhood damping",
+  "summary": "Every written pair is appended to a log as an 8-bit address code, an item and a weight of 1. Before each append, every logged entry whose code lies within Hamming distance 1 of the new code has its weight halved, so for any code the newest entry carries the largest weight. A probe returns the heaviest entry with its code. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Log every pair with a weight, halve the weights of logged entries whose codes are within Hamming distance 1 of each new code, and answer a probe with the heaviest entry of its code.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Lg",
+        "type": "list of entries",
+        "shape": [
+          "n",
+          3
+        ],
+        "meaning": "Write log: one entry (code a_i, item y_i, weight w_i) per written pair, in arrival order; it grows with the number of writes."
+      },
+      {
+        "name": "bw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket word: open bracket types as binary digits, innermost lowest, 20 bits."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase."
+      }
+    ],
+    "update": [
+      {
+        "name": "damping pass",
+        "latex": "w_i \\leftarrow w_i / 2 \\;\\text{ for every logged } i \\text{ with } \\mathrm{ham}(a_i, a_t) \\le 1",
+        "plain": "for every entry i in the log: if the Hamming distance between the 8-bit codes a_i and a_t is at most 1, set w_i = w_i / 2; a_t is the address code kappa(z_t) in 0..255: the position counter for string symbols, the identity for pair addresses, 128 + identity for the second table"
+      },
+      {
+        "name": "append",
+        "latex": "Lg \\leftarrow Lg \\cup \\{(a_t, y_t, 1)\\}",
+        "plain": "append (a_t, y_t, 1), with item code y_t = 2 id(item) + lambda_t and lambda_t = 1 for a final symbol"
+      },
+      {
+        "name": "bracket word",
+        "latex": "bw \\leftarrow 2\\,bw + b \\;(\\text{opener}),\\quad bw \\leftarrow \\lfloor bw/2 \\rfloor \\;(\\text{closer})",
+        "plain": "an opener of type b sets bw = 2 bw + b; a closer sets bw = floor(bw / 2)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "heaviest entry",
+        "latex": "\\hat{y} = y_{i^\\ast},\\; i^\\ast = \\arg\\max_{i:\\, a_i = a} w_i",
+        "plain": "the answer to a probe with code a is the item of the entry with code a and the largest weight (the latest on ties)"
+      },
+      {
+        "name": "chains and two hops",
+        "latex": "a \\leftarrow \\lfloor \\hat{y}/2 \\rfloor \\text{ while the flag is } 0",
+        "plain": "a chained assignment probes again with the named variable while the item's flag is 0, at most 8 times; f(g(x)) probes 128 + id(x), then the result"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = bw \\bmod 2",
+        "plain": "the legal closer has the type in the lowest bit of the bracket word"
+      }
+    ],
+    "learning": {
+      "description": "Roles of the symbols are counted over m example episodes: each symbol takes the role it held most often (address, item, final item, mark, opener, closer).",
+      "few_shot_argument": "A single episode shows every symbol of a small case in its role; m = 6 example episodes per task fix all roles, and the log stores each pair exactly at its first showing."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(n)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "Only entries whose codes lie within Hamming distance 1 of the new code are damped, at most 9 distinct codes, so each write costs a constant number of weight updates, and a read inspects the entries of one code. The log holds one entry of three words per write."
+    },
+    "sample_efficiency": {
+      "mechanism": "Counting of symbol roles over m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction: symbol i is logged under code i and read back under codes 1..L; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Each address is logged under its identity; the newest entry of a code is the heaviest, so exact at K = 8, 32 and 64 even when an address is rewritten."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "The bracket word predicts every closer exactly at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Table g under codes 128..159 and table f under 0..31; two probes; exact at sizes 4, 16 and 32. At most 8 chained probes; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "Nesting deeper than the 20 bits of the bracket word is impossible: two-type stacks of depth D take 2^D values and the word only 2^20, so exact closer prediction fails for every depth D > 20."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "Role counting learns every small case from m = 6 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A probe returns an older entry of its code while a newer one exists.",
+    "Counted operations per write grow with the number of logged entries."
+  ],
+  "toy_example": {
+    "description": "Four writes into the log, including a rewrite of one code, and the weights afterwards.",
+    "python": "import json\nlog = []\ndef ham(a, b):\n    return bin(a ^ b).count(\"1\")\ndef write(a, y):\n    for e in log:\n        if ham(e[0], a) <= 1:\n            e[2] = e[2] / 2\n    log.append([a, y, 1.0])\nfor a, y in [(5, 10), (4, 7), (200, 3), (5, 12)]:\n    write(a, y)\nbest = max((e for e in log if e[0] == 5), key=lambda e: e[2])\nprint(json.dumps({\"weights\": [e[2] for e in log], \"answer_5\": best[1]}))\n",
+    "expected": {
+      "weights": [
+        0.25,
+        0.5,
+        1.0,
+        1.0
+      ],
+      "answer_5": 12
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

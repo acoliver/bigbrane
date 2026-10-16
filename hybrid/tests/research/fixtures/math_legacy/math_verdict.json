@@ -1,0 +1,493 @@
+{
+  "assumption_ledger": "card-46dbb349-v1-8ddcbb.json",
+  "card_id": "card-46dbb349",
+  "checks": {
+    "O1.a": {
+      "artifact": "card-46dbb349-v1-dd10d4.json",
+      "attempt": 1,
+      "bound": null,
+      "counterexample": null,
+      "decided": true,
+      "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+      "form": "lean",
+      "job_ids": [
+        "lean-1e123260baac",
+        "lean-b78071b34200"
+      ],
+      "purpose": "prove",
+      "statement_id": "O1.a",
+      "status": "pass",
+      "text": "theorem claim_holds : Claim := by\n  unfold Claim\n  refine ⟨40, ?_⟩\n  intro d M V hd hM hV\n  unfold TokenEnvelope\n  have hdd : d * 1 ≤ d * d := Nat.mul_le_mul le_rfl hd\n  have hd2 : 1 * 1 ≤ d * d := Nat.mul_le_mul hd hd\n  have hsq : d ^ 2 = d * d := sq d\n  have hdle : d ≤ d ^ 2 := by nlinarith [hdd, hsq]\n  have h3 : 1 * d ^ 2 ≤ M * d ^ 2 := Nat.mul_le_mul hM le_rfl\n  have h4 : M * d ≤ M * d ^ 2 := Nat.mul_le_mul le_rfl hdle\n  have h5 : V * 1 ≤ V * d := Nat.mul_le_mul le_rfl hd\n  nlinarith [hdd, hd2, hsq, hdle, h3, h4, h5]\n",
+      "tier": "lean"
+    },
+    "O2.a": {
+      "artifact": "card-46dbb349-v1-141ff9.json",
+      "attempt": 1,
+      "bound": null,
+      "counterexample": null,
+      "decided": true,
+      "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+      "form": "lean",
+      "job_ids": [
+        "lean-d86a9d50eae3",
+        "lean-3c13a5b818f6"
+      ],
+      "purpose": "prove",
+      "statement_id": "O2.a",
+      "status": "pass",
+      "text": "theorem claim_holds : Claim := by\n  unfold Claim\n  refine ⟨20, ?_⟩\n  intro d V hd hV\n  unfold MemoryEnvelope\n  have hdd : d * 1 ≤ d * d := Nat.mul_le_mul le_rfl hd\n  have hd2 : 1 * 1 ≤ d * d := Nat.mul_le_mul hd hd\n  have hsq : d ^ 2 = d * d := sq d\n  have h5 : V * 1 ≤ V * d := Nat.mul_le_mul le_rfl hd\n  nlinarith [hdd, hd2, hsq, h5]\n",
+      "tier": "lean"
+    },
+    "O3.a": {
+      "artifact": "card-46dbb349-v1-dec975.json",
+      "attempt": 1,
+      "bound": null,
+      "counterexample": null,
+      "decided": true,
+      "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+      "form": "lean",
+      "job_ids": [
+        "lean-8f04f38d9354",
+        "lean-73a30b06ed51"
+      ],
+      "purpose": "prove",
+      "statement_id": "O3.a",
+      "status": "pass",
+      "text": "theorem claim_holds : Claim := by\n  unfold Claim\n  refine ⟨40, ?_⟩\n  intro n d M V hn hd hM hV\n  unfold SequenceEnvelope\n  have hb : (4 * M + 12) * d ^ 2 + 3 * M * d + 8 * d + 2 * V * d + V + 10 ≤ 40 * (M * d ^ 2 + V * d) := by\n    have hdd : d * 1 ≤ d * d := Nat.mul_le_mul le_rfl hd\n    have hd2 : 1 * 1 ≤ d * d := Nat.mul_le_mul hd hd\n    have hsq : d ^ 2 = d * d := sq d\n    have hdle : d ≤ d ^ 2 := by nlinarith [hdd, hsq]\n    have h3 : 1 * d ^ 2 ≤ M * d ^ 2 := Nat.mul_le_mul hM le_rfl\n    have h4 : M * d ≤ M * d ^ 2 := Nat.mul_le_mul le_rfl hdle\n    have h5 : V * 1 ≤ V * d := Nat.mul_le_mul le_rfl hd\n    nlinarith [hdd, hd2, hsq, hdle, h3, h4, h5]\n  calc n * ((4 * M + 12) * d ^ 2 + 3 * M * d + 8 * d + 2 * V * d + V + 10) ≤ n * (40 * (M * d ^ 2 + V * d)) := Nat.mul_le_mul le_rfl hb\n    _ = 40 * (n * (M * d ^ 2 + V * d)) := by ring\n",
+      "tier": "lean"
+    },
+    "O4.a": {
+      "artifact": "card-46dbb349-v1-a58163.json",
+      "attempt": 2,
+      "bound": null,
+      "counterexample": null,
+      "decided": true,
+      "evidence": "size 1 mean 1.0000; threshold 1; observed on the listed sizes: size=1",
+      "form": "simulation",
+      "job_ids": [
+        "mathlib-f26077fdebf8",
+        "mathlib-4db8fbec0a96"
+      ],
+      "purpose": "prove",
+      "statement_id": "O4.a",
+      "status": "discharged",
+      "text": "def make_lift(given):\n    p = given['cycle']\n    freqs = np.array(given['frequencies'], dtype=float)\n    sc = given['lift_scale']\n    nf = freqs.shape[0]\n    ang = 2.0 * np.pi * np.outer(np.arange(p, dtype=float), freqs) / p\n    Phi = np.zeros((p + 2, 2 * nf))\n    Phi[:p] = sc * np.concatenate([np.cos(ang), np.sin(ang)], axis=1)\n    return Phi\n\ndef model_run(tokens, qpos, Phi, p, lam, tau, M, fixed_one):\n    d = Phi.shape[1]\n    G = lam * np.eye(d)\n    C = np.zeros((d, d))\n    K = np.zeros((d, d))\n    e = 1\n    preds = []\n    for t in range(1, len(tokens)):\n        a = tokens[t - 1]\n        b = tokens[t]\n        if a < p and b < p:\n            u = Phi[a]\n            v = Phi[b]\n            if fixed_one:\n                e = 1\n                z = u\n            else:\n                uPu = u @ np.linalg.solve(G, u)\n                if uPu >= tau:\n                    e = 1\n                    z = u\n                else:\n                    zs = np.zeros((M + 1, d))\n                    zs[0] = u\n                    for c in range(1, M + 1):\n                        zs[c] = K.T @ zs[c - 1]\n                    errs = np.sum((zs[1:] - v) ** 2, axis=1)\n                    e = 1 + int(np.argmin(errs))\n                    z = zs[e - 1]\n            G = G + np.outer(z, z)\n            C = C + np.outer(z, v)\n            K = np.linalg.solve(G, C)\n        if t in qpos:\n            y = Phi[tokens[t]]\n            for c in range(e):\n                y = K.T @ y\n            preds.append(int(np.argmax(Phi @ y)))\n    return preds\n\ndef content_pairs(tokens, lo, hi, p):\n    out = []\n    for t in range(lo + 1, hi + 1):\n        if tokens[t - 1] < p and tokens[t] < p:\n            out.append([tokens[t - 1], tokens[t]])\n    return out\n\ndef ridge_pred(pairs, q, Phi, lam):\n    d = Phi.shape[1]\n    arr = np.array(pairs, dtype=int).reshape(-1, 2)\n    idx = np.lexsort((arr[:, 1], arr[:, 0]))\n    arr = arr[idx]\n    U = Phi[arr[:, 0]]\n    W = Phi[arr[:, 1]]\n    G = lam * np.eye(d) + U.T @ U\n    C = U.T @ W\n    K = np.linalg.solve(G, C)\n    return int(np.argmax(Phi @ (K.T @ Phi[q])))\n\ndef delta_pred(pairs, q, Phi, g):\n    d = Phi.shape[1]\n    S = np.zeros((d, d))\n    for i in range(len(pairs)):\n        k = Phi[pairs[i][0]]\n        v = Phi[pairs[i][1]]\n        S = g * (S - np.outer(S @ k, k)) + np.outer(v, k)\n    return int(np.argmax(Phi @ (S @ Phi[q])))\n\ndef run(given):\n    Phi = make_lift(given)\n    p = given['cycle']\n    lam = given['lambda']\n    tau = given['tau']\n    M = given['M']\n    out = {'model': [], 'fresh': [], 'pooled': [], 'ablation': [], 'delta_0.5': [], 'delta_0.7': [], 'delta_0.9': [], 'delta_0.99': []}\n    gammas = [[0.5, 'delta_0.5'], [0.7, 'delta_0.7'], [0.9, 'delta_0.9'], [0.99, 'delta_0.99']]\n    for ep in given['episodes']:\n        tokens = ep['tokens']\n        pos = ep['query_positions'][0]\n        bd = ep['fresh_boundaries'][0]\n        q = tokens[pos]\n        out['model'].append(model_run(tokens, [pos], Phi, p, lam, tau, M, False)[0])\n        out['ablation'].append(model_run(tokens, [pos], Phi, p, lam, tau, M, True)[0])\n        allp = content_pairs(tokens, 0, pos, p)\n        bp = content_pairs(tokens, bd, pos, p)\n        out['fresh'].append(ridge_pred(bp, q, Phi, lam))\n        out['pooled'].append(ridge_pred(allp, q, Phi, lam))\n        for gm in gammas:\n            out[gm[1]].append(delta_pred(allp, q, Phi, gm[0]))\n    return out\n",
+      "tier": "executed"
+    },
+    "O5.a": {
+      "artifact": "card-46dbb349-v1-4ad238.json",
+      "attempt": 2,
+      "bound": null,
+      "counterexample": null,
+      "decided": true,
+      "evidence": "size 1 mean 1.0000; threshold 1; observed on the listed sizes: size=1",
+      "form": "simulation",
+      "job_ids": [
+        "mathlib-d5d456e08eea",
+        "mathlib-5fa47ca7d1a0"
+      ],
+      "purpose": "prove",
+      "statement_id": "O5.a",
+      "status": "discharged",
+      "text": "def make_lift(given):\n    p = given['cycle']\n    freqs = np.array(given['frequencies'], dtype=float)\n    sc = given['lift_scale']\n    nf = freqs.shape[0]\n    ang = 2.0 * np.pi * np.outer(np.arange(p, dtype=float), freqs) / p\n    Phi = np.zeros((p + 2, 2 * nf))\n    Phi[:p] = sc * np.concatenate([np.cos(ang), np.sin(ang)], axis=1)\n    return Phi\n\ndef model_run(tokens, qpos, Phi, p, lam, tau, M, fixed_one):\n    d = Phi.shape[1]\n    G = lam * np.eye(d)\n    C = np.zeros((d, d))\n    K = np.zeros((d, d))\n    e = 1\n    preds = []\n    for t in range(1, len(tokens)):\n        a = tokens[t - 1]\n        b = tokens[t]\n        if a < p and b < p:\n            u = Phi[a]\n            v = Phi[b]\n            if fixed_one:\n                e = 1\n                z = u\n            else:\n                uPu = u @ np.linalg.solve(G, u)\n                if uPu >= tau:\n                    e = 1\n                    z = u\n                else:\n                    zs = np.zeros((M + 1, d))\n                    zs[0] = u\n                    for c in range(1, M + 1):\n                        zs[c] = K.T @ zs[c - 1]\n                    errs = np.sum((zs[1:] - v) ** 2, axis=1)\n                    e = 1 + int(np.argmin(errs))\n                    z = zs[e - 1]\n            G = G + np.outer(z, z)\n            C = C + np.outer(z, v)\n            K = np.linalg.solve(G, C)\n        if t in qpos:\n            y = Phi[tokens[t]]\n            for c in range(e):\n                y = K.T @ y\n            preds.append(int(np.argmax(Phi @ y)))\n    return preds\n\ndef content_pairs(tokens, lo, hi, p):\n    out = []\n    for t in range(lo + 1, hi + 1):\n        if tokens[t - 1] < p and tokens[t] < p:\n            out.append([tokens[t - 1], tokens[t]])\n    return out\n\ndef ridge_pred(pairs, q, Phi, lam):\n    d = Phi.shape[1]\n    arr = np.array(pairs, dtype=int).reshape(-1, 2)\n    idx = np.lexsort((arr[:, 1], arr[:, 0]))\n    arr = arr[idx]\n    U = Phi[arr[:, 0]]\n    W = Phi[arr[:, 1]]\n    G = lam * np.eye(d) + U.T @ U\n    C = U.T @ W\n    K = np.linalg.solve(G, C)\n    return int(np.argmax(Phi @ (K.T @ Phi[q])))\n\ndef run(given):\n    Phi = make_lift(given)\n    p = given['cycle']\n    lam = given['lambda']\n    tau = given['tau']\n    M = given['M']\n    out = {'model': [], 'fresh': [], 'pooled': [], 'ablation': []}\n    for ep in given['episodes']:\n        tokens = ep['tokens']\n        pos = ep['query_positions'][0]\n        bd = ep['fresh_boundaries'][0]\n        q = tokens[pos]\n        out['model'].append(model_run(tokens, [pos], Phi, p, lam, tau, M, False)[0])\n        out['ablation'].append(model_run(tokens, [pos], Phi, p, lam, tau, M, True)[0])\n        out['fresh'].append(ridge_pred(content_pairs(tokens, bd, pos, p), q, Phi, lam))\n        out['pooled'].append(ridge_pred(content_pairs(tokens, 0, pos, p), q, Phi, lam))\n    return out\n",
+      "tier": "executed"
+    },
+    "O6.a": {
+      "artifact": "card-46dbb349-v1-92f624.json",
+      "attempt": 2,
+      "bound": null,
+      "counterexample": null,
+      "decided": true,
+      "evidence": "size 8 mean 1.0000; threshold 1; observed on the listed sizes: size=8",
+      "form": "simulation",
+      "job_ids": [
+        "mathlib-cee1970a67dd",
+        "mathlib-3faa031226a7"
+      ],
+      "purpose": "prove",
+      "statement_id": "O6.a",
+      "status": "discharged",
+      "text": "def make_lift(given):\n    p = given['cycle']\n    freqs = np.array(given['frequencies'], dtype=float)\n    sc = given['lift_scale']\n    nf = freqs.shape[0]\n    ang = 2.0 * np.pi * np.outer(np.arange(p, dtype=float), freqs) / p\n    Phi = np.zeros((p + 2, 2 * nf))\n    Phi[:p] = sc * np.concatenate([np.cos(ang), np.sin(ang)], axis=1)\n    return Phi\n\ndef model_run(tokens, qpos, Phi, p, lam, tau, M):\n    d = Phi.shape[1]\n    G = lam * np.eye(d)\n    C = np.zeros((d, d))\n    K = np.zeros((d, d))\n    e = 1\n    preds = []\n    for t in range(1, len(tokens)):\n        a = tokens[t - 1]\n        b = tokens[t]\n        if a < p and b < p:\n            u = Phi[a]\n            v = Phi[b]\n            uPu = u @ np.linalg.solve(G, u)\n            if uPu >= tau:\n                e = 1\n                z = u\n            else:\n                zs = np.zeros((M + 1, d))\n                zs[0] = u\n                for c in range(1, M + 1):\n                    zs[c] = K.T @ zs[c - 1]\n                errs = np.sum((zs[1:] - v) ** 2, axis=1)\n                e = 1 + int(np.argmin(errs))\n                z = zs[e - 1]\n            G = G + np.outer(z, z)\n            C = C + np.outer(z, v)\n            K = np.linalg.solve(G, C)\n        if t in qpos:\n            y = Phi[tokens[t]]\n            for c in range(e):\n                y = K.T @ y\n            preds.append(int(np.argmax(Phi @ y)))\n    return preds\n\ndef fresh_pred(a, b, q, Phi, lam):\n    d = Phi.shape[1]\n    u = Phi[a]\n    v = Phi[b]\n    G = lam * np.eye(d) + np.outer(u, u)\n    K = np.linalg.solve(G, np.outer(u, v))\n    return int(np.argmax(Phi @ (K.T @ Phi[q])))\n\ndef run(given):\n    Phi = make_lift(given)\n    p = given['cycle']\n    lam = given['lambda']\n    tau = given['tau']\n    M = given['M']\n    out = {'model': [], 'fresh': []}\n    for ep in given['episodes']:\n        tokens = ep['tokens']\n        qpos = ep['query_positions']\n        bds = ep['fresh_boundaries']\n        out['model'].append(model_run(tokens, qpos, Phi, p, lam, tau, M))\n        row = []\n        for i in range(len(bds)):\n            bd = bds[i]\n            row.append(fresh_pred(tokens[bd], tokens[bd + 1], tokens[qpos[i]], Phi, lam))\n        out['fresh'].append(row)\n    return out\n",
+      "tier": "executed"
+    },
+    "O7.a": {
+      "artifact": "card-46dbb349-v1-f2f99c.json",
+      "attempt": 4,
+      "bound": null,
+      "counterexample": {
+        "failing_size": 64,
+        "input": "{\"episodes\": [{\"tokens\": [65, 12, 41, 64, 22, 51, 64, 44, 9, 64, 14, 43, 64, 42, 7, 64, 48, 13, 64, 15, 44, 64, 43, 8, 64, 51, 16, 64, 1, 30, 64, 52, 17, 64, 10, 39, 64, 62, 27, 64, 41, 6, 64, 38, 3, 64, 63, 28, 64, 5, 34, 64, 57, 22, 64, 26, 55, 64, 2, 31, 64, 23, 52, 64, 13, 42, 64, 8, 37, 64, 33, 62, 64, 59, 18, 64, 54, 64], \"query_positions\": [76], \"condition\": 1}, {\"tokens\": [65, 37, 40, 64, 25, 28, 64, 42, 45, 64, 0, 3, 64, 22, 25, 64, 58, 61, 64, 5, 8, 64, 35, 38, 64, 62, 1, 64, 56, 59, 64, 40, 43, 64, 55, 58, 64, 39, 42, 64, 4, 7, 64, 11, 14, 64, 44, 47, 64, 60, 63, 64, 7, 10, 64, 12, ",
+        "instance": 0,
+        "mean": 0.0,
+        "output": "[13, 18, 56, 16, 63, 9, 3, 63, 33, 57, 63, 38, 2, 59, 29, 59, 35, 44, 54, 38, 18, 54, 53, 63, 54, 35, 62, 42, 42, 9, 50, 41, 0, 4, 35, 52, 31, 42, 55, 49, 7, 37, 17, 6, 8, 18, 52, 15, 48, 47, 43, 32, 2, 20, 30, 5, 48, 42, 38, 4, 31, 36, 7, 41, 20, 36, 31, 48, 22, 5, 44, 34, 27, 30, 50, 39, 52, 53, 8",
+        "score": 0.0,
+        "size": 64,
+        "target": "[[13, 18, 56, 16, 63, 9, 3, 63, 33, 57, 63, 38, 2, 59, 29, 59, 35, 44, 54, 38, 18, 54, 53, 63, 54, 35, 62, 42, 42, 9, 50, 41, 0, 4, 35, 52, 31, 42, 55, 49, 7, 37, 17, 6, 8, 18, 52, 15, 48, 47, 43, 32, 2, 20, 29, 5, 48, 42, 38, 4, 31, 36, 7, 41, 20, 36, 31, 48, 22, 5, 44, 34, 27, 30, 50, 39, 52, 53, ",
+        "threshold": 1
+      },
+      "decided": true,
+      "evidence": "size 64 mean 0.0000; threshold 1; observed on the listed sizes: size=64",
+      "form": "simulation",
+      "job_ids": [
+        "mathlib-9873407e9b3c",
+        "mathlib-72b9512af518"
+      ],
+      "purpose": "prove",
+      "statement_id": "O7.a",
+      "status": "violated",
+      "text": "def run(given):\n    eps_list = given['episodes']\n    p = int(given['cycle'])\n    freqs = given['frequencies']\n    scale = float(given['lift_scale'])\n    lam = float(given['lambda'])\n    tau = float(given['tau'])\n    M = int(given['M'])\n    nf = len(freqs)\n    d = 2 * nf\n    SEP = p\n    BOS = p + 1\n    V = p + 2\n    Phi = np.zeros((V, d))\n    a_idx = np.arange(p).astype(float)\n    for i in range(nf):\n        m = float(freqs[i])\n        ang = 2.0 * np.pi * m * a_idx / p\n        Phi[:p, i] = scale * np.cos(ang)\n        Phi[:p, nf + i] = scale * np.sin(ang)\n    outputs = []\n    for ep in eps_list:\n        toks = ep['tokens']\n        qpos = ep['query_positions']\n        K = np.zeros((d, d))\n        P = np.eye(d) / lam\n        e = 1\n        for t in range(1, len(toks)):\n            a = int(toks[t - 1])\n            b = int(toks[t])\n            if a < p and b < p:\n                u = Phi[a]\n                v = Phi[b]\n                zs = [u]\n                for c in range(M):\n                    zs.append(K.T @ zs[-1])\n                if float(u @ P @ u) >= tau:\n                    e = 1\n                else:\n                    errs = np.zeros(M)\n                    for c in range(1, M + 1):\n                        diff = v - zs[c]\n                        errs[c - 1] = float(diff @ diff)\n                    e = 1 + int(np.argmin(errs))\n                z = zs[e - 1]\n                Pz = P @ z\n                P = P - np.outer(Pz, Pz) / (1.0 + float(z @ Pz))\n                K = K + np.outer(P @ z, v - K.T @ z)\n            is_q = False\n            for qp in qpos:\n                if int(qp) == t:\n                    is_q = True\n            if is_q:\n                y = Phi[b]\n                for c in range(e):\n                    y = K.T @ y\n                logits = Phi @ y\n                outputs.append(int(np.argmax(logits)))\n    return outputs\n",
+      "tier": "executed"
+    },
+    "O7.b": {
+      "artifact": "card-46dbb349-v1-1e33de.json",
+      "attempt": 1,
+      "bound": null,
+      "counterexample": null,
+      "decided": true,
+      "evidence": "Lean: claim_holds : Claim checked twice, axioms ['Classical.choice', 'Quot.sound', 'propext']",
+      "form": "lean",
+      "job_ids": [
+        "lean-587551d019be",
+        "lean-babb77671e42"
+      ],
+      "purpose": "prove",
+      "statement_id": "O7.b",
+      "status": "pass",
+      "text": "theorem inv64 : ∀ a : ℕ, a < 64 → a % 2 = 1 → a * a ^ 15 % 64 = 1 := by decide\n\ntheorem modeq_one64 (a : ℕ) (ha : a < 64) (hodd : a % 2 = 1) : a * a ^ 15 ≡ 1 [MOD 64] := by\n  have h := inv64 a ha hodd\n  show a * a ^ 15 % 64 = 1 % 64\n  exact h.trans (Nat.mod_eq_of_lt (by norm_num)).symm\n\ntheorem exists64 (a b : ℕ) (ha : a < 64) (hodd : a % 2 = 1) (hb1 : 1 ≤ b) (hb : b < 64) :\n    1 ≤ (b * a ^ 15) % 64 ∧ (b * a ^ 15) % 64 < 64 ∧ ((b * a ^ 15) % 64 * a) % 64 = b := by\n  have hm := modeq_one64 a ha hodd\n  have key : (b * a ^ 15) % 64 * a ≡ b [MOD 64] := by\n    have e1 : (b * a ^ 15) % 64 * a ≡ b * a ^ 15 * a [MOD 64] := (Nat.mod_modEq _ _).mul_right a\n    have e2 : b * a ^ 15 * a = b * (a * a ^ 15) := by ring\n    have e3 : b * (a * a ^ 15) ≡ b * 1 [MOD 64] := hm.mul_left b\n    rw [e2] at e1\n    have e4 := e1.trans e3\n    rwa [Nat.mul_one] at e4\n  have hkey : ((b * a ^ 15) % 64 * a) % 64 = b := by\n    have h5 : ((b * a ^ 15) % 64 * a) % 64 = b % 64 := key\n    rw [h5]\n    exact Nat.mod_eq_of_lt hb\n  refine ⟨?_, Nat.mod_lt _ (by norm_num), hkey⟩\n  rcases Nat.eq_zero_or_pos ((b * a ^ 15) % 64) with h0 | h0\n  · rw [h0, Nat.zero_mul, Nat.zero_mod] at hkey\n    omega\n  · exact h0\n\ntheorem uniq64 (a b c1 c2 : ℕ) (ha : a < 64) (hodd : a % 2 = 1) (h1 : c1 < 64) (h2 : c2 < 64)\n    (e1 : c1 * a % 64 = b) (e2 : c2 * a % 64 = b) : c1 = c2 := by\n  have hm := modeq_one64 a ha hodd\n  have h : c1 * a ≡ c2 * a [MOD 64] := by\n    show c1 * a % 64 = c2 * a % 64\n    rw [e1, e2]\n  have h' := h.mul_right (a ^ 15)\n  have l : c1 * a * a ^ 15 = c1 * (a * a ^ 15) := by ring\n  have r : c2 * a * a ^ 15 = c2 * (a * a ^ 15) := by ring\n  rw [l, r] at h'\n  have h3 : c1 ≡ c2 [MOD 64] := by\n    have t1 : c1 * (a * a ^ 15) ≡ c1 * 1 [MOD 64] := hm.mul_left c1\n    have t2 : c2 * (a * a ^ 15) ≡ c2 * 1 [MOD 64] := hm.mul_left c2\n    have t3 := (t1.symm.trans h').trans t2\n    rwa [Nat.mul_one, Nat.mul_one] at t3\n  have h4 : c1 % 64 = c2 % 64 := h3\n  rwa [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at h4\n\ntheorem claim_holds : Claim := by\n  unfold Claim\n  refine ⟨?_, ?_⟩\n  · intro a ha hodd b hb1 hb\n    obtain ⟨p1, p2, p3⟩ := exists64 a b ha hodd hb1 hb\n    exact ExistsUnique.intro ((b * a ^ 15) % 64) ⟨p1, p2, p3⟩\n      (fun y hy => uniq64 a b y _ ha hodd hy.2.1 p2 hy.2.2 p3)\n  · intro a c b ha hb h\n    obtain ⟨k, rfl⟩ : ∃ k, a = 2 * k := ⟨a / 2, by omega⟩\n    have e : c * (2 * k) = 2 * (c * k) := by ring\n    rw [e] at h\n    omega\n",
+      "tier": "lean"
+    },
+    "O8.a": {
+      "artifact": "card-46dbb349-v1-f45957.json",
+      "attempt": 2,
+      "bound": null,
+      "counterexample": null,
+      "decided": true,
+      "evidence": "size 28 mean 1.0000; threshold 1; observed on the listed sizes: size=28",
+      "form": "simulation",
+      "job_ids": [
+        "mathlib-06c2a27f58da",
+        "mathlib-2b98c058eb1b"
+      ],
+      "purpose": "prove",
+      "statement_id": "O8.a",
+      "status": "discharged",
+      "text": "def make_lift(given):\n    p = given['cycle']\n    freqs = np.array(given['frequencies'], dtype=float)\n    sc = given['lift_scale']\n    nf = freqs.shape[0]\n    ang = 2.0 * np.pi * np.outer(np.arange(p, dtype=float), freqs) / p\n    Phi = np.zeros((p + 2, 2 * nf))\n    Phi[:p] = sc * np.concatenate([np.cos(ang), np.sin(ang)], axis=1)\n    return Phi\n\ndef model_run(tokens, qpos, Phi, p, lam, tau, M):\n    d = Phi.shape[1]\n    G = lam * np.eye(d)\n    C = np.zeros((d, d))\n    K = np.zeros((d, d))\n    e = 1\n    preds = []\n    for t in range(1, len(tokens)):\n        a = tokens[t - 1]\n        b = tokens[t]\n        if a < p and b < p:\n            u = Phi[a]\n            v = Phi[b]\n            uPu = u @ np.linalg.solve(G, u)\n            if uPu >= tau:\n                e = 1\n                z = u\n            else:\n                zs = np.zeros((M + 1, d))\n                zs[0] = u\n                for c in range(1, M + 1):\n                    zs[c] = K.T @ zs[c - 1]\n                errs = np.sum((zs[1:] - v) ** 2, axis=1)\n                e = 1 + int(np.argmin(errs))\n                z = zs[e - 1]\n            G = G + np.outer(z, z)\n            C = C + np.outer(z, v)\n            K = np.linalg.solve(G, C)\n        if t in qpos:\n            y = Phi[tokens[t]]\n            for c in range(e):\n                y = K.T @ y\n            preds.append(int(np.argmax(Phi @ y)))\n    return preds\n\ndef content_pairs(tokens, lo, hi, p):\n    out = []\n    for t in range(lo + 1, hi + 1):\n        if tokens[t - 1] < p and tokens[t] < p:\n            out.append([tokens[t - 1], tokens[t]])\n    return out\n\ndef ridge_pred(pairs, q, Phi, lam):\n    d = Phi.shape[1]\n    arr = np.array(pairs, dtype=int).reshape(-1, 2)\n    idx = np.lexsort((arr[:, 1], arr[:, 0]))\n    arr = arr[idx]\n    U = Phi[arr[:, 0]]\n    W = Phi[arr[:, 1]]\n    G = lam * np.eye(d) + U.T @ U\n    C = U.T @ W\n    K = np.linalg.solve(G, C)\n    return int(np.argmax(Phi @ (K.T @ Phi[q])))\n\ndef run(given):\n    Phi = make_lift(given)\n    p = given['cycle']\n    lam = given['lambda']\n    tau = given['tau']\n    M = given['M']\n    out = {'model': [], 'pooled': []}\n    for versions in given['paired_episodes']:\n        mrow = []\n        prow = []\n        for ep in versions:\n            tokens = ep['tokens']\n            pos = ep['query_positions'][0]\n            mrow.append(model_run(tokens, [pos], Phi, p, lam, tau, M)[0])\n            prow.append(ridge_pred(content_pairs(tokens, 0, pos, p), tokens[pos], Phi, lam))\n        out['model'].append(mrow)\n        out['pooled'].append(prow)\n    return out\n",
+      "tier": "executed"
+    }
+  },
+  "claims": [
+    {
+      "claim_id": "complexity.time_per_token",
+      "detail": "depends on open assumptions A5, A6",
+      "label": "lean-proven",
+      "obligations": [
+        "O1"
+      ],
+      "open_assumptions": [
+        "A5",
+        "A6"
+      ],
+      "phrase": "unproven: depends on open assumptions A5, A6",
+      "status": "unproven",
+      "text": "complexity time_per_token: O(M d^2 + V d)",
+      "tier": "lean"
+    },
+    {
+      "claim_id": "complexity.memory",
+      "detail": "depends on open assumptions A5, A6",
+      "label": "lean-proven",
+      "obligations": [
+        "O2"
+      ],
+      "open_assumptions": [
+        "A5",
+        "A6"
+      ],
+      "phrase": "unproven: depends on open assumptions A5, A6",
+      "status": "unproven",
+      "text": "complexity memory: O(d^2 + V d)",
+      "tier": "lean"
+    },
+    {
+      "claim_id": "complexity.total_sequence",
+      "detail": "depends on open assumptions A5, A6",
+      "label": "lean-proven",
+      "obligations": [
+        "O3"
+      ],
+      "open_assumptions": [
+        "A5",
+        "A6"
+      ],
+      "phrase": "unproven: depends on open assumptions A5, A6",
+      "status": "unproven",
+      "text": "complexity total_sequence: O(n (M d^2 + V d))",
+      "tier": "lean"
+    },
+    {
+      "claim_id": "sample_efficiency.prediction",
+      "detail": "depends on open assumptions A1, A2, A3, A4",
+      "label": "executed-on-examples",
+      "obligations": [
+        "O4"
+      ],
+      "open_assumptions": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "phrase": "unproven: depends on open assumptions A1, A2, A3, A4",
+      "status": "unproven",
+      "text": "sample efficiency prediction: k_new = 1 for this model. Each of the following baselines needs k_new >= 8 or never reaches 0.9 at k <= 16. All baselines use the same lift and lambda.\n- Fresh-mode baseline (the parent switched-Koopman / SUGS card when B is placed in its own component): an RLS operator with prior I/lambda fitted only to the k B pairs (Phi[b], Phi[b+s_B]) and read on Phi[q].\n- MesaNet / in-context least squares: one ridge operator pooled over all written content pairs.\n- Gated DeltaNet on keys Phi[x_{t-1}] and values Phi[x_t], with write strength 1 and forgetting factor tuned in {0.5, 0.7, 0.9, 0.99}.\n- The ablation with e_t fixed to 1, which is exactly RLS on the raw pairs. (metric: k_new: the smallest number of demonstrations of a new rule B at which accuracy on undemonstrated queries is >= 0.9.\n\nSetup:\n- Single layer with the reference Fourier lift: d = 16, V_c = 61 (prime cycle), V = 63, zero rows for BOS and ';'. w_beta = 0, lambda = 1e-6, tau = 1e3, M = 60.\n- 500 trials per k in {1, 2, 4, 8, 16}. Each trial draws distinct shifts s_A, s_B from {1..60}.\n- Context: BOS, then 24 demonstrations 'a a+s_A ;' with inputs drawn without replacement, then k demonstrations 'b b+s_B ;' on fresh inputs, then a query token q that was not a demonstrated input of B.\n- The target is q+s_B mod 61. The prediction is the argmax over all V = 63 logits, and a reserved-token prediction counts as wrong.; value: 1)",
+      "tier": "executed"
+    },
+    {
+      "claim_id": "capability.1",
+      "detail": "depends on open assumptions A1, A2, A3",
+      "label": "executed-on-examples",
+      "obligations": [
+        "O5"
+      ],
+      "open_assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "phrase": "unproven: depends on open assumptions A1, A2, A3",
+      "status": "unproven",
+      "text": "capability 1: task: One-shot new rule. The protocol of claims.sample_efficiency with k = 1 (d = 16, V_c = 61, 500 trials). prediction: Accuracy >= 0.9. Fresh-mode baseline <= 0.2: a one-pair ridge fit maps q to a multiple of Phi[b+s_B], so it predicts b+s_B != q+s_B, or the token anti-aligned with it. Pooled MesaNet <= 0.1. Ablation e_t = 1 <= 0.1.",
+      "tier": "executed"
+    },
+    {
+      "claim_id": "capability.2",
+      "detail": "depends on open assumptions A1, A2, A3",
+      "label": "executed-on-examples",
+      "obligations": [
+        "O6"
+      ],
+      "open_assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "phrase": "unproven: depends on open assumptions A1, A2, A3",
+      "status": "unproven",
+      "text": "capability 2: task: Many rules without slots.\n- Context: BOS, 24 demonstrations of rule A, then 8 further shift rules B_1..B_8 in sequence. Their shifts s_1..s_8 are drawn without replacement from {1..60} \\ {s_A}, so they are nonzero, pairwise distinct and different from s_A.\n- Each B_i is given by exactly 1 demonstration 'b b+s_i ;' followed by one query 'q ;' on a token that is not its demonstrated input.\n- Then 1 cue demonstration of A and a final query.\n- Settings: reference lift, d = 16, V_c = 61, w_beta = 0, 500 trials. Scoring as in claims.sample_efficiency. prediction: Mean accuracy over the 8 new-rule queries >= 0.9. Accuracy on B_8 is at least (accuracy on B_1) - 0.1, because no rule occupies a slot. Final A recall >= 0.9. The fresh-mode baseline (one RLS operator per B_i, fitted to its single pair) gives <= 0.2 on every B_i, for the reason given in the one-shot claim.",
+      "tier": "executed"
+    },
+    {
+      "claim_id": "capability.3",
+      "detail": "depends on open assumptions A1, A2, A3",
+      "label": "lean-proven",
+      "obligations": [
+        "O7"
+      ],
+      "open_assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "phrase": "unproven: depends on open assumptions A1, A2, A3",
+      "status": "unproven",
+      "text": "capability 3: task: Semigroup membership on a composite cycle.\n- Settings: V_c = 64, Fourier lift with frequencies 1..8 (d = 16), M = 63, w_beta = 0. Context: 24 demonstrations of A, then 1 demonstration of B, then a query. Shifts are drawn from {1..63} with s_B != s_A.\n- Condition (i): s_A odd, s_B arbitrary.\n- Condition (ii): s_A even, s_B odd.\n- 500 trials each. prediction: (i) Accuracy >= 0.9, since an odd s_A is a unit mod 64, so every shift is a unique power of it. (ii) Accuracy <= 0.15, since no multiple of an even shift is odd. The duration test picks an even multiple c s_A (ties to the smallest c), and the readout lands on q + c s_A != q + s_B. No pooled, decayed or slot-based baseline predicts this odd/even split.",
+      "tier": "lean"
+    },
+    {
+      "claim_id": "capability.4",
+      "detail": "depends on open assumptions A1, A2, A3",
+      "label": "executed-on-examples",
+      "obligations": [
+        "O8"
+      ],
+      "open_assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "phrase": "unproven: depends on open assumptions A1, A2, A3",
+      "status": "unproven",
+      "text": "capability 4: task: Order dependence of the same pair multiset.\n- Use 28 demonstrations: 24 of A and 4 of B, with s_A != s_B drawn from {1..60}. Demonstrations are numbered 1..28 in context order, and each is the token triple 'a a+s ;'. Demonstration 28 is always a B demonstration, and it is followed by a query for B.\n- Settings: reference lift, V_c = 61, d = 16, w_beta = 0, 500 trials per order.\n- Order (i), blocked: demonstrations 1..24 are A and 25..28 are B.\n- Order (ii), interleaved: demonstrations 1, 7, 13 and 28 are B, and the other 24 are A. Only 10 A demonstrations precede demonstration 13, so the first three B demonstrations arrive before the A lifts span R^16. prediction: (i) Accuracy >= 0.9. (ii) Accuracy <= 0.6, because B pairs in unidentified directions are written as duration-1 pairs and corrupt K, and powers amplify the error. MesaNet without decay gives identical outputs for both orders, with accuracy <= 0.2 in both.",
+      "tier": "executed"
+    }
+  ],
+  "dropped": [],
+  "kill_codes": [
+    "unproven:A1",
+    "unproven:A2",
+    "unproven:A3",
+    "unproven:A4",
+    "unproven:A5",
+    "unproven:A6"
+  ],
+  "manifest": {
+    "__init__.py": "28b8b372a11ae7decd2380677bff5673811e0811ffee200bb0ae4d0ef7d4ac08",
+    "conservation.py": "49e58e2fa6edb96c2b1a0c1aca86fad0d129683ac2977de68fd36bac1a376c47",
+    "constructions.py": "9ae2bd6703dbbf886da2ac5d0791277cecb519f69f30ebb3e4454060cc781d2f",
+    "cost.py": "8797d64ad33bafada5f83bd1311876c1cb2d716e54a7fc84180c6dafa694ec5b",
+    "jobmain.py": "d1ee08460905246dc2e7d9f6f33434ab293e8c37d20f176cafb65d23c686c673",
+    "lean_check.py": "28362dbc516ed6bcfdd18d51a6f0854b358c9507619a1afc66f753c0ffbc88a2",
+    "library_smoke.py": "e8a93a5d7bfcbb07914bbb30dcda2e1c19d376f5ac5b2e5ec420c427c57a50de",
+    "magic_x.py": "f7f9d9090a4711856d123dbe16aaffaa403933f2e993c514f56eb689af40c822",
+    "manifest.py": "ab56048c357c5be925634c05e8ec93f2a753571420b707685b62b84b174950be",
+    "references.py": "0dc162343403127e53532d2a53e472d5c4daea72f2756d9be591fac67973efa1",
+    "runner.py": "72c58b894c1854eae6fa553e9a468f97c096bf581b42ef66fbd814461c0bbb38",
+    "selfcheck.py": "253176996615c81a68bcf771c4e7046df5cf43424700945a9b11c35c7162e3da",
+    "smoke.py": "f9763f9db0b1088c298837cf42f2bc7493e5a116437539f9055bbc77a3dc5ab0",
+    "spec_checks.py": "26eef886275746e627e82441fbf1f59912ac8b00f211f5816629f65153e99859",
+    "spec_smoke.py": "19cc6459e150ab9e763a2c3609d12db8134a297abc80e9cf4270967a8dc9a291",
+    "tiers.py": "db333fe97390e7ed662031bd90dece5e17b11056d8bc49653df22d16d74e0952"
+  },
+  "models": {
+    "prover": [
+      "claude-opus-5-5"
+    ],
+    "statement_fixer": [
+      "gpt-6.1-sol"
+    ]
+  },
+  "not_formalized": [
+    {
+      "claim_id": "capability.3",
+      "why": "The residual assertion that no pooled, decayed or slot-based baseline predicts the split does not specify the quantified baseline family or what constitutes predicting a split; O7 formalizes only the explicit accuracy thresholds and arithmetic assertions."
+    },
+    {
+      "claim_id": "capability.1",
+      "why": "The explanatory alternative involving a token anti-aligned with a lift does not define anti-alignment or address zero scalar and decoder ties; O5 formalizes all numerical predictions."
+    },
+    {
+      "claim_id": "capability.2",
+      "why": "The causal phrase 'because no rule occupies a slot' has no separately specified intervention or measurable causal criterion; O6 formalizes all accuracy and recall predictions."
+    },
+    {
+      "claim_id": "capability.4",
+      "why": "The explanatory assertions that writes corrupt K and powers amplify the error do not specify an error norm, reference operator, or quantitative amplification criterion; O8 formalizes the accuracy and identical-output predictions."
+    }
+  ],
+  "obligations": {
+    "O1": {
+      "assumptions": [
+        "A5",
+        "A6"
+      ],
+      "by_statement": "O1.a",
+      "claim_id": "complexity.time_per_token",
+      "label": "lean-proven",
+      "obligation_id": "O1",
+      "phrase": "proven",
+      "result": "holds",
+      "tier": "lean"
+    },
+    "O2": {
+      "assumptions": [
+        "A5",
+        "A6"
+      ],
+      "by_statement": "O2.a",
+      "claim_id": "complexity.memory",
+      "label": "lean-proven",
+      "obligation_id": "O2",
+      "phrase": "proven",
+      "result": "holds",
+      "tier": "lean"
+    },
+    "O3": {
+      "assumptions": [
+        "A5",
+        "A6"
+      ],
+      "by_statement": "O3.a",
+      "claim_id": "complexity.total_sequence",
+      "label": "lean-proven",
+      "obligation_id": "O3",
+      "phrase": "proven",
+      "result": "holds",
+      "tier": "lean"
+    },
+    "O4": {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "by_statement": "O4.a",
+      "claim_id": "sample_efficiency.prediction",
+      "label": "executed-on-examples",
+      "obligation_id": "O4",
+      "phrase": "observed on the listed sizes: size=1",
+      "result": "holds",
+      "tier": "executed"
+    },
+    "O5": {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "by_statement": "O5.a",
+      "claim_id": "capability.1",
+      "label": "executed-on-examples",
+      "obligation_id": "O5",
+      "phrase": "observed on the listed sizes: size=1",
+      "result": "holds",
+      "tier": "executed"
+    },
+    "O6": {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "by_statement": "O6.a",
+      "claim_id": "capability.2",
+      "label": "executed-on-examples",
+      "obligation_id": "O6",
+      "phrase": "observed on the listed sizes: size=8",
+      "result": "holds",
+      "tier": "executed"
+    },
+    "O7": {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "by_statement": "O7.b",
+      "claim_id": "capability.3",
+      "label": "lean-proven",
+      "obligation_id": "O7",
+      "phrase": "proven",
+      "result": "holds",
+      "tier": "lean"
+    },
+    "O8": {
+      "assumptions": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "by_statement": "O8.a",
+      "claim_id": "capability.4",
+      "label": "executed-on-examples",
+      "obligation_id": "O8",
+      "phrase": "observed on the listed sizes: size=28",
+      "result": "holds",
+      "tier": "executed"
+    }
+  },
+  "stage": "M",
+  "statement_hashes": {
+    "O1.a": "f56f3e1520be69883946ad9aaadb416d1d6d9984570a9f88b1172040126d2257",
+    "O2.a": "be11935e50137c6109f072ec0d30f6d8d486338e098aa635c6172c057f50e08c",
+    "O3.a": "d64b03d6878c5793dd98f6e6cfc0effd15a0d6fb3fb5285a29b5ee5cf28c54cd",
+    "O4.a": "95fc3f58e1e6532c8c7c8a603994db88eece7b9b2aff78aef963a4bc3e10eae4",
+    "O5.a": "fc8a25ad561e0dbae9e15abd0766bbdff070c9b244841aaa4c7a8deee5d8a626",
+    "O6.a": "fb30a0e9bc29dcefbf57cf2f07978e230d1acd7e54e793f2a067ffd6dc69263b",
+    "O7.a": "52803e9c7b681aa52f4c7494e24b92247f97fc87baffd6ce895ea5a344e1f748",
+    "O7.b": "e35fd668188758327227e5faff0c446f2b346ab09fc7f4bfac32c69d5698b516",
+    "O8.a": "35379a0f81a353cef7a92d60d483ab958c063e37d690144bc1d23c6b8125c157"
+  },
+  "statements_artifact": "artifacts/math_statements/card-46dbb349-v1-f74e30.json",
+  "verdict": "undetermined"
+}

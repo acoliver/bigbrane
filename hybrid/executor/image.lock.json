@@ -1,0 +1,14 @@
+{
+  "architecture": "arm64",
+  "base_digest": "sha256:739ba32ae445e8d58f3d90feb85f83bebc8346f8dd280fa1eb5848f4ff1ed163",
+  "digest": "sha256:7fa94b73a3f6fbd6b6544d075e24ff8bf28fae2662771e577a332348d4a00f1b",
+  "image_id": "4ac1b48d2802fed221703d9e6217a32000844feb86db123c31f32fcdbd4ee011",
+  "labels": {
+    "bigbrane.owner": "bigbrane",
+    "bigbrane.run": "p0-20261009T204723Z",
+    "io.buildah.version": "1.42.2"
+  },
+  "os": "linux",
+  "reference": "localhost/bigbrane/executor@sha256:7fa94b73a3f6fbd6b6544d075e24ff8bf28fae2662771e577a332348d4a00f1b",
+  "tag": "localhost/bigbrane/executor:p0-20261009T204723Z"
+}

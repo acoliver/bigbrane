@@ -1,0 +1,145 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Sixty-four six-bit slots with slot-class completion of items",
+  "summary": "The store is a row of 64 slots of six bits, indexed by the identity of the address. A slot keeps the low six bits of its item, and when an item is read back its two high bits are completed from the class of the slot index modulo four. Brackets are tracked by a 20-bit word. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Keep the low six bits of each item in a slot chosen by its address and complete the high bits on reading from the slot's index class.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "C",
+        "type": "array of 6-bit slots",
+        "shape": [
+          64
+        ],
+        "meaning": "The store: 64 slots of 6 bits each (384 bits); slot j holds the low six bits of the item written under address j."
+      },
+      {
+        "name": "bw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket word of open types, 20 bits."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase, 7 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "slot write",
+        "latex": "C[j_t] \\leftarrow y_t \\bmod 64",
+        "plain": "C[j] = y_t mod 64 for the slot j_t = sigma(z_t): pi - 1 for string symbols, id for pair addresses, 32 + id for the second table; y_t is the item code"
+      },
+      {
+        "name": "bracket word",
+        "latex": "bw \\leftarrow 2\\,bw + b,\\quad bw \\leftarrow \\lfloor bw/2 \\rfloor",
+        "plain": "an opener of type b: bw = 2 bw + b; a closer: bw = floor(bw / 2)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "slot read",
+        "latex": "\\hat{y} = C[j] + 64\\,(j \\bmod 4)",
+        "plain": "the item read from slot j is C[j] + 64 (j mod 4): the low bits from the slot and the high bits from the slot's class"
+      },
+      {
+        "name": "chains and two hops",
+        "latex": "j \\leftarrow \\hat{y} \\bmod 32 \\text{ while the item names a variable}",
+        "plain": "chained assignments reread the slot of the named variable, at most 8 times; f(g(x)) reads slot 32 + id(x), then the slot of the result"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = bw \\bmod 2",
+        "plain": "the legal closer has the type in the lowest bit of bw"
+      }
+    ],
+    "learning": {
+      "description": "Symbol roles are counted over m example episodes, each symbol taking its most frequent role; the slot layout is fixed.",
+      "few_shot_argument": "Every symbol's role shows in one episode; m = 6 example episodes per task fix all roles in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "One slot write or at most 8 slot reads per symbol. State: 64 slots of 6 bits (384 bits), the 20-bit bracket word and a 7-bit counter, 411 bits in all, fixed in n."
+    },
+    "sample_efficiency": {
+      "mechanism": "Counting of symbol roles over m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction over up to 64 symbols: symbol i goes to slot i - 1 and is read back after the separator; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Hand-set construction with V = 256 items: the slot of an address keeps the low six bits of its item and the slot class supplies the two high bits, so recall is exact at K = 8, 32 and 64 with items over 256 symbols."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "Bracket word: exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Table g in slots 32..63 and table f in slots 0..31 (table entries below 32 need no completion); exact at sizes 4, 16 and 32. At most 8 chained reads over 32 variables; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "More than 64 addresses cannot be held, since each needs its own slot: exact recall fails at K = 65."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "Role counting learns every small case from m = 6 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A recall episode at K = 64 over 256 items has an item read back wrong.",
+    "Writing one slot changes another slot."
+  ],
+  "toy_example": {
+    "description": "Three slot writes and their reads.",
+    "python": "import json\nC = [0] * 64\nfor j, y in [(0, 17), (5, 69), (10, 130)]:\n    C[j] = y % 64\nprint(json.dumps({\"slots\": [C[0], C[5], C[10]], \"reads\": [C[j] + 64 * (j % 4) for j in (0, 5, 10)]}))\n",
+    "expected": {
+      "slots": [
+        17,
+        5,
+        2
+      ],
+      "reads": [
+        17,
+        69,
+        130
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

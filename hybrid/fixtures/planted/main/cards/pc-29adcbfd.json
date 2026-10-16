@@ -1,0 +1,120 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "A running ledger of address-content products read through a positive feature map",
+  "summary": "Each symbol writes the product of a positive address feature vector and a content vector into a square ledger, and adds the address features to a tally. A later probe reads the ledger with its own positive features and divides by the tally read with the same features, so the result is a weighted mean of earlier contents.",
+  "core_idea": "Keep a fixed-size ledger of summed address-content products plus a tally of address features, and read both with the probe's features to get a normalized weighted mean of past contents.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "M",
+        "type": "real matrix",
+        "shape": [
+          "m",
+          "d"
+        ],
+        "meaning": "Ledger: the sum over earlier positions of the product of the address feature vector (length m) and the content vector (length d)."
+      },
+      {
+        "name": "z",
+        "type": "real vector",
+        "shape": [
+          "m"
+        ],
+        "meaning": "Tally: the sum of the address feature vectors of every earlier position, used as the divisor of the read."
+      }
+    ],
+    "update": [
+      {
+        "name": "features",
+        "latex": "a_t = \\phi(W_a e_t),\\; c_t = W_c e_t,\\; \\phi(u) = \\mathrm{elu}(u) + 1",
+        "plain": "a_t = phi(W_a e_t), c_t = W_c e_t, where e_t = E[x_t] is the embedding of symbol x_t and phi(u) = elu(u) + 1 elementwise, so every feature is positive"
+      },
+      {
+        "name": "ledger",
+        "latex": "M_t = M_{t-1} + a_t c_t^{\\top}",
+        "plain": "M_t = M_(t-1) + outer(a_t, c_t)"
+      },
+      {
+        "name": "tally",
+        "latex": "z_t = z_{t-1} + a_t",
+        "plain": "z_t = z_(t-1) + a_t"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "b_t = \\phi(W_b e_t),\\; y_t = \\frac{M_t^{\\top} b_t}{z_t^{\\top} b_t}",
+        "plain": "b_t = phi(W_b e_t) are the probe features; y_t = M_t^T b_t / (z_t . b_t), the normalized read"
+      },
+      {
+        "name": "symbol",
+        "latex": "\\hat{x}_{t+1} = \\arg\\max_v (O y_t)_v",
+        "plain": "next symbol scores O y_t over the V symbols; the prediction is their argmax"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence.",
+      "few_shot_argument": "No structure for few examples; about 3000 training sequences are needed for recall of 4 pairs."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(m d + d V)",
+      "memory": "Theta(m d)",
+      "total_sequence": "Theta(n m d + n d V)",
+      "constants_notes": "One rank-one write of an m by d ledger and one m by d read per symbol, plus the d by V output map. The ledger and tally are m d + m numbers at any length."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 3000,
+        "statement": "From random weights, 3000 training sequences of 4 pairs over 16 symbols give recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact recall with hand-set weights when the K address feature vectors are orthogonal, which needs K <= m; beyond m pairs the read mixes contents."
+      },
+      {
+        "task": "copy a string after a separator",
+        "prediction": "Exact copying of length L with hand-set position features when L <= m; longer strings are mixed in the ledger."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A hand-set configuration recalls more than m pairs exactly from an m by d ledger.",
+    "The counted operations of the reference code grow faster than linearly in n at fixed m, d and V."
+  ],
+  "toy_example": {
+    "description": "Two writes into a two by two ledger and one normalized read.",
+    "python": "import json, math\ndef phi(u):\n    return [x + 1.0 if x > 0 else math.exp(x) for x in u]\nM = [[0.0, 0.0], [0.0, 0.0]]\nz = [0.0, 0.0]\nfor a_raw, c in [([0.5, -1.0], [1.0, 0.0]), ([-0.5, 1.0], [0.0, 2.0])]:\n    a = phi(a_raw)\n    for i in range(2):\n        z[i] += a[i]\n        for j in range(2):\n            M[i][j] += a[i] * c[j]\nb = phi([1.0, -1.0])\nden = sum(z[i] * b[i] for i in range(2))\ny = [sum(M[i][j] * b[i] for i in range(2)) / den for j in range(2)]\nprint(json.dumps({\"read\": [round(v, 6) for v in y], \"tally\": [round(v, 6) for v in z]}))\n",
+    "expected": {
+      "read": [
+        0.616688,
+        0.766625
+      ],
+      "tally": [
+        2.106531,
+        2.367879
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

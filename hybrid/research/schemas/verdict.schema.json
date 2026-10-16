@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/verdict.schema.json",
+  "title": "Stage verdict record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "card_id",
+    "card_version",
+    "stage",
+    "verdict",
+    "reasons",
+    "by_calls"
+  ],
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "pattern": "^card-[0-9a-f]{8}$"
+    },
+    "card_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stage": {
+      "type": "string",
+      "pattern": "^(S[0-6]|R|M|C)$"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fail",
+        "revise",
+        "infeasible_proved",
+        "reduces_to_known",
+        "undetermined"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "by_calls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(call|job|lean|mathlib)-[0-9a-f]{12}$"
+      }
+    }
+  }
+}

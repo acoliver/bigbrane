@@ -1,0 +1,109 @@
+# Generation arms (DISCOVERY-PIPELINE-PLAN.md section 6.1, Phase 6; code in hybrid/research/stages/g_generate.py).
+#
+# Read only when run.toml sets [generation] mode = "arms". Each arm is a generation mode with its own prompt file
+# (hybrid/research/prompts/<prompt>.md, placed before the shared explorer rules), its own required output structure
+# (`arm_structure` in the draft, checked at G before any later stage), a weight and a role. A `new` explore task
+# draws its arm with probability proportional to the weights; mutate, cross and escape tasks keep the operator
+# prompts of the explorer and carry no arm. Every arm draft records its arm, and the ledger counts per arm the
+# drafts, schema failures, structure failures, cards the classifier excluded, duplicates, new archive cells and the
+# survivors at each later stage (event arm_draft; `inspect` prints the table).
+#
+# Routing (plan section 16 and decision D5): the proposer is Claude; GPT drafts one arm (A4, distant concepts),
+# because blends reuse properties within a provider more than across providers (Kombine, research-llm-creativity.md
+# section 5) and the paced ChatGPT route (1 concurrent, 60 requests per hour) is kept for the math and challenge
+# roles otherwise. `role` names a role of models.toml: explorer is Claude first, explorer_alt is GPT first.
+
+[arms.A1]
+name = "cross_field"
+title = "Cross-field mapping"
+prompt = "arm_cross_field"
+role = "explorer"
+weight = 0.2
+# The lens and its papers feed this arm (lenses survive as one input to the cross-field arm, plan section 2).
+papers = true
+
+[arms.A2]
+name = "limit_break"
+title = "Break an assumption of a known limit"
+prompt = "arm_limit_break"
+role = "explorer"
+weight = 0.2
+papers = false
+
+[arms.A3]
+name = "invert"
+title = "Invert a transformer commitment"
+prompt = "arm_invert"
+role = "explorer"
+weight = 0.2
+papers = false
+
+[arms.A4]
+name = "random_concepts"
+title = "Distant random concepts"
+prompt = "arm_random"
+role = "explorer_alt"
+weight = 0.2
+papers = false
+
+[arms.A5]
+name = "base_model"
+title = "Base or less post-trained model"
+prompt = "arm_base"
+# A base model drafts free text from the prompt; an instruction-tuned formatter (prompt arm_base_formatter) turns
+# the draft into a card without adding mechanism. Both roles must be routed in models.toml before the arm can run.
+role = "base_drafter"
+formatter_role = "base_formatter"
+weight = 0.2
+papers = true
+# LM Studio model id of a base (not instruction-tuned) model. Empty: none is installed (decision D4, checked
+# 2026-10-13 by listing GET http://127.0.0.1:1234/api/v0/models read-only: qwen3.6-35b-a3b-mlx, qwen/qwen3.8-27b,
+# ornith-1.0-35b, gemma-4-e4b-it, all instruction-tuned, plus an embedding model).
+base_model = ""
+# When the arm cannot run (no base model, the model not listed, or a role not routed), its weight moves to these
+# arms in equal parts (plan decision D4: A5's slots move to A1 and A2).
+fallback = ["A1", "A2"]
+
+# Arm A3: the transformer commitments a card may invert. The card names one id and builds on its inverse.
+[[commitments]]
+id = "dense_real_vectors"
+text = "knowledge and state are dense real-valued vectors"
+[[commitments]]
+id = "subword_tokens"
+text = "the input unit is a subword token from a fixed vocabulary"
+[[commitments]]
+id = "next_token_objective"
+text = "the training signal is next-token log loss"
+[[commitments]]
+id = "knowledge_in_weights"
+text = "knowledge lives in trained weights"
+[[commitments]]
+id = "end_to_end_backprop"
+text = "every parameter is trained end to end by backpropagation"
+[[commitments]]
+id = "fixed_compute_per_token"
+text = "each token gets the same fixed amount of compute"
+[[commitments]]
+id = "flat_context"
+text = "the context is a flat sequence of positions"
+[[commitments]]
+id = "softmax_retrieval"
+text = "retrieval is a softmax-weighted average over stored items"
+
+[random_concepts]
+# Arm A4: two concepts are drawn per task with a seeded draw recorded in the ledger. The list is unrelated to
+# sequence modelling on purpose; the card must still give a map, an equation and a prediction (the A1 structure), so
+# random text earns nothing on its own (research-llm-creativity.md section 5).
+per_task = 2
+concepts = [
+  "glacier calving", "bird flocking", "origami folding", "tidal resonance", "ant pheromone trails",
+  "crystal dislocations", "bell ringing changes", "river meander cutoff", "slime mould foraging", "sourdough fermentation",
+  "plate tectonics", "Penrose tilings", "knitting stitch patterns", "auction clearing", "bee waggle dance",
+  "sandpile avalanches", "coral reef growth", "cell polarity", "immune clonal selection", "bridge truss load paths",
+  "jazz call and response", "weaving looms", "fungal mycelium networks", "traffic jams", "soap film minimal surfaces",
+  "seed dispersal", "lock and key enzymes", "cartographic projection", "tide pool succession", "chess endgame tablebases",
+  "musical canons", "railway timetabling", "beaver dam building", "lichen symbiosis", "wave interference in ripple tanks",
+  "dune migration", "honeycomb packing", "kin recognition", "postal sorting", "spider web tension",
+  "erosion terraces", "spin glasses", "card shuffling", "quorum sensing", "embroidery knots",
+  "phase separation in mixtures", "telephone switchboards", "orbital resonance", "mitochondrial fission", "library cataloguing",
+]

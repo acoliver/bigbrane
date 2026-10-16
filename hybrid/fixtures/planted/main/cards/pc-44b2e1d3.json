@@ -1,0 +1,174 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Signed weights over a fixed bank of small programs, moved between surviving programs by a learned quadratic flow",
+  "summary": "A fixed bank of d short deterministic programs is run on every demonstration. Programs whose output disagrees with the demonstrated token are switched off for the rest of the episode; the surviving programs' signed weights are squared, sent through a learned skew-symmetric matrix, masked, added back, and rescaled to unit length, so a program that had no weight at the start can gain it. A probe runs every program and puts each program's squared weight on the token it returns; each entry of the result is clipped to [0, 1].",
+  "core_idea": "Keep signed unit-norm weights over a fixed program bank, remove programs that contradict a demonstration, and let a learned quadratic flow move weight among the survivors before predicting with squared weights.",
+  "mechanism": {
+    "learning": {
+      "description": "Fix F before optimizing theta. A training dataset consists of task contexts, each with demonstrations and at least one labeled held-out probe. Minimize the mean probe loss, where a supported probe has loss -log(max(its correct-token probability, 1e-12)), and every probe in a context that has halted with ERROR has constant loss 30 and zero gradient. Report the fraction of ERROR contexts separately; parameter learning cannot repair missing repertoire coverage. Use full-batch projected gradient descent for 1000 steps with step size 0.001. Initialize the stored upper-triangular entries of K to zero and a_init to uniform positive unit amplitudes unless a declared experiment supplies another initialization. Differentiate through every executed transport, squared-amplitude readout and nonzero-norm normalization. Masks and program executions are fixed discrete computations with zero derivative. At exact-zero recovery, treat the returned normalized compatibility vector as constant. Below or at the probability floor, use zero loss derivative. After each step, normalize a_init; if it becomes exactly zero, reset it to uniform positive unit amplitudes. Reconstruct K from its upper triangle and negative transpose. No optimizer or parameter updates occur inside deployment contexts. This specifies a reproducible optimizer, not a convergence guarantee. An inherited learned program language may supply F, but its construction cost and training data must be reported independently.",
+      "few_shot_argument": "Consistency filtering leaves only programs agreeing with all k demonstrations. If a distinguishing teaching set leaves one survivor, skew-symmetry makes the surviving diagonal entry of K zero. Its amplitude therefore either normalizes to magnitude one or receives magnitude one through zero-vector recovery. Every subsequent probe matches that program, even on unseen inputs. Before identification, K(v odot v) can give an initially zero compatible coordinate nonzero amplitude; multiplicative Bayesian reweighting cannot. Coverage and distinguishing examples are necessary, and no practical advantage from training K is guaranteed by this argument."
+    },
+    "readout": [
+      {
+        "latex": "p_t(y\\mid x)=\\operatorname{clip}\\Big(\\sum_{i=1}^{d}a_{t,i}^{\\,2}\\mathbf{1}[F_i(x)=y],0,1\\Big)",
+        "plain": "Execute every program on the probe and accumulate its squared amplitude in the output bin it returns. The result is a normalized V-token distribution, up to floating-point rounding; each entry is then clipped to [0,1]."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "F contains d deterministic programs, each stored in at most L instructions and executable in at most L steps. V is the output vocabulary size. Inputs are tuples of r integers in {0,...,V-1}, with fixed bounded r. The bounded typed language is straight-line code over integer and Boolean registers: input-coordinate loads, integer constants in {0,...,V-1}, addition and multiplication modulo V, integer equality, and Boolean-controlled selection between two integers. Each program returns an integer token in {0,...,V-1}. Each instruction has bounded arity; there are no loops, recursion or external calls. F_i(x) denotes execution of program i on input x, and i ranges from 1 through d. This language includes the toy's constant and identity programs. A repertoire is fixed before deployment; its construction is not the proposed novelty.",
+        "name": "F",
+        "shape": [
+          "d",
+          "L"
+        ],
+        "type": "fixed executable program repertoire"
+      },
+      {
+        "meaning": "theta stores d(d-1)/2 upper-triangular entries defining a real skew-symmetric matrix K, together with d coordinates of the unit-norm initial signed amplitude vector a_init. K is reconstructed as a dense d by d matrix and remains fixed throughout a deployment context. Its entries express directional transport between executable hypotheses, not token-addressed writes.",
+        "name": "theta",
+        "shape": [
+          "d(d+1)/2"
+        ],
+        "type": "learned real parameter block"
+      },
+      {
+        "meaning": "a_t is the signed unit-norm amplitude after event t, initialized as a_0=a_init. Its componentwise square gives program prediction mass. Context length n counts demonstration and probe events, and t ranges from 1 through n. The teaching-set size k counts demonstrations.",
+        "name": "a",
+        "shape": [
+          "d"
+        ],
+        "type": "real task-local amplitude vector"
+      },
+      {
+        "meaning": "c_t records programs consistent with every demonstration so far, initialized as the all-ones vector c_0. Empty compatibility triggers ERROR, meaning termination as an unsupported task without a prediction. This is classical finite version-space elimination.",
+        "name": "c",
+        "shape": [
+          "d"
+        ],
+        "type": "binary task-local compatibility vector"
+      },
+      {
+        "meaning": "The observed portion of e_t is a tag and input x_t, plus an output token y_t for demonstrations only. Probes have no observed y_t. The temporary length-d vectors m_t, v_t and b_t are defined by the update equations and discarded after the event. The indicator 1[condition] equals one when its condition holds. The symbols odot and ||.||_2 denote componentwise multiplication and Euclidean norm. ERROR is a termination signal, not a vector.",
+        "name": "e",
+        "shape": [
+          "tag:scalar",
+          "x:r",
+          "y:optional scalar",
+          "m:d",
+          "v:d",
+          "b:d"
+        ],
+        "type": "tagged event and temporary workspace record"
+      },
+      {
+        "meaning": "p_t(y|x) is the output-token distribution for a probe input x, with y ranging over {0,...,V-1}. The input-output task interface supplies event boundaries. No distribution is produced after ERROR.",
+        "name": "p",
+        "shape": [
+          "V"
+        ],
+        "type": "output probability vector"
+      }
+    ],
+    "update": [
+      {
+        "latex": "m_{t,i}=\\mathbf{1}[F_i(x_t)=y_t],\\qquad c_t=c_{t-1}\\odot m_t;\\qquad \\|c_t\\|_2=0\\Longrightarrow\\mathrm{ERROR}.",
+        "name": "Evidence restriction",
+        "plain": "For a demonstration, execute every program, compare its output with the observed token, and AND the resulting mask with the previous compatibility vector. Halt if no program survives. For a probe, leave c and a unchanged and go directly to readout. All remaining update equations apply only to demonstrations."
+      },
+      {
+        "latex": "v_t=c_t\\odot a_{t-1}",
+        "name": "Restrict amplitudes",
+        "plain": "After the nonempty-compatibility guard passes, zero amplitudes belonging to incompatible programs."
+      },
+      {
+        "latex": "b_t=v_t+c_t\\odot K(v_t\\odot v_t)",
+        "name": "Quadratic signed transport",
+        "plain": "Square the restricted amplitudes, multiply by K, mask by compatibility, and add the result to the restricted signed amplitudes."
+      },
+      {
+        "latex": "a_t=\\begin{cases}b_t/\\|b_t\\|_2,&\\|b_t\\|_2>0,\\\\c_t/\\|c_t\\|_2,&\\|b_t\\|_2=0.\\end{cases}",
+        "name": "Normalization and cancellation recovery",
+        "plain": "Normalize the transported vector. If it is exactly zero, use uniform positive amplitudes over surviving programs. Empty compatibility has already halted execution and cannot enter this equation."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "In the supplied d=3 toy, the first demonstration raises the initially zero-mass identity program to probability 0.333333 after six-decimal rounding. Multiplicative Bayesian reweighting from the same initial squared amplitudes leaves its probability zero.",
+        "task": "Activation of a compatible rule absent from the initial amplitude prior"
+      },
+      {
+        "prediction": "For covered noiseless d=32 tasks whose supplied k<=4 demonstrations uniquely identify a program, every unseen-input output matches that program after the teaching set. For finite, non-overflowing float64 executions, token probabilities agree with its deterministic distribution within absolute error 1e-12. This stores a rule identity rather than separate answers for unseen inputs.",
+        "task": "Generalization beyond demonstrated inputs"
+      },
+      {
+        "prediction": "Fix any d=32 repertoire and six distinct valid inputs with V=2. Exhaustively demonstrate each of the 64 possible binary output maps on those inputs. At least 32 maps must trigger ERROR by the sixth demonstration because at most 32 maps are represented. This holds for every K and a_init: the core handles one repertoire rule, not arbitrarily many independent bindings.",
+        "task": "Capacity limit for independent binary bindings"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "These are worst-case event bounds, with n counting the explicitly delimited task events. A demonstration costs O(d^2+dL); a query costs O(dL+V). The memory includes program code, bounded per-program execution workspace, dense K, task vectors and output bins. Input arity r, instruction arity and arithmetic precision are fixed constants. Dependence on context length is linear for a fixed repertoire. Training and repertoire construction are excluded from inference cost and must be measured separately. No online program search is hidden in an event.",
+      "memory": "O(d^2+dL+V)",
+      "time_per_token": "O(d^2+dL+V)",
+      "total_sequence": "O(n(d^2+dL+V))"
+    },
+    "sample_efficiency": {
+      "mechanism": "Finite version-space restriction identifies a covered rule; normalization or cancellation recovery makes singleton identification independent of its initial amplitude.",
+      "prediction": {
+        "metric": "Exact held-out output accuracy after a distinguishing teaching set",
+        "statement": "For noiseless covered tasks with d=32 programs and k<=4 supplied demonstrations leaving exactly one survivor, exact-arithmetic query accuracy is 1.0, including when that survivor had zero initial amplitude. This is conditional identification, not a claim that every repertoire has four-example teaching sets. For finite, non-overflowing float64 executions, each query probability must match the survivor's deterministic distribution within absolute error 1e-12.",
+        "value": 1
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The supplied toy assigns zero mass to identity after its first demonstration, or fails to return the specified six-decimal probabilities. Either observation refutes the concrete zero-prior activation claim or the implementation of the law.",
+    "After a covered noiseless teaching set leaves one compatible program, any finite, non-overflowing float64 query probability differs from that program's deterministic distribution by more than 1e-12. This refutes the identification claim or its implementation.",
+    "Exhaustively evaluate all 64 binary output maps on six distinct valid inputs for a fixed d=32 repertoire. Fewer than 32 ERROR contexts by the sixth demonstration refutes the capacity bound or consistency filtering.",
+    "An exact reduction of both update and readout to an excluded affine-state, delta-rule, least-squares or standard lookup signature invalidates the asserted mechanism-level distinction. In particular, activation alone is not sufficient evidence of such a distinction because cancellation recovery can also activate hypotheses."
+  ],
+  "toy_example": {
+    "description": "Three executable rules are constant zero, identity and constant one on inputs in {0,1,2}, with V=3. The first demonstration eliminates constant one and transfers amplitude into initially absent identity. The second uniquely identifies identity; the final query uses unseen input two.",
+    "python": "import json\nimport numpy as np\n\nprograms = [lambda x: 0, lambda x: x, lambda x: 1]\nK = np.array([[0., -1., 0.], [1., 0., 0.], [0., 0., 0.]])\na = np.array([1., 0., 1.]) / np.sqrt(2.)\nc = np.ones(3)\n\ndef update(a, c, x, y):\n    mask = np.array([float(f(x) == y) for f in programs])\n    c = c * mask\n    if not np.any(c):\n        raise ValueError('uncovered task')\n    v = c * a\n    b = v + c * (K @ (v * v))\n    norm = np.linalg.norm(b)\n    a = b / norm if norm > 0 else c / np.linalg.norm(c)\n    return a, c\n\ndef read(a, x):\n    p = np.zeros(3)\n    for i, f in enumerate(programs):\n        p[f(x)] += a[i] ** 2\n    p = np.clip(p, 0.0, 1.0)\n    return [round(float(z), 6) for z in p]\n\na, c = update(a, c, 0, 0)\nfirst_mass = [round(float(z), 6) for z in a * a]\nfirst_query = read(a, 1)\na, c = update(a, c, 1, 1)\nresult = {'first_program_mass': first_mass, 'first_query_distribution': first_query, 'final_program_mass': [round(float(z), 6) for z in a * a], 'unseen_query_distribution': read(a, 2)}\nprint(json.dumps(result, sort_keys=True))",
+    "expected": {
+      "final_program_mass": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "first_program_mass": [
+        0.666667,
+        0.333333,
+        0.0
+      ],
+      "first_query_distribution": [
+        0.666667,
+        0.333333,
+        0.0
+      ],
+      "unseen_query_distribution": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

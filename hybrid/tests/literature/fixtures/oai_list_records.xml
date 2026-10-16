@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+    <responseDate>2026-10-11T00:37:04Z</responseDate>
+                <request verb="ListRecords" metadataPrefix="arXiv" from="2026-10-01" set="physics:nlin">http://oaipmh.arxiv.org/oai</request>
+
+
+    <ListRecords>
+                    <record>
+                <header>
+        <identifier>oai:arXiv.org:1808.06723</identifier>
+        <datestamp>2026-10-01</datestamp>
+            <setSpec>physics:cond-mat:stat-mech</setSpec>
+            <setSpec>cs:cs:CR</setSpec>
+            <setSpec>cs:cs:IT</setSpec>
+            <setSpec>math:math:IT</setSpec>
+            <setSpec>physics:nlin:CD</setSpec>
+    </header>
+
+            <metadata>
+                        <arXiv xmlns="http://arxiv.org/OAI/arXiv/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://arxiv.org/OAI/arXiv/ https://oaipmh.arxiv.org/OAI/arXiv.xsd">
+        <id>1808.06723</id>
+        <created>2026-09-29</created>
+            <updated>2026-10-01</updated>
+        <authors>
+                <author>
+                    <keyname>James</keyname>
+                        <forenames>Ryan G.</forenames>
+                </author>
+                <author>
+                    <keyname>Ayala</keyname>
+                        <forenames>Blanca Daniella Mansante</forenames>
+                </author>
+                <author>
+                    <keyname>Zakirov</keyname>
+                        <forenames>Bahti</forenames>
+                </author>
+                <author>
+                    <keyname>Crutchfield</keyname>
+                        <forenames>James P.</forenames>
+                </author>
+        </authors>
+        <title>Modes of Information Flow</title>
+            <categories>cond-mat.stat-mech cs.CR cs.IT math.IT nlin.CD</categories>
+            <comments>14 pages; 13 figures, 1 table; http://csc.ucdavis.edu/~cmg/compmech/pubs/ite.htm</comments>
+            <license>http://arxiv.org/licenses/nonexclusive-distrib/1.0/</license>
+            <abstract>Information flow between components of a system takes many forms and is key to understanding the organization and functioning of large-scale, complex systems. We demonstrate three modalities of information flow from time series X to time series Y. Intrinsic information flow exists when the past of X is individually predictive of the present of Y, independent of Y&#39;s past; this is most commonly considered information flow. Shared information flow exists when X&#39;s past is predictive of Y&#39;s present in the same manner as Y&#39;s past; this occurs due to synchronization or common driving, for example. Finally, synergistic information flow occurs when neither X&#39;s nor Y&#39;s pasts are predictive of Y&#39;s present on their own, but taken together they are. The two most broadly-employed information-theoretic methods of quantifying information flow---time-delayed mutual information and transfer entropy---are both sensitive to a pair of these modalities: time-delayed mutual information to both intrinsic and shared flow, and transfer entropy to both intrinsic and synergistic flow. To quantify each mode individually we introduce our cryptographic flow ansatz, positing that intrinsic flow is synonymous with secret key agreement between X and Y. Based on this, we employ an easily-computed secret-key-agreement bound---intrinsic mutual information---to quantify the three flow modalities in a variety of systems including asymmetric flows, coupled chaotic dynamical systems, leader-follower collective dynamics, and financial markets.</abstract>
+    </arXiv>
+
+            </metadata>
+        </record><record>
+                <header>
+        <identifier>oai:arXiv.org:2303.06704</identifier>
+        <datestamp>2026-10-01</datestamp>
+            <setSpec>physics:nlin:SI</setSpec>
+            <setSpec>math:math:RT</setSpec>
+    </header>
+
+            <metadata>
+                        <arXiv xmlns="http://arxiv.org/OAI/arXiv/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://arxiv.org/OAI/arXiv/ https://oaipmh.arxiv.org/OAI/arXiv.xsd">
+        <id>2303.06704</id>
+        <created>2026-09-29</created>
+            <updated>2026-10-01</updated>
+        <authors>
+                <author>
+                    <keyname>Masuda</keyname>
+                        <forenames>Tetsu</forenames>
+                </author>
+                <author>
+                    <keyname>Okubo</keyname>
+                        <forenames>Naoto</forenames>
+                </author>
+                <author>
+                    <keyname>Tsuda</keyname>
+                        <forenames>Teruhisa</forenames>
+                </author>
+        </authors>
+        <title>Birational Weyl group actions and q-Painleve equations via mutation combinatorics in cluster algebras</title>
+            <categories>nlin.SI math.RT</categories>
+            <comments>29 pages; it was significantly revised to bring it up to date on August 6th 2025; Fixed some typos on August 29th 2025; Final version accepted for publication in Annales de l&#39;Institut Fourier</comments>
+            <license>http://arxiv.org/licenses/nonexclusive-distrib/1.0/</license>
+            <abstract>A cluster algebra is an algebraic structure generated by operations of a quiver (a directed graph) called the mutations and their associated simple birational mappings. By using a graph-combinatorial approach, we present a systematic way to derive a tropical, i.e. subtraction-free birational, representation of Weyl groups from cluster algebras. Our results provide an extensive class of Weyl group actions, including previously known examples with algebro-geometric background, and hence are relevant to the q-Painleve equations and their higher-order extensions. Key ingredients of the argument are the combinatorial aspects of the reflection associated with a cycle subgraph in the quiver. We also study symplectic structures of the discrete dynamical systems thus obtained. The normal form of a skew-symmetric integer matrix allows us to choose Darboux coordinates while preserving the birationality.</abstract>
+    </arXiv>
+
+            </metadata>
+        </record><record>
+                <header>
+        <identifier>oai:arXiv.org:2504.06209</identifier>
+        <datestamp>2026-10-01</datestamp>
+            <setSpec>cs:cs:LG</setSpec>
+            <setSpec>physics:cond-mat:stat-mech</setSpec>
+            <setSpec>cs:cs:IT</setSpec>
+            <setSpec>math:math:IT</setSpec>
+            <setSpec>physics:nlin:AO</setSpec>
+            <setSpec>physics:nlin:CD</setSpec>
+            <setSpec>physics:quant-ph</setSpec>
+    </header>
+
+            <metadata>
+                        <arXiv xmlns="http://arxiv.org/OAI/arXiv/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://arxiv.org/OAI/arXiv/ https://oaipmh.arxiv.org/OAI/arXiv.xsd">
+        <id>2504.06209</id>
+        <created>2026-09-30</created>
+            <updated>2026-10-01</updated>
+        <authors>
+                <author>
+                    <keyname>Fiderer</keyname>
+                        <forenames>Lukas J.</forenames>
+                </author>
+                <author>
+                    <keyname>Barth</keyname>
+                        <forenames>Paul C.</forenames>
+                </author>
+                <author>
+                    <keyname>Smith</keyname>
+                        <forenames>Isaac D.</forenames>
+                </author>
+                <author>
+                    <keyname>Briegel</keyname>
+                        <forenames>Hans J.</forenames>
+                </author>
+        </authors>
+        <title>Information Thermodynamics of Agents: The Work Capacity of Channels with Memory</title>
+            <categories>cs.LG cond-mat.stat-mech cs.IT math.IT nlin.AO nlin.CD quant-ph</categories>
+            <comments>14+37 pages. Substantially revised version with an expanded agent-environment framework and additional examples</comments>
+            <license>http://creativecommons.org/licenses/by/4.0/</license>
+            <abstract>Predicting future observations plays a central role in machine learning, biology, economics, and many other fields. It lies at the heart of organizational principles such as the variational free energy principle and, based on the second law of thermodynamics, has even been shown to be necessary for reaching the fundamental energetic limits of information processing on a tape. While the usefulness of the predictive paradigm is undisputed, complex adaptive systems that interact with their environment are more than just predictive machines: they have the power to act upon their environment and cause change. In this work, we develop a framework to analyze the thermodynamics of information processing in percept-action loops, a model of agent-environment interaction, allowing us to investigate the thermodynamic implications of actions and percepts on equal footing. To this end, we introduce the concept of work capacity, defined as the maximum rate at which an agent can expect to extract work from its environment. Our results reveal that work-efficient agents must balance prediction and forgetting. This highlights a fundamental departure from the thermodynamics of passive observation, suggesting that prediction and energy efficiency may be at odds in active learning systems.</abstract>
+    </arXiv>
+
+            </metadata>
+        </record>
+    </ListRecords>
+</OAI-PMH>

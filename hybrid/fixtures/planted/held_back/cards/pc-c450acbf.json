@@ -1,0 +1,146 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "First-in first-out line read by one full cycle",
+  "summary": "Written pairs join the back of a line. A fetch takes every pair from the front once and puts it on the back again, noting the first pair with the wanted address; removal does the same but does not put the matched pair back. A three-mode controller decides what is written and read.",
+  "core_idea": "Keep pairs in a first-in first-out line and answer each fetch with one full cycle, under a searched three-mode controller.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "Ln",
+        "type": "integer vector",
+        "shape": [
+          "2C"
+        ],
+        "meaning": "The line: pairs (address, item) from front to back; at most C pairs."
+      },
+      {
+        "name": "ctl",
+        "type": "integer vector",
+        "shape": [
+          16
+        ],
+        "meaning": "Control words: the learned mode and stop symbol, the separator list Z and answer list A, the pending token p, the writing flag w and three counters c, o and d."
+      },
+      {
+        "name": "M",
+        "type": "integer map",
+        "shape": [
+          "N"
+        ],
+        "meaning": "Learned translation from a read result to an emitted symbol, at most N entries for an alphabet of N symbols."
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_t=\\sigma \\Rightarrow w\\leftarrow 0,\\, o\\leftarrow 0;\\quad \\mu=0:\\; x_t\\in Z \\Rightarrow p\\leftarrow\\varnothing;\\; w=1,\\, p=\\varnothing \\Rightarrow p\\leftarrow x_t;\\; w=1,\\, p\\neq\\varnothing \\Rightarrow \\mathrm{ins}(p, x_t),\\, p\\leftarrow\\varnothing;\\quad \\mu=1:\\; w=1,\\, x_t\\notin Z \\Rightarrow \\mathrm{ins}(c, x_t),\\, c\\leftarrow c+1;\\; w=0 \\Rightarrow o\\leftarrow o+1;\\quad \\mu=2:\\; x_t\\in A \\Rightarrow \\mathrm{del}(d, \\mathrm{get}(d)),\\, d\\leftarrow d-1;\\; x_t\\notin A \\Rightarrow d\\leftarrow d+1,\\, \\mathrm{ins}(d, x_t)",
+        "plain": "per token the mode mu decides: pairs (hold one token in p, then ins the held and the new one), positions (ins under the counter c until sigma, then count emitted symbols in o), or depth (openers enter at d + 1, closers withdraw what sits at d)",
+        "name": "controller"
+      },
+      {
+        "latex": "\\mathrm{ins}(a,b):\\; Ln \\leftarrow Ln \\Vert (a, b)",
+        "plain": "ins puts the pair on the back of the line; a write that would exceed C entries is dropped",
+        "name": "enqueue"
+      },
+      {
+        "latex": "\\mathrm{del}(a,b):\\; \\text{cycle every pair once, not re-entering the first with address } a",
+        "plain": "del cycles the whole line once and leaves out the first pair whose address is a",
+        "name": "cycle out"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\mu=0:\\; y_0=x_t,\\; r_j=\\mathrm{get}(y_{j-1}),\\; u=r_j \\text{ at the first } j\\le H \\text{ with } r_j\\in A,\\; u=r_{j-1} \\text{ at the first } r_j=\\varnothing;\\quad \\mu=1:\\; u=\\mathrm{get}(o);\\quad \\mu=2:\\; u=\\mathrm{get}(d);\\qquad \\hat{y}_t = M[u] \\text{ for } u\\in\\mathrm{dom}\\,M,\\; A_0 \\text{ for } u=\\varnothing,\\; u \\text{ otherwise}",
+        "plain": "the current token's partner is fetched, then that partner's partner, up to H rounds, until a symbol of A appears (positions o and depths d are fetched directly in the other modes); M translates the result",
+        "name": "readout"
+      },
+      {
+        "latex": "\\mathrm{get}(a):\\; \\text{cycle every pair from front to back once};\\; \\text{return the item of the first cycled pair with address } a",
+        "plain": "get cycles the line once (order unchanged afterwards) and returns the item of the earliest pair with address a"
+      }
+    ],
+    "learning": {
+      "description": "Learning enumerates the controller settings, mode times stop symbol, 3(|Z| + 1) + 1 of them, where Z holds the symbols seen once in every training sequence. Each setting is run on the m items and its translation M is fitted by majority count; the best setting on the items is kept. A is read off the targets.",
+      "few_shot_argument": "Twelve training sequences suffice in the small cases: the wrong settings each miss several targets, the right one misses none, and M only needs each read result once."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(H C + |A|)",
+      "memory": "O(C + N)",
+      "total_sequence": "O(n H C)",
+      "constants_notes": "A cycle moves each of at most C pairs once; at most H cycles per token."
+    },
+    "sample_efficiency": {
+      "mechanism": "Search over a handful of controller settings with a majority translation.",
+      "prediction": {
+        "metric": "examples_to_small_cases",
+        "value": 12,
+        "statement": "With m = 12 training examples the learned controller reaches accuracy at least 0.99 on copy at L = 4, recall at K = 4, nesting at depth 2, composition at T = 4 and binding at 2 hops, on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "String mode with C = L copies L = 8, 32, 64 over D = 4 with per-string accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "associative recall",
+        "prediction": "Pair mode with C = K and H = 1 answers K = 8, 32, 64 with per-query accuracy 1.0 within 2C + N + 16 words (N = 2K + 17 at K = 64 with V = 16)."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Nesting mode with C = depth predicts the legal closer at depth 2, 4, 8, 16 with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "two-hop composition",
+        "prediction": "Pair mode with C = 2T and H = 2 answers f(g(x)) at T = 4, 16, 32 with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "variable binding",
+        "prediction": "Pair mode with C = 2(hops + 1) and H = hops + 1 resolves chains of 1, 4, 8 hops with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "learning in the small cases",
+        "prediction": "The search learner reaches 0.99 from m = 12 examples on seeds 0, 1, 2 for copy at L = 4, recall at K = 4, depth 2, composition at T = 4 and binding at 2 hops."
+      },
+      {
+        "task": "limit",
+        "prediction": "For any fixed capacity C, recall of K = C + 1 distinct pairs over V = 16 symbols fails on some instance: the store holds at most C pairs, so one probe's item is absent and is answered from at most 16 guesses (at C = 64 this is K = 65, above every P2 size)."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A P2 instance at the listed sizes that the hand-set controller with this store answers wrongly, or that needs more than 2C + N + 16 words.",
+    "A seed on which 12 small-case examples leave the learned controller below 0.99."
+  ],
+  "toy_example": {
+    "description": "Three pairs in the line; a fetch returns the earliest match; a removal then exposes the next.",
+    "python": "import json\nLn = []\ndef cycle(a, drop):\n    found = -1\n    for _ in range(len(Ln) // 2):\n        k = Ln.pop(0); b = Ln.pop(0)\n        if k == a and found < 0:\n            found = b\n            if drop:\n                continue\n        Ln.extend([k, b])\n    return found\nfor a, b in [(4, 60), (5, 61), (4, 62)]:\n    Ln.extend([a, b])\nfirst = cycle(4, False)\ncycle(4, True)\nprint(json.dumps({\"get4\": first, \"get4_after\": cycle(4, False), \"line\": Ln}))\n",
+    "expected": {
+      "get4": 60,
+      "get4_after": 62,
+      "line": [
+        5,
+        61,
+        4,
+        62
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

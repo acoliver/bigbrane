@@ -1,0 +1,5 @@
+# section: reduction_check_escape
+
+THIS CARD IS AN ESCAPE CARD. It claims, in non_reduction_argument, that its parent's reduction cannot be repaired. The argument and the parent's mapping are below.
+
+Your declared comparators are the parent's mapping as published and the strongest repaired mapping you found. Implement each as declared, the repair with every declared transformation (lifted or larger state, feature map, gates or decays, a normalizer, a hop mixture over the same memory, a transformed token stream), from the card's parameters, run it beside the card's own equations on the same inputs, and compare every step as usual. Report each under its declared id. A repair whose transformations are all in the family policy counts for the parent's family; one you declared with type `other` stays unresolved. A term with no counterpart in the family, added only to cancel the card's difference, is not a repair: report it with `declared_id: null` if you computed it. The honesty rules in your instructions still apply. If the repair needs quantities that only the card's outputs could supply, it is not a valid repair; say so in explanation.

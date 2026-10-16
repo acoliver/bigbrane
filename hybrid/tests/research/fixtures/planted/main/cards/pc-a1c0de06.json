@@ -1,0 +1,85 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Parity register over symbol residues",
+  "summary": "A register keeps the parity of residues of the symbols read so far, combining each residue by exclusive or, and reports the register modulo a small base.",
+  "core_idea": "Combine symbol residues by exclusive or and report the register modulo a base.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "pellaro",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Register holding the exclusive or of the residues of every symbol read."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "pellaro_t = xor(pellaro_(t-1), x_t mod m)",
+        "plain": "pellaro_t = xor(pellaro_(t-1), x_t mod m)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = pellaro_t mod b",
+        "plain": "y_t = pellaro_t mod b"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is learned; the base is fixed.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(1)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "The parity is right after one symbol."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "parity report",
+        "prediction": "Reports the parity of the residues exactly."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Parity registers are elementary.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The parity is wrong.",
+    "The register depends on symbol order."
+  ],
+  "toy_example": {
+    "description": "Three residues combined.",
+    "python": "import json\nr = 0\nfor x in [5, 6, 7]:\n    r ^= x % 4\nprint(json.dumps({'register': r % 3}))\n",
+    "expected": {
+      "register": 0
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Five bit planes across sixty-four positions",
+  "summary": "The store is five 64-bit words, one per bit plane: bit j of plane k is bit k of the item at slot j. Writing an item sets its five bits with masks and shifts across the planes; reading gathers them back. Slots are indexed by the address identity. Tasks are given in a fixed episode format: copy (a start mark, L symbols, a separator, then the copy); recall (K address-item pairs, then each address once as a probe); nesting (two bracket types, predict each legal closer); two-hop lookup (table g as pairs, table f as pairs, then probes x answered f(g(x))); and chained assignments (variables bound to variables or to final symbols, then a probe variable).",
+  "core_idea": "Store items bit-sliced across five 64-bit planes, so a slot write is five masked bit updates and a slot read gathers one bit from each plane.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "B",
+        "type": "array of 64-bit words",
+        "shape": [
+          5
+        ],
+        "meaning": "Bit planes B_0..B_4; bit j of B_k is bit k of the item in slot j; 320 bits."
+      },
+      {
+        "name": "bw",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket word of open types, 20 bits."
+      },
+      {
+        "name": "pi",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Position counter of the string phase, 7 bits."
+      }
+    ],
+    "update": [
+      {
+        "name": "plane write",
+        "latex": "B_k \\leftarrow (B_k \\,\\&\\, \\lnot(1 \\ll j)) \\,|\\, (\\mathrm{bit}_k(y_t) \\ll j),\\; k = 0..4",
+        "plain": "for slot j = sigma(z_t) (pi - 1 for strings, id for pairs, 32 + id for the second table): B_k = (B_k AND NOT (1 << j)) OR (bit k of y_t << j) for k = 0..4"
+      },
+      {
+        "name": "bracket word",
+        "latex": "bw \\leftarrow 2\\,bw + b,\\quad bw \\leftarrow \\lfloor bw/2 \\rfloor",
+        "plain": "an opener of type b: bw = 2 bw + b; a closer: bw = floor(bw / 2)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "gather",
+        "latex": "\\hat{y} = \\sum_{k=0}^{4} 2^k\\, ((B_k \\gg j) \\,\\&\\, 1)",
+        "plain": "the item of slot j is the sum over k of 2^k ((B_k >> j) AND 1); chained assignments and f(g(x)) gather again from the named slot, at most 8 times"
+      },
+      {
+        "name": "closer",
+        "latex": "\\hat{b} = bw \\bmod 2",
+        "plain": "the legal closer has the type in the lowest bit of bw"
+      }
+    ],
+    "learning": {
+      "description": "Symbol roles are counted over m example episodes; each symbol takes its most frequent role.",
+      "few_shot_argument": "One episode shows each symbol's role; m = 6 example episodes per task fix the roles in the small cases."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(1)",
+      "memory": "Theta(1)",
+      "total_sequence": "Theta(n)",
+      "constants_notes": "Five masked updates per write and five shifts per read. State: five 64-bit planes (320 bits), the 20-bit bracket word and a 7-bit counter, 347 bits in all, fixed in n."
+    },
+    "sample_efficiency": {
+      "mechanism": "Counting of symbol roles over m example episodes.",
+      "prediction": {
+        "metric": "example_episodes_per_task",
+        "value": 6,
+        "statement": "With m = 6 example episodes of a task (copy and recall at size up to 4, nesting at depth 2, two-hop lookup at table size up to 4, chained assignments of length up to 2), the learned roles are exact and the task is solved with accuracy 1.0 on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator (L = 8, 32, 64)",
+        "prediction": "Hand-set construction over up to 32 symbols: symbol i in slot i - 1, gathered back after the separator; exact at L = 8, 32 and 64."
+      },
+      {
+        "task": "associative recall of K pairs (K = 8, 32, 64)",
+        "prediction": "Hand-set construction with items over V = 60 symbols, one five-bit item per slot (64 x 5 = 320 bits for the 64 items), so recall is exact at K = 8, 32 and 64."
+      },
+      {
+        "task": "two-type bracket nesting (depth 2, 4, 8, 16)",
+        "prediction": "Bracket word: exact at depths 2, 4, 8 and 16."
+      },
+      {
+        "task": "two-hop lookup f(g(x)) with tables of size 4, 16, 32, and chained assignments of length 1, 4, 8",
+        "prediction": "Table g in slots 32..63 and table f in slots 0..31, entries below 32; exact at sizes 4, 16 and 32. At most 8 chained gathers; exact at chain lengths 1, 4 and 8."
+      },
+      {
+        "task": "derived limit",
+        "prediction": "More than 64 addresses cannot have their own slot: exact recall fails at K = 65."
+      },
+      {
+        "task": "learning the episode format",
+        "prediction": "Role counting learns every small case from m = 6 episodes on three seeds."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A recall episode at K = 64 over 60 items reads an item back wrong.",
+    "A plane write changes a bit of another slot."
+  ],
+  "toy_example": {
+    "description": "Three items written across the bit planes and gathered back.",
+    "python": "import json\nB = [0] * 5\ndef write(j, y):\n    for k in range(5):\n        B[k] = (B[k] & ~(1 << j)) | (((y >> k) & 1) << j)\ndef gather(j):\n    return sum((2 ** k) * ((B[k] >> j) & 1) for k in range(5))\nfor j, y in [(0, 19), (3, 6), (63, 31), (3, 9)]:\n    write(j, y)\nprint(json.dumps({\"planes\": B, \"reads\": [gather(0), gather(3), gather(63)]}))\n",
+    "expected": {
+      "planes": [
+        9223372036854775817,
+        9223372036854775809,
+        9223372036854775808,
+        9223372036854775816,
+        9223372036854775809
+      ],
+      "reads": [
+        19,
+        9,
+        31
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

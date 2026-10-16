@@ -1,0 +1,9 @@
+{
+  "model": "gpt-6.1-sol",
+  "store": false,
+  "stream": true,
+  "instructions": "Answer as JSON.",
+  "input": [{"role": "user", "content": "Capital of France?"}],
+  "text": {"format": {"type": "json_schema", "name": "capital", "strict": true, "schema": {
+    "type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"], "additionalProperties": false}}}
+}

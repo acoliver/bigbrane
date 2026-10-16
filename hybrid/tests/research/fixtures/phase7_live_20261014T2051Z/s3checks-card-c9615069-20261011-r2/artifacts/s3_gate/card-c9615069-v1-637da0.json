@@ -1,0 +1,28 @@
+{
+  "all_checkable_discharged": false,
+  "check_settles_split": false,
+  "checks": [
+    "obligation check complexity_time_memory_total (complexity): discharged (replayed): Per-token op tally from the card steps is T = 7*P + V + r + 5, which has no n. Since 12(V+P+r) - T = 5*P + 11*V + 11*r - 5 has nonnegative coefficients, T is O(V+P+r) with c=12. This counts the stated steps, not measured time, and it does not model the dense V-array cost beyond counting V once.",
+    "obligation check capacity_one_shot_recall_K8_and_P_max (capacity): violated (replayed): Index-bit capacity: state 16 records x 11 bits = 176 bits; required 6K bits = {8: 48, 16: 96, 32: 192}. K<=16 fits, and K=32 (192 bits) does not, so full recall of 32 is impossible. Eviction by min (C, tau) with rho drawn uniformly in [0.9,0.99] (an assumed range) on 32 disjoint pairs: the survivors; counterexample {\"trial\": 0, \"rhos\": [0.976, 0.9682, 0.9379, 0.9233, 0.946, 0.9364, 0.9705, 0.9273, 0.9429, 0.9525, 0.9817, 0.9454, 0.9254, 0.968, 0.9557, 0.9225, 0.9819, 0.9885, 0.9729, 0.9812, 0.9279, 0.9657, 0.9809, 0.9616, 0.9425, 0.9091, 0.9391, 0.955, 0.9822, 0.987, 0.9429, 0.9779], \"survivors\": [[0, 32], [1,",
+    "obligation check capacity_filler_robustness (numerical_stability): not_checked [checkable kind, but the checker wrote no program]",
+    "obligation check binding_exchange_algebra (algebraic): discharged (replayed): Symbolic pulse recursion with one shared rho: stream q a r a gives residuals C_ra-rho, C_qa-rho(1-rho), y_a-(1-rho)^2, and stream q a q b gives C_qb-rho, C_qa-rho(1-rho); all simplify to 0. The readout inequalities p(a|r)>=0.9 and p(a|q)<=0.15 are not checked here.",
+    "obligation check elimination_routing_gap (numerical_stability): unknown: With rho=0.9 and uniform u over 64 values, p(v8)=0.5882 at eta=0. The mean-probability claim p>=0.35 holds only for eta <= 0.0189. The ablation with u alone gives 0.0156. The trained eta and u are not known to this program, so the claim is not decided.",
+    "obligation check order_dependence_cross_ratio (algebraic): unknown: The toy reproduces at rho=0.5. Gaps at rho 0.9, 0.95, 0.99 are at least 0.2 where cells survive pruning; cells pruned at rhos [0.99]. The claim covers all rho in [0.9,1), which is not exhausted, and the per-cell Sinkhorn part is not computed.",
+    "obligation check learnability_rate_prior (learnability): not_checked",
+    "obligation check numerical_validity_and_well_definedness (numerical_stability): unknown: Float64 recursion on 10 random streams of length 1000 with V=16 and P_max=16 gave min free mass 0 and max row-sum excess 0. This is a sample, not a proof over all n, so it cannot discharge the claim."
+  ],
+  "contested": [],
+  "effective_votes": {
+    "feasibility_judge_a": "infeasible",
+    "feasibility_judge_b": "infeasible"
+  },
+  "notes": [],
+  "round": 1,
+  "rule": "disproof",
+  "symbolic_checks": true,
+  "verdict": "infeasible_proved",
+  "votes": {
+    "feasibility_judge_a": "infeasible",
+    "feasibility_judge_b": "infeasible"
+  }
+}

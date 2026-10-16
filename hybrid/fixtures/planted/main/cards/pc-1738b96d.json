@@ -1,0 +1,106 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Repeat whatever followed the current two-symbol context last time",
+  "summary": "Predictions mix a fixed background distribution with a point mass on a remembered successor whenever the two most recent symbols have been seen together before. The memory behind this is a table keyed by ordered adjacent symbol pairs; each entry holds the symbol that came right after that pair at its latest occurrence.",
+  "core_idea": "Store the latest follower of every two-symbol context and predict it again, blended with a fixed background distribution.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "bg",
+        "type": "probability vector",
+        "shape": [
+          "V"
+        ],
+        "meaning": "Fixed background distribution over the V symbols, taken from training text."
+      },
+      {
+        "name": "F",
+        "type": "table from symbol pairs to symbols",
+        "shape": [
+          "V",
+          "V"
+        ],
+        "meaning": "F[(a, b)] is the symbol that came right after the adjacent pair (a, b) when it last occurred, or empty."
+      }
+    ],
+    "update": [
+      {
+        "name": "latest follower",
+        "latex": "F[(s_{t-2}, s_{t-1})] \\leftarrow s_t",
+        "plain": "F[(s_(t-2), s_(t-1))] = s_t, replacing any earlier entry for that pair"
+      }
+    ],
+    "readout": [
+      {
+        "name": "blend",
+        "latex": "P(c) = (1 - \\mu)\\, bg(c) + \\mu\\, \\mathbf{1}[c = F[(s_{t-1}, s_t)]]",
+        "plain": "if the pair (s_(t-1), s_t) has an entry in the table F: P(c) = (1 - mu) bg(c) + mu * [c == F[(s_(t-1), s_t)]]; with no entry, P(c) = bg(c)"
+      }
+    ],
+    "learning": {
+      "description": "Within a sequence only the table F changes. The background bg is the relative frequency of each symbol in training text (counting), and mu is picked by grid search on held-out text.",
+      "few_shot_argument": "A single occurrence of a two-symbol context with its follower already gives that follower probability at least mu when the context comes back."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(V)",
+      "memory": "Theta(V^2)",
+      "total_sequence": "Theta(n V)",
+      "constants_notes": "Per symbol one table write, one table read and the V-entry output distribution; at most V^2 table entries."
+    },
+    "sample_efficiency": {
+      "mechanism": "One replacement per occurrence.",
+      "prediction": {
+        "metric": "occurrences_to_repeat_continuation",
+        "value": 1,
+        "statement": "After a single occurrence of (a, b, c), the next occurrence of (a, b) gives P(c | a, b) >= mu = 0.75."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs given as 'a b c' triples",
+        "prediction": "Exact whenever each probed pair occurs once before its probe, for any K up to V^2 distinct pairs."
+      },
+      {
+        "task": "repeating a phrase seen once",
+        "prediction": "Every continuation of a phrase seen once, whose two-symbol contexts are all distinct, gets probability at least mu."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A context that occurred twice with different followers predicts the earlier follower.",
+    "After one occurrence of (a, b, c), the following occurrence of (a, b) gives P(c) below mu."
+  ],
+  "toy_example": {
+    "description": "Building the table on a short sequence over five symbols and blending for the final context.",
+    "python": "import json\nV = 5\nbg = [0.3, 0.25, 0.2, 0.15, 0.1]\nmu = 0.75\nseq = [2, 4, 1, 0, 2, 4, 3, 1, 2, 4]\nF = {}\nfor t in range(2, len(seq)):\n    F[(seq[t - 2], seq[t - 1])] = seq[t]\nctx = (seq[-2], seq[-1])\nP = [(1 - mu) * bg[c] + (mu if F.get(ctx) == c else 0.0) for c in range(V)]\nprint(json.dumps({\"follower\": F.get(ctx), \"P\": [round(v, 6) for v in P], \"size\": len(F)}))\n",
+    "expected": {
+      "follower": 3,
+      "P": [
+        0.075,
+        0.0625,
+        0.05,
+        0.7875,
+        0.025
+      ],
+      "size": 7
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

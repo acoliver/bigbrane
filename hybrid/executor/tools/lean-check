@@ -1,0 +1,7 @@
+#!/bin/sh
+# Elaborate one Lean file against the image's Mathlib project, offline.
+# LEAN_PATH was recorded at build time with `lake env printenv LEAN_PATH`; Lake itself is not run here.
+set -eu
+LEAN_PATH="$(cat /opt/bigbrane/lean_path)"
+export LEAN_PATH
+exec /opt/lean/bin/lean "$@"

@@ -1,0 +1,85 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Saturating integrator with clipped steps",
+  "summary": "A saturating integrator accumulates a squashed copy of each symbol and clips every step so the running level never leaves a fixed band.",
+  "core_idea": "Integrate squashed symbols with clipped steps inside a fixed band.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "mirrowen",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Running level of the integrator, kept inside a fixed band by clipping."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "mirrowen_t = clip(mirrowen_(t-1) + tanh(w x_t), -1, 1)",
+        "plain": "mirrowen_t = clip(mirrowen_(t-1) + tanh(w x_t), -1, 1)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = sign(mirrowen_t)",
+        "plain": "y_t = sign(mirrowen_t)"
+      }
+    ],
+    "learning": {
+      "description": "The weight w is fixed at one.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(d)",
+      "memory": "O(d)",
+      "total_sequence": "O(n d)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "The level reports the sign of the recent excess."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "excess detection",
+        "prediction": "Reports which of two symbols dominates a window of 64."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Integrators with saturation are common in control.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The level leaves the band.",
+    "The reported sign is wrong for a clear excess."
+  ],
+  "toy_example": {
+    "description": "Four clipped steps.",
+    "python": "import json\nimport math\nlevel = 0.0\nfor x in [1, 1, -1, 1]:\n    level = max(-1.0, min(1.0, level + math.tanh(x)))\nprint(json.dumps({'level': round(level, 9)}))\n",
+    "expected": {
+      "level": 1.0
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

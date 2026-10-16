@@ -1,0 +1,141 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Direct-address map steered by a searched three-mode controller",
+  "summary": "Symbols are written into a direct-address map, one item per address, under a controller with three write disciplines (pairs, positions, depths). Reading fetches the item at an address and can follow it a bounded number of times. The controller setting and an output translation are learned by trying every setting on a few examples.",
+  "core_idea": "Pair a one-item-per-address map with a small searched controller so that recall, copying, nesting and chained lookups all become address reads.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "T",
+        "type": "integer map",
+        "shape": [
+          "C"
+        ],
+        "meaning": "Direct-address map: T[a] is the item last written under address a; at most C addresses are held at once."
+      },
+      {
+        "name": "ctl",
+        "type": "integer vector",
+        "shape": [
+          16
+        ],
+        "meaning": "Controller registers: mode mu, stop symbol sigma, separators Z, answer set A, hop limit H, held token p, write flag w, position c, emitted count o, depth d; about 16 words plus |A| + |Z|."
+      },
+      {
+        "name": "M",
+        "type": "integer map",
+        "shape": [
+          "N"
+        ],
+        "meaning": "Learned translation from a read result to an emitted symbol, at most N entries for an alphabet of N symbols."
+      }
+    ],
+    "update": [
+      {
+        "latex": "x_t=\\sigma \\Rightarrow w\\leftarrow 0,\\, o\\leftarrow 0;\\quad \\mu=0:\\; x_t\\in Z \\Rightarrow p\\leftarrow\\varnothing;\\; w=1,\\, p=\\varnothing \\Rightarrow p\\leftarrow x_t;\\; w=1,\\, p\\neq\\varnothing \\Rightarrow \\mathrm{ins}(p, x_t),\\, p\\leftarrow\\varnothing;\\quad \\mu=1:\\; w=1,\\, x_t\\notin Z \\Rightarrow \\mathrm{ins}(c, x_t),\\, c\\leftarrow c+1;\\; w=0 \\Rightarrow o\\leftarrow o+1;\\quad \\mu=2:\\; x_t\\in A \\Rightarrow \\mathrm{del}(d, \\mathrm{get}(d)),\\, d\\leftarrow d-1;\\; x_t\\notin A \\Rightarrow d\\leftarrow d+1,\\, \\mathrm{ins}(d, x_t)",
+        "plain": "controller step: the stop symbol sigma ends writing; in pair mode a token waits in p or completes a pair that goes into the store with ins; in string mode each symbol goes in under the running position c; in nesting mode an opener goes in at the raised depth d and a closer takes out the entry at d",
+        "name": "controller"
+      },
+      {
+        "latex": "\\mathrm{ins}(a,b):\\; T[a] \\leftarrow b \\;\\; (|T| < C \\text{ or } a \\in T)",
+        "plain": "ins writes item b under address a, replacing any earlier item there; a write that would exceed C entries is dropped",
+        "name": "write"
+      },
+      {
+        "latex": "\\mathrm{del}(a,b):\\; T[a] \\leftarrow \\varnothing",
+        "plain": "del clears address a",
+        "name": "clear"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\mu=0:\\; y_0=x_t,\\; r_j=\\mathrm{get}(y_{j-1}),\\; u=r_j \\text{ at the first } j\\le H \\text{ with } r_j\\in A,\\; u=r_{j-1} \\text{ at the first } r_j=\\varnothing;\\quad \\mu=1:\\; u=\\mathrm{get}(o);\\quad \\mu=2:\\; u=\\mathrm{get}(d);\\qquad \\hat{y}_t = M[u] \\text{ for } u\\in\\mathrm{dom}\\,M,\\; A_0 \\text{ for } u=\\varnothing,\\; u \\text{ otherwise}",
+        "plain": "read: in pair mode get what is held for the current token and keep following while the result is not in the answer set A, at most H times; in string mode get position o; in nesting mode get depth d; translate through M",
+        "name": "readout"
+      },
+      {
+        "latex": "\\mathrm{get}(a) = T[a]",
+        "plain": "get returns the item held under address a, or nothing"
+      }
+    ],
+    "learning": {
+      "description": "A finite search: the answer set A is collected from the training targets and the separator set Z from the symbols that occur exactly once in every training sequence. For each mode and each stop choice (none or a member of Z) the controller runs over the m sequences, the pairs (read result, target) are tallied, M takes the majority target per read result, and the setting with the highest training accuracy is kept.",
+      "few_shot_argument": "The space has at most 3(|Z| + 1) + 1 settings plus a majority map, so m = 12 sequences pick the right setting in the small cases (copy and recall at 4, depth 2, composition at 4, binding at 2) on three seeds."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(H |A|)",
+      "memory": "O(C + N)",
+      "total_sequence": "O(n H |A|)",
+      "constants_notes": "One map access per fetch, at most H fetches per token, each followed by a membership test against the answer list A; the controller adds a constant."
+    },
+    "sample_efficiency": {
+      "mechanism": "Search over a handful of controller settings with a majority translation.",
+      "prediction": {
+        "metric": "examples_to_small_cases",
+        "value": 12,
+        "statement": "With m = 12 training examples the learned controller reaches accuracy at least 0.99 on copy at L = 4, recall at K = 4, nesting at depth 2, composition at T = 4 and binding at 2 hops, on three seeds."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "String mode with C = L copies L = 8, 32, 64 over D = 4 with per-string accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "associative recall",
+        "prediction": "Pair mode with C = K and H = 1 answers K = 8, 32, 64 with per-query accuracy 1.0 within 2C + N + 16 words (N = 2K + 17 at K = 64 with V = 16)."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "Nesting mode with C = depth predicts the legal closer at depth 2, 4, 8, 16 with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "two-hop composition",
+        "prediction": "Pair mode with C = 2T and H = 2 answers f(g(x)) at T = 4, 16, 32 with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "variable binding",
+        "prediction": "Pair mode with C = 2(hops + 1) and H = hops + 1 resolves chains of 1, 4, 8 hops with accuracy 1.0 within 2C + N + 16 words."
+      },
+      {
+        "task": "learning in the small cases",
+        "prediction": "The search learner reaches 0.99 from m = 12 examples on seeds 0, 1, 2 for copy at L = 4, recall at K = 4, depth 2, composition at T = 4 and binding at 2 hops."
+      },
+      {
+        "task": "limit",
+        "prediction": "For any fixed capacity C, recall of K = C + 1 distinct pairs over V = 16 symbols fails on some instance: the store holds at most C pairs, so one probe's item is absent and is answered from at most 16 guesses (at C = 64 this is K = 65, above every P2 size)."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A P2 instance at the listed sizes that the hand-set controller with this store answers wrongly, or that needs more than 2C + N + 16 words.",
+    "A seed on which 12 small-case examples leave the learned controller below 0.99."
+  ],
+  "toy_example": {
+    "description": "Three pairs written, then three fetches and one chained fetch of two steps.",
+    "python": "import json\nT = {}\nfor a, b in [(3, 7), (7, 12), (5, 9)]:\n    T[a] = b\ndef chase(a, H, A):\n    last = -1\n    for _ in range(H):\n        if a not in T:\n            return last\n        r = T[a]\n        if r in A:\n            return r\n        last, a = r, r\n    return last\nprint(json.dumps({\"get3\": T[3], \"get5\": T[5], \"two_step_from_3\": chase(3, 2, [12, 9])}))\n",
+    "expected": {
+      "get3": 7,
+      "get5": 9,
+      "two_step_from_3": 12
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

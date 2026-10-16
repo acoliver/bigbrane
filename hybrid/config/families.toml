@@ -1,0 +1,74 @@
+# Known model families for generation (DISCOVERY-PIPELINE-PLAN.md sections 1.2 and 6.2; decision D8).
+#
+# One table that every reader shares: the generation stage G (hybrid/research/stages/g_generate.py), the archive
+# (hybrid/research/archive.py) and, from Phase 7, the S2 reduction critic and the planted-card generator.
+#
+# D8 default until Andrew decides otherwise (applied 2026-10-13, Phase 6):
+# - [[excluded]]: transformer, state-space, linear-attention and delta-rule families are out of scope as a category.
+#   A card the classifier places in one of them dies at G with excluded_family:<id>. The archive cells listed in
+#   `cells` are closed: a card whose five commitments fall in one dies with not_radical:R1, because changing nothing
+#   but vocabulary inside a closed cell changes no foundational commitment.
+# - [[known]]: Hopfield-style associative memories and exact-match caches are known families. They are allowed only
+#   with a real recorded difference (the step-3 rule of plan section 8). At G the classifier judges the difference
+#   the card states (arm_structure.closest_known); a card in one of these families without a real difference dies
+#   with no_difference. Phase 7's difference statement replaces this check with the full step-3 rule.
+#
+# Phase 7 (S2, hybrid/research/stages/difference.py; s2.family_exclusion and s2.difference_statement in run.toml):
+# - the reduction critic names the family of the card's core (`family`, one of the ids below or none). A verified
+#   reduction into an [[excluded]] family fails the card with excluded_family:<id> even when the critic writes a
+#   LEARNING_RULE: difference. Without a family from the critic, the family comes from `reduces_to`; when two families
+#   list the same reduces_to value (linear_attention and delta_rule), the one whose `keywords` occur most often in the
+#   critic's mapping and argument is chosen, the first listed on a tie.
+# - a card the critic places in any family here (a [[known]] one such as Hopfield or an exact-match cache, or an
+#   [[excluded]] one without a verified reduction) passes only when its difference statement lists the family and
+#   the S2 check finds that the difference changes an equation of the family's form; otherwise it is sent back once
+#   and then dies with no_difference.
+#
+# `cells` lists, per axis, the values a closed cell may take; "*" is any value. Axis ids are those of archive.toml.
+# `reduces_to` names the matching values of the S2 reduction critic's enum (schemas/reduction_critic.schema.json).
+
+[[excluded]]
+id = "transformer"
+keywords = ["softmax attention", "attention over", "transformer", "self-attention", "query", "key"]
+name = "Transformer and attention variants"
+reduces_to = ["transformer_variant", "partitioned_or_windowed_attention"]
+form = "softmax attention over all earlier positions, y_t = sum_i softmax_i(q_t . k_i) v_i, in stacked layers; sparse, windowed, chunked, low-rank and kernelized variants included"
+cells = { substrate = ["dense_vector"], learning_rule = ["gradient_backprop"], unit = ["*"], objective = ["next_unit", "masked_denoising"], structure_source = ["learned_from_data"] }
+
+[[excluded]]
+id = "ssm"
+keywords = ["state space", "state-space", "ssm", "mamba", "s4", "retnet", "lru", "decay", "recurrence"]
+name = "State-space models (S4, Mamba, SSD, LRU, RetNet) and linear recurrences"
+reduces_to = ["ssm"]
+form = "h_t = A_t h_{t-1} + B_t x_t, y_t = C_t h_t, with A_t fixed, diagonal or input-dependent; reservoirs with a linear readout and decaying traces included"
+cells = { substrate = ["dense_vector", "continuous_physical_dynamics"], learning_rule = ["gradient_backprop"], unit = ["*"], objective = ["next_unit", "masked_denoising"], structure_source = ["learned_from_data"] }
+
+[[excluded]]
+id = "linear_attention"
+keywords = ["linear attention", "outer product", "outer-product", "holographic", "phasor", "kernel feature", "h3"]
+name = "Linear attention and outer-product memories"
+reduces_to = ["linear_attention"]
+form = "S_t = S_{t-1} + phi(k_t) v_t^T, y_t = S_t^T phi(q_t), with or without decay or a normalizer; holographic or phasor superpositions of bound pairs included"
+cells = { substrate = ["dense_vector"], learning_rule = ["gradient_backprop"], unit = ["*"], objective = ["next_unit", "masked_denoising"], structure_source = ["learned_from_data"] }
+
+[[excluded]]
+id = "delta_rule"
+keywords = ["delta rule", "deltanet", "fast weight", "fast-weight", "least squares", "least-squares", "rls", "mesanet", "titans", "ttt", "error-correcting"]
+name = "Delta rule, fast weights and in-context least squares (DeltaNet, gated DeltaNet, TTT, RLS, MesaNet, Titans)"
+reduces_to = ["linear_attention"]
+form = "S_t = S_{t-1} + beta_t (v_t - S_{t-1} k_t) k_t^T, read y_t = S_t q_t; RLS and MesaNet solve the same least-squares problem in closed form"
+cells = { substrate = ["dense_vector"], learning_rule = ["gradient_backprop", "closed_form_algebraic"], unit = ["*"], objective = ["next_unit", "masked_denoising"], structure_source = ["learned_from_data"] }
+
+[[known]]
+id = "hopfield_associative_memory"
+keywords = ["hopfield", "energy", "associative memory", "pattern completion", "kernel memory"]
+name = "Hopfield-style associative memories (classical, dense and modern Hopfield, kernel memory)"
+reduces_to = ["hopfield_or_kernel_memory"]
+form = "y = sum_i v_i softmax_i(beta x_i . q), or energy descent to the nearest stored pattern"
+
+[[known]]
+id = "exact_match_cache"
+keywords = ["exact match", "exact-match", "hard attention", "lookup table", "hash table", "episodic index"]
+name = "Exact-match caches and hard attention (episodic indexes, content-addressed tables)"
+reduces_to = ["other_known"]
+form = "store (key, value) per token and return the value whose key equals the query, or the most recent one"

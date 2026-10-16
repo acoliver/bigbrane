@@ -1,0 +1,111 @@
+# Run 4 config (overnight 2026-10-11): run.toml plus the graveyards of runs 1, 2 and 3.
+# Orchestrator configuration for `python -m hybrid.research run`.
+# Paths are relative to the repository root.
+
+[run]
+n_explorers = 4
+# Lens order seed. Unset (the default): derived from the run id with a stable hash, so each new run
+# visits the lenses in its own shuffled order, and a resumed run keeps the order it started with.
+# Set an integer to make every run use the same order. A run that was started before the lens seed
+# was recorded resumes with seed 0, which is what it used.
+# seed = 0
+models_config = "hybrid/config/models.toml"
+lenses_config = "hybrid/config/lenses.toml"
+
+[budgets]
+# max_cards counts S0 attempts (including duplicates and failed explorer calls).
+# max_calls counts LLMClient.complete() calls made by this run (a schema retry inside one
+# complete() is one call here; models.toml budgets count backend requests separately).
+# max_wall_s applies to one invocation; a resumed run gets a fresh wall budget.
+max_cards = 12
+max_calls = 300
+max_tokens = 60_000_000  # raised 2026-10-11 04:30 (was 20M; run 4 at 13.8M)
+max_wall_s = 14400
+
+[workers]
+# Workers per stage queue. Per-role model concurrency is enforced by LLMClient.
+S1 = 4
+S2 = 3
+S3 = 2
+S4 = 1
+S5 = 1
+S6 = 1
+
+[explore]
+papers_min = 3
+papers_max = 6
+abstract_chars = 1200
+existing_summaries = 30
+summary_chars = 300
+# Operator choice once eligible parents exist (cards that passed S1).
+p_mutate = 0.25
+p_cross = 0.15
+# Graveyard: every explorer prompt lists up to graveyard_max earlier cards with their outcome (reduced to
+# a known family at S2, the stage and verdict where the card died, or alive at Sk), about 250 characters
+# each, reductions first.
+graveyard_max = 30
+# Other run directories (relative to the repository root, or absolute) whose cards are added to the
+# graveyard, read-only, so a new run learns from the reductions of earlier runs. Example:
+# graveyard_runs = ["runs/run-20261010T181300Z", "runs/run-20261010T205500Z"]
+graveyard_runs = ["runs/run-20261010T181300Z", "runs/run-20261010T205500Z", "runs/run-20261011T011300Z"]
+# Chance of an escape task when S2 reduces a card to a known family: the explorer gets the card, the
+# reduction mapping and the numeric check, and must break the property the mapping relies on. Escape tasks
+# use card slots (max_cards) and are skipped when no slot is left.
+p_escape = 1.0
+# Share of max_cards held back for escape tasks, from 0 to 1. A new, mutate or cross task takes a card slot only
+# if at least this many slots stay free for escapes: ceil(escape_reserve * max_cards) slots, recomputed against
+# max_cards at each start and resume. Without it, the explorers draw the whole budget before the first reduction
+# arrives. A held slot stays unused when no escape is requested; 0 turns the reserve off.
+escape_reserve = 0.3
+
+[diversity]
+# TF-IDF cosine of summary plus mechanism text against every existing card.
+threshold = 0.6
+
+[s1]
+# Revisions a card may use for fixable salad-critic findings or a toy mismatch. A fatal finding fails at once.
+max_revisions = 2
+# When the revisions are used up, a card with no fatal finding and a reproduced toy example passes S1 with
+# its remaining fixable findings recorded as residual (reasons prefixed "residual:", artifact s1_residual).
+# S3 gives them to the formalizer and the disprover as known open issues from S1. A toy mismatch after the
+# last revision still fails. Set to false to fail such cards instead.
+pass_with_residual_fixable = true
+toy_rtol = 1e-6
+toy_atol = 1e-9
+
+[literature]
+# Local arXiv metadata index (python -m hybrid.literature harvest). Relative to the repository root.
+# S2 prior-art searches query it before the remote sources. If the file is missing, S2 skips it and
+# the search receipt says so.
+local_index_path = "data/arxiv-index/arxiv.sqlite"
+
+[s2]
+require_radical = true
+# A claimed reduction with no runnable check counts as verified at or above this confidence.
+reduction_confidence = 0.8
+# A `novel` label with no paper from any literature search is not evidence of novelty. With false (the default),
+# S2 retries the classification once with broader queries and gives `undetermined` if that search is empty too.
+# Set true to pass such cards as novel, as earlier runs did.
+empty_search_counts_as_novel = false
+
+[s3]
+# A split vote gets this many more judge rounds before the verdict is undetermined.
+extra_rounds = 1
+max_checks = 3
+
+[s4]
+repair_rounds = 2
+
+[s5]
+# "podman" uses hybrid.executor.Executor; "local" uses hybrid.bench.local.LocalExecutor (untrusted).
+mode = "podman"
+bench_config = "hybrid/config/bench_quick.toml"
+
+[executor]
+# Caps for toy examples, reduction checks, disproof checks and construct checks.
+wall_s = 120
+memory_mb = 1024
+pids = 64
+tmp_mb = 64
+construct_wall_s = 300
+construct_memory_mb = 2048

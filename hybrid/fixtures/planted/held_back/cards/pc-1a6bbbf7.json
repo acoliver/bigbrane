@@ -1,0 +1,99 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "One shared exponential retention per symbol over a channel-by-width memory",
+  "summary": "A d by N memory is multiplied at each symbol by a single retention factor exp(-step * rate), where the step is computed from the symbol and the rate is a learned positive scalar. The symbol then writes its channel vector along an input-dependent write vector scaled by the step, and the output reads the memory with an input-dependent read vector.",
+  "core_idea": "Use one symbol-dependent scalar retention exp(-step * rate) for the whole memory, so the recurrence is a scalar-times-identity transition with input-dependent writes and reads.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "H",
+        "type": "real matrix",
+        "shape": [
+          "d",
+          "N"
+        ],
+        "meaning": "Memory: d channels by N write coordinates, all retained by the same scalar factor at each symbol."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "\\delta_t = \\mathrm{softplus}(w_\\delta^{\\top} x_t + c),\\; B_t = W_B x_t,\\; C_t = W_C x_t",
+        "plain": "delta_t = softplus(w_delta . x_t + c) is one scalar step; B_t = W_B x_t and C_t = W_C x_t are in R^N; x_t = E[s_t]"
+      },
+      {
+        "name": "recurrence",
+        "latex": "H_t = \\exp(-\\delta_t a) H_{t-1} + \\delta_t\\, x_t B_t^{\\top}",
+        "plain": "H_t = exp(-delta_t * a) * H_(t-1) + delta_t * outer(x_t, B_t), with a > 0 a learned rate"
+      }
+    ],
+    "readout": [
+      {
+        "name": "output",
+        "latex": "y_t = H_t C_t",
+        "plain": "y_t = H_t C_t; next symbol scores O y_t"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence. The rate a is kept positive by storing its logarithm.",
+      "few_shot_argument": "No structure for few examples; about 3500 training sequences are needed for recall of 4 pairs."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d N + d V)",
+      "memory": "Theta(d N)",
+      "total_sequence": "Theta(n d N + n d V)",
+      "constants_notes": "One exponential, a d by N scaling, one rank-one write and one read per symbol; memory is d N numbers."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent with no structure for few examples.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 3500,
+        "statement": "From random weights, 3500 training sequences of 4 pairs over 16 symbols give recall accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact with hand-set orthogonal write vectors and a step near 0 on filler symbols when K <= N."
+      },
+      {
+        "task": "skipping filler symbols",
+        "prediction": "A filler symbol with step near 0 leaves the memory unchanged up to a factor exp(-delta a) close to 1."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A filler symbol with step near 0 changes the memory by more than delta times the norm of its write.",
+    "The counted operations grow faster than linearly in n at fixed d, N and V."
+  ],
+  "toy_example": {
+    "description": "A one by two memory over three symbols with rate a = 1.",
+    "python": "import json, math\na = 1.0\nH = [0.0, 0.0]\nfor x, raw, Bv in [(1.0, 0.0, [1.0, 0.0]), (2.0, -4.0, [0.0, 1.0]), (-1.0, 1.0, [0.5, 0.5])]:\n    dl = math.log1p(math.exp(raw))\n    H = [math.exp(-dl * a) * H[j] + dl * x * Bv[j] for j in range(2)]\nC = [1.0, -1.0]\nprint(json.dumps({\"memory\": [round(v, 6) for v in H], \"out\": round(H[0] * C[0] + H[1] * C[1], 6)}))\n",
+    "expected": {
+      "memory": [
+        -0.473568,
+        -0.646868
+      ],
+      "out": 0.173301
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

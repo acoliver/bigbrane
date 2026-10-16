@@ -1,0 +1,578 @@
+# Test ladder rung 1 (DISCOVERY-PIPELINE-PLAN.md section 11, IMPROVEMENT-PLAN.md B.3 to B.5).
+# Read by hybrid/bench/ladder.py. A run is one executor job in the pinned executor image unless its slice names
+# another execution mode (host_mps below, trusted baselines only). Results are comparable only with results from
+# this file and the same code hash; every result records its device.
+
+image = "localhost/bigbrane/executor@sha256:7fa94b73a3f6fbd6b6544d075e24ff8bf28fae2662771e577a332348d4a00f1b"
+test_seed = 1000
+state_lengths = [64, 256, 512, 4096]
+
+[caps]
+wall_s = 10800
+memory_mb = 2000
+pids = 64
+tmp_mb = 64
+threads = 1
+
+[train]
+batch = 32
+warmup_frac = 0.05
+weight_decay = 0.1
+val_rows = 256
+stop_val_acc = 0.995
+time_budget_s = 9000
+
+# Host GPU (Apple MPS) execution for diagnostics on our own baselines, approved by Andrew on 2026-10-13. Candidate
+# code never runs this way. Decision B10 (2026-10-16): acceptance evidence comes only from the pinned one-thread
+# Podman CPU container; MPS results are labeled diagnostics and the calibration gate refuses them. Jobs run under sandbox-exec with no network (hybrid/bench/ladder_host.py). Workers:
+# measured in results/phase10-20261013/mps-probe; on Gated DeltaNet d32 at N 512 (the slowest diagnostic cell),
+# 1, 2, 3, 4 and 6 concurrent jobs gave 6.6, 12.6, 16.4, 19.2 and 20.0 steps/s in total. Four jobs saturate the
+# GPU (ioreg utilization held at 100%, little gain from six); three keep it below that point at about 1.2 times
+# the single-job step time.
+[execution.host_mps]
+python = ".venv-hybrid/bin/python"
+workers = 3
+
+# ------------------------------------------------------------------------------------------------ tasks
+# MQAR (Zoology format). V = 512 for the grid (B.4). Training mixes the K values per N; evaluation is per K.
+[tasks.mqar256]
+module = "mqar"
+vocab = 512
+seq_len = 256
+train_k = [4, 8, 16, 32, 64]
+eval_k = [4, 8, 16, 32, 64]
+n_eval = 256
+
+[tasks.mqar512]
+module = "mqar"
+vocab = 1024
+seq_len = 512
+train_k = [4, 8, 16, 32, 64]
+eval_k = [4, 8, 16, 32, 64]
+n_eval = 256
+
+[tasks.mqar64]
+module = "mqar"
+vocab = 512
+seq_len = 64
+train_k = [4, 8, 16]
+eval_k = [4, 8, 16]
+n_eval = 256
+
+# Copy (Repeat After Me): D = 16, L_train = 32, tested at 1x to 8x (B.3).
+[tasks.copy]
+module = "copy_task"
+alphabet = 16
+train_max_len = 32
+eval_lengths = [16, 32, 64, 128, 256]
+n_eval = 128
+
+# Long copy for the criterion 6 information bound (decision B10t). The training distribution, vocabulary and
+# alphabet are copy's, so a fixed-state model trained here is the model trained on copy (same model seed and data
+# seed, one thread, so the same weights); only the test length differs. Theorem 2.7 caps whole-string accuracy at
+# 2^(S - P) for S state bits and P = L log2(D) payload bits. The largest counted state in the grid is linear
+# attention d64 with 303,104 FP32 bits (ladder_criteria.counted_state_bits); the cap is at most 0.05 once
+# L >= ceil((S + log2 20) / log2 D) = 75,778 at D = 16. L = 76,000 carries 304,000 bits, 896 above that state, so
+# the cap is 2^-896 for every fixed-state model in the grid. A 152,003-token row is practical for the fixed-state
+# models (about 1.4 to 1.9 s per row and 1.1 to 1.8 GB peak resident on one host thread, results/b10-slice-20261016)
+# and impossible for attention, so only the fixed-state models run on this task. The prediction file is
+# 128 x 76,000 int16 values, 19 MB, under the 64 MB job output cap. No small-width fallback check is needed.
+[tasks.copy_long]
+module = "copy_task"
+alphabet = 16
+train_max_len = 32
+eval_lengths = [76000]
+n_eval = 128
+
+# n-gram lookup (Repeat After Me section 3.5): trained on L <= 30, tested to 100.
+[tasks.lookup_prefix]
+module = "ngram_lookup"
+variant = "prefix"
+alphabet = 16
+n = 3
+k = 3
+train_max_len = 30
+eval_lengths = [20, 30, 60, 100]
+n_eval = 256
+
+[tasks.lookup_suffix]
+module = "ngram_lookup"
+variant = "suffix"
+alphabet = 16
+n = 3
+k = 3
+train_max_len = 30
+eval_lengths = [20, 30, 60, 100]
+n_eval = 256
+
+# ------------------------------------------------------------------------------------------------ models
+# Two mixing layers plus SwiGLU MLPs for every family (Zoology's two-layer setting). Head dimension 32 for
+# attention. State floats come from bb_recall.state_formula.
+[models.tf-d32]
+family = "transformer"
+d = 32
+
+[models.tf-d64]
+family = "transformer"
+d = 64
+
+[models.tf-d128]
+family = "transformer"
+d = 128
+
+# The copy experiments in Repeat After Me found Hard-ALiBi the transformer recipe that generalizes in length.
+[models.tf-halibi-d64]
+family = "transformer"
+d = 64
+hyper = { heads = 4, pos = "hard_alibi", hard_alibi_heads = 2 }
+
+[models.swa-w16-d64]
+family = "sliding_window"
+d = 64
+hyper = { window = 16 }
+
+[models.swa-w32-d64]
+family = "sliding_window"
+d = 64
+hyper = { window = 32 }
+
+[models.swa-w64-d64]
+family = "sliding_window"
+d = 64
+hyper = { window = 64 }
+
+[models.la-d32]
+family = "linear_attention"
+d = 32
+
+[models.la-d64]
+family = "linear_attention"
+d = 64
+
+[models.la-d128]
+family = "linear_attention"
+d = 128
+
+[models.dn-d64]
+family = "deltanet"
+d = 64
+
+[models.gdn-d32]
+family = "gated_deltanet"
+d = 32
+
+[models.gdn-d64]
+family = "gated_deltanet"
+d = 64
+
+[models.gdn-d128]
+family = "gated_deltanet"
+d = 128
+
+[models.m2-s16-d32]
+family = "mamba2"
+d = 32
+hyper = { d_state = 16 }
+
+[models.m2-s16-d64]
+family = "mamba2"
+d = 64
+hyper = { d_state = 16 }
+
+[models.m2-s32-d64]
+family = "mamba2"
+d = 64
+hyper = { d_state = 32 }
+
+[models.m2-s64-d64]
+family = "mamba2"
+d = 64
+hyper = { d_state = 64 }
+
+# Replay attempts for slice diag3. Each table repeats its base model's family and d (so the job spec, initial
+# weights and data streams are the same) and adds `attempt`, which the run id hashes and the job never sees. The
+# ladder skips a run whose result.json exists and equal keys give equal ids, so without the label a second attempt
+# in the same output directory would reuse the first one's result. Diagnostic replays only, never calibration seeds.
+[models.gdn-d64-replay1]
+family = "gated_deltanet"
+d = 64
+attempt = 1
+
+[models.gdn-d64-replay2]
+family = "gated_deltanet"
+d = 64
+attempt = 2
+
+[models.gdn-d32-replay1]
+family = "gated_deltanet"
+d = 32
+attempt = 1
+
+[models.gdn-d32-replay2]
+family = "gated_deltanet"
+d = 32
+attempt = 2
+
+# Repeat attempts for slice diag4: the same family and d as the base model plus `attempt`, so the job spec is the
+# base model's but the run id differs from diag3's run of the same key (those ids are in diag3's output
+# directory). Diagnostic repeats, never calibration seeds.
+[models.gdn-d64-repeat1]
+family = "gated_deltanet"
+d = 64
+attempt = 1
+
+[models.m2-s16-d32-repeat1]
+family = "mamba2"
+d = 32
+hyper = { d_state = 16 }
+attempt = 1
+
+# Fresh attempts for the instrumented learning-onset investigation (slices inst-mps and inst-cpu): the base gdn-d64
+# job with an attempt label the run id hashes and the job never sees. Diagnostics, never calibration seeds.
+[models.gdn-d64-inst1]
+family = "gated_deltanet"
+d = 64
+attempt = 1
+
+[models.gdn-d64-inst2]
+family = "gated_deltanet"
+d = 64
+attempt = 2
+
+# Fresh attempts for slice inst-fail-mps: the base gdn-d32 job (mqar512, lr 1e-3, seed 1, the configuration that
+# stayed at chance in diag2 and in both diag3 replays) with a string attempt label the run id hashes and the job
+# never sees. Diagnostics, never calibration seeds.
+[models.gdn-d32-inst-f1]
+family = "gated_deltanet"
+d = 32
+attempt = "inst-f1"
+
+[models.gdn-d32-inst-f2]
+family = "gated_deltanet"
+d = 32
+attempt = "inst-f2"
+
+[models.gdn-d32-inst-f3]
+family = "gated_deltanet"
+d = 32
+attempt = "inst-f3"
+
+# Fresh attempts for slice inst-lr1e4-mps: the same gdn-d32 job as inst-fail-mps with peak LR 1e-4. Labels inst-l1
+# and inst-l2 give run ids distinct from every earlier attempt. Diagnostics, never calibration seeds.
+[models.gdn-d32-inst-l1]
+family = "gated_deltanet"
+d = 32
+attempt = "inst-l1"
+
+[models.gdn-d32-inst-l2]
+family = "gated_deltanet"
+d = 32
+attempt = "inst-l2"
+
+# Same-seed repeat attempts for the acceptance slice (decision B10t): one per base model of the slice, repeating
+# the base's family, d, depth and hyperparameters and adding `attempt`, which the run id hashes and the job never
+# sees. The job spec, initial weights and data streams are the base model's, so a repeat differs from its original
+# only by the attempt label. The slice runs it at the learning rate chosen for the original, on seeds 1, 2 and 3
+# (ladder.Scheduler, lr_from). ladder_criteria never ranks a model with an `attempt` as a separate model.
+[models.tf-d64-rep1]
+family = "transformer"
+d = 64
+attempt = "acc-rep1"
+
+[models.swa-w32-d64-rep1]
+family = "sliding_window"
+d = 64
+hyper = { window = 32 }
+attempt = "acc-rep1"
+
+[models.la-d64-rep1]
+family = "linear_attention"
+d = 64
+attempt = "acc-rep1"
+
+[models.gdn-d64-rep1]
+family = "gated_deltanet"
+d = 64
+attempt = "acc-rep1"
+
+[models.m2-s32-d64-rep1]
+family = "mamba2"
+d = 64
+hyper = { d_state = 32 }
+attempt = "acc-rep1"
+
+[models.tf-halibi-d64-rep1]
+family = "transformer"
+d = 64
+hyper = { heads = 4, pos = "hard_alibi", hard_alibi_heads = 2 }
+attempt = "acc-rep1"
+
+[models.tf-d32-rep1]
+family = "transformer"
+d = 32
+attempt = "acc-rep1"
+
+[models.la-d32-rep1]
+family = "linear_attention"
+d = 32
+attempt = "acc-rep1"
+
+[models.gdn-d32-rep1]
+family = "gated_deltanet"
+d = 32
+attempt = "acc-rep1"
+
+[models.m2-s16-d32-rep1]
+family = "mamba2"
+d = 32
+hyper = { d_state = 16 }
+attempt = "acc-rep1"
+
+[models.m2-s64-d64-rep1]
+family = "mamba2"
+d = 64
+hyper = { d_state = 64 }
+attempt = "acc-rep1"
+
+# ------------------------------------------------------------------------------------------------ microbench
+[microbench]
+warmup = 2
+steps = 5
+wall_s = 3600
+infer_lengths = [256, 512, 1024, 2048, 4096]
+configs = [
+  { model = "tf-d64", vocab = 512, seq_len = 256, batch = 32 },
+  { model = "swa-w32-d64", vocab = 512, seq_len = 256, batch = 32 },
+  { model = "la-d64", vocab = 512, seq_len = 256, batch = 32 },
+  { model = "dn-d64", vocab = 512, seq_len = 256, batch = 32 },
+  { model = "gdn-d64", vocab = 512, seq_len = 256, batch = 32 },
+  { model = "m2-s32-d64", vocab = 512, seq_len = 256, batch = 32 },
+  { model = "tf-d32", vocab = 1024, seq_len = 512, batch = 32 },
+  { model = "la-d32", vocab = 1024, seq_len = 512, batch = 32 },
+  { model = "gdn-d32", vocab = 1024, seq_len = 512, batch = 32 },
+  { model = "m2-s16-d32", vocab = 1024, seq_len = 512, batch = 32 },
+  { model = "tf-d128", vocab = 512, seq_len = 256, batch = 32 },
+  { model = "tf-halibi-d64", vocab = 20, seq_len = 67, batch = 32 },
+  { model = "gdn-d64", vocab = 20, seq_len = 67, batch = 32 },
+]
+
+# ------------------------------------------------------------------------------------------------ slices
+# Sized from the measured step rates (results/phase10-20261012/microbench): about 0.18 to 0.29 s per step at
+# N = 256, batch 32, one thread, and 0.24 to 0.32 s at N = 512 with d = 32. A second thread gains only 1.1x to
+# 1.5x, so every job uses one thread and jobs run in parallel. Learning rates: 3 points on a log grid inside
+# [1e-4, 1e-2] (B.4), seed 0 sweep, then the acceptance seeds 1, 2 and 3 at the best validation accuracy (decision
+# B10; the default seeds are ladder.DEFAULT_SEEDS).
+#
+# "first" is the reduced slice that tests the orderings the task names first: criterion 1 (attention learns
+# MQAR at d = 64, N = 256), 4 (window against equal-state fixed-state models: swa w32 d64 holds 8192 KV floats,
+# gdn d64 8192 and m2 s32 d64 8192, plus convolution buffers), 2 (recall against K at d = 32, N = 512),
+# 6 (copy beyond L_train, prefix-key lookup), 8 (linear attention against the transformer) and 9 (seeds).
+[slices.first]
+cells = [
+  { task = "mqar256", models = ["tf-d64", "swa-w32-d64", "la-d64", "gdn-d64", "m2-s32-d64"], lrs = [0.0003, 0.001, 0.003], steps = 6000 },
+  { task = "copy", models = ["tf-d64", "tf-halibi-d64", "la-d64", "gdn-d64", "m2-s32-d64"], lrs = [0.0003, 0.001, 0.003], steps = 6000 },
+  { task = "lookup_prefix", models = ["tf-d64", "la-d64", "gdn-d64", "m2-s32-d64"], lrs = [0.0003, 0.001, 0.003], steps = 4000 },
+  { task = "mqar512", models = ["tf-d32", "la-d32", "gdn-d32", "m2-s16-d32"], lrs = [0.0003, 0.001, 0.003], steps = 6000 },
+]
+
+# "second" completes the state-size sweep (criterion 3) and the suffix-key lookup once "first" has run.
+[slices.second]
+cells = [
+  { task = "mqar512", models = ["la-d64", "gdn-d64", "m2-s64-d64", "la-d128", "gdn-d128"], lrs = [0.0003, 0.001, 0.003], steps = 6000 },
+  { task = "lookup_suffix", models = ["tf-d64", "tf-halibi-d64", "la-d64", "gdn-d64", "m2-s32-d64"], lrs = [0.0003, 0.001, 0.003], steps = 4000 },
+  { task = "mqar256", models = ["swa-w16-d64", "swa-w64-d64", "dn-d64", "m2-s16-d64", "tf-d32", "tf-d128"], lrs = [0.0003, 0.001, 0.003], steps = 6000 },
+]
+
+# "diag1" is the diagnostic slice results/phase10-20261012/summary.md recommends before "second": the five weak or
+# seed-sensitive recall cells and the two transformer copy cells, 18,000 steps, revised learning-rate grids, no
+# early stop at training-length validation (stop_val_acc 1.01 is unreachable), a 15,000 s training budget inside an
+# 18,000 s wall cap. Seed 0 sweeps the three rates; seeds 1, 2 and 3 run after selection (B.4): 6 runs per cell, 42
+# in all. It runs on the host GPU (host_mps). Its results carry a newer code hash than "first": the runner and
+# bb_recall gained the device option, with CPU numerics unchanged.
+[slices.diag1]
+execution = "host_mps"
+seeds = [0, 1, 2, 3]
+train = { stop_val_acc = 1.01, time_budget_s = 15000 }
+caps = { wall_s = 18000 }
+cells = [
+  { task = "mqar256", models = ["gdn-d64", "m2-s32-d64"], lrs = [0.0001, 0.0003, 0.001], steps = 18000 },
+  { task = "mqar512", models = ["gdn-d32"], lrs = [0.0003, 0.0006, 0.001], steps = 18000 },
+  { task = "mqar512", models = ["la-d32"], lrs = [0.001, 0.003, 0.01], steps = 18000 },
+  { task = "mqar512", models = ["m2-s16-d32"], lrs = [0.0001, 0.0003, 0.001], steps = 18000 },
+  { task = "copy", models = ["tf-d64", "tf-halibi-d64"], lrs = [0.0003, 0.001, 0.003], steps = 18000 },
+]
+
+# "diag2" reruns diag1's seven cells, with diag1's budget and learning-rate grids, after the Gated DeltaNet recipe
+# change (FLA initialization and bias-free convolution and gate projections, results/phase10-20261013/recipe-probe
+# patches 01 and 02, piloted in results/phase10-20261013/gdn-pilot). The change alters the code hash, so every run
+# gets a new id and no diag1 result counts toward acceptance; this slice re-establishes all seven cells on one
+# hash. It adds the same-device full-attention controls on both MQAR tasks that diag1 lacked, at matched width
+# (tf-d64 at N 256, tf-d32 at N 512) with the first slice's attention grid. 9 cells, 54 runs. The slowest cell
+# (gdn-d32 at N 512) goes first so its post-selection seeds do not form the tail.
+[slices.diag2]
+execution = "host_mps"
+seeds = [0, 1, 2, 3]
+train = { stop_val_acc = 1.01, time_budget_s = 15000 }
+caps = { wall_s = 18000 }
+cells = [
+  { task = "mqar512", models = ["gdn-d32"], lrs = [0.0003, 0.0006, 0.001], steps = 18000 },
+  { task = "mqar256", models = ["gdn-d64", "m2-s32-d64"], lrs = [0.0001, 0.0003, 0.001], steps = 18000 },
+  { task = "mqar256", models = ["tf-d64"], lrs = [0.0003, 0.001, 0.003], steps = 18000 },
+  { task = "mqar512", models = ["la-d32"], lrs = [0.001, 0.003, 0.01], steps = 18000 },
+  { task = "mqar512", models = ["m2-s16-d32"], lrs = [0.0001, 0.0003, 0.001], steps = 18000 },
+  { task = "mqar512", models = ["tf-d32"], lrs = [0.0003, 0.001, 0.003], steps = 18000 },
+  { task = "copy", models = ["tf-d64", "tf-halibi-d64"], lrs = [0.0003, 0.001, 0.003], steps = 18000 },
+]
+
+# "diag3" is the repeatability and learning-rate stability slice results/phase10-diag2-20261013T1334Z/summary.md
+# recommends, on diag2's code hash and settings. Two parts:
+# - Replays: the two Gated DeltaNet runs that stayed at chance in diag2, each twice, with the same code, model
+#   seed, data seed, learning rate and 18,000-step schedule (mqar256 gdn-d64 seed 3 at 3e-4, mqar512 gdn-d32
+#   seed 1 at 1e-3). The *-replay<n> models carry the attempt label. They are diagnostics, not calibration seeds.
+# - An 18,000-step tranche on four cells with new grids: lower rates for both GDN cells, a wider grid for Mamba
+#   d32, and the LA d32 grid unchanged as a control. Seed 0 sweeps the three rates; seeds 1, 2 and 3 run after
+#   selection.
+# 28 runs. The slow GDN d32 cell goes first, then its replays, so neither forms the tail.
+[slices.diag3]
+execution = "host_mps"
+seeds = [0, 1, 2, 3]
+train = { stop_val_acc = 1.01, time_budget_s = 15000 }
+caps = { wall_s = 18000 }
+cells = [
+  { task = "mqar512", models = ["gdn-d32"], lrs = [0.0001, 0.0003, 0.0006], steps = 18000 },
+  { task = "mqar512", models = ["gdn-d32-replay1", "gdn-d32-replay2"], lrs = [0.001], seeds = [1], steps = 18000 },
+  { task = "mqar256", models = ["gdn-d64"], lrs = [0.0001, 0.0002, 0.0003], steps = 18000 },
+  { task = "mqar256", models = ["gdn-d64-replay1", "gdn-d64-replay2"], lrs = [0.0003], seeds = [3], steps = 18000 },
+  { task = "mqar512", models = ["m2-s16-d32"], lrs = [0.0002, 0.0003, 0.0006], steps = 18000 },
+  { task = "mqar512", models = ["la-d32"], lrs = [0.001, 0.003, 0.01], steps = 18000 },
+]
+
+# "diag4" is the fixed-rate probe results/phase10-diag3-20261013T2009Z/summary.md recommends, on diag2 and diag3's
+# code hash and settings: nine 18,000-step runs, seeds 1, 2 and 3, one learning rate per cell and no sweep.
+# - mqar512 gdn-d32 at 3e-4, a lower rate than the diag3 winner (6e-4), on the post-selection seeds.
+# - mqar256 gdn-d64 at 2e-4 and mqar512 m2-s16-d32 at 6e-4, repeats of diag3's selected rates. Their *-repeat1
+#   models carry an attempt label so the run ids differ from diag3's. Diagnostics, not calibration seeds.
+# The slow GDN d32 cell goes first so it does not form the tail.
+[slices.diag4]
+execution = "host_mps"
+seeds = [0, 1, 2, 3]
+train = { stop_val_acc = 1.01, time_budget_s = 15000 }
+caps = { wall_s = 18000 }
+cells = [
+  { task = "mqar512", models = ["gdn-d32"], lrs = [0.0003], seeds = [1, 2, 3], steps = 18000 },
+  { task = "mqar256", models = ["gdn-d64-repeat1"], lrs = [0.0002], seeds = [1, 2, 3], steps = 18000 },
+  { task = "mqar512", models = ["m2-s16-d32-repeat1"], lrs = [0.0006], seeds = [1, 2, 3], steps = 18000 },
+]
+
+# "inst-mps" and "inst-cpu" are the instrumented learning-onset investigation results/phase10-diag4-20261014T0250Z/
+# summary.md recommends: mqar256 gdn-d64 at 2e-4, seed 3 (retention in diag3, near-perfect retrieval in diag4
+# under the same job spec), 18,000 steps, two fresh attempts per device, run one at a time (--workers 1). The job
+# spec is diag4's gdn-d64 seed-3 spec plus the instrument table; the CPU slice differs only in device and its
+# longer time budget and wall cap (one-thread CPU ran about 0.5 s per step in the first slice). Weight and
+# optimizer snapshots every 1,800 steps keep a job's output near 25 MB, under the container's 64 MB output cap.
+[slices.inst-mps]
+execution = "host_mps"
+seeds = [3]
+train = { stop_val_acc = 1.01, time_budget_s = 15000 }
+caps = { wall_s = 18000 }
+instrument = { enabled = true, save_every = 1800 }
+cells = [
+  { task = "mqar256", models = ["gdn-d64-inst1", "gdn-d64-inst2"], lrs = [0.0002], seeds = [3], steps = 18000 },
+]
+
+[slices.inst-cpu]
+seeds = [3]
+train = { stop_val_acc = 1.01, time_budget_s = 30000 }
+caps = { wall_s = 36000 }
+instrument = { enabled = true, save_every = 1800 }
+cells = [
+  { task = "mqar256", models = ["gdn-d64-inst1", "gdn-d64-inst2"], lrs = [0.0002], seeds = [3], steps = 18000 },
+]
+
+# "inst-fail-mps" tries to capture an instrumented failing trace: mqar512 gdn-d32 at 1e-3, seed 1, 18,000 steps,
+# which stayed at chance in diag2 and in both diag3 replays (diag3 run r-f6e55f827701 is the replay1 job). Three
+# fresh attempts (inst-f1..3), run with --workers 2, and the inst-mps instrument settings. Every other job-spec
+# field is diag3's (stop_val_acc 1.01, time budget 15000 s, wall cap 18000 s).
+[slices.inst-fail-mps]
+execution = "host_mps"
+seeds = [1]
+train = { stop_val_acc = 1.01, time_budget_s = 15000 }
+caps = { wall_s = 18000 }
+instrument = { enabled = true, save_every = 1800 }
+cells = [
+  { task = "mqar512", models = ["gdn-d32-inst-f1", "gdn-d32-inst-f2", "gdn-d32-inst-f3"], lrs = [0.001], seeds = [1], steps = 18000 },
+]
+
+# "inst-lr1e4-mps" is the next test results/phase10-instfail-20261014T0718Z/summary.md recommends: the inst-fail-mps
+# job (mqar512 gdn-d32, seed 1, 18,000 steps, instrumented) with only the peak learning rate changed to 1e-4. Two
+# fresh attempts (inst-l1, inst-l2), run with --workers 2. Initialization, optimizer, clipping, the 900-step warmup
+# and the cosine schedule, the instrument settings, time budget and wall cap are inst-fail-mps's.
+[slices.inst-lr1e4-mps]
+execution = "host_mps"
+seeds = [1]
+train = { stop_val_acc = 1.01, time_budget_s = 15000 }
+caps = { wall_s = 18000 }
+instrument = { enabled = true, save_every = 1800 }
+cells = [
+  { task = "mqar512", models = ["gdn-d32-inst-l1", "gdn-d32-inst-l2"], lrs = [0.0001], seeds = [1], steps = 18000 },
+]
+
+# "accept" is the Phase 10 acceptance slice (decisions B10 and B10t): every cell the nine B.5 criteria read, in the
+# pinned one-thread Podman CPU container, with seed 0 sweeping the learning rate and seeds 1, 2 and 3 judged. It is
+# the "first" slice (criteria 1, 2, 4, 6, 8, 9) plus the three mqar512 sizes of "second" that criterion 3 needs
+# (la-d64, gdn-d64 and m2-s64-d64 beside the d32 models of "first": two state sizes per fixed-state family). The
+# d128 models of "second" are left out: criterion 3 asks for two sizes, and by extrapolation from the first slice's
+# rates a d128 job at N 512 would run past the 9,000 s training budget. The suffix-key lookup and the extra window and DeltaNet cells of "second" feed no
+# criterion. Criterion 7 reads the microbenchmark, not these runs.
+# - Repeats (B10t): every cell has a same-seed repeat attempt (the *-rep1 model of ladder.toml, same learning rate
+#   as its original, seeds 1, 2 and 3), so nobody picks cells to repeat from the data. Criterion 9 repeatability
+#   uses the repeats of the cells whose seeds spread by more than 0.5.
+# - Long copy (B10t): copy_long trains the fixed-state copy models again at copy's chosen learning rate and tests
+#   them at L = 76,000, where the criterion 6 bound caps whole-string accuracy at 2^-896 (see [tasks.copy_long]).
+# - Settings are the plain [train] and [caps] of this file except memory_mb: a 152,003-token Mamba-2 row peaks near
+#   1.8 GB resident on the host, so the job cap is 4096 MB (still one executor slot, ceil(4096 / SLOT_MB)).
+# The slowest mqar512 cells go first. Use --workers 4 (one per executor slot).
+[slices.accept]
+caps = { memory_mb = 4096 }
+cells = [
+  { task = "mqar512", models = ["gdn-d64", "m2-s64-d64", "la-d64", "gdn-d32", "m2-s16-d32", "la-d32", "tf-d32"], lrs = [0.0003, 0.001, 0.003], steps = 6000 },
+  { task = "mqar256", models = ["gdn-d64", "m2-s32-d64", "la-d64", "swa-w32-d64", "tf-d64"], lrs = [0.0003, 0.001, 0.003], steps = 6000 },
+  { task = "copy", models = ["gdn-d64", "m2-s32-d64", "la-d64", "tf-halibi-d64", "tf-d64"], lrs = [0.0003, 0.001, 0.003], steps = 6000 },
+  { task = "lookup_prefix", models = ["gdn-d64", "m2-s32-d64", "la-d64", "tf-d64"], lrs = [0.0003, 0.001, 0.003], steps = 4000 },
+
+  # Long copy: the fixed-state models at the learning rate chosen on copy, seeds 1, 2 and 3.
+  { task = "copy_long", models = ["gdn-d64"], lr_from = "copy/gdn-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy_long", models = ["m2-s32-d64"], lr_from = "copy/m2-s32-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy_long", models = ["la-d64"], lr_from = "copy/la-d64", seeds = [1, 2, 3], steps = 6000 },
+
+  # Same-seed repeat attempts, one per cell above (decision B10t).
+  { task = "mqar512", models = ["gdn-d64-rep1"], lr_from = "mqar512/gdn-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar512", models = ["m2-s64-d64-rep1"], lr_from = "mqar512/m2-s64-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar512", models = ["la-d64-rep1"], lr_from = "mqar512/la-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar512", models = ["gdn-d32-rep1"], lr_from = "mqar512/gdn-d32", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar512", models = ["m2-s16-d32-rep1"], lr_from = "mqar512/m2-s16-d32", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar512", models = ["la-d32-rep1"], lr_from = "mqar512/la-d32", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar512", models = ["tf-d32-rep1"], lr_from = "mqar512/tf-d32", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar256", models = ["gdn-d64-rep1"], lr_from = "mqar256/gdn-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar256", models = ["m2-s32-d64-rep1"], lr_from = "mqar256/m2-s32-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar256", models = ["la-d64-rep1"], lr_from = "mqar256/la-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar256", models = ["swa-w32-d64-rep1"], lr_from = "mqar256/swa-w32-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "mqar256", models = ["tf-d64-rep1"], lr_from = "mqar256/tf-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy", models = ["gdn-d64-rep1"], lr_from = "copy/gdn-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy", models = ["m2-s32-d64-rep1"], lr_from = "copy/m2-s32-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy", models = ["la-d64-rep1"], lr_from = "copy/la-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy", models = ["tf-halibi-d64-rep1"], lr_from = "copy/tf-halibi-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy", models = ["tf-d64-rep1"], lr_from = "copy/tf-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "lookup_prefix", models = ["gdn-d64-rep1"], lr_from = "lookup_prefix/gdn-d64", seeds = [1, 2, 3], steps = 4000 },
+  { task = "lookup_prefix", models = ["m2-s32-d64-rep1"], lr_from = "lookup_prefix/m2-s32-d64", seeds = [1, 2, 3], steps = 4000 },
+  { task = "lookup_prefix", models = ["la-d64-rep1"], lr_from = "lookup_prefix/la-d64", seeds = [1, 2, 3], steps = 4000 },
+  { task = "lookup_prefix", models = ["tf-d64-rep1"], lr_from = "lookup_prefix/tf-d64", seeds = [1, 2, 3], steps = 4000 },
+  { task = "copy_long", models = ["gdn-d64-rep1"], lr_from = "copy/gdn-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy_long", models = ["m2-s32-d64-rep1"], lr_from = "copy/m2-s32-d64", seeds = [1, 2, 3], steps = 6000 },
+  { task = "copy_long", models = ["la-d64-rep1"], lr_from = "copy/la-d64", seeds = [1, 2, 3], steps = 6000 },
+]
+
+[slices.smoke]
+cells = [
+  { task = "mqar64", models = ["tf-d32", "gdn-d32"], lrs = [0.003], seeds = [0], steps = 40 },
+]

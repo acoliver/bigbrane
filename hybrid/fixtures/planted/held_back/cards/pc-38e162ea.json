@@ -1,0 +1,165 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "An interval tree whose new midpoints inherit a displacement from their parent",
+  "summary": "Two teaching events give the levels at the ends of the unit interval. Probes at dyadic positions are answered by a binary interval tree grown only where a probe needs it: each new midpoint is the mean of its interval's end levels plus a displacement F = theta Delta^2 / (1 + Delta^2) + rho c Delta, where Delta is the difference of the end levels and c the displacement inherited from the parent, and both children inherit F. The answer is the codebook token nearest to the computed level, after clipping that level to the codebook range. Two learned scalars fix the subdivision law, which is identified offline by scalar regressions.",
+  "core_idea": "Seed a positional field with two demonstrated end levels and grow it by a nonlinear midpoint law whose displacement is inherited by the children, answering each probe with the nearest code to the clipped level.",
+  "mechanism": {
+    "learning": {
+      "description": "Use two sequential scalar least-squares fits on noiseless training records. First, for each record set D_i=B_i-A_i, Q_i=(A_i+B_i)/2, H_i=D_i*D_i/(1+D_i*D_i), and O_i=Y_i-Q_i. Set theta to sum_i(H_i*O_i)/sum_i(H_i*H_i). Next set C_i=theta*H_i and M_i=Q_i+C_i. These are the fitted model's root stress and midpoint, not observed quantities. For the left child use (a_i,left,b_i,left,Z_i,left)=(A_i,M_i,L_i); for the right child use (a_i,right,b_i,right,Z_i,right)=(M_i,B_i,R_i). For each child set D_ir=b_ir-a_ir, Q_ir=(a_ir+b_ir)/2, H_ir=C_i*D_ir, and E_ir=Z_ir-Q_ir-theta*D_ir*D_ir/(1+D_ir*D_ir). Set rho to sum_ir(H_ir*E_ir)/sum_ir(H_ir*H_ir). Declare the fit non-identifiable if either denominator is zero; reject nonfinite results. Freeze theta and rho for testing. Thus rho fitting uses model-generated endpoints and model-generated inherited stress throughout. In an identifiable noiseless core-family dataset, M_i equals Y_i in exact arithmetic, and both parameters are recovered exactly. No joint-optimum claim is made for noisy targets. Observed displacement is O_i, never F; F names only the inference birth displacement.",
+      "few_shot_argument": "The mechanism is boundary-conditioned developmental execution. With the shared birth law already identified, two boundaries uniquely determine every allowed interior probe, including cells not previously allocated. Two demonstrations specify a member of this restricted two-boundary family, not an arbitrary transformation. Interior targets are necessary for offline parameter identification; boundary examples cannot repair wrong parameters. The specified eight-episode training set has nonzero identification denominators."
+    },
+    "readout": [
+      {
+        "latex": "v_{\\star}=\\arg\\min_{0\\leq v<V}|z_v-\\operatorname{clip}(f(x),z_{lo},z_{hi})|,\\qquad p_v(x)=\\mathbf{1}[v=v_{\\star}]",
+        "name": "Next-token distribution",
+        "plain": "For a valid probe with both boundary flags true, execute the positional procedure, clip f(x) to the codebook range [z_lo, z_hi] (z_lo and z_hi are the smallest and the largest code), and scan codes in increasing index order, selecting the first minimizer. Emit a one-hot distribution at that index. For TEACH, invalid inputs, or probes before both flags are true, emit 1/V for every token without positional execution. Field-level claims concern unquantized successful probes."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "d is a power of two, at least 2, specifying the maximum number of terminal intervals. Each node stores (l,u,a,b,c,m): interval endpoints l,u in [0,1], endpoint field levels a,b, inherited stress c, and midpoint level m. The sentinel unset means m is uncomputed, not a numerical level. Nodes also have optional left and right child links. root(l,u,a,b,c,m) constructs one node with these fields and absent links. An empty tree has no root. On replacement, the old tree is freed before a new root is installed.",
+        "name": "T",
+        "shape": [
+          "at most 2d-1 nodes",
+          6
+        ],
+        "type": "mutable binary interval tree"
+      },
+      {
+        "meaning": "theta controls contrast-driven midpoint shift; rho controls inheritance of parent stress. Both are learned across training episodes and frozen within each inference context.",
+        "name": "theta, rho",
+        "shape": [
+          2
+        ],
+        "type": "shared learned real parameter block"
+      },
+      {
+        "meaning": "B[s].level stores the demonstrated boundary level at position s, where s is 0 or 1; B[s].valid is initially false. A TEACH event sets that boundary's level and validity, invalidates T, and reseeds T if both flags are true. A new independent context clears both flags and T. Updating one boundary retains the other register.",
+        "name": "B",
+        "shape": [
+          2,
+          2
+        ],
+        "type": "boundary registers with Boolean validity flags"
+      },
+      {
+        "meaning": "The encoding is (tag,position,level). TEACH(s,y) is (0,s,y), with s either 0 or 1 and y a real boundary level. PROBE(x) is (1,x,0), with its final field ignored. Here x=j/d and j is an integer from 0 through d. n is the number of events in a context. Interior TEACH events and other invalid inputs are rejected without state changes and receive uniform readout.",
+        "name": "e",
+        "shape": [
+          3
+        ],
+        "type": "structured input event"
+      },
+      {
+        "meaning": "V is the positive integer vocabulary size. z_v is the numerical level represented by token v, with integer v from 0 through V-1. Nearest-code quantization breaks ties toward the smaller token index.",
+        "name": "z",
+        "shape": [
+          "V"
+        ],
+        "type": "fixed numerical output codebook"
+      },
+      {
+        "meaning": "Inference locals are h=(l+u)/2, Delta=b-a, q=(a+b)/2, birth displacement F, candidate level w, scalar potential U(w), returned field f(x), probabilities p_v(x), selected index v_star, and child references T_L,T_R. For offline fitting, k is the number of training episodes and i indexes 1 through k. Record i contains boundaries A_i,B_i and observed targets Y_i,L_i,R_i at positions 1/2,1/4,3/4. These are training data, not the boundary register B. Fitting locals D_i,Q_i,H_i,O_i,M_i,C_i denote root contrast, root average, theta coefficient, observed root displacement, model midpoint, and model root stress. Index r is either left or right. Child locals a_ir,b_ir,Z_ir denote model endpoints and observed child target; D_ir,Q_ir,H_ir,E_ir denote child contrast, child average, rho coefficient, and child residual. All fitting locals are scalars processed one record at a time. Their formulas are given explicitly in learning. argmin and the indicator function have their usual meanings.",
+        "name": "local computation and offline fitting workspace",
+        "shape": [
+          "scalar locals, two child references, and k training records offline"
+        ],
+        "type": "ephemeral heterogeneous workspace, not persistent context memory"
+      }
+    ],
+    "update": [
+      {
+        "latex": "\\operatorname{TEACH}(s,y):\\quad B[s].\\mathrm{level}\\leftarrow y,\\quad B[s].\\mathrm{valid}\\leftarrow\\mathrm{true};\\qquad T\\leftarrow\\operatorname{root}(0,1,B[0].\\mathrm{level},B[1].\\mathrm{level},0,\\mathrm{unset})",
+        "name": "Boundary teaching and episode seeding",
+        "plain": "For valid TEACH, write y and set the selected validity flag. Free the previous tree. Execute the root assignment only if both flags are true; otherwise leave T empty. Invalid TEACH events do not perform any of these operations."
+      },
+      {
+        "latex": "\\Delta=b-a,\\quad q=(a+b)/2,\\quad F=\\theta\\frac{\\Delta^2}{1+\\Delta^2}+\\rho c\\Delta,\\qquad U(w)=\\tfrac12(w-q)^2-F(w-q)",
+        "name": "Learned local developmental potential",
+        "plain": "When an interior probe reaches a node with unset midpoint, compute Delta, q, and F. The quadratic potential U is tilted by the contrast-dependent and inherited-stress-dependent displacement."
+      },
+      {
+        "latex": "m=q+F=\\arg\\min_w U(w),\\qquad h=(l+u)/2;\\qquad T_L=(l,h,a,m,F,\\mathrm{unset}),\\quad T_R=(h,u,m,b,F,\\mathrm{unset})",
+        "name": "Midpoint birth and stress inheritance",
+        "plain": "Store m=q+F directly. The child expressions specify constructors, not eager allocations. If traversal needs a missing child, construct only that child with absent links. Both children inherit c=F. Never allocate below interval width 1/d. For later child allocation recover F=m-(a+b)/2 from the stored midpoint."
+      },
+      {
+        "latex": "f(l)=a,\\quad f(u)=b,\\quad f(h)=m;\\qquad x<h\\Rightarrow\\text{execute }T_L,\\quad x>h\\Rightarrow\\text{execute }T_R",
+        "name": "Positional execution",
+        "plain": "For a valid PROBE with T present, start at its root. Test x=l and x=u first, returning the endpoint immediately. Otherwise compute h and, if necessary, store m using the birth law. Return m if x=h. Otherwise allocate the selected child if absent and repeat there. At width 1/d every allowed probe is an endpoint, so execution terminates without a finer midpoint. Existing levels never change. If T is absent, do not evaluate f."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "Use a teacher defined by the core birth law with theta=rho=0.5, d=16, and boundaries 0 and 1. Give the learner those same frozen parameters and only TEACH(0,0), TEACH(1,1). Query j/16 for j=0 through 16 in ascending order. Compared with a fresh teacher evaluated at the same positions, float64 maximum absolute error must be below 1e-10. This generates 15 undemonstrated interior values from two boundaries.",
+        "task": "Two-shot generation of unseen interior values"
+      },
+      {
+        "prediction": "For boundaries 0 and 1 and theta=rho=0.5, the value at 1/4 is 0.64875. Setting rho=0 while preserving theta yields 0.555. The difference is 0.09375, within absolute tolerance 1e-12 in float64.",
+        "task": "Detecting inherited developmental stress"
+      },
+      {
+        "prediction": "At d=16, boundaries 0 and 1, and theta=rho=0.5, querying all 17 positions in forward order, reverse order, or a permutation from numpy.random.default_rng(0) produces identical float64 values. After growth, 10000 repetitions produce zero change in every stored midpoint.",
+        "task": "Query-order invariance and repeated reuse"
+      },
+      {
+        "prediction": "At d=16 the core exposes 17 grid values determined by two boundaries and frozen parameters, not 15 independently writable interior labels. After querying all positions for boundaries 0 and 1, teach replacement boundaries 1 and 0 and query again. Every result must exactly equal a fresh context taught only 1 and 0. TEACH(1/2,7) must be rejected with zero changes to either register or any midpoint.",
+        "task": "Finite capacity and boundary replacement"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "Time per token is amortized over a context. A query visits at most log2(d) levels; readout scans V codes. A boundary replacement may take O(d) worst-case time to free the old tree, but each freed node is charged once to its earlier allocation, giving the stated total bound. Synchronous freeing before reseeding keeps memory O(d+V). There are at most 2d-1 live nodes. Arithmetic precision is fixed. d is spatial resolution, not context length. Offline fitting costs O(k) with three targets per episode and is excluded from inference bounds.",
+      "memory": "O(d + V)",
+      "time_per_token": "O(log d + V)",
+      "total_sequence": "O(n(log d + V))"
+    },
+    "sample_efficiency": {
+      "mechanism": "Identify one shared stress-inheriting birth law from interior training targets, then execute it in new episodes conditioned only on two boundaries.",
+      "prediction": {
+        "metric": "Held-out unquantized mean squared error after eight training episodes",
+        "statement": "Use a teacher with theta=rho=0.5 and d=16. Training boundaries are (0,i/8) for i=1 through 8, with teacher targets at 1/4,1/2,3/4. Fit using mechanism.learning in float64 without clipping or rounding. Generate 100 test boundary pairs with numpy.random.default_rng(0).uniform(0,1,size=(100,2)). Supply only two boundaries per test context and evaluate all 17 positions j/16. Mean squared error over the 1700 unquantized predictions must be at most 0.0001. Non-identifiable fits, nonfinite results, and numerical failures count as failures. Exact-arithmetic error is zero.",
+        "value": 0.0001
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "If the exact training and testing protocol in claims.sample_efficiency yields mean squared error greater than 0.0001 or fails to produce finite identifiable parameters, the stated small-data transfer prediction is refuted.",
+    "If any specified query order or 10000 repetitions changes a fixed-boundary float64 output, query-order invariance and immutable reuse are refuted.",
+    "If boundary replacement leaves any grid output different from a fresh context with the replacement boundaries, or an invalid interior TEACH changes state, the stated replacement and finite-capacity semantics are refuted."
+  ],
+  "toy_example": {
+    "description": "Evaluate the core with theta=rho=0.5, boundaries 0 and 1, d=4, and a 1001-token numerical codebook. Grow the tree lazily in two query orders. Round values to six decimal places only for printing.",
+    "python": "import json\nimport numpy as np\n\ntheta = 0.5\nrho = 0.5\nd = 4\ncodes = np.arange(1001, dtype=float) / 1000.0\n\ndef node(l, u, a, b, c):\n    return {'l': l, 'u': u, 'a': a, 'b': b, 'c': c}\n\ndef evaluate(t, x):\n    if x == t['l']:\n        return t['a']\n    if x == t['u']:\n        return t['b']\n    h = (t['l'] + t['u']) / 2.0\n    if 'm' not in t:\n        delta = t['b'] - t['a']\n        q = (t['a'] + t['b']) / 2.0\n        force = theta * delta * delta / (1.0 + delta * delta) + rho * t['c'] * delta\n        t['m'] = q + force\n    if x == h:\n        return t['m']\n    assert t['u'] - t['l'] > 1.0 / d\n    side = 'left' if x < h else 'right'\n    if side not in t:\n        force = t['m'] - (t['a'] + t['b']) / 2.0\n        if side == 'left':\n            t[side] = node(t['l'], h, t['a'], t['m'], force)\n        else:\n            t[side] = node(h, t['u'], t['m'], t['b'], force)\n    return evaluate(t[side], x)\n\npositions = [0.25, 0.5, 0.75]\nfirst = node(0.0, 1.0, 0.0, 1.0, 0.0)\nvalues = [evaluate(first, x) for x in positions]\nsecond = node(0.0, 1.0, 0.0, 1.0, 0.0)\nreverse = {x: evaluate(second, x) for x in reversed(positions)}\nresult = {\n    'values': [round(v, 6) for v in values],\n    'token_indices': [int(np.argmin(np.abs(codes - np.clip(v, codes.min(), codes.max())))) for v in values],\n    'order_invariant': all(v == reverse[x] for x, v in zip(positions, values))\n}\nprint(json.dumps(result, sort_keys=True))",
+    "expected": {
+      "order_invariant": true,
+      "token_indices": [
+        649,
+        750,
+        936
+      ],
+      "values": [
+        0.64875,
+        0.75,
+        0.935662
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

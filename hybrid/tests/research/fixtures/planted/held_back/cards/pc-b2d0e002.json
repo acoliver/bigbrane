@@ -1,0 +1,86 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Counting table that evicts stale buckets",
+  "summary": "A table counts how often each bucket has been seen and evicts the stalest bucket when full; the readout returns the bucket whose count passes a threshold.",
+  "core_idea": "Count buckets, evict the stalest when the table is full, and read the bucket past a threshold.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "ostrade",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Table of counts per bucket with a fixed number of rows."
+      }
+    ],
+    "update": [
+      {
+        "name": "step",
+        "latex": "ostrade[b(x_t)] = ostrade[b(x_t)] + 1 (count, lookup table), evict the stalest row when full",
+        "plain": "ostrade[b(x_t)] = ostrade[b(x_t)] + 1 (count, lookup table), evict the stalest row when full"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "y_t = lookup(ostrade) if count >= theta, sum over buckets",
+        "plain": "y_t = lookup(ostrade) if count >= theta, sum over buckets"
+      }
+    ],
+    "learning": {
+      "description": "Nothing is trained.",
+      "few_shot_argument": "Fixture only: no claim about learning speed is made beyond the toy case."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(1)",
+      "memory": "O(R)",
+      "total_sequence": "O(n)",
+      "constants_notes": "A handful of operations per symbol in the toy setting."
+    },
+    "sample_efficiency": {
+      "mechanism": "Fixture only: the rule is fixed by hand.",
+      "prediction": {
+        "metric": "examples_needed",
+        "value": 1,
+        "statement": "A bucket seen twice is read after two symbols."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "frequent symbol report",
+        "prediction": "Reports a bucket once it has been seen twice."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "Bounded counting tables are standard.",
+      "claimed_difference": "Fixture only; no difference is claimed."
+    }
+  ],
+  "falsifiers": [
+    "The reported bucket was seen once.",
+    "The table exceeds its row count."
+  ],
+  "toy_example": {
+    "description": "Three symbols counted.",
+    "python": "import json\nrows = {}\nfor x in [2, 2, 5]:\n    rows[x] = rows.get(x, 0) + 1\nprint(json.dumps({'rows': len(rows), 'top': max(rows, key=rows.get)}))\n",
+    "expected": {
+      "rows": 2,
+      "top": 2
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

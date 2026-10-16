@@ -1,0 +1,566 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bigbrane.local/schemas/math_statement.schema.json",
+  "title": "Frozen formal statements of one card, with the definitions they use and the premises they rest on (stage M, DISCOVERY-PIPELINE-PLAN.md section 4.1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "card_id",
+    "card_version",
+    "fixer_calls",
+    "fixer_model",
+    "claims",
+    "obligations",
+    "definitions",
+    "premises",
+    "not_formalized",
+    "dropped",
+    "first_problems"
+  ],
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "pattern": "^card-[0-9a-f]{8}$"
+    },
+    "card_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "fixer_calls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "fixer_model": {
+      "type": "string"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "text"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "obligations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "claim_id",
+          "claim_quote",
+          "definitions",
+          "premises",
+          "discharges",
+          "statements"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^O[0-9]{1,2}$"
+          },
+          "claim_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "claim_quote": {
+            "type": "string"
+          },
+          "definitions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^D[0-9]{1,2}$"
+            }
+          },
+          "premises": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^A[0-9]{1,2}$"
+            }
+          },
+          "discharges": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^A[0-9]{1,2}$"
+            }
+          },
+          "statements": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "form",
+                "spec",
+                "sha256",
+                "bound"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^O[0-9]{1,2}\\.[abc]$"
+                },
+                "form": {
+                  "enum": [
+                    "lean",
+                    "z3",
+                    "sympy",
+                    "simulation",
+                    "construction",
+                    "cost",
+                    "conservation",
+                    "learnability",
+                    "conformance"
+                  ]
+                },
+                "spec": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "bound": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "description": "Conventions and protocol choices. Part of the frozen statements; a definition has no status.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "text",
+          "sha256"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^D[0-9]{1,2}$"
+          },
+          "kind": {
+            "enum": [
+              "sampling",
+              "evaluation",
+              "accounting",
+              "baseline",
+              "notation",
+              "mechanism",
+              "other"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scope": {
+            "description": "FIX-13: shared (the default) binds every obligation that cites it; cost_reference is a P1 cost-reference convention and binds only cost and conformance statements.",
+            "enum": [
+              "shared",
+              "cost_reference"
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "premises": {
+      "description": "Substantive claims about the mechanism, the data or the world that a proof relies on but does not prove.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "text",
+          "kind",
+          "does_work",
+          "why_needed",
+          "testable_by",
+          "measurement_plan",
+          "citation",
+          "added_by"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^A[0-9]{1,2}$"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "oracle",
+              "store",
+              "prior",
+              "other"
+            ]
+          },
+          "does_work": {
+            "type": "boolean"
+          },
+          "why_needed": {
+            "type": "string",
+            "minLength": 1
+          },
+          "testable_by": {
+            "enum": [
+              "code",
+              "citation"
+            ]
+          },
+          "measurement_plan": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "measure",
+              "data",
+              "procedure",
+              "accept_if"
+            ],
+            "properties": {
+              "measure": {
+                "type": "string",
+                "minLength": 1
+              },
+              "data": {
+                "type": "string",
+                "minLength": 1
+              },
+              "procedure": {
+                "type": "string",
+                "minLength": 1
+              },
+              "accept_if": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "citation": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "source",
+              "id",
+              "quote"
+            ],
+            "properties": {
+              "source": {
+                "enum": [
+                  "arxiv",
+                  "openalex"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 10
+              }
+            }
+          },
+          "added_by": {
+            "enum": [
+              "dialogue",
+              "statement_fixer"
+            ]
+          },
+          "subject": {
+            "description": "FIX-6: what the premise is about. frozen_definitions: the card's own code, equations or frozen definitions; mechanism: a capacity or component the mechanism relies on; world: external data, hardware or a published result.",
+            "enum": [
+              "frozen_definitions",
+              "mechanism",
+              "world"
+            ]
+          },
+          "settle_at": {
+            "description": "FIX-6, decided by the host: M for a premise about the card's own frozen definitions (settled only by a discharging obligation checked at stage M), deferrable otherwise.",
+            "enum": [
+              "M",
+              "deferrable"
+            ]
+          },
+          "refused": {
+            "description": "FIX-6: why a premise settled at M was refused at freeze (no frozen obligation discharges it). It never advances.",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "not_formalized": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "claim_id",
+          "why"
+        ]
+      }
+    },
+    "dropped": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "first_problems": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "lint_problems": {
+      "description": "FIX-18: the Lean lint findings (forbidden constructs, bound names that are Lean 4 keywords) of the fixer's rewritten answer, which got one repair round before freezing (absent when there were none).",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "card_limits": {
+      "description": "FIX-18: the P3 limits the card states, which the frozen profile limits copy (absent for cards made before FIX-18).",
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "resources": {
+      "description": "FIX-16: the card's resources section the frozen statements were filled in from and verified against (absent for cards without one).",
+      "type": "object"
+    },
+    "profile": {
+      "description": "Phase 4: present when the card is held to the transformer profile (hybrid/math/profile.py): the template version, the slots and the P3 limits the statement fixer stated.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "slots",
+        "limits"
+      ],
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "task",
+              "size",
+              "resources",
+              "why"
+            ],
+            "properties": {
+              "task": {
+                "type": "string"
+              },
+              "size": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "resources": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              },
+              "basis": {
+                "description": "FIX-17 (decision P3): the part of the mechanism (state, update or readout) the limit follows from, its anchor and a quote of the card's text there. Absent in records frozen before FIX-17.",
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "part",
+                  "anchor",
+                  "quote"
+                ],
+                "properties": {
+                  "part": {
+                    "enum": [
+                      "state",
+                      "update",
+                      "readout"
+                    ]
+                  },
+                  "anchor": {
+                    "type": "string"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "architecture": {
+          "description": "FIX-4: the shared architecture contract of P1, P2 and P4 (hybrid/math/architecture.py): the feed-forward hidden width as a formula in d and the precision of stored numbers; FIX-8 adds the optional carried-state budget state_bits of a finite-state mechanism. Absent in records frozen before FIX-4.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hidden",
+            "precision_bits"
+          ],
+          "properties": {
+            "hidden": {
+              "type": "string"
+            },
+            "precision_bits": {
+              "enum": [
+                16,
+                32,
+                64
+              ]
+            },
+            "state_bits": {
+              "type": [
+                "string",
+                "number",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "prefreeze_match": {
+      "description": "FIX-19 (decision M): the statement match before the freeze, one entry per fixer answer that had a round after it: the statements matched in that round (new or changed), those that kept an earlier round's reading, the upheld mismatches fed back to the fixer, the unresolved ones (disputed or unread, left to stage C), the match role calls and the models each role used.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "round",
+          "matched",
+          "reused",
+          "mismatched",
+          "unresolved",
+          "calls",
+          "models"
+        ],
+        "properties": {
+          "round": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "matched": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reused": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mismatched": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "unresolved": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "calls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "models": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "job_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unread": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Growing a unit-trace concept matrix by one coupled coordinate per demonstration",
+  "summary": "A learner for positive, unsigned directional concepts. Each nonzero demonstration appends one coordinate to a positive semidefinite unit-trace matrix rho: the new row and column are rho times the vector of an anchor entry and the similarities of the new feature to every earlier landmark, the expanded matrix is squared and divided by its trace, and the feature becomes a landmark. A probe is scored by the quadratic form of its scaled landmark similarities under rho, clipped to [0, 1], and the YES probability is s / (s + lambda). Memory is bounded by the coordinate budget d.",
+  "core_idea": "Let every demonstration add one landmark coordinate coherently coupled to a unit-trace concept matrix, and score probes by a clipped quadratic form over their similarities to the landmarks.",
+  "mechanism": {
+    "learning": {
+      "description": "Offline training uses independent episodes, each containing one to seven positive DEMO tokens followed by labeled PROBE tokens, with d=8. Reset rho=[1] and L empty at each episode. Initialize W to identity when p=m, or to a fixed seeded Gaussian matrix with entry standard deviation 1/sqrt(m) otherwise. Fix lambda=0.05. For each episode, compute mean probe loss as minus log(max(1e-8, probability assigned to the supplied YES/NO label)). Differentiate through encoding, birth, normalization, and readout, then subtract 0.001 times the gradient from W. Use plain SGD, one episode per update in supplied order. The derivative of max is zero below its floor; define the encoding derivative as zero at a zero transformed vector. Training includes both probe labels. At deployment, freeze W and reset contextual state for each concept. All analytic claims instead use the explicitly supplied p=m=2 and W=I_2, without offline training.",
+      "few_shot_argument": "For p=m=2, W=I_2, d>=3, and two identical unit demonstrations a, rho equals [[1/6,1/6,1/3],[1/6,1/6,1/3],[1/3,1/3,2/3]]. Every unit probe u therefore has score exactly 0.75*(a dot u)^2. With lambda=0.05, squared alignment at least 0.8 yields YES probability at least 12/13. Coordinate birth immediately installs a reusable quadratic directional rule; this does not establish sample efficiency for arbitrary heterogeneous concepts or natural-language embeddings."
+    },
+    "readout": [
+      {
+        "latex": "q_t=\\begin{cases}(0,L_1^\\top u_t,\\ldots,L_{j-1}^\\top u_t)^\\top/\\sqrt{j-1},&j>1,\\\\0,&j=1,\\end{cases}\\qquad s_t=\\operatorname{clip}(q_t^\\top\\rho q_t,0,1).",
+        "name": "Concept score",
+        "plain": "On a PROBE, form normalized similarities to incorporated landmarks with a zero anchor coordinate, then compute the quadratic score and clip it to [0,1]. Before teaching, or for a zero-feature probe, the score is zero."
+      },
+      {
+        "latex": "P_t=\\left(\\frac{s_t}{s_t+\\lambda},\\frac{\\lambda}{s_t+\\lambda}\\right)^\\top\\in\\mathbb{R}^{V},\\qquad V=2.",
+        "name": "Next-token distribution",
+        "plain": "Return the YES and NO probabilities in that order. The nonnegative score is normalized against the fixed positive negative-class scale. Readout leaves contextual state unchanged."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "The concept reservoir, initialized to [1]. j is its current coordinate count, initially 1 and at most d; d is the configured coordinate budget. n is the number of structured tokens processed, and t indexes those tokens. Transpose is denoted by superscript top, tr denotes trace, and the subscript 2 denotes Euclidean norm.",
+        "name": "rho",
+        "shape": [
+          "j",
+          "j"
+        ],
+        "type": "positive-semidefinite real matrix with unit trace"
+      },
+      {
+        "meaning": "Rows L_i are incorporated teaching features, indexed from 1 through j-1; p is feature dimension. Initially there are no rows. These landmarks are not token-content bindings.",
+        "name": "L",
+        "shape": [
+          "j-1",
+          "p"
+        ],
+        "type": "ordered matrix of unit feature vectors"
+      },
+      {
+        "meaning": "The block contains a matrix W of shape (p,m) and positive scalar lambda; m is input dimension. All analytic claims fix p=m=2, W=I_2, and lambda=0.05. Offline learning updates W only. Its learning rate is 0.001 and probability floor is 1e-8.",
+        "name": "W, lambda",
+        "shape": [
+          "pm+1"
+        ],
+        "type": "frozen parameter block"
+      },
+      {
+        "meaning": "At step t the token contains the m-vector x_t and scalar tag_t, either DEMO or PROBE; u_t is the derived p-vector. DEMO denotes a positive example. PROBE requests a next-token distribution over V=2 tokens, ordered YES, NO. A zero-feature DEMO is ignored; a zero-feature PROBE returns NO with probability one.",
+        "name": "input",
+        "shape": [
+          "m+p+1"
+        ],
+        "type": "structured token and derived feature bundle"
+      },
+      {
+        "meaning": "Contains k_t of shape (j), T_t of shape (j+1,j), and B_t of shape (j+1,j+1). k_t contains anchor entry 1 followed by landmark similarities. T_t stacks the identity matrix I_j above k_t transpose. B_t is the expanded reservoir before normalization. These temporaries are discarded after teaching.",
+        "name": "birth",
+        "shape": [
+          "j+(j+1)j+(j+1)^2"
+        ],
+        "type": "temporary algebraic bundle"
+      },
+      {
+        "meaning": "Contains q_t with j entries, scalar score s_t, and probability vector P_t with V=2 entries in YES, NO order. q_t excludes the anchor and normalizes landmark similarities by sqrt(j-1); it is zero when j=1. These temporaries do not modify contextual state.",
+        "name": "read",
+        "shape": [
+          "j+1+V"
+        ],
+        "type": "temporary readout bundle"
+      }
+    ],
+    "update": [
+      {
+        "latex": "u_t=\\begin{cases}W x_t/\\|W x_t\\|_2,&\\|W x_t\\|_2>0,\\\\0,&\\|W x_t\\|_2=0.\\end{cases}",
+        "name": "Encode the structured input",
+        "plain": "Compute W times x. If its norm is positive, divide by that norm; otherwise use the zero vector."
+      },
+      {
+        "latex": "k_t=(1,L_1^\\top u_t,\\ldots,L_{j-1}^\\top u_t)^\\top,\\qquad T_t=\\begin{bmatrix}I_j\\\\k_t^\\top\\end{bmatrix},\\qquad B_t=T_t\\rho T_t^\\top.",
+        "name": "Coherent coordinate birth",
+        "plain": "Only on a nonzero-feature DEMO with j<d, construct the anchor-plus-landmark similarity vector and expanded matrix. Equivalently, append rho times k as a column and its transpose as a row, with k transpose rho k as the new diagonal entry."
+      },
+      {
+        "latex": "\\rho\\leftarrow\\frac{B_t^2}{\\operatorname{tr}(B_t^2)},\\qquad L\\leftarrow\\begin{bmatrix}L\\\\u_t^\\top\\end{bmatrix},\\qquad j\\leftarrow j+1.",
+        "name": "Normalize the expanded reservoir",
+        "plain": "Square the expanded matrix, normalize by its trace, append the teaching feature, and increment j. PROBE tokens, zero-feature demonstrations, and demonstrations at capacity leave rho and L unchanged. The identity block ensures a positive denominator. Rank-one initialization makes this normalization exactly equal to B divided by trace(B)."
+      }
+    ]
+  },
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "With p=m=2, W=I_2, d>=2, lambda=0.05, and one unit demonstration a, queries a and -a both receive YES probability 10/11. Every query orthogonal to a receives probability zero.",
+        "task": "One-shot unsigned directional concept acquisition"
+      },
+      {
+        "prediction": "With p=m=2, W=I_2, d>=3, lambda=0.05, and two identical unit demonstrations a, every unit query u has score exactly 0.75*(a dot u)^2. On a, YES probability rises from 10/11 to 15/16.",
+        "task": "Two-shot reinforcement and generalization"
+      },
+      {
+        "prediction": "With p=m=2, W=I_2, d>=3, and lambda=0.05, teach e1=(1,0) followed by e2=(0,1). The resulting rho is the all-ones 3-by-3 matrix divided by 3. Queries (e1+e2)/sqrt(2) and (e1-e2)/sqrt(2) receive YES probabilities 20/23 and zero respectively. The baseline score defined as the mean of squared landmark-query inner products assigns both queries score 1/2.",
+        "task": "Cross-example interference"
+      },
+      {
+        "prediction": "With d=8, only the first seven nonzero teaching examples are incorporated; an eighth changes no subsequent query distribution. For any fixed teaching history and any nonzero query u, P(YES|u)=P(YES|-u). Consequently, on the balanced two-query task labeling u as YES and -u as NO, thresholding YES probability at 1/2 gives exactly 50% accuracy. The rank-one reservoir represents one weighted landmark direction, not seven independent concepts.",
+        "task": "Capacity saturation and signed-label impossibility"
+      }
+    ],
+    "complexity": {
+      "constants_notes": "Upper bounds for the dense implementation. d is coordinate budget, p feature dimension, m input dimension, and n sequence length; d, p, and m do not grow automatically with n. Teaching costs O(d^3+dp+pm), while queries cost O(d^2+dp+pm). At most d-1 nonzero demonstrations are incorporated. V=2 is fixed. Offline training is excluded. Exact rank-one implementations can be cheaper, but the stated bounds do not require that optimization.",
+      "memory": "O(d^2+dp+pm)",
+      "time_per_token": "O(d^3+dp+pm)",
+      "total_sequence": "O(n(d^3+dp+pm))"
+    },
+    "sample_efficiency": {
+      "mechanism": "Two coherent coordinate births install an explicitly reusable quadratic directional rule.",
+      "prediction": {
+        "metric": "Minimum YES probability after two identical demonstrations for squared feature alignment at least 0.8",
+        "statement": "With p=m=2, W=I_2, lambda=0.05, d>=3, and two copies of any unit vector a, every unit query u with (a dot u)^2>=0.8 receives YES probability at least 12/13. This is a conditional algebraic guarantee, not an empirical prediction about learned language features.",
+        "value": 0.9230769230769231
+      }
+    }
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "With p=m=2, W=I_2, lambda=0.05, and d=8, teach a=(1,0) twice. In float64, evaluate all 360 unit queries u=(cos(2*pi*h/360),sin(2*pi*h/360)) for integer h from 0 through 359. A maximum absolute score error above 1e-10 relative to 0.75*(a dot u)^2 refutes the two-shot formula.",
+    "With p=m=2, W=I_2, lambda=0.05, and d=8, teach (1,0) followed by (0,1). An absolute sum-query probability error above 1e-10 relative to 20/23, or a difference-query YES probability above 1e-10, refutes the interference prediction.",
+    "With p=m=2, W=I_2, lambda=0.05, and d=8, teach (1,0) seven times, record probabilities on the 360 unit queries defined in the first falsifier, and then teach (0,1). Any recorded probability changing by more than 1e-10 refutes capacity saturation. Any antipodal probability difference above 1e-10 on that grid refutes the unsigned-readout claim."
+  ],
+  "toy_example": {
+    "description": "Checks one-shot acquisition, two-shot reinforcement, orthogonal interference, and zero-feature behavior with p=m=2 and W=I_2.",
+    "python": "import json\nimport numpy as np\n\nclass Reservoir:\n    def __init__(self, d=8):\n        self.rho = np.ones((1, 1))\n        self.L = []\n        self.d = d\n    def teach(self, x):\n        x = np.asarray(x, dtype=float)\n        norm = np.linalg.norm(x)\n        if norm == 0 or self.rho.shape[0] >= self.d:\n            return\n        x = x / norm\n        k = np.array([1.0] + [float(a @ x) for a in self.L])\n        T = np.vstack([np.eye(len(k)), k])\n        B = T @ self.rho @ T.T\n        C = B @ B\n        self.rho = C / np.trace(C)\n        self.L.append(x)\n    def probability(self, x):\n        x = np.asarray(x, dtype=float)\n        norm = np.linalg.norm(x)\n        if norm == 0 or not self.L:\n            return 0.0\n        x = x / norm\n        q = np.array([0.0] + [float(a @ x) for a in self.L]) / np.sqrt(len(self.L))\n        s = min(1.0, max(0.0, float(q @ self.rho @ q)))\n        return s / (s + 0.05)\n\nr = Reservoir()\nr.teach([1, 0])\none = round(r.probability([1, 0]), 6)\nnegative = round(r.probability([-1, 0]), 6)\northogonal = round(r.probability([0, 1]), 6)\nr.teach([1, 0])\ntwo = round(r.probability([1, 0]), 6)\nz = Reservoir()\nz.teach([1, 0])\nz.teach([0, 1])\nz.teach([0, 0])\nresult = {'one_shot': one, 'opposite_direction': negative, 'orthogonal': orthogonal, 'two_shot': two, 'sum_query': round(z.probability([1, 1]), 6), 'difference_query': round(z.probability([1, -1]), 6), 'zero_query': round(z.probability([0, 0]), 6)}\nprint(json.dumps(result, sort_keys=True))",
+    "expected": {
+      "difference_query": 0.0,
+      "one_shot": 0.909091,
+      "opposite_direction": 0.909091,
+      "orthogonal": 0.0,
+      "sum_query": 0.869565,
+      "two_shot": 0.9375,
+      "zero_query": 0.0
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

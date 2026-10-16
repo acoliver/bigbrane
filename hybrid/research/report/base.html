@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title }} | {{ run_id }}</title>
+<style>
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; color: #1d1d1f; background: #fff; }
+  nav { background: #f2f2f4; padding: 10px 24px; border-bottom: 1px solid #d8d8dc; }
+  nav a { margin-right: 18px; color: #0a4fa8; text-decoration: none; }
+  main { padding: 16px 24px 48px; max-width: 1200px; }
+  footer { border-top: 1px solid #d8d8dc; padding: 10px 24px; font-size: 13px; color: #444; background: #fafafa; }
+  table { border-collapse: collapse; margin: 8px 0 20px; }
+  th, td { border: 1px solid #d8d8dc; padding: 5px 9px; text-align: left; vertical-align: top; font-size: 14px; }
+  th { background: #f2f2f4; }
+  td.num, th.num { text-align: right; }
+  pre { background: #f6f6f8; border: 1px solid #e0e0e4; padding: 10px; overflow-x: auto; font-size: 12.5px; }
+  .muted { color: #666; }
+  .warn { color: #8a4b00; }
+  .problem { color: #a40000; font-weight: bold; }
+  ul.tree, ul.tree ul { margin: 4px 0 4px 18px; }
+  .ok { color: #1b6e2a; }
+{% if override %}
+  .override { border: 4px solid #a40000; background: #fff1f1; padding: 12px 18px; margin: 0 0 22px; }
+  .override h2 { color: #a40000; margin: 0 0 8px; font-size: 20px; }
+  .override table { margin: 8px 0 4px; background: #fff; }
+  .override ul { margin: 2px 0 2px 18px; padding: 0; }
+  .override-tag { background: #a40000; color: #fff; padding: 2px 8px; font-weight: bold; font-size: 13px; }
+{% endif %}
+</style>
+</head>
+<body>
+<nav>
+  <a href="{{ root }}index.html">Overview</a>
+  <a href="{{ root }}cards.html">Cards</a>
+  <a href="{{ root }}lineage.html">Lineage</a>
+  <a href="{{ root }}models.html">Model usage</a>
+</nav>
+<main>
+{% if override %}
+<div class="override" role="alert">
+  <h2><span class="override-tag">OPERATOR OVERRIDE</span> Plumbing check. This run is not a card passing the gates.</h2>
+  <p><strong>{{ override.statement }}</strong></p>
+  <table>
+    <tr><th>Reason</th><td>{{ override.reason }}</td></tr>
+    <tr><th>Source</th><td>run {{ override.source_run_id }}, card {{ override.card_id }}, version {{ override.source_card.version }} (<code>{{ override.source_run }}</code>)</td></tr>
+    <tr><th>Source verdicts</th><td>{% for stage, record in override.source_verdicts.items() %}{{ stage }}: {{ record.verdict if record else "none (stage never ran)" }}{% if not loop.last %}; {% endif %}{% endfor %}</td></tr>
+    <tr><th>Stages run here</th><td>{{ override.stages_run | join(", ") }}</td></tr>
+    <tr><th>Recorded</th><td>ledger event {{ override.seq }}, {{ override.ts }}</td></tr>
+  </table>
+</div>
+{% endif %}
+{% block content %}{% endblock %}
+</main>
+<footer>
+  {% if file_problems %}<span class="problem">{{ ledger_line }}</span>
+  <ul>{% for problem in file_problems %}<li class="problem">{{ problem }}</li>{% endfor %}</ul>
+  {% else %}<span class="ok">{{ ledger_line }}</span>{% endif %}
+</footer>
+</body>
+</html>

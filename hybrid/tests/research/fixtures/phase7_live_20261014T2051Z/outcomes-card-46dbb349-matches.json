@@ -1,0 +1,3686 @@
+{
+ "source": "results/outcomes-fix10/outcomes.jsonl (sha256 f28a41c2043e8005653e9e2495dbf1963efecdce4848c714de6ee977a01aa8e4)",
+ "record_ids": [
+  "oc-75618165949e",
+  "oc-dbe79e9ad52b",
+  "oc-12f90f33cddc",
+  "oc-2d48993b203e",
+  "oc-b5d3989d0e5d",
+  "oc-5a0e466a2845",
+  "oc-4acac46b8e81",
+  "oc-3a20482beb85"
+ ],
+ "records": [
+  {
+   "record_id": "oc-75618165949e",
+   "seq": 51,
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": null,
+    "card_id": "card-46dbb349",
+    "card_path": "plumb-math-card-46dbb349-20261012T193523Z/cards/card-46dbb349/v2.json",
+    "card_sha256": "691a014631872dc022bc3ab7f3b4999bf6a1126dd24dfe91ed277f4645f1be3d",
+    "card_version": 2,
+    "causes": [
+     {
+      "code": "unproven:A1",
+      "detail": "premise A1 (open): Unspecified random choices are uniform; base demonstration inputs are sampled without replacement, fresh new-rule inputs exclude the base demonstration inputs, and queries are sampled uniformly from inputs not demonstrated for the queried rule.",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+        "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+        "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+       }
+      ]
+     },
+     {
+      "code": "unproven:A2",
+      "detail": "premise A2 (open): Evaluation processes adjacent pairs beginning with (BOS,x_1), scores the post-update readout at the query token before its following separator, uses the smallest token index to break logit ties, and uses lambda=1e-6 and tau=1e3 wherever the capability settings omit them.",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+        "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+        "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+       }
+      ]
+     },
+     {
+      "code": "unproven:A3",
+      "detail": "premise A3 (open): The simulation runner returns predictions from the stated recurrence and the named baselines, with fresh RLS reset for each new rule, pooled and ablated RLS using all preceding content pairs, and no access to targets.",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+        "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+        "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+       }
+      ]
+     },
+     {
+      "code": "unproven:A4",
+      "detail": "premise A4 (open): For the otherwise underspecified Gated DeltaNet baseline, each content pair updates W from W_old to gamma*W_old+outer(u,v-W_old.T@u), initializes W=0, skips reserved pairs, and reads W.T@Phi[q], separately for each listed gamma.",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+        "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+        "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+       }
+      ]
+     },
+     {
+      "code": "unproven:A5",
+      "detail": "premise A5 (open): Complexity is measured in unit-cost scalar arithmetic and stored scalar words, with dense matrix-vector operations, streaming orbit search that retains the best transported key rather than every orbit point, and no retained context or autograd tape at inference.",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+        "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+        "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+       }
+      ]
+     },
+     {
+      "code": "unproven:A6",
+      "detail": "premise A6 (open): Under the scalar accounting convention, the recurrence has a per-token worst-case accounting envelope (4M+12)d^2+3Md+8d+2Vd+V+10 operations and 6d^2+Vd+10d+V+4 peak words, including parameters and transient workspace.",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+        "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+        "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+       },
+       {
+        "kind": "job",
+        "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Treat every rule in the context as the same in-context-identified Koopman flow run for a different, unknown integer duration. For each demonstration, the model infers the duration by matching the demonstration against powers of the current operator, then writes it back into that single operator as a one-step pair transported along the inferred orbit. Once one rule has identified the flow, every other rule in its cyclic semigroup is learned from a single example.",
+    "cost": {
+     "executor_jobs": 18,
+     "model_calls": 5,
+     "tokens": 164404
+    },
+    "definitions": [],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "math_verdict",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/math_verdict/card-46dbb349-v1-2df29c.json",
+      "sha256": "35470e6dabb201b4c0b333758269fb01b526edc6b9ce1db7f8e439ee7dca43c8"
+     },
+     {
+      "kind": "assumption_ledger",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/artifacts/assumption_ledger/card-46dbb349-v1-8ddcbb.json",
+      "sha256": "c84463e4c547901a5cb0b76f0276a6f4d8d6d2b16c85bfba878917609aaa71bd"
+     },
+     {
+      "kind": "call",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-393c9d5ff1d7"
+     },
+     {
+      "kind": "call",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-ba0e53640bc6"
+     },
+     {
+      "kind": "call",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-69e81281e12d"
+     },
+     {
+      "kind": "call",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-fb3d6af2fbdb"
+     },
+     {
+      "kind": "call",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/call-073a75d3c2d5"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-1e123260baac"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-b78071b34200"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-d86a9d50eae3"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-3c13a5b818f6"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-8f04f38d9354"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-73a30b06ed51"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-f26077fdebf8"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-4db8fbec0a96"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-d5d456e08eea"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-5fa47ca7d1a0"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-cee1970a67dd"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-3faa031226a7"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-9873407e9b3c"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-72b9512af518"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-587551d019be"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/lean-babb77671e42"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-06c2a27f58da"
+     },
+     {
+      "kind": "job",
+      "ref": "plumb-math-card-46dbb349-20261012T193523Z/mathlib-2b98c058eb1b"
+     }
+    ],
+    "kill_codes": [
+     "unproven:A1",
+     "unproven:A2",
+     "unproven:A3",
+     "unproven:A4",
+     "unproven:A5",
+     "unproven:A6"
+    ],
+    "kill_detail": "math gate (M): undetermined; kill codes unproven:A1, unproven:A2, unproven:A3, unproven:A4, unproven:A5, unproven:A6",
+    "legacy": true,
+    "lens": "neural_odes_koopman",
+    "lineage_id": "card-46dbb349",
+    "mechanism_signature": {
+     "signature": "sig-b400312d8e07c4e5",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write"
+      ],
+      "read": [
+       "argmax_select",
+       "bilinear_product",
+       "count_increment",
+       "outer_product_write",
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "2d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        1
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "append_slot",
+       "argmax_select",
+       "bilinear_product",
+       "distance_kernel",
+       "normalize",
+       "outer_product_write",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:append_slot",
+      "w:argmax_select",
+      "w:bilinear_product",
+      "w:distance_kernel",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:threshold_branch",
+      "r:argmax_select",
+      "r:bilinear_product",
+      "r:count_increment",
+      "r:outer_product_write",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "definitions",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": {
+     "broken_invariant": "The SUGS mapping relies on two facts.\n- (a) The components are independent conjugate linear-Gaussian regressions. Each has sufficient statistics sum_{i: assigned to j} (u_i u_i^T, u_i v_i^T) over the raw regressor/target pairs assigned to it. The bank is therefore a sum of per-pair writes, with u_i a function of token x_{i-1} only.\n- (b) A pair assigned to component j changes only component j's predictive.\n\nThis card breaks both in updates u[1] to u[4].\n- There is one operator K. The candidate components are its powers K^c, whose predictive (K^T)^c u is a degree-c polynomial in the state, so no per-component conjugate posterior exists.\n- The write uses the key z_t = (K_{t-1}^T)^{e_t-1} u_t, the previous operator applied e_t - 1 times. The statistics are therefore sum_s (z_s z_s^T, z_s v_s^T) over keys that depend on the whole prefix, not on one token each.\n- A duration-3 pair changes the predictions for every duration at once.\n\nThe toy example shows the break. The B pair (1,4) is written with key \u2248 Phi[3], a token absent from the pair. The one-shot query is answered correctly (0), where the SUGS fresh component answers 4.",
+     "known_family": "other_known: sequential greedy (SUGS) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions (Mixture-of-Memories MesaNet with a likelihood router)",
+     "why_unrepairable": "Repair 1 (strongest): SUGS with one component per duration c, i.e. M independent conjugate regressions routed by predictive likelihood. Each component would be fitted only from pairs routed to it, so a rule seen once has a one-pair posterior. That is exactly the fresh_mode_pred = 4 baseline in the toy. To match the card, the posterior mean of component c would have to equal the c-th power of component 1's mean, and every pair routed to c would have to update component 1 through the transported key. No conjugate mixture has that nonlinear tie.\n\nRepair 2: MesaNet or linear attention with a learned key map. The key z_t = (K_{t-1}^T)^{e_t-1} Phi[x_{t-1}] depends on the operator identified so far and on a discrete test against it, so no feature map of the tokens produces it. In the toy, input token 1 would get key Phi[1] if the base were unidentified or if e = 1, and it gets key \u2248 Phi[3] here.\n\nRepair 3: Mixture-of-Memories with a likelihood router, or a lifted state enumerating durations. Both store separate per-duration statistics, so neither can transfer one demonstration of rule A^3 into the operator of A.\n\nRepair 4: TTT on the loss ||(K^T)^e u - v||^2. This needs e as an input, and it takes a gradient step through the power instead of an exact RLS write of the transported pair, so it gives a different K after the same pair. A critic can check this on the toy's third write.\n\nRepair 5: a discrete-logarithm or subgroup routine over given group labels. No group or labels are given. The group is the semigroup of an operator identified in context on a learned lift, and identification and exponent inference are coupled through the transported keys.\n\nThe observable differences are the claims themselves:\n- one-shot new rules without slots, where MesaNet and SUGS fail;\n- the odd/even split on a cycle of 64, which no mixture predicts;\n- order dependence, where MesaNet is order-invariant."
+    },
+    "operator": null,
+    "outcome": "dead",
+    "override": true,
+    "parent_ids": [],
+    "premises": [
+     {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A1",
+      "kind": "prior",
+      "status": "open",
+      "text": "Unspecified random choices are uniform; base demonstration inputs are sampled without replacement, fresh new-rule inputs exclude the base demonstration inputs, and queries are sampled uniformly from inputs not demonstrated for the queried rule.",
+      "used_by": [
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ]
+     },
+     {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A2",
+      "kind": "other",
+      "status": "open",
+      "text": "Evaluation processes adjacent pairs beginning with (BOS,x_1), scores the post-update readout at the query token before its following separator, uses the smallest token index to break logit ties, and uses lambda=1e-6 and tau=1e3 wherever the capability settings omit them.",
+      "used_by": [
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ]
+     },
+     {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A3",
+      "kind": "other",
+      "status": "open",
+      "text": "The simulation runner returns predictions from the stated recurrence and the named baselines, with fresh RLS reset for each new rule, pooled and ablated RLS using all preceding content pairs, and no access to targets.",
+      "used_by": [
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ]
+     },
+     {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A4",
+      "kind": "other",
+      "status": "open",
+      "text": "For the otherwise underspecified Gated DeltaNet baseline, each content pair updates W from W_old to gamma*W_old+outer(u,v-W_old.T@u), initializes W=0, skips reserved pairs, and reads W.T@Phi[q], separately for each listed gamma.",
+      "used_by": [
+       "O4"
+      ]
+     },
+     {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A5",
+      "kind": "other",
+      "status": "open",
+      "text": "Complexity is measured in unit-cost scalar arithmetic and stored scalar words, with dense matrix-vector operations, streaming orbit search that retains the best transported key rather than every orbit point, and no retained context or autograd tape at inference.",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3"
+      ]
+     },
+     {
+      "added_by": "statement_fixer",
+      "basis": "no proof, measurement or citation",
+      "does_work": true,
+      "evidence": null,
+      "id": "A6",
+      "kind": "other",
+      "status": "open",
+      "text": "Under the scalar accounting convention, the recurrence has a per-token worst-case accounting envelope (4M+12)d^2+3Md+8d+2Vd+V+10 operations and 6d^2+Vd+10d+V+4 peak words, including parameters and transient workspace.",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3"
+      ]
+     }
+    ],
+    "run": "plumb-math-card-46dbb349-20261012T193523Z",
+    "source_run": "run-20261010T181300Z",
+    "stage_verdicts": {
+     "M": {
+      "by_calls": [
+       "call-393c9d5ff1d7",
+       "call-ba0e53640bc6",
+       "call-69e81281e12d",
+       "call-fb3d6af2fbdb",
+       "call-073a75d3c2d5",
+       "lean-1e123260baac",
+       "lean-b78071b34200",
+       "lean-d86a9d50eae3",
+       "lean-3c13a5b818f6",
+       "lean-8f04f38d9354",
+       "lean-73a30b06ed51",
+       "mathlib-f26077fdebf8",
+       "mathlib-4db8fbec0a96",
+       "mathlib-d5d456e08eea",
+       "mathlib-5fa47ca7d1a0",
+       "mathlib-cee1970a67dd",
+       "mathlib-3faa031226a7",
+       "mathlib-9873407e9b3c",
+       "mathlib-72b9512af518",
+       "lean-587551d019be",
+       "lean-babb77671e42",
+       "mathlib-06c2a27f58da",
+       "mathlib-2b98c058eb1b"
+      ],
+      "reasons": [
+       "math gate (M): undetermined; kill codes unproven:A1, unproven:A2, unproven:A3, unproven:A4, unproven:A5, unproven:A6",
+       "claim complexity.time_per_token: unproven [lean-proven]: depends on open assumptions A5, A6",
+       "claim complexity.memory: unproven [lean-proven]: depends on open assumptions A5, A6",
+       "claim complexity.total_sequence: unproven [lean-proven]: depends on open assumptions A5, A6",
+       "claim sample_efficiency.prediction: unproven [executed-on-examples]: depends on open assumptions A1, A2, A3, A4",
+       "claim capability.1: unproven [executed-on-examples]: depends on open assumptions A1, A2, A3"
+      ],
+      "verdict": "undetermined"
+     },
+     "S0": {
+      "by_calls": [
+       "call-b6c398a82318"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-537e161c at TF-IDF cosine 0.416 (threshold 0.6)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-700e974df42a",
+       "job-cd52587d776d"
+      ],
+      "reasons": [
+       "gate: passed with 8 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: notation_clash (mechanism.state[e_t].shape): e_t is a scalar integer but its shape is written as [1], which reads as a length-1 vector and is inconsistent with its use as an exponent and loop count.",
+       "residual: missing_definition (mechanism.state (K_t, P_t, e_t) / mechanism.update): Time indexing is ambiguous: the readout uses K_t and e_t at position t, but nothing says the first pair (BOS, x_1) is the first processed pair, and no rule handles t=1 where u_t = Phi[BOS] is a zero row under the reference lift.",
+       "residual: underspecified_step (mechanism.update[3] (duration inference)): The gate u^T P u >= tau uses P_{t-1}, but a pair being written when K_{t-1}=0 and the orbit is all zero beyond c=0 has argmin over z_c=0 for every c, so the tie rule resolves it only implicitly, and the interaction with tau is not stated.",
+       "residual: underspecified_step (mechanism.update[0] / claims.sample_efficiency.prediction.metric): The reserved-token rows are zero only in the 'reference' lift, but the gate is defined to skip reserved tokens 'whatever their lift rows are'; behavior of readout at a query when x_t = ';' (query is read on the query token, then ';' follows) is not specified, so which token the readout is applied t...",
+       "residual: arithmetic_slip (mechanism.learning.few_shot_argument (1)): The bound eps <= lambda/(lambda + sigma_min^2) is stated as 'about 1e-5' for lambda=1e-6 with 24 Fourier demonstrations, but this depends on sigma_min^2 of the stacked keys which is not computed and could be of order 1 to 10, giving 1e-7 to 1e-6, so the number does not follow from the stated formula."
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-0872e0e280bc",
+       "call-b5fc3f3658c0",
+       "call-c46a84bd05b2"
+      ],
+      "reasons": [
+       "prior art: novel. The search returned 0 papers, so no found work addresses the duration-inference mechanism. The label is novel by definition. The theory card cites 2209.09977, 2307.16518, and 2605.00836 as references, but none appear in the search results, so they are not cited as evidence. This label reflects only the absence of results and does not confirm novelty against the wider literature.",
+       "textbook transplant: no (recorded, not gated): The source construction is the Koopman semigroup law K^{t1+t2} = K^{t1} K^{t2}, used with known sampling times and an offline or gradient-fitted flow. The card makes the elapsed time a latent integer inferred online by orbit matching. It couples that inference to RLS identification through transport",
+       "reduction critic: none, radical_enough True: Escape test, step 1: the broken invariant holds in the card's own equations. In u[2] to u[4] the written key z_t = (K_{t-1}^T)^{e_t-1} u_t is a function of the prefix state. The candidate predictors (K^T)^c are tied powers of one operator, not independent conjugate components. A duration-3 write therefore moves every power's prediction. The SUGS bank..."
+      ],
+      "verdict": "pass"
+     }
+    },
+    "summary": "Notation: x_t is always a token, u_t = Phi[x_{t-1}] and v_t = Phi[x_t] are token lifts, and z_{t,c} are orbit points (write keys).\n\nPretraining learns a token lift Phi, tied as the decoder, and a hard pair gate w_beta. At inference the whole in-context state is one operator K (d\u00d7d), its inverse Gram matrix P, and an integer duration e_t.\n\nPairs that contain a reserved token (BOS or ';') are always skipped. Content pairs with w_beta^T[u_t; v_t] < 0 are also skipped. For each written adjacent pair (x_{t-1}, x_t), the model forms the orbit z_{t,c} = (K_{t-1}^T)^c u_t for c = 0..M.\n- If u_t lies in directions the operator has not identified yet (u_t^T P_{t-1} u_t >= tau), the duration is taken to be 1.\n- Otherwise the duration e_t is the power c in {1..M} whose orbit point z_{t,c} lands closest to v_t.\n\nThe pair is then written into K by recursive least squares. The key is the transported orbit point z_{t,e_t-1}, not the raw lift, so that K^T z_{t,e_t-1} \u2248 v_t. A demonstration of rule B = A^3 therefore becomes a one-step demonstration of A at a token that may never have appeared.\n\nPrediction applies the operator for the most recently inferred duration: y_t = (K_t^T)^{e_t} Phi[x_t].\n\nConsequences:\n- After about d demonstrations of one rule identify the flow, each further rule in the cyclic semigroup it generates (every shift on a prime cycle) is used correctly after one demonstration.\n- The number of rules is not capped by slots.\n- Group-theoretic predictions follow. For example, on a cycle of 64 an even base shift cannot express an odd new shift.\n\nThe write key depends on the prefix through powers of the current operator, and the 'components' (the powers K^c) are tied rather than independent. So the state is neither a sum of per-token writes nor a mixture of independent conjugate regressions. Cost is O(M d^2 + V d) per token.",
+    "terminal_stage": "M",
+    "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes",
+    "written_by": "backfill"
+   }
+  },
+  {
+   "record_id": "oc-dbe79e9ad52b",
+   "seq": 52,
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": null,
+    "card_id": "card-46dbb349",
+    "card_path": "plumb-math-card-46dbb349-20261012T203633Z/cards/card-46dbb349/v3.json",
+    "card_sha256": "e8ddd9d20b43f7871ea5bab6d6002e6f32bbb2220fbe2fe7a94bb06688d9c601",
+    "card_version": 3,
+    "causes": [
+     {
+      "code": "circular:C13",
+      "detail": "premise C13 is circular: Directly asserts the stability bound required for multi-rule retention in capability 2.; claim capability.2: rests on circular premises: C13: restates or implies capability.2, which it supports: Directly asserts the stability bound required for multi-rule retention in capability 2.",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/math_verdict/card-46dbb349-v2-d5a2f7.json",
+        "sha256": "7169952d90772cd0ba659a92c9c6f9a06e088733096d3287968eca3fe62f4f57"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/assumption_ledger/card-46dbb349-v2-23d003.json",
+        "sha256": "a052153d390900f1001045491bd19bf8429f46a261ee90028c07dfa8686c12c3"
+       },
+       {
+        "kind": "challenge",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/challenge/card-46dbb349-v2-816265.json",
+        "sha256": "b11f5b4855cca1d820868344f53faeff8906cf4fc3c08ee28444c8b8dd60b13a"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-de3a83188f25"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-0d1bb5c10e2d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-031887942ef6"
+       }
+      ]
+     },
+     {
+      "code": "obligation_failed:capability.3",
+      "detail": "claim capability.3: failed [argued (prose only)]: failed: size 1 mean 1.0000, size 2 mean 0.0000; threshold 1; observed on the listed sizes: size=1, size=2",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/math_verdict/card-46dbb349-v2-d5a2f7.json",
+        "sha256": "7169952d90772cd0ba659a92c9c6f9a06e088733096d3287968eca3fe62f4f57"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/assumption_ledger/card-46dbb349-v2-23d003.json",
+        "sha256": "a052153d390900f1001045491bd19bf8429f46a261ee90028c07dfa8686c12c3"
+       },
+       {
+        "kind": "challenge",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/challenge/card-46dbb349-v2-816265.json",
+        "sha256": "b11f5b4855cca1d820868344f53faeff8906cf4fc3c08ee28444c8b8dd60b13a"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-de3a83188f25"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-0d1bb5c10e2d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-031887942ef6"
+       }
+      ]
+     },
+     {
+      "code": "statement_mismatch",
+      "detail": "statement mismatch: statement O1.a (complexity.time_per_token): constants: O-notation hides multiplicative constants; formal specifies 3 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation. | statement O2.a (complexity.memory): constants: O-notation hides constants; formal specifies 2 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation. | statement O3.a (complexity.total_sequence): constants: O-notation hides constants; formal specifies 3 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation. | statement O4.a (sample_efficiency.prediction): quantifiers: Claim asserts threshold crossing at k=1; formal only checks accuracy >= 0.9 at k=16.; constants: Claim specifies k_new=1 and baseline failure thresholds; formal checks single point.; the formal statement is weaker than the claim: Formal statement only verifies accuracy at k=16 and does not confirm the model reaches threshold at k=1 or that baselines fail for all k<16.",
+      "evidence": [
+       {
+        "kind": "math_verdict",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/math_verdict/card-46dbb349-v2-d5a2f7.json",
+        "sha256": "7169952d90772cd0ba659a92c9c6f9a06e088733096d3287968eca3fe62f4f57"
+       },
+       {
+        "kind": "assumption_ledger",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/assumption_ledger/card-46dbb349-v2-23d003.json",
+        "sha256": "a052153d390900f1001045491bd19bf8429f46a261ee90028c07dfa8686c12c3"
+       },
+       {
+        "kind": "challenge",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/challenge/card-46dbb349-v2-816265.json",
+        "sha256": "b11f5b4855cca1d820868344f53faeff8906cf4fc3c08ee28444c8b8dd60b13a"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-de3a83188f25"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-0d1bb5c10e2d"
+       },
+       {
+        "kind": "call",
+        "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-031887942ef6"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Treat every rule in the context as the same in-context-identified Koopman flow run for a different, unknown integer duration. For each demonstration, the model infers the duration by matching the demonstration against powers of the current operator, then writes it back into that single operator as a one-step pair transported along the inferred orbit. Once one rule has identified the flow, every other rule in its cyclic semigroup is learned from a single example.",
+    "cost": {
+     "executor_jobs": 16,
+     "model_calls": 8,
+     "tokens": 307731
+    },
+    "definitions": [
+     {
+      "id": "D1",
+      "kind": "notation",
+      "sha256": "9f996288260996c36868c2babd065e90333c804afff886667d356e7596e6f334",
+      "text": "Content tokens are integers 0,...,p-1; separator is p and BOS is p+1. Arithmetic on content tokens is modulo p. The reference lift has coordinates (cos(2*pi*m*a/p),sin(2*pi*m*a/p))/sqrt(8), m=1,...,8, and zero reserved rows. Unless specified otherwise, d=16, lambda=1e-6, tau=1000, M=p-1, and w_beta=0."
+     },
+     {
+      "id": "D2",
+      "kind": "evaluation",
+      "sha256": "e70d46e3942f081e0b943d1ca7343575d8b991446c526575011ae09cb389c47a",
+      "text": "Run exactly the card's sequential recurrence, initialized with K=0, P=I/lambda, and scalar integer e=1. The first processed pair is (BOS,x_1). Reserved-token pairs do not change state. Compute the orbit and identification test using the previous state; if the identification test fails, minimize squared orbit error over c=1,...,M, ties to the smallest c, including when all orbit points coincide. Update P before using it in the K update. Score a query at its content-token position after that position's update, before consuming its following separator. Predict the smallest token index maximizing all p+2 logits. Reserved predictions are wrong. The simulation runner must implement these equations rather than use token-arithmetic shift inference or access targets."
+     },
+     {
+      "id": "D3",
+      "kind": "baseline",
+      "sha256": "b4aabb7ef786ed0e5f9dde0e16bfe699599703fd0b4299a0993ff5f7606c62c8",
+      "text": "Fresh baseline initializes a separate zero K and P=I/lambda for each new rule, writes only that rule's raw demonstration pairs by RLS, and reads K^T Phi[q]. Pooled baseline performs ridge/RLS on all preceding written raw content pairs and reads K^T Phi[q]. Ablation uses the card recurrence with e always 1. Delta baseline initializes W=0 and updates W <- gamma W + outer(v-gamma W u,u) on each content demonstration pair, where W maps column lifts to column lifts; it reads W Phi[q]. Test gamma=0.5,0.7,0.9,0.99 separately and tune by taking the best empirical accuracy at each tested k. All use D1's lift, decoder, reserved-pair skipping, and tie rule. For Delta the ridge constant is a supplied common parameter but does not alter its stated delta update."
+     },
+     {
+      "id": "D4",
+      "kind": "sampling",
+      "sha256": "b4521e8e6772da274ad7e9682ea104708d2e0478078806eb7aff1984fc900d6e",
+      "text": "All unspecified finite draws are uniform. Base inputs are sampled without replacement; new-rule inputs are sampled without replacement from content tokens not used as base inputs. Queries are uniform among tokens not demonstrated as inputs of the queried new rule. A cue and final A query are uniform independent content draws. In the order task, generate one set of 24 A pairs and four B pairs, then permute precisely that same set into both orders; use the same query in both orders. Each batch contains 500 independent trials. Sample efficiency is assessed only on k in {1,2,4,8,16}; 'never' means none of those tested k reaches the threshold."
+     },
+     {
+      "id": "D5",
+      "kind": "evaluation",
+      "sha256": "d43b30c0c45372a7dc7b32e160af64da429a9bf05fe7840414439ea07a49ccbc",
+      "text": "Simulation run(given) returns token predictions, not scores. For sample and one-shot batches each trial returns a dictionary with model, fresh, pooled, ablation and delta, where delta is a four-element list in gamma order. For many-rule batches each trial returns model and fresh lists of length eight and recall as a token. For composite batches each trial returns model as a token. For order batches each trial returns blocked, interleaved, pooled_blocked and pooled_interleaved as tokens. Metrics compute empirical accuracies across the entire 500-trial batch. Count=1 denotes one batch, not one trial."
+     },
+     {
+      "id": "D6",
+      "kind": "accounting",
+      "sha256": "297190072855635ab772994f062b3e56e78e81cc8eb4cf634fd03ad2f180ad54",
+      "text": "Cost accounting uses unit-cost scalar multiply-add, arithmetic, comparison, scalar load/store and scalar transcendental operations, with one stored real or integer counted as one word. Phi is supplied and stored, rather than regenerated. Count inference, including readout at every token, excluding pretraining and externally stored input/output streams. Use a streaming implementation: scan the orbit for its minimum without retaining all M vectors, then recompute the winning transported key; reuse fixed-size vector workspaces. K and P updates use rank-one RLS, not general matrix inversion. The cost fields specify the leading orbit/readout charge and an absolute remainder envelope, not a claim of exact equality to the leading term; the memory field includes parameters and recurrent state, with a workspace envelope. Dimensions and M are positive integers, and M is independent of sequence length."
+     }
+    ],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "math_verdict",
+      "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/math_verdict/card-46dbb349-v2-d5a2f7.json",
+      "sha256": "7169952d90772cd0ba659a92c9c6f9a06e088733096d3287968eca3fe62f4f57"
+     },
+     {
+      "kind": "assumption_ledger",
+      "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/assumption_ledger/card-46dbb349-v2-23d003.json",
+      "sha256": "a052153d390900f1001045491bd19bf8429f46a261ee90028c07dfa8686c12c3"
+     },
+     {
+      "kind": "challenge",
+      "ref": "plumb-math-card-46dbb349-20261012T203633Z/artifacts/challenge/card-46dbb349-v2-816265.json",
+      "sha256": "b11f5b4855cca1d820868344f53faeff8906cf4fc3c08ee28444c8b8dd60b13a"
+     },
+     {
+      "kind": "call",
+      "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-de3a83188f25"
+     },
+     {
+      "kind": "call",
+      "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-0d1bb5c10e2d"
+     },
+     {
+      "kind": "call",
+      "ref": "plumb-math-card-46dbb349-20261012T203633Z/call-031887942ef6"
+     }
+    ],
+    "kill_codes": [
+     "circular:C13",
+     "obligation_failed:capability.3",
+     "statement_mismatch"
+    ],
+    "kill_detail": "math gate (C): fail; kill codes circular:C13, obligation_failed:capability.3, statement_mismatch",
+    "legacy": true,
+    "lens": "neural_odes_koopman",
+    "lineage_id": "card-46dbb349",
+    "mechanism_signature": {
+     "signature": "sig-b400312d8e07c4e5",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write"
+      ],
+      "read": [
+       "argmax_select",
+       "bilinear_product",
+       "count_increment",
+       "outer_product_write",
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "2d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        1
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "append_slot",
+       "argmax_select",
+       "bilinear_product",
+       "distance_kernel",
+       "normalize",
+       "outer_product_write",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:append_slot",
+      "w:argmax_select",
+      "w:bilinear_product",
+      "w:distance_kernel",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:threshold_branch",
+      "r:argmax_select",
+      "r:bilinear_product",
+      "r:count_increment",
+      "r:outer_product_write",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": {
+     "broken_invariant": "The SUGS mapping relies on two facts.\n- (a) The components are independent conjugate linear-Gaussian regressions. Each has sufficient statistics sum_{i: assigned to j} (u_i u_i^T, u_i v_i^T) over the raw regressor/target pairs assigned to it. The bank is therefore a sum of per-pair writes, with u_i a function of token x_{i-1} only.\n- (b) A pair assigned to component j changes only component j's predictive.\n\nThis card breaks both in updates u[1] to u[4].\n- There is one operator K. The candidate components are its powers K^c, whose predictive (K^T)^c u is a degree-c polynomial in the state, so no per-component conjugate posterior exists.\n- The write uses the key z_t = (K_{t-1}^T)^{e_t-1} u_t, the previous operator applied e_t - 1 times. The statistics are therefore sum_s (z_s z_s^T, z_s v_s^T) over keys that depend on the whole prefix, not on one token each.\n- A duration-3 pair changes the predictions for every duration at once.\n\nThe toy example shows the break. The B pair (1,4) is written with key \u2248 Phi[3], a token absent from the pair. The one-shot query is answered correctly (0), where the SUGS fresh component answers 4.",
+     "known_family": "other_known: sequential greedy (SUGS) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions (Mixture-of-Memories MesaNet with a likelihood router)",
+     "why_unrepairable": "Repair 1 (strongest): SUGS with one component per duration c, i.e. M independent conjugate regressions routed by predictive likelihood. Each component would be fitted only from pairs routed to it, so a rule seen once has a one-pair posterior. That is exactly the fresh_mode_pred = 4 baseline in the toy. To match the card, the posterior mean of component c would have to equal the c-th power of component 1's mean, and every pair routed to c would have to update component 1 through the transported key. No conjugate mixture has that nonlinear tie.\n\nRepair 2: MesaNet or linear attention with a learned key map. The key z_t = (K_{t-1}^T)^{e_t-1} Phi[x_{t-1}] depends on the operator identified so far and on a discrete test against it, so no feature map of the tokens produces it. In the toy, input token 1 would get key Phi[1] if the base were unidentified or if e = 1, and it gets key \u2248 Phi[3] here.\n\nRepair 3: Mixture-of-Memories with a likelihood router, or a lifted state enumerating durations. Both store separate per-duration statistics, so neither can transfer one demonstration of rule A^3 into the operator of A.\n\nRepair 4: TTT on the loss ||(K^T)^e u - v||^2. This needs e as an input, and it takes a gradient step through the power instead of an exact RLS write of the transported pair, so it gives a different K after the same pair. A critic can check this on the toy's third write.\n\nRepair 5: a discrete-logarithm or subgroup routine over given group labels. No group or labels are given. The group is the semigroup of an operator identified in context on a learned lift, and identification and exponent inference are coupled through the transported keys.\n\nThe observable differences are the claims themselves:\n- one-shot new rules without slots, where MesaNet and SUGS fail;\n- the odd/even split on a cycle of 64, which no mixture predicts;\n- order dependence, where MesaNet is order-invariant."
+    },
+    "operator": null,
+    "outcome": "dead",
+    "override": true,
+    "parent_ids": [],
+    "premises": [
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C1",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Reference Fourier lift and tied decoder works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3",
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ],
+      "why_needed": "The fixed dictionary exists in a discharged simulation, but none of the cost checks held; those simulations do not demonstrate that pretraining learns such a dictionary."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C2",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Reserved-pair gate works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3",
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ],
+      "why_needed": "The content-token test implements the reference gate in a discharged check; the learned nonzero gate and its training are not implemented by that check."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C3",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Inverse Gram identification test works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3",
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ],
+      "why_needed": "The test is executed, but the check does not certify a uniform conditioning bound for all possible base demonstration sets."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C4",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Exhaustive orbit search and duration persistence works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3",
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ],
+      "why_needed": "The search exists in a discharged simulation, but that implementation retains an (M+1)-by-d orbit array rather than measuring the claimed streaming workspace."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C5",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Transported-key RLS operator and inverse Gram works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3",
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ],
+      "why_needed": "The actual transported write exists; finite-batch success does not establish the prose invariant that approximate transported writes leave K at T indefinitely."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C6",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Power readout with all-vocabulary argmax works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3",
+       "O4",
+       "O5",
+       "O6",
+       "O7",
+       "O8"
+      ],
+      "why_needed": "The power readout is executed, including after the demonstration's operator update; this timing matters because the inferred orbit belongs to the previous operator."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C7",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Fresh and pooled ridge baselines works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O4",
+       "O5",
+       "O6"
+      ],
+      "why_needed": "The ridge baseline exists in a discharged check, but baseline failure establishes only a comparison to unconstrained operator fitting, not to every method exploiting the supplied cyclic structure."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C8",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Gated DeltaNet baseline works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O4"
+      ],
+      "why_needed": "The four forgetting factors are implemented and checked at the tested sample counts."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C9",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Canonical pooled sufficient-statistic assembly works as the card says (no a measured cost in a check that held)",
+      "used_by": [
+       "O8"
+      ],
+      "why_needed": "The executed comparison sorts the pairs before assembling the ridge matrices, ensuring identical floating-point assembly rather than testing two independently accumulated sequential RLS states."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C10",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Pretraining procedure for lift and gate works as the card says (no runnable code in a check that held)",
+      "used_by": [],
+      "why_needed": "No executed source defines pretraining, straight-through gate gradients, or learned lifts; the frozen reference-lift obligations do not require this component, and their success cannot validate the pretrained-model narrative."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "testable by code but no measurement plan was given; it cannot be scheduled",
+      "citation": null,
+      "does_work": true,
+      "evidence": null,
+      "id": "C11",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "open",
+      "testable_by": "code",
+      "text": "component Streaming orbit implementation works as the card says (no runnable code in a check that held)",
+      "used_by": [
+       "O1",
+       "O2",
+       "O3"
+      ],
+      "why_needed": "A streaming implementation is present in the cost source, but its executed check was violated, so neither its cost nor its memory bound counts as established."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "restates or implies a claim it supports (statement-match role); the claim fails",
+      "citation": null,
+      "does_work": true,
+      "evidence": "restates or implies capability.3, which it supports: Directly asserts the parity/transport mechanism required for condition (ii) of capability 3.",
+      "id": "C12",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "circular",
+      "testable_by": "code",
+      "text": "For the even-base/odd-new-shift condition, the transported write of the out-of-semigroup B demonstration must not change the operator enough to make the subsequent power readout accurately predict odd shifts.",
+      "used_by": [
+       "O7"
+      ],
+      "why_needed": "The parity argument applies to powers of the exact pre-write base operator, whereas the frozen recurrence reads powers of the updated operator; the executed condition-2 failure shows that semigroup nonmembership alone does not justify the claimed accuracy upper bound."
+     },
+     {
+      "added_by": "challenger",
+      "basis": "restates or implies a claim it supports (statement-match role); the claim fails",
+      "citation": null,
+      "does_work": true,
+      "evidence": "restates or implies capability.2, which it supports: Directly asserts the stability bound required for multi-rule retention in capability 2.",
+      "id": "C13",
+      "kind": "other",
+      "measurement_plan": null,
+      "status": "circular",
+      "testable_by": "code",
+      "text": "Approximate orbit-transported writes preserve a sufficiently small operator error throughout successive new-rule demonstrations, rather than merely reducing P.",
+      "used_by": [
+       "O6"
+      ],
+      "why_needed": "The card's explanation of slot-free retention says 'K stays at T', but approximate keys introduce residuals and the eight-rule simulation supplies no stability bound supporting the unlimited-rule conclusion."
+     }
+    ],
+    "run": "plumb-math-card-46dbb349-20261012T203633Z",
+    "source_run": "run-20261010T181300Z",
+    "stage_verdicts": {
+     "C": {
+      "by_calls": [
+       "call-de3a83188f25",
+       "call-0d1bb5c10e2d",
+       "call-031887942ef6"
+      ],
+      "reasons": [
+       "math gate (C): fail; kill codes circular:C13, obligation_failed:capability.3, statement_mismatch",
+       "claim complexity.time_per_token: blocked [argued (prose only)]: statement O1.a does not match the claim: constants: O-notation hides multiplicative constants; formal specifies 3 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation.",
+       "claim complexity.memory: blocked [argued (prose only)]: statement O2.a does not match the claim: constants: O-notation hides constants; formal specifies 2 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation.",
+       "claim complexity.total_sequence: blocked [argued (prose only)]: statement O3.a does not match the claim: constants: O-notation hides constants; formal specifies 3 and 100.; definition D6 is a substantive premise, not a convention: Asserts specific computational cost model (unit-cost ops, streaming workspace, rank-one RLS) that could be false about the actual implementation.",
+       "claim sample_efficiency.prediction: blocked [argued (prose only)]: statement O4.a does not match the claim: quantifiers: Claim asserts threshold crossing at k=1; formal only checks accuracy >= 0.9 at k=16.; constants: Claim specifies k_new=1 and baseline failure thresholds; formal checks single point.; the formal statement is weaker than the claim: Formal statement only verifies accuracy at k=1...",
+       "claim capability.1: conditional [executed-on-examples]: conditional on open premises C1 (testable by code but no measurement plan was given; it cannot be scheduled); C2 (testable by code but no measurement plan was given; it cannot be scheduled); C3 (testable by code but no measurement plan was given; it cannot be scheduled); C4 (testable by code but no measurement plan was given; it cannot be..."
+      ],
+      "verdict": "fail"
+     },
+     "M": {
+      "by_calls": [
+       "call-12619b4f1267",
+       "call-1e6d53518e73",
+       "call-702fd6a778a0",
+       "call-4e8731befa07",
+       "call-844cc1d7b936",
+       "mathlib-5c79381a45e0",
+       "mathlib-83f77a4e1c94",
+       "mathlib-76db9f8313af",
+       "mathlib-14a5f172e61d",
+       "mathlib-030766b3fbbe",
+       "mathlib-b21d42d4705a",
+       "mathlib-b3ef0eeaaf20",
+       "mathlib-7743829d3058",
+       "mathlib-e59b0bcaaa6f",
+       "mathlib-a14805a79593",
+       "mathlib-92cb5c094070",
+       "mathlib-f0749bb8f51a",
+       "mathlib-3ac6b7d6da69",
+       "mathlib-877e8162a673",
+       "mathlib-87fdf348371f",
+       "mathlib-613231e3c226"
+      ],
+      "reasons": [
+       "math gate (M): fail; kill codes obligation_failed:complexity.time_per_token, obligation_failed:complexity.memory, obligation_failed:complexity.total_sequence, obligation_failed:capability.3",
+       "claim complexity.time_per_token: failed [argued (prose only)]: failed: 81 points, n in [8, 64, 512], sizes {'M': [4, 60, 63], 'V': [7, 63, 66], 'd': [2, 16, 32]}; formula exponent in n 1; slopes in n (measured/formula): 1.0533/1.0, 1.1306/1.0, 1.1276/1.0, 1.0172/1.0, 1.1399/1.0, 1.1617/1.0, 1.0419/1.0, 1.166/1.0, 1.1958/1.0, 1.1739/1.0, 1.5329/1.0, 1.5228/1.0, 1.0508/1",
+       "claim complexity.memory: failed [argued (prose only)]: failed: 81 points, n in [8, 64, 512], sizes {'M': [4, 60, 63], 'V': [7, 63, 66], 'd': [2, 16, 32]}; formula exponent in n 1; slopes in n (measured/formula): 1.0533/1.0, 1.1306/1.0, 1.1276/1.0, 1.0172/1.0, 1.1399/1.0, 1.1617/1.0, 1.0419/1.0, 1.166/1.0, 1.1958/1.0, 1.1739/1.0, 1.5329/1.0, 1.5228/1.0, 1.0508/1",
+       "claim complexity.total_sequence: failed [argued (prose only)]: failed: 81 points, n in [8, 64, 512], sizes {'M': [4, 60, 63], 'V': [7, 63, 66], 'd': [2, 16, 32]}; formula exponent in n 1; slopes in n (measured/formula): 1.0533/1.0, 1.1306/1.0, 1.1276/1.0, 1.0172/1.0, 1.1399/1.0, 1.1617/1.0, 1.0419/1.0, 1.166/1.0, 1.1958/1.0, 1.1739/1.0, 1.5329/1.0, 1.5228/1.0, 1.0508/1",
+       "claim sample_efficiency.prediction: observed [executed-on-examples]: observed on the listed sizes: size=16",
+       "claim capability.1: observed [executed-on-examples]: observed on the listed sizes: size=1"
+      ],
+      "verdict": "fail"
+     },
+     "S0": {
+      "by_calls": [
+       "call-b6c398a82318"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-537e161c at TF-IDF cosine 0.416 (threshold 0.6)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-700e974df42a",
+       "job-cd52587d776d"
+      ],
+      "reasons": [
+       "gate: passed with 8 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: notation_clash (mechanism.state[e_t].shape): e_t is a scalar integer but its shape is written as [1], which reads as a length-1 vector and is inconsistent with its use as an exponent and loop count.",
+       "residual: missing_definition (mechanism.state (K_t, P_t, e_t) / mechanism.update): Time indexing is ambiguous: the readout uses K_t and e_t at position t, but nothing says the first pair (BOS, x_1) is the first processed pair, and no rule handles t=1 where u_t = Phi[BOS] is a zero row under the reference lift.",
+       "residual: underspecified_step (mechanism.update[3] (duration inference)): The gate u^T P u >= tau uses P_{t-1}, but a pair being written when K_{t-1}=0 and the orbit is all zero beyond c=0 has argmin over z_c=0 for every c, so the tie rule resolves it only implicitly, and the interaction with tau is not stated.",
+       "residual: underspecified_step (mechanism.update[0] / claims.sample_efficiency.prediction.metric): The reserved-token rows are zero only in the 'reference' lift, but the gate is defined to skip reserved tokens 'whatever their lift rows are'; behavior of readout at a query when x_t = ';' (query is read on the query token, then ';' follows) is not specified, so which token the readout is applied t...",
+       "residual: arithmetic_slip (mechanism.learning.few_shot_argument (1)): The bound eps <= lambda/(lambda + sigma_min^2) is stated as 'about 1e-5' for lambda=1e-6 with 24 Fourier demonstrations, but this depends on sigma_min^2 of the stacked keys which is not computed and could be of order 1 to 10, giving 1e-7 to 1e-6, so the number does not follow from the stated formula."
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-0872e0e280bc",
+       "call-b5fc3f3658c0",
+       "call-c46a84bd05b2"
+      ],
+      "reasons": [
+       "prior art: novel. The search returned 0 papers, so no found work addresses the duration-inference mechanism. The label is novel by definition. The theory card cites 2209.09977, 2307.16518, and 2605.00836 as references, but none appear in the search results, so they are not cited as evidence. This label reflects only the absence of results and does not confirm novelty against the wider literature.",
+       "textbook transplant: no (recorded, not gated): The source construction is the Koopman semigroup law K^{t1+t2} = K^{t1} K^{t2}, used with known sampling times and an offline or gradient-fitted flow. The card makes the elapsed time a latent integer inferred online by orbit matching. It couples that inference to RLS identification through transport",
+       "reduction critic: none, radical_enough True: Escape test, step 1: the broken invariant holds in the card's own equations. In u[2] to u[4] the written key z_t = (K_{t-1}^T)^{e_t-1} u_t is a function of the prefix state. The candidate predictors (K^T)^c are tied powers of one operator, not independent conjugate components. A duration-3 write therefore moves every power's prediction. The SUGS bank..."
+      ],
+      "verdict": "pass"
+     }
+    },
+    "summary": "Notation: x_t is always a token, u_t = Phi[x_{t-1}] and v_t = Phi[x_t] are token lifts, and z_{t,c} are orbit points (write keys).\n\nPretraining learns a token lift Phi, tied as the decoder, and a hard pair gate w_beta. At inference the whole in-context state is one operator K (d\u00d7d), its inverse Gram matrix P, and an integer duration e_t.\n\nPairs that contain a reserved token (BOS or ';') are always skipped. Content pairs with w_beta^T[u_t; v_t] < 0 are also skipped. For each written adjacent pair (x_{t-1}, x_t), the model forms the orbit z_{t,c} = (K_{t-1}^T)^c u_t for c = 0..M.\n- If u_t lies in directions the operator has not identified yet (u_t^T P_{t-1} u_t >= tau), the duration is taken to be 1.\n- Otherwise the duration e_t is the power c in {1..M} whose orbit point z_{t,c} lands closest to v_t.\n\nThe pair is then written into K by recursive least squares. The key is the transported orbit point z_{t,e_t-1}, not the raw lift, so that K^T z_{t,e_t-1} \u2248 v_t. A demonstration of rule B = A^3 therefore becomes a one-step demonstration of A at a token that may never have appeared.\n\nPrediction applies the operator for the most recently inferred duration: y_t = (K_t^T)^{e_t} Phi[x_t].\n\nConsequences:\n- After about d demonstrations of one rule identify the flow, each further rule in the cyclic semigroup it generates (every shift on a prime cycle) is used correctly after one demonstration.\n- The number of rules is not capped by slots.\n- Group-theoretic predictions follow. For example, on a cycle of 64 an even base shift cannot express an odd new shift.\n\nThe write key depends on the prefix through powers of the current operator, and the 'components' (the powers K^c) are tied rather than independent. So the state is neither a sum of per-token writes nor a mixture of independent conjugate regressions. Cost is O(M d^2 + V d) per token.",
+    "terminal_stage": "C",
+    "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes",
+    "written_by": "backfill"
+   }
+  },
+  {
+   "record_id": "oc-5a0e466a2845",
+   "seq": 60,
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": null,
+    "card_id": "card-36725a7c",
+    "card_path": "run-20261010T181300Z/cards/card-36725a7c/v8.json",
+    "card_sha256": "6b4f89e0bff60309aa72e790525b1fd61d9ad3d85dbf6d513dbe96aa10a07c52",
+    "card_version": 8,
+    "causes": [
+     {
+      "code": "reduces_to_known:other_known",
+      "detail": "reduced to other_known. Mapping: Known form: sequential greedy (local-MAP) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions. This is SUGS (Wang & Dunson 2011, 'Sequential Updating and Greedy Search'), the same scheme as the hard-assignment online CRP mixtures of linear experts in continual and meta-learning (Jerfel et al. 2019; MOCA, Harrison et al. 2020) and as online PWARX clustering. The neural phrasing is Mixture-of-Memories linear attention with R MesaNet memories and a likelihood router in place of a token router. Symbol by symbol: (1) Observation pair (regressor, target) := (u_t, v_t) = (Phi[x_{t-1}], Phi[x_t]). Phi is a learned feature map, and beta_t is a learned observation weight that drops pairs with beta < 1/2. (2) Cluster j's sufficient statistics := (P_j, K_j, N_j). P_j = (lambda I + sum beta u u^T)^{-1} is the posterior covariance of a Gaussian linear-regression cluster with prior precision lambda I and fixed noise variance s2. K_j is its posterior mean. N_j is its CRP table count. Updates u[3] and u[4] are the exact conjugate (RLS) posterior update of the chosen cluster only, as in SUGS. (3) Score S_{t,j} = ln N_j - ||v - K_j^T u||^2 / (2 s2 (1 + u^T P_j u)) := log CRP prior plus Gaussian posterior-predictive log density of v under cluster j. The predictive variance is s2 (1 + u^T P_j u). The constant and -(d/2) ln(1 + u^T P_j u) terms are dropped. (4) S_new = ln eta - ||v||^2 / (2 s2 (1 + ||u||^2/lambda)) := CRP new-table weight (concentration eta) times the prior predictive. (5) z_t = argmax_j S_{t,j} := the SUGS greedy MAP assignment. Mode birth := opening a new table, truncated at R components (truncated DP). (6) Readout y_t = K_{z_t}^T Phi[x_t] := the predictive mean of the most recently assigned cluster, applied to the current regressor. Logits Phi y := tied decoder. The equations coincide term by term except for the omitted log-det term in (3) and the cap R. Numeric check: reduction claim other_known (verified): numeric check confirms equivalence (max_abs_diff 1.341149413747189e-12) Critic's argument: Escape test, step 1: the broken invariant is real in the card's own equations. In u[1]-u[2], z_t is the argmax of scores that depend on K_j and P_j, so the slot that receives each write depends on the whole prefix. The bank is therefore not a sum of per-token writes. Two order-sensitive effects follow. MesaNet without decay is invariant to the order of the pairs, while this card's assignment of a young mode depends on order. With decay, MesaNet cannot keep rule A through 16 B writes. So the parent's linear-attention mapping does not repair. Step 2, repairs tried. The closest neural repair is Mixture-of-Memories linear attention (several MesaNet states with a hard router). Its router is a function of the token only, so it fails for the reason the card's Repair 1 gives: the identical key Phi[0] is routed to different slots within one sequence. Making the router a function of each memory's prediction error is no longer MoM. Content-addressed writes in a Neural Turing Machine are state-dependent, but they use cosine similarity to memory rows, not likelihood tests over d\u00d7d regression states. So no linear_attention, ssm, moe or hopfield mapping is exact. Step 3: why_unrepairable is correct against neural sequence families, but it misses the strongest reduction, which lies outside them. The update, routing, birth and readout are textbook sequential greedy CRP / Dirichlet-process mixture inference with conjugate Gaussian linear-regression components (SUGS). The score is literally log CRP weight plus posterior-predictive log likelihood, with the log-det term dropped. The card's own known_relatives concedes the PWARX, Mahalanobis-gating and sticky-HMM lineage. The same scheme with a learned feature extractor already exists in continual meta-learning (online CRP mixtures of linear-regression heads; MOCA). The argument holds against the parent but fails as a claim of novelty. It is a known online clustering/regression algorithm moved onto a token stream, so it is not radical.",
+      "evidence": [
+       {
+        "kind": "reduction_critic",
+        "ref": "run-20261010T181300Z/artifacts/reduction_critic/card-36725a7c-v7-9017d9.json",
+        "sha256": "66c763a8bc44aec7fe9034bfc82699db2aaf50cf634888c64e8b9c1afb7c4749"
+       },
+       {
+        "kind": "prior_art",
+        "ref": "run-20261010T181300Z/artifacts/prior_art/card-36725a7c-v7-98d01d.json",
+        "sha256": "410de5c1f06c0a08ee94631bff9ac53f4149ccd5b8fcadb974dc323b9f7a5faf"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-d682aea58b6f"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-01498903b9e9"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-95a7616a913d"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-4baf77e5be71"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261010T181300Z/job-15958ba3d8bb"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Treat the context as data from an unknown switched system and infer its switching signal online: each gated token transition goes to the stored Koopman (EDMD) operator that explains it with the smallest normalized innovation, or opens a new operator when none does. The next token is read out with the currently active operator, so a rule identified once can be recalled by a single cue demonstration after any interruption.",
+    "cost": {
+     "executor_jobs": 4,
+     "model_calls": 8,
+     "tokens": 215374
+    },
+    "definitions": [],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "reduction_critic",
+      "ref": "run-20261010T181300Z/artifacts/reduction_critic/card-36725a7c-v7-9017d9.json",
+      "sha256": "66c763a8bc44aec7fe9034bfc82699db2aaf50cf634888c64e8b9c1afb7c4749"
+     },
+     {
+      "kind": "prior_art",
+      "ref": "run-20261010T181300Z/artifacts/prior_art/card-36725a7c-v7-98d01d.json",
+      "sha256": "410de5c1f06c0a08ee94631bff9ac53f4149ccd5b8fcadb974dc323b9f7a5faf"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-d682aea58b6f"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-01498903b9e9"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-95a7616a913d"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-4baf77e5be71"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261010T181300Z/job-15958ba3d8bb"
+     }
+    ],
+    "kill_codes": [
+     "reduces_to_known:other_known"
+    ],
+    "kill_detail": "reduced to other_known: Known form: sequential greedy (local-MAP) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions.",
+    "legacy": true,
+    "lens": "neural_odes_koopman",
+    "lineage_id": "card-537e161c",
+    "mechanism_signature": {
+     "signature": "sig-2e2b0dc49159a99c",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write"
+      ],
+      "read": [
+       "argmax_select",
+       "bilinear_product",
+       "outer_product_write",
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "2d"
+       ],
+       [
+        "R",
+        "d",
+        "d"
+       ],
+       [
+        "R",
+        "d",
+        "d"
+       ],
+       [
+        "R"
+       ],
+       [
+        2
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "argmax_select",
+       "bilinear_product",
+       "count_increment",
+       "exponential_weighting",
+       "logarithm",
+       "normalize",
+       "outer_product_write",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:argmax_select",
+      "w:bilinear_product",
+      "w:count_increment",
+      "w:exponential_weighting",
+      "w:logarithm",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:threshold_branch",
+      "r:argmax_select",
+      "r:bilinear_product",
+      "r:outer_product_write",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "s:rank1",
+      "s:rank2",
+      "s:rank3+"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "premises",
+     "definitions",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": {
+     "broken_invariant": "The parent's mapping relies on one fact: the state is a pair of cumulative sums G_t = sum_i beta_i k_i k_i^T and C_t = sum_i beta_i k_i v_i^T. Each term depends only on token i through (x_{i-1}, x_i). The state is therefore a weighted sum of per-token writes, order enters only through decay factors, and the whole recurrence is an associative scan. In updates u[1]-u[2] of this card, the slot that receives the write at step t is z_t = argmax_j [ln N_j - ||v_t - K_j^T u_t||^2 / (2 s2 (1 + u_t^T P_j u_t))]. Every term of this argmax depends on all earlier writes through the solved operators K_j = P_j C_j and the inverse Grams P_j. The bank is sum_i e_{z_i} \u2297 (u_i u_i^T, u_i v_i^T), and z_i is a discontinuous function of the entire prefix. The data also decide the number of open components r_t (u[2], mode birth). The toy example shows the break directly: the same token pair, with Phi[0] as key, is written to mode 0 at step 1 and to mode 1 at step 3.",
+     "known_family": "linear_attention: preconditioned delta rule / MesaNet (in-context least squares), with Fast-Weight-Memory multi-hop read",
+     "why_unrepairable": "Repair 1, the strongest: an R-slot MesaNet with lifted keys k_t = e_{z_t} \u2297 u_t. This reproduces the bank only if z_t is given as an input feature. No learned feature map of (x_{t-1}, x_t) can compute it, because the toy example routes the identical key Phi[0] to different slots in one sequence. z_t is a test of the transition against operators that are themselves solutions of the earlier least-squares problems.\n\nRepair 2: a lifted state that enumerates all possible routings. This needs one MesaNet per partition of the pairs, which is a Bell number of components that grows with n. That is not a fixed-size linear state.\n\nRepair 3: a learned gate or decay. A gate that depends on the token cannot pick the slot. A decay cannot keep rule A intact through 16 rule-B writes and also re-select it from one cue. The recall claim and the blocked-versus-alternating claim are exactly the observable difference: MesaNet without decay is invariant to the order of the pairs, and MesaNet with decay forgets A.\n\nRepair 4: softmax attention or a Hopfield read over the R slots. Even a soft version of the routing makes the write weight a function of S_{t-1} that needs per-slot inverse-Gram solves. The result is S_t = S_{t-1} + g(S_{t-1}, x_t), with g not linear in S. That is not linear attention, and it is not an RNN with an elementwise nonlinearity of W h + U x either.\n\nRepair 5: a second memory beside a MesaNet. It cannot supply the missing quantity, which is the per-pair hypothesis-test outcome over the operators identified so far. The routing is also non-associative, because which slot a later pair joins depends on how earlier pairs were split. So no parallel-scan form exists to map onto."
+    },
+    "operator": "escape",
+    "outcome": "dead",
+    "override": false,
+    "parent_ids": [
+     "card-537e161c"
+    ],
+    "premises": [],
+    "run": "run-20261010T181300Z",
+    "source_run": null,
+    "stage_verdicts": {
+     "S0": {
+      "by_calls": [
+       "call-6a84233f6391"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-537e161c at TF-IDF cosine 0.418 (threshold 0.6)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-e78d5165ee28",
+       "job-59b6e7fcb116"
+      ],
+      "reasons": [
+       "gate: passed with 3 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: arithmetic_slip (few_shot_argument (reference value)): The card states delta^2 = 4 - (1/2) sum_m cos(2 pi m \u0394/64) for the Fourier lift, but (1/2) sum_m sin^2(pi m \u0394/64) = 2 - (1/4) sum_m cos(2 pi m \u0394/64); the stated form gives 0.475 at \u0394 = 1, not the claimed delta_min^2 = 0.237.",
+       "residual: underspecified_step (mechanism.update[2] (switching and mode birth)): The argmax over S_{t,j} has no tie-breaking rule, yet the toy example and the birth test depend on which slot wins when scores are equal.",
+       "residual: vague_secondary_claim (claims.capabilities[1]): The separation precondition uses c95, which is defined as a percentile over pairs scored against a full-span mode, but the card does not say how c95 is measured on the trained lift or on which pairs, so the >= 95% success threshold cannot be checked against a fixed procedure.",
+       "toy example reproduced 6 expected value(s)"
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-d682aea58b6f",
+       "call-01498903b9e9",
+       "call-95a7616a913d",
+       "call-4baf77e5be71",
+       "job-15958ba3d8bb"
+      ],
+      "reasons": [
+       "prior art: prior_art_undertested. Prior art exists for the components. Online identification of switched systems with simultaneous switching-signal estimation (W3188888180) and regime-switch detection by online model selection (W4385639020, W2766388929 for switched Koopman) are close. Sequential changepoint assignment with delta-rule updates (W1990231801) and the innovation-gated regime trackin...",
+       "textbook transplant: no (recorded, not gated): The cited source construction (Peitz\u2013Klus quantized switched Koopman models) uses offline-fitted EDMD operators indexed by known controls, with an optimized switching sequence. The card changes this to inferred switching with online RLS fits and data-driven birth. That change is itself another field",
+       "reduction claim other_known (verified): numeric check confirms equivalence (max_abs_diff 1.341149413747189e-12)",
+       "gate: update rule reduces to other_known: Known form: sequential greedy (local-MAP) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions. This is SUGS (Wang & Dunson 2011, 'Sequential Updating and Greedy Search'), the same scheme as the hard-assignment online CRP mixtures of linear experts in continual and meta-learning (Jerfel et al. 2019; MOCA, Harrison et al. 2020) and as..."
+      ],
+      "verdict": "reduces_to_known"
+     }
+    },
+    "summary": "Pretraining learns a token lift Phi, tied as the decoder, and a pair gate. At inference the state is a bank of at most R per-mode recursive-least-squares (EDMD) statistics (P_j, K_j, N_j), the number r_t of modes opened so far, and an active-mode index z_t. Each gated adjacent pair (x_{t-1}, x_t) is scored against every open mode and against a fresh empty mode. The score is the log pair count minus half the normalized innovation squared, ||v - K_j^T u||^2 / (s2 (1 + u^T P_j u)), which is the Kalman/tracking gate statistic. The pair is written only into the winning mode, which becomes active. The next-token prediction applies the active operator to the current token's lift. The routing is a discontinuous function of the whole bank, so the state is not a weighted sum of per-token writes. Different orders of the same pairs give different partitions, and the data decide how many operators exist. The few-shot payoff is mode recall. A rule identified once from about d demonstrations keeps its own operator. After an interruption by another rule, one demonstration of the old rule has near-zero innovation under its old operator, switches back to it, and restores full accuracy on unseen tokens. A pooled least-squares memory or a decayed fast-weight memory cannot do this. Cost is O(R d^2 + V d) per token.",
+    "terminal_stage": "S2",
+    "title": "Switched Koopman Repertoire: in-context identification of a growing bank of EDMD operators with innovation-gated switching",
+    "written_by": "backfill"
+   }
+  },
+  {
+   "record_id": "oc-12f90f33cddc",
+   "seq": 61,
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": null,
+    "card_id": "card-46dbb349",
+    "card_path": "run-20261010T181300Z/cards/card-46dbb349/v9.json",
+    "card_sha256": "1bb65209134d3138762351f61555e73ccc3db97807e2ba5d6a57e10c3bd3730b",
+    "card_version": 9,
+    "causes": [
+     {
+      "code": "undetermined:S3",
+      "detail": "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']",
+      "evidence": [
+       {
+        "kind": "judges",
+        "ref": "run-20261010T181300Z/artifacts/judges/card-46dbb349-v8-93b1b8.json",
+        "sha256": "dc9692325d4b0e7a394f3eecdde8ab4d2bad666fe304831075c04c6d90ea767f"
+       },
+       {
+        "kind": "disproof",
+        "ref": "run-20261010T181300Z/artifacts/disproof/card-46dbb349-v8-1b372f.json",
+        "sha256": "268364f108ed9d864ef109c4adc961a40bd7df1767311944db037ee4e8dae477"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-20c48010b241"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-4c02ca7b93f8"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261010T181300Z/job-c63a4e2d2d1f"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261010T181300Z/job-dfd9832f8f73"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-f1f1dbc15bcc"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-ec5bbe34c829"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-a344ac174188"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261010T181300Z/call-b2137e592932"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Treat every rule in the context as the same in-context-identified Koopman flow run for a different, unknown integer duration. For each demonstration, the model infers the duration by matching the demonstration against powers of the current operator, then writes it back into that single operator as a one-step pair transported along the inferred orbit. Once one rule has identified the flow, every other rule in its cyclic semigroup is learned from a single example.",
+    "cost": {
+     "executor_jobs": 5,
+     "model_calls": 13,
+     "tokens": 451538
+    },
+    "definitions": [],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "judges",
+      "ref": "run-20261010T181300Z/artifacts/judges/card-46dbb349-v8-93b1b8.json",
+      "sha256": "dc9692325d4b0e7a394f3eecdde8ab4d2bad666fe304831075c04c6d90ea767f"
+     },
+     {
+      "kind": "disproof",
+      "ref": "run-20261010T181300Z/artifacts/disproof/card-46dbb349-v8-1b372f.json",
+      "sha256": "268364f108ed9d864ef109c4adc961a40bd7df1767311944db037ee4e8dae477"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-20c48010b241"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-4c02ca7b93f8"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261010T181300Z/job-c63a4e2d2d1f"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261010T181300Z/job-dfd9832f8f73"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-f1f1dbc15bcc"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-ec5bbe34c829"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-a344ac174188"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261010T181300Z/call-b2137e592932"
+     }
+    ],
+    "kill_codes": [
+     "undetermined:S3"
+    ],
+    "kill_detail": "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']",
+    "legacy": true,
+    "lens": "neural_odes_koopman",
+    "lineage_id": "card-537e161c",
+    "mechanism_signature": {
+     "signature": "sig-b400312d8e07c4e5",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write"
+      ],
+      "read": [
+       "argmax_select",
+       "bilinear_product",
+       "count_increment",
+       "outer_product_write",
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "2d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        1
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "append_slot",
+       "argmax_select",
+       "bilinear_product",
+       "distance_kernel",
+       "normalize",
+       "outer_product_write",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:append_slot",
+      "w:argmax_select",
+      "w:bilinear_product",
+      "w:distance_kernel",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:threshold_branch",
+      "r:argmax_select",
+      "r:bilinear_product",
+      "r:count_increment",
+      "r:outer_product_write",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "premises",
+     "definitions",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": {
+     "broken_invariant": "The SUGS mapping relies on two facts.\n- (a) The components are independent conjugate linear-Gaussian regressions. Each has sufficient statistics sum_{i: assigned to j} (u_i u_i^T, u_i v_i^T) over the raw regressor/target pairs assigned to it. The bank is therefore a sum of per-pair writes, with u_i a function of token x_{i-1} only.\n- (b) A pair assigned to component j changes only component j's predictive.\n\nThis card breaks both in updates u[1] to u[4].\n- There is one operator K. The candidate components are its powers K^c, whose predictive (K^T)^c u is a degree-c polynomial in the state, so no per-component conjugate posterior exists.\n- The write uses the key z_t = (K_{t-1}^T)^{e_t-1} u_t, the previous operator applied e_t - 1 times. The statistics are therefore sum_s (z_s z_s^T, z_s v_s^T) over keys that depend on the whole prefix, not on one token each.\n- A duration-3 pair changes the predictions for every duration at once.\n\nThe toy example shows the break. The B pair (1,4) is written with key \u2248 Phi[3], a token absent from the pair. The one-shot query is answered correctly (0), where the SUGS fresh component answers 4.",
+     "known_family": "other_known: sequential greedy (SUGS) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions (Mixture-of-Memories MesaNet with a likelihood router)",
+     "why_unrepairable": "Repair 1 (strongest): SUGS with one component per duration c, i.e. M independent conjugate regressions routed by predictive likelihood. Each component would be fitted only from pairs routed to it, so a rule seen once has a one-pair posterior. That is exactly the fresh_mode_pred = 4 baseline in the toy. To match the card, the posterior mean of component c would have to equal the c-th power of component 1's mean, and every pair routed to c would have to update component 1 through the transported key. No conjugate mixture has that nonlinear tie.\n\nRepair 2: MesaNet or linear attention with a learned key map. The key z_t = (K_{t-1}^T)^{e_t-1} Phi[x_{t-1}] depends on the operator identified so far and on a discrete test against it, so no feature map of the tokens produces it. In the toy, input token 1 would get key Phi[1] if the base were unidentified or if e = 1, and it gets key \u2248 Phi[3] here.\n\nRepair 3: Mixture-of-Memories with a likelihood router, or a lifted state enumerating durations. Both store separate per-duration statistics, so neither can transfer one demonstration of rule A^3 into the operator of A.\n\nRepair 4: TTT on the loss ||(K^T)^e u - v||^2. This needs e as an input, and it takes a gradient step through the power instead of an exact RLS write of the transported pair, so it gives a different K after the same pair. A critic can check this on the toy's third write.\n\nRepair 5: a discrete-logarithm or subgroup routine over given group labels. No group or labels are given. The group is the semigroup of an operator identified in context on a learned lift, and identification and exponent inference are coupled through the transported keys.\n\nThe observable differences are the claims themselves:\n- one-shot new rules without slots, where MesaNet and SUGS fail;\n- the odd/even split on a cycle of 64, which no mixture predicts;\n- order dependence, where MesaNet is order-invariant."
+    },
+    "operator": "escape",
+    "outcome": "dead",
+    "override": false,
+    "parent_ids": [
+     "card-36725a7c"
+    ],
+    "premises": [],
+    "run": "run-20261010T181300Z",
+    "source_run": null,
+    "stage_verdicts": {
+     "S0": {
+      "by_calls": [
+       "call-b6c398a82318"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-537e161c at TF-IDF cosine 0.416 (threshold 0.6)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-700e974df42a",
+       "job-cd52587d776d"
+      ],
+      "reasons": [
+       "gate: passed with 8 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: notation_clash (mechanism.state[e_t].shape): e_t is a scalar integer but its shape is written as [1], which reads as a length-1 vector and is inconsistent with its use as an exponent and loop count.",
+       "residual: missing_definition (mechanism.state (K_t, P_t, e_t) / mechanism.update): Time indexing is ambiguous: the readout uses K_t and e_t at position t, but nothing says the first pair (BOS, x_1) is the first processed pair, and no rule handles t=1 where u_t = Phi[BOS] is a zero row under the reference lift.",
+       "residual: underspecified_step (mechanism.update[3] (duration inference)): The gate u^T P u >= tau uses P_{t-1}, but a pair being written when K_{t-1}=0 and the orbit is all zero beyond c=0 has argmin over z_c=0 for every c, so the tie rule resolves it only implicitly, and the interaction with tau is not stated.",
+       "residual: underspecified_step (mechanism.update[0] / claims.sample_efficiency.prediction.metric): The reserved-token rows are zero only in the 'reference' lift, but the gate is defined to skip reserved tokens 'whatever their lift rows are'; behavior of readout at a query when x_t = ';' (query is read on the query token, then ';' follows) is not specified, so which token the readout is applied t...",
+       "residual: arithmetic_slip (mechanism.learning.few_shot_argument (1)): The bound eps <= lambda/(lambda + sigma_min^2) is stated as 'about 1e-5' for lambda=1e-6 with 24 Fourier demonstrations, but this depends on sigma_min^2 of the stacked keys which is not computed and could be of order 1 to 10, giving 1e-7 to 1e-6, so the number does not follow from the stated formula."
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-0872e0e280bc",
+       "call-b5fc3f3658c0",
+       "call-c46a84bd05b2"
+      ],
+      "reasons": [
+       "prior art: novel. The search returned 0 papers, so no found work addresses the duration-inference mechanism. The label is novel by definition. The theory card cites 2209.09977, 2307.16518, and 2605.00836 as references, but none appear in the search results, so they are not cited as evidence. This label reflects only the absence of results and does not confirm novelty against the wider literature.",
+       "textbook transplant: no (recorded, not gated): The source construction is the Koopman semigroup law K^{t1+t2} = K^{t1} K^{t2}, used with known sampling times and an offline or gradient-fitted flow. The card makes the elapsed time a latent integer inferred online by orbit matching. It couples that inference to RLS identification through transport",
+       "reduction critic: none, radical_enough True: Escape test, step 1: the broken invariant holds in the card's own equations. In u[2] to u[4] the written key z_t = (K_{t-1}^T)^{e_t-1} u_t is a function of the prefix state. The candidate predictors (K^T)^c are tied powers of one operator, not independent conjugate components. A duration-3 write therefore moves every power's prediction. The SUGS bank..."
+      ],
+      "verdict": "pass"
+     },
+     "S3": {
+      "by_calls": [
+       "call-20c48010b241",
+       "call-4c02ca7b93f8",
+       "job-c63a4e2d2d1f",
+       "job-dfd9832f8f73",
+       "call-f1f1dbc15bcc",
+       "call-ec5bbe34c829",
+       "call-a344ac174188",
+       "call-b2137e592932"
+      ],
+      "reasons": [
+       "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']"
+      ],
+      "verdict": "undetermined"
+     }
+    },
+    "summary": "Notation: x_t is always a token, u_t = Phi[x_{t-1}] and v_t = Phi[x_t] are token lifts, and z_{t,c} are orbit points (write keys).\n\nPretraining learns a token lift Phi, tied as the decoder, and a hard pair gate w_beta. At inference the whole in-context state is one operator K (d\u00d7d), its inverse Gram matrix P, and an integer duration e_t.\n\nPairs that contain a reserved token (BOS or ';') are always skipped. Content pairs with w_beta^T[u_t; v_t] < 0 are also skipped. For each written adjacent pair (x_{t-1}, x_t), the model forms the orbit z_{t,c} = (K_{t-1}^T)^c u_t for c = 0..M.\n- If u_t lies in directions the operator has not identified yet (u_t^T P_{t-1} u_t >= tau), the duration is taken to be 1.\n- Otherwise the duration e_t is the power c in {1..M} whose orbit point z_{t,c} lands closest to v_t.\n\nThe pair is then written into K by recursive least squares. The key is the transported orbit point z_{t,e_t-1}, not the raw lift, so that K^T z_{t,e_t-1} \u2248 v_t. A demonstration of rule B = A^3 therefore becomes a one-step demonstration of A at a token that may never have appeared.\n\nPrediction applies the operator for the most recently inferred duration: y_t = (K_t^T)^{e_t} Phi[x_t].\n\nConsequences:\n- After about d demonstrations of one rule identify the flow, each further rule in the cyclic semigroup it generates (every shift on a prime cycle) is used correctly after one demonstration.\n- The number of rules is not capped by slots.\n- Group-theoretic predictions follow. For example, on a cycle of 64 an even base shift cannot express an odd new shift.\n\nThe write key depends on the prefix through powers of the current operator, and the 'components' (the powers K^c) are tied rather than independent. So the state is neither a sum of per-token writes nor a mixture of independent conjugate regressions. Cost is O(M d^2 + V d) per token.",
+    "terminal_stage": "S3",
+    "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes",
+    "written_by": "backfill"
+   }
+  },
+  {
+   "record_id": "oc-4acac46b8e81",
+   "seq": 135,
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": null,
+    "card_id": "card-bd36b4f5",
+    "card_path": "run-20261011T011300Z/cards/card-bd36b4f5/v8.json",
+    "card_sha256": "1ff51cc768516b2e973c5752206b9825eee104f8981f67b68df57e198b72e1be",
+    "card_version": 8,
+    "causes": [
+     {
+      "code": "reduces_to_known:other_known",
+      "detail": "reduced to other_known. Mapping: Repair the parent's mapping with exemplar-based leader clustering (Hartigan's leader algorithm, or BSAS with a point representative and an arbitrary proximity measure). Equivalently, use online sequential RANSAC with a one-point minimal solver. Neither needs a metric, a common feature space or a summed centroid. (1) The datum is the episode pair j = (x_j, y_j). The model family is learned: the hypothesis M_a instantiated from one exemplar a = (x_a, y_a) predicts, at any source x, the point mu_a(x) = E[x] + T(E[x_a] -> E[x]) delta_a. (2) The inlier residual of j under M_a is res(a, j) = ||mu_a(x_j) - E[y_j]|| = ||T_aj delta_a - delta_j||. That is exactly the gap in u1, so Pred(a, j) is the RANSAC inlier test res <= tau. It is also the leader-algorithm dissimilarity between the leader exemplar a and point j. Both families allow a non-symmetric, non-transitive dissimilarity, because only leader-to-point comparisons are made. (3) The anchor (x*, y*) is the leader / incumbent hypothesis, held as its minimal sample (an exemplar, as in Hartigan's leader and in RANSAC). m is its inlier count. u2 is leader assignment / inlier counting against the incumbent. (4) H is the outlier buffer (DenStream o-micro-clusters), holding singleton exemplars in a FIFO of size K. s_H counts each pending exemplar's inliers among buffered points: each buffered point is a candidate hypothesis scored on the buffer (u3). (5) u4 is hypothesis replacement by inlier support: a candidate whose support reaches the incumbent's count replaces it. This is the standard keep-the-best-consensus rule of sequential/preemptive RANSAC, evaluated online. Reinserting the loser into the buffer is ordinary bookkeeping that keeps a rejected hypothesis as a candidate, as in Misra-Gries / Space-Saving candidate replacement. (6) u5 is the one-pass inlier reabsorption / outlier-buffer re-check after a model change. (7) r1 is the K-slot FIFO exact-match cache (hard equality-kernel attention). (8) r2 is the decode of the incumbent model at the query, softmax(-beta ||E[v] - mu_*(x_q)||^2): a Gaussian-kernel output layer around the analogy completion. The completion itself is the parallel-transport analogy of computational anatomy (transporting a displacement from one base point to another, as in Schild's ladder / Lorenzi-Pennec). The connection is linear in the displacement and Rodrigues-exponentiated per SO(3) block. (9) The pretraining losses L_tr, L_sep and L_out are contrastive margin hinge losses on the inlier residual plus softmax cross-entropy: metric / model learning for the RANSAC model family. Nothing is learned in context. Numeric check: reduction claim other_known (verified): numeric check confirms equivalence (max_abs_diff 5.218048215738236e-15) Critic's argument: Checking the broken invariants against the equations: u1 is indeed a non-transitive pairwise residual with no common feature space, u4/u5 do keep an exemplar rather than (N, LS), and r2 is non-affine in E[x_q]. So the parent's centroid-based BSAS/BIRCH mapping no longer fits literally, and the card's rebuttal of the per-token gauge repair is correct. However, the card attacked the wrong repair. None of the three invariants is essential to the parent family. Hartigan's leader algorithm and BSAS with point representatives keep exemplar leaders and accept arbitrary, non-metric dissimilarities, because they only ever compare a leader with a point. Online one-point RANSAC is exactly the scheme here: an exemplar instantiates a hypothesis, Pred is the inlier test on the hypothesis' prediction residual, support counts decide which hypothesis is kept, and inliers are reabsorbed after a change. Non-transitivity of Pred is normal for RANSAC inlier relations and does not distinguish the mechanism. The card's RANSAC rebuttal lists only a learned hypothesis class, online operation, no refitting and order-dependent switching. These are bookkeeping and model-class choices, not a new update law. The query-dependent transport decode is the parallel-transport analogy from geometric statistics, now with a learned connection. The closest repair, and the one that maps, is online exemplar-leader / one-point RANSAC with a learned model class, an outlier buffer, a FIFO cache and a transport-analogy decode. The argument does not hold: this is a hand-assembled symbolic pipeline of known parts with a more expressive learned residual, and it would not surprise a researcher in those areas.",
+      "evidence": [
+       {
+        "kind": "reduction_critic",
+        "ref": "run-20261011T011300Z/artifacts/reduction_critic/card-bd36b4f5-v7-728a9e.json",
+        "sha256": "b73a2a5b6a4adb1da83a1476ef21255c42335782669f6765aec7993bff3226aa"
+       },
+       {
+        "kind": "prior_art",
+        "ref": "run-20261011T011300Z/artifacts/prior_art/card-bd36b4f5-v7-bd81d6.json",
+        "sha256": "7bd594fd6b692b9f0cf6507ed49c47a3d97d229346c1b862a7606b395dae385e"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T011300Z/call-a950240b738f"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T011300Z/call-4a9cd1d8a3bb"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T011300Z/call-749b3db70dab"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T011300Z/call-ff0e3cf6cdb6"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T011300Z/job-1b1074739a8c"
+       }
+      ]
+     }
+    ],
+    "core_idea": "A demonstration (x -> y) is consolidated when its offset agrees with another episode's offset after that offset has been parallel-transported from one source to the other along a learned non-abelian connection on the embedding space; the consolidated trace is one exemplar, applied to an unseen query by transporting its offset to the query, and it returns to the episodic store (reconsolidation) when a pending rival gathers more support.",
+    "cost": {
+     "executor_jobs": 4,
+     "model_calls": 8,
+     "tokens": 270560
+    },
+    "definitions": [],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "reduction_critic",
+      "ref": "run-20261011T011300Z/artifacts/reduction_critic/card-bd36b4f5-v7-728a9e.json",
+      "sha256": "b73a2a5b6a4adb1da83a1476ef21255c42335782669f6765aec7993bff3226aa"
+     },
+     {
+      "kind": "prior_art",
+      "ref": "run-20261011T011300Z/artifacts/prior_art/card-bd36b4f5-v7-bd81d6.json",
+      "sha256": "7bd594fd6b692b9f0cf6507ed49c47a3d97d229346c1b862a7606b395dae385e"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T011300Z/call-a950240b738f"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T011300Z/call-4a9cd1d8a3bb"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T011300Z/call-749b3db70dab"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T011300Z/call-ff0e3cf6cdb6"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T011300Z/job-1b1074739a8c"
+     }
+    ],
+    "kill_codes": [
+     "reduces_to_known:other_known"
+    ],
+    "kill_detail": "reduced to other_known: Repair the parent's mapping with exemplar-based leader clustering (Hartigan's leader algorithm, or BSAS with a point representative and an arbitrary proximity measure).",
+    "legacy": true,
+    "lens": "complementary_learning_systems",
+    "lineage_id": "card-a91c29e1",
+    "mechanism_signature": {
+     "signature": "sig-4ccdba02a329a299",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write"
+      ],
+      "read": [
+       "argmax_select",
+       "bilinear_product",
+       "gated_update",
+       "max_min",
+       "normalize",
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        3
+       ],
+       [
+        "K",
+        "3"
+       ],
+       [
+        2
+       ],
+       [
+        1
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "append_slot",
+       "argmax_select",
+       "bilinear_product",
+       "count_increment",
+       "evict_or_prune",
+       "normalize",
+       "outer_product_write",
+       "phase_rotation",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:append_slot",
+      "w:argmax_select",
+      "w:bilinear_product",
+      "w:count_increment",
+      "w:evict_or_prune",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:phase_rotation",
+      "w:threshold_branch",
+      "r:argmax_select",
+      "r:bilinear_product",
+      "r:gated_update",
+      "r:max_min",
+      "r:normalize",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "premises",
+     "definitions",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": {
+     "broken_invariant": "The mapping relies on three properties.\n(1) Each episode has one fixed feature phi(j) = delta_j in a common space, and admission and seeding are metric-ball tests ||phi_i - phi_j|| <= tau or ||phi_j - LS/N|| <= tau.\n(2) The slow state is the sufficient statistic (N, LS), a sum of per-episode features.\n(3) The decode translates the query by a constant vector LS/N, which is affine in E[x_q].\n\nThis card breaks each one.\n- In u1 the test is ||T(E[x_i]->E[x_j]) delta_i - delta_j|| <= tau, with T(z->z') = blockdiag Rod(W_b(z' - z)) and non-commuting generators. Two episodes are compared only after the first offset is carried to the second's source, so there is no common space. Even with tau -> 0 the relation is not transitive. The toy shows Pred(P,Q) and Pred(Q,R) true but Pred(P,R) false, with gap 0.314 > 0.25. A metric-ball relation on fixed features is transitive in that limit.\n- In u4 and u5 the slow state is one exemplar (x*, y*) and a count m. No offset is ever summed.\n- In r2 the output E[x_q] + Rod(W(E[x_q] - E[x*])) delta* is a query-dependent rotation, so it is not affine in E[x_q].\n- In u4 an outvoted consolidated trace returns to the buffer. Demotion in that family happens only by time decay, not by comparing a rival's evidence with the trace's evidence.",
+     "known_family": "other_known: single-cluster online leader (BSAS) clustering with an outlier buffer and one-pass reabsorption (DenStream/BIRCH CF vector), plus a FIFO exact-match cache and an offset-analogy (TransE) decode",
+     "why_unrepairable": "The strongest repair is a learned per-token gauge: give each token v a frame F[v] in O(d), cluster the features u_j = F[x_j]^T delta_j with a leader rule, and decode E[x_q] + F[x_q] (LS/N). This equals the card's Pred and r2 only if T(E[u]->E[v]) = F(v) F(u)^T for every pair of context tokens u, v. That forces T(z2->z3) T(z1->z2) = T(z1->z3) for all triples of token embeddings, which means zero holonomy. With non-commuting block generators this fails. On the toy triple, any such gauge makes P~Q and Q~R imply P~R up to 2*0, while the card returns a gap of 0.314. No feature map, lift or gate turns a non-transitive tolerance relation into a metric-ball relation on per-episode features.\n\nLifting to pair features (one feature per ordered token pair, V^2 d numbers) only tabulates T. It is no longer leader clustering on episodes, and it still leaves the exemplar anchor without a centroid to average into, because the transported offsets live in different tangent frames.\n\nAdding decay to the cluster weight does not reproduce u4. The switch happens exactly when a rival's pending support reaches m. That depends on the order and identity of the episodes, not on elapsed time: the same multiset in reverse order leaves the other anchor, while a decay schedule gives the same weights for the same timestamps."
+    },
+    "operator": "escape",
+    "outcome": "dead",
+    "override": false,
+    "parent_ids": [
+     "card-a91c29e1"
+    ],
+    "premises": [],
+    "run": "run-20261011T011300Z",
+    "source_run": null,
+    "stage_verdicts": {
+     "S0": {
+      "by_calls": [
+       "call-4903436091c4"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-5d274cf3 at TF-IDF cosine 0.144 (threshold 0.6)",
+       "escape: parent and escape ancestors excluded from the nearest-card comparison: card-a91c29e1"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-ae1a6b22d4b9",
+       "job-ce69b04e1801"
+      ],
+      "reasons": [
+       "gate: passed with 3 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: notation_clash (mechanism.state[W]): The block indexing is inconsistent: 'Rows 3b..3b+2 form W_b for block b = 1..d/3' gives rows 3..5 for b = 1 and leaves rows 0..2 unassigned, while the same entry says d is split into 'd/3 blocks of 3 coordinates' without fixing a start index.",
+       "residual: underspecified_step (mechanism.update[u3]): The row count c_j is defined as 'the number of keys x for which Pred(x, j) held', but the order is not fixed: it is not stated whether c_j is counted before or after the s_H(x) increments, and whether the new row x_j is excluded from the count, which the lemma's support-1 case depends on.",
+       "residual: missing_definition (mechanism.readout[r3]): The top-1 rule 'In the beta -> infinity limit, r2's top-1 is the token nearest E[x_q] + T(E[x*] -> E[x_q]) delta*' is stated, but the case where x_q equals the anchor source x* (which is removed from H at promotion) is not addressed, so the readout branch taken for an anchor query is not explicitly specified.",
+       "toy example reproduced 11 expected value(s)"
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-a950240b738f",
+       "call-4a9cd1d8a3bb",
+       "call-749b3db70dab",
+       "call-ff0e3cf6cdb6",
+       "job-1b1074739a8c"
+      ],
+      "reasons": [
+       "prior art: prior_art_undertested. No listed paper implements the card's mechanism: a learned non-abelian connection W with block Rodrigues transport, a pairwise transport-agreement test, a single-exemplar anchor with support count, and reconsolidation by rival support inside one context. Closest prior work is conceptual. 2511.03060 proposes attention as parallel transport in transformers, and 1...",
+       "textbook transplant: no (recorded, not gated): The source construction is the systems-consolidation / reconsolidation cycle and the pattern-separation / pattern-completion split of complementary learning systems. Those papers do not specify the card's trigger: consolidation by transport agreement between two episodes, an exemplar trace with a su",
+       "reduction claim other_known (verified): numeric check confirms equivalence (max_abs_diff 5.218048215738236e-15)",
+       "gate: update rule reduces to other_known: Repair the parent's mapping with exemplar-based leader clustering (Hartigan's leader algorithm, or BSAS with a point representative and an arbitrary proximity measure). Equivalently, use online sequential RANSAC with a one-point minimal solver. Neither needs a metric, a common feature space or a summed centroid. (1) The datum is the episode pair j = (x_..."
+      ],
+      "verdict": "reduces_to_known"
+     }
+    },
+    "summary": "Pretraining learns two things: token embeddings E, and a connection W on the embedding space. A relation family is not a constant offset. It is an offset field that is covariantly constant under W. When the source moves from point z to point z', the family's offset rotates by the transport T(z->z') = blockdiag_b Rod(W_b (z' - z)). This is a rotation in SO(3) for each 3-dimensional block, and the block generators do not commute.\n\nIn context, each demonstration j gives an offset delta_j = E[y_j] - E[x_j]. Two episodes i and j corroborate each other when ||T(E[x_i]->E[x_j]) delta_i - delta_j|| <= tau. This relation is symmetric. Because the connection has curvature it is not transitive, and no metric on per-episode features induces it.\n\nThe fast store H is an insertion-ordered map of at most K pending bindings. Each row (x, y_H(x), s_H(x)) stores its own support count: how many episodes it corroborated, or was corroborated by, while pending.\n\nThe slow trace is a single anchor exemplar (x*, y*) with support m. There is no centroid, and nothing is summed.\n- A new episode that the anchor predicts is absorbed: m increases by 1, and no pending count changes.\n- Any other episode is tested against every pending entry and stored.\n- The best-supported pending entry becomes the anchor if its support is at least 1 and at least m.\n- After a promotion, one replay sweep absorbs the pending entries the new anchor predicts.\n- A displaced anchor is reinserted into H at the newest position. This is the reconsolidation law: a consolidated trace that is outvoted becomes hippocampus-dependent again.\n\nReadout: a source still in H is answered by exact recall. Any other source x_q is decoded around E[x_q] + T(E[x*]->E[x_q]) delta*, the anchor's offset transported to the query. Readout never changes the state.\n\nCost: precompute W E once, and every comparison costs O(d). The total cost is linear in n.",
+    "terminal_stage": "S2",
+    "title": "Holonomy-Gated Consolidation: an in-context rule is held as one exemplar that is parallel-transported to each query along a learned non-abelian connection, consolidated by pairwise transport agreement, and returned to the episodic store when outvoted",
+    "written_by": "backfill"
+   }
+  },
+  {
+   "record_id": "oc-3a20482beb85",
+   "seq": 229,
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": null,
+    "card_id": "card-c8ef549e",
+    "card_path": "run-20261011T042400Z/cards/card-c8ef549e/v9.json",
+    "card_sha256": "e23df886bd34dc146ba3bb87c2057287bcf441680654d63be8bdb5165263e84e",
+    "card_version": 9,
+    "causes": [
+     {
+      "code": "obligation_failed:capacity_exact_recall_orthonormal_and_random_codes",
+      "detail": "executed check violated stated obligation 'capacity_exact_recall_orthonormal_and_random_codes' (replayed): Orthonormal d=64 recall over K=1..64 (20 random bijections each) has minimum 1.0000; random unit codes at d=64 pooled over 5000 episodes give mean recall 0.7651 at K=8 and 0.6245 at K=64; log2(K!) is 15.3 and 296.0 bits against 262144 state bits.; counterexample {\"failures\": [\"random K=8 mean recall 0.7651 < 0.9\", \"random K=64 mean recall 0.6245 > 0.5\"], \"d\": 64, \"orthonormal_min_recall\": 1.0, \"orthonormal_worst_K\": null, \"random_mean_recall_K8\": 0.76505, \"random_mean_recall_K64\": 0.62446875, \"seeds\": [0, 1, 2, 3, 4], \"episodes_per_seed\": 1000}",
+      "evidence": [
+       {
+        "kind": "s3_gate",
+        "ref": "run-20261011T042400Z/artifacts/s3_gate/card-c8ef549e-v8-b109c6.json",
+        "sha256": "3604b6ecce22441a79faf304e5a614d9937e4a9259447bbada29808de706bd66"
+       },
+       {
+        "kind": "judges",
+        "ref": "run-20261011T042400Z/artifacts/judges/card-c8ef549e-v8-440d6b.json",
+        "sha256": "1abd650651b47ba3ef3f4da218750975337e6b9f7e03301739aaca4b4117cd32"
+       },
+       {
+        "kind": "disproof",
+        "ref": "run-20261011T042400Z/artifacts/disproof/card-c8ef549e-v8-8a303c.json",
+        "sha256": "5f703e95839fb1a3eb81ca217a70b47ca57f73d26ecff6f5f6f56c1414fb6695"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-2afb261b4f9f"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-cbd48a5fe4ed"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-86ce4f896e9e"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-a2dba821f704"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-fc07ee8b38ea"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-5f0f04ebd775"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-ab87589c6ed0"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-6474f86e02c5"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-edf799471264"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-6cfcc5485ec5"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-365f57b356ab"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-7d6facf3b740"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-65d4eed470c4"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-8593b4b93051"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-e59f7c7977a1"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-fac88f0482c5"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-b5208cd4d0b5"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-52adbf15a24d"
+       }
+      ]
+     },
+     {
+      "code": "obligation_failed:elimination_inference_theorem_and_empirical_gap",
+      "detail": "executed check violated stated obligation 'elimination_inference_theorem_and_empirical_gap' (replayed): Exhaustive over all 40320 bijections of 8 orthonormal letters (7 shown pairs in fixed key order, WLOG by letter relabeling) found no failure; random unit codes at d=64 over 5000 episodes give accuracy 0.5626 on the unshown letter, against the 0.9 threshold.; counterexample {\"random_codes_d\": 64, \"K\": 8, \"accuracy\": 0.5626, \"episodes\": 5000, \"seeds\": [0, 1, 2, 3, 4]}",
+      "evidence": [
+       {
+        "kind": "s3_gate",
+        "ref": "run-20261011T042400Z/artifacts/s3_gate/card-c8ef549e-v8-b109c6.json",
+        "sha256": "3604b6ecce22441a79faf304e5a614d9937e4a9259447bbada29808de706bd66"
+       },
+       {
+        "kind": "judges",
+        "ref": "run-20261011T042400Z/artifacts/judges/card-c8ef549e-v8-440d6b.json",
+        "sha256": "1abd650651b47ba3ef3f4da218750975337e6b9f7e03301739aaca4b4117cd32"
+       },
+       {
+        "kind": "disproof",
+        "ref": "run-20261011T042400Z/artifacts/disproof/card-c8ef549e-v8-8a303c.json",
+        "sha256": "5f703e95839fb1a3eb81ca217a70b47ca57f73d26ecff6f5f6f56c1414fb6695"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-2afb261b4f9f"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-cbd48a5fe4ed"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-86ce4f896e9e"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-a2dba821f704"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-fc07ee8b38ea"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-5f0f04ebd775"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-ab87589c6ed0"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-6474f86e02c5"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-edf799471264"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-6cfcc5485ec5"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-365f57b356ab"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-7d6facf3b740"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-65d4eed470c4"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-8593b4b93051"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-e59f7c7977a1"
+       },
+       {
+        "kind": "job",
+        "ref": "run-20261011T042400Z/job-fac88f0482c5"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-b5208cd4d0b5"
+       },
+       {
+        "kind": "call",
+        "ref": "run-20261011T042400Z/call-52adbf15a24d"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Keep the in-context memory as one orthogonal binding matrix (an MBAT binder) and write each demonstrated pair k -> v with the single Householder reflection that sends k to v's current preimage S^T v, so the memory stays a bijection and every write also evicts v's old key, which gives mutual-exclusivity inference for free.",
+    "cost": {
+     "executor_jobs": 16,
+     "model_calls": 12,
+     "tokens": 304461
+    },
+    "definitions": [],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "s3_gate",
+      "ref": "run-20261011T042400Z/artifacts/s3_gate/card-c8ef549e-v8-b109c6.json",
+      "sha256": "3604b6ecce22441a79faf304e5a614d9937e4a9259447bbada29808de706bd66"
+     },
+     {
+      "kind": "judges",
+      "ref": "run-20261011T042400Z/artifacts/judges/card-c8ef549e-v8-440d6b.json",
+      "sha256": "1abd650651b47ba3ef3f4da218750975337e6b9f7e03301739aaca4b4117cd32"
+     },
+     {
+      "kind": "disproof",
+      "ref": "run-20261011T042400Z/artifacts/disproof/card-c8ef549e-v8-8a303c.json",
+      "sha256": "5f703e95839fb1a3eb81ca217a70b47ca57f73d26ecff6f5f6f56c1414fb6695"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T042400Z/call-2afb261b4f9f"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T042400Z/call-cbd48a5fe4ed"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-86ce4f896e9e"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-a2dba821f704"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-fc07ee8b38ea"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T042400Z/call-5f0f04ebd775"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-ab87589c6ed0"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-6474f86e02c5"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-edf799471264"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-6cfcc5485ec5"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-365f57b356ab"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-7d6facf3b740"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-65d4eed470c4"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-8593b4b93051"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-e59f7c7977a1"
+     },
+     {
+      "kind": "job",
+      "ref": "run-20261011T042400Z/job-fac88f0482c5"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T042400Z/call-b5208cd4d0b5"
+     },
+     {
+      "kind": "call",
+      "ref": "run-20261011T042400Z/call-52adbf15a24d"
+     }
+    ],
+    "kill_codes": [
+     "obligation_failed:capacity_exact_recall_orthonormal_and_random_codes",
+     "obligation_failed:elimination_inference_theorem_and_empirical_gap"
+    ],
+    "kill_detail": "gate rule: check_violation; executed check violated stated obligation 'capacity_exact_recall_orthonormal_and_random_codes' (replayed): Orthonormal d=64 recall over K=1..64 (20 random bijections each) has minimum 1.0000; random unit codes at d=64 pooled over 5000 episodes give mean recall 0.7651 at K=8 and 0.6245 at K=64; log2(K!) is 15.3 and 296.0 bits against 262144 state bits.; counterexample {\"failures\": [\"random K=8 mean recall 0.7651 < 0.9\", \"random K=64 mean recall 0.6245 > 0.5\"], \"d\": 64, \"orthonormal_min_recall\": 1.0, \"orthonormal_worst_K\": null, \"random_mean_recall_K8\": 0.76505, \"r...",
+    "legacy": true,
+    "lens": "vector_symbolic_hyperdimensional",
+    "lineage_id": "card-c8ef549e",
+    "mechanism_signature": {
+     "signature": "sig-15a530bcb1c595b2",
+     "skeleton": {
+      "learn": [
+       "gradient_training"
+      ],
+      "read": [
+       "bilinear_product",
+       "outer_product_write",
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "d",
+        "d"
+       ],
+       [
+        "V",
+        "d"
+       ],
+       [
+        "d"
+       ],
+       [
+        1
+       ],
+       [
+        1
+       ],
+       [
+        "d"
+       ]
+      ],
+      "write": [
+       "bilinear_product",
+       "normalize",
+       "outer_product_write",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:bilinear_product",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:threshold_branch",
+      "r:bilinear_product",
+      "r:outer_product_write",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "premises",
+     "definitions",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": null,
+    "operator": "new",
+    "outcome": "dead",
+    "override": false,
+    "parent_ids": [],
+    "premises": [],
+    "run": "run-20261011T042400Z",
+    "source_run": null,
+    "stage_verdicts": {
+     "S0": {
+      "by_calls": [
+       "call-059dde61b7c9"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-aae8523d at TF-IDF cosine 0.104 (threshold 0.6)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-0c0ae07d62cc",
+       "job-37563c98d5e4"
+      ],
+      "reasons": [
+       "gate: passed with 4 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: notation_clash (mechanism.readout[0]): E is declared with shape [V, d] and rows E_x, but the readout writes S_t E_{x_{t-1}} (a d x d matrix times a row) and the cleanup writes E_j^T y, so the code vector orientation is inconsistent.",
+       "residual: missing_definition (mechanism.learning.equations[1]): The straight-through gate uses sigma and sg(...), which are not defined in the equation or its plain text (sigma is the sigmoid and sg is stop-gradient, but neither is stated).",
+       "residual: underspecified_step (mechanism.update[0]): For t >= 2 the update reads k_t = E[x_{t-2}], which requires x_0, yet the index base of the sequence (whether x starts at x_0 or x_1) is never stated, while the loss sums from t >= 1 using x_{t+1}.",
+       "residual: vague_secondary_claim (claims.capabilities[3]): The 1e-8 stability thresholds are stated for float64 over 10^5 writes but no per-write tolerance accounting or pass rule is given, so a reader cannot tell whether 'max |S^T S - I| < 1e-8' is expected to hold at every step or only at the reported checkpoints.",
+       "toy example reproduced 5 expected value(s)"
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-73bfec3b5441",
+       "call-e3e3644bc202",
+       "call-aaea5699dacd"
+      ],
+      "reasons": [
+       "prior art: prior_art_undertested. Closest work: DeltaNet (2406.06484) covers delta-rule in-context associative recall, and MBAT (2202.04771) supplies orthogonal binding matrices. Householder-parametrized orthogonal RNNs (1612.00188) cover the reflection parametrization. The specific mechanism here, a state-dependent Householder write that keeps an in-context orthogonal binder a bijection so tha...",
+       "textbook transplant: no (recorded, not gated): The source construction is MBAT binding by a fixed random orthogonal matrix, with unbinding by its transpose and cleanup to the codebook. The card replaces the fixed binder with an in-context memory that starts at I. It updates that memory by state-dependent Householder reflections chosen so that S",
+       "reduction critic: none, radical_enough True: The update is S_t = S_{t-1}(I - 2 w_t w_t^T) with w_t = normalize(E_{x_{t-2}} - S_{t-1}^T E_{x_t}). It fits none of the listed templates. - It is not f(W h + U x). - It is not linear in the state with an additive input, so it is not an SSM or linear attention. - It is not delta-rule linear attention. The rank-1 identity shows the write key and normal..."
+      ],
+      "verdict": "pass"
+     },
+     "S3": {
+      "by_calls": [
+       "call-2afb261b4f9f",
+       "call-cbd48a5fe4ed",
+       "job-86ce4f896e9e",
+       "job-a2dba821f704",
+       "job-fc07ee8b38ea",
+       "call-5f0f04ebd775",
+       "job-ab87589c6ed0",
+       "job-6474f86e02c5",
+       "job-edf799471264",
+       "job-6cfcc5485ec5",
+       "job-365f57b356ab",
+       "job-7d6facf3b740",
+       "job-65d4eed470c4",
+       "job-8593b4b93051",
+       "job-e59f7c7977a1",
+       "job-fac88f0482c5",
+       "call-b5208cd4d0b5",
+       "call-52adbf15a24d"
+      ],
+      "reasons": [
+       "gate rule: check_violation",
+       "executed check violated stated obligation 'capacity_exact_recall_orthonormal_and_random_codes' (replayed): Orthonormal d=64 recall over K=1..64 (20 random bijections each) has minimum 1.0000; random unit codes at d=64 pooled over 5000 episodes give mean recall 0.7651 at K=8 and 0.6245 at K=64; log2(K!) is 15.3 and 296.0 bits against 262144 state bits.; counterexample {\"failures\": [\"random K=8 m...",
+       "executed check violated stated obligation 'elimination_inference_theorem_and_empirical_gap' (replayed): Exhaustive over all 40320 bijections of 8 orthonormal letters (7 shown pairs in fixed key order, WLOG by letter relabeling) found no failure; random unit codes at d=64 over 5000 episodes give accuracy 0.5626 on the unshown letter, against the 0.9 threshold.; counterexample {\"random_codes_d\":...",
+       "round 1 feasibility_judge_a (claude-opus-5-5): infeasible (confidence 0.95); fatal: Elimination with random unit codes at d=64, K=8: measured accuracy 0.563 over 5000 pooled episodes (replayed) and 0.569 in the disprover check, versus the claimed >= 0.9. This refutes sample_efficiency, capabilities[0] and the card's second falsifier.; Associative recall with random unit codes at d=64: mean reca...",
+       "round 1 feasibility_judge_b (gpt-6.1-sol): infeasible (confidence 0.999); fatal: Random-code associative recall at d=64, K=8 is 0.76505 under the reproduced 5000-episode protocol, refuting the claimed minimum 0.9.; Random-code associative recall at d=64, K=64 is 0.62446875 under the reproduced 5000-episode protocol, refuting the claimed maximum 0.5.; Random-code mutual-exclusivity completion at...",
+       "obligation check complexity_per_token_memory_total (complexity): discharged (replayed): Counted flops per scored token as 9d^2+2Vd+3d (update 7d^2+3d, readout 2d^2+2Vd) and state words as d^2+Vd+3d over d in 8..512 and V in {d,4d,1000,16d}; the ratio to d^2+Vd lies in [2.06, 5.69] and the state ratio is at most 1.19. Training reversal error accumulation and sequential depth are not che"
+      ],
+      "verdict": "infeasible_proved"
+     }
+    },
+    "summary": "The state is a d x d orthogonal matrix S that binds key codes to value codes. It plays the role of an MBAT binding matrix, except that S is built inside the context. To store a demonstrated pair (k, v), the model first computes u = S^T v, the key that currently maps to v. It then right-multiplies S by the Householder reflection that swaps k and u. Afterward S k = v holds exactly and S is still orthogonal. The old preimage u now maps to whatever k used to map to. On orthonormal codes, S is always a permutation of the codebook built from transpositions. Seeing K-1 pairs of a K-item bijection therefore forces the last pair by elimination. Rebinding a key keeps the map one-to-one, and the state norm never drifts. Each write costs O(d^2), and scoring a token against the V-token codebook costs O(V d). The update cannot be written as S_t = A_t S_{t-1} + B_t x_t, because the reflection vector depends on the state through S^T v and there is no additive write. As an identity, the write is S + (v - S k)(k - S^T v)^T / (1 - v^T S k). This is a delta rule whose write key k is replaced by k - S^T v. The extra term, quadratic in S, removes v's previous preimage.",
+    "terminal_stage": "S3",
+    "title": "Householder Rebinding Memory: in-context bijections by minimal isometric writes",
+    "written_by": "backfill"
+   }
+  },
+  {
+   "record_id": "oc-2d48993b203e",
+   "seq": 287,
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": null,
+    "card_id": "card-46dbb349",
+    "card_path": "s3checks-card-46dbb349-20261011/cards/card-46dbb349/v1.json",
+    "card_sha256": "bbcb90128e146bc4bd5ae756a586117b3b401ee3c0f71f026c3f625b52ebb71d",
+    "card_version": 1,
+    "causes": [
+     {
+      "code": "undetermined:S3",
+      "detail": "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']",
+      "evidence": [
+       {
+        "kind": "disproof",
+        "ref": "s3checks-card-46dbb349-20261011/artifacts/disproof/card-46dbb349-v1-7699ab.json",
+        "sha256": "64d0f6e603ce9c531c3720dcfced9a5e59c7f0894ea18fbbb24b7d1008b8ae7c"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011/call-20c48010b241"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011/call-4c02ca7b93f8"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011/job-c63a4e2d2d1f"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011/job-dfd9832f8f73"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011/call-f1f1dbc15bcc"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011/call-ec5bbe34c829"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011/call-a344ac174188"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011/call-b2137e592932"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Treat every rule in the context as the same in-context-identified Koopman flow run for a different, unknown integer duration. For each demonstration, the model infers the duration by matching the demonstration against powers of the current operator, then writes it back into that single operator as a one-step pair transported along the inferred orbit. Once one rule has identified the flow, every other rule in its cyclic semigroup is learned from a single example.",
+    "cost": {
+     "executor_jobs": 0,
+     "model_calls": 0,
+     "tokens": 0
+    },
+    "definitions": [],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "disproof",
+      "ref": "s3checks-card-46dbb349-20261011/artifacts/disproof/card-46dbb349-v1-7699ab.json",
+      "sha256": "64d0f6e603ce9c531c3720dcfced9a5e59c7f0894ea18fbbb24b7d1008b8ae7c"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011/call-20c48010b241"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011/call-4c02ca7b93f8"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011/job-c63a4e2d2d1f"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011/job-dfd9832f8f73"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011/call-f1f1dbc15bcc"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011/call-ec5bbe34c829"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011/call-a344ac174188"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011/call-b2137e592932"
+     }
+    ],
+    "kill_codes": [
+     "undetermined:S3"
+    ],
+    "kill_detail": "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']",
+    "legacy": true,
+    "lens": "neural_odes_koopman",
+    "lineage_id": "card-46dbb349",
+    "mechanism_signature": {
+     "signature": "sig-b400312d8e07c4e5",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write"
+      ],
+      "read": [
+       "argmax_select",
+       "bilinear_product",
+       "count_increment",
+       "outer_product_write",
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "2d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        1
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "append_slot",
+       "argmax_select",
+       "bilinear_product",
+       "distance_kernel",
+       "normalize",
+       "outer_product_write",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:append_slot",
+      "w:argmax_select",
+      "w:bilinear_product",
+      "w:distance_kernel",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:threshold_branch",
+      "r:argmax_select",
+      "r:bilinear_product",
+      "r:count_increment",
+      "r:outer_product_write",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "premises",
+     "definitions",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": {
+     "broken_invariant": "The SUGS mapping relies on two facts.\n- (a) The components are independent conjugate linear-Gaussian regressions. Each has sufficient statistics sum_{i: assigned to j} (u_i u_i^T, u_i v_i^T) over the raw regressor/target pairs assigned to it. The bank is therefore a sum of per-pair writes, with u_i a function of token x_{i-1} only.\n- (b) A pair assigned to component j changes only component j's predictive.\n\nThis card breaks both in updates u[1] to u[4].\n- There is one operator K. The candidate components are its powers K^c, whose predictive (K^T)^c u is a degree-c polynomial in the state, so no per-component conjugate posterior exists.\n- The write uses the key z_t = (K_{t-1}^T)^{e_t-1} u_t, the previous operator applied e_t - 1 times. The statistics are therefore sum_s (z_s z_s^T, z_s v_s^T) over keys that depend on the whole prefix, not on one token each.\n- A duration-3 pair changes the predictions for every duration at once.\n\nThe toy example shows the break. The B pair (1,4) is written with key \u2248 Phi[3], a token absent from the pair. The one-shot query is answered correctly (0), where the SUGS fresh component answers 4.",
+     "known_family": "other_known: sequential greedy (SUGS) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions (Mixture-of-Memories MesaNet with a likelihood router)",
+     "why_unrepairable": "Repair 1 (strongest): SUGS with one component per duration c, i.e. M independent conjugate regressions routed by predictive likelihood. Each component would be fitted only from pairs routed to it, so a rule seen once has a one-pair posterior. That is exactly the fresh_mode_pred = 4 baseline in the toy. To match the card, the posterior mean of component c would have to equal the c-th power of component 1's mean, and every pair routed to c would have to update component 1 through the transported key. No conjugate mixture has that nonlinear tie.\n\nRepair 2: MesaNet or linear attention with a learned key map. The key z_t = (K_{t-1}^T)^{e_t-1} Phi[x_{t-1}] depends on the operator identified so far and on a discrete test against it, so no feature map of the tokens produces it. In the toy, input token 1 would get key Phi[1] if the base were unidentified or if e = 1, and it gets key \u2248 Phi[3] here.\n\nRepair 3: Mixture-of-Memories with a likelihood router, or a lifted state enumerating durations. Both store separate per-duration statistics, so neither can transfer one demonstration of rule A^3 into the operator of A.\n\nRepair 4: TTT on the loss ||(K^T)^e u - v||^2. This needs e as an input, and it takes a gradient step through the power instead of an exact RLS write of the transported pair, so it gives a different K after the same pair. A critic can check this on the toy's third write.\n\nRepair 5: a discrete-logarithm or subgroup routine over given group labels. No group or labels are given. The group is the semigroup of an operator identified in context on a learned lift, and identification and exponent inference are coupled through the transported keys.\n\nThe observable differences are the claims themselves:\n- one-shot new rules without slots, where MesaNet and SUGS fail;\n- the odd/even split on a cycle of 64, which no mixture predicts;\n- order dependence, where MesaNet is order-invariant."
+    },
+    "operator": null,
+    "outcome": "dead",
+    "override": true,
+    "parent_ids": [],
+    "premises": [],
+    "run": "s3checks-card-46dbb349-20261011",
+    "source_run": "run-20261010T181300Z",
+    "stage_verdicts": {
+     "S0": {
+      "by_calls": [
+       "call-b6c398a82318"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-537e161c at TF-IDF cosine 0.416 (threshold 0.6)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-700e974df42a",
+       "job-cd52587d776d"
+      ],
+      "reasons": [
+       "gate: passed with 8 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: notation_clash (mechanism.state[e_t].shape): e_t is a scalar integer but its shape is written as [1], which reads as a length-1 vector and is inconsistent with its use as an exponent and loop count.",
+       "residual: missing_definition (mechanism.state (K_t, P_t, e_t) / mechanism.update): Time indexing is ambiguous: the readout uses K_t and e_t at position t, but nothing says the first pair (BOS, x_1) is the first processed pair, and no rule handles t=1 where u_t = Phi[BOS] is a zero row under the reference lift.",
+       "residual: underspecified_step (mechanism.update[3] (duration inference)): The gate u^T P u >= tau uses P_{t-1}, but a pair being written when K_{t-1}=0 and the orbit is all zero beyond c=0 has argmin over z_c=0 for every c, so the tie rule resolves it only implicitly, and the interaction with tau is not stated.",
+       "residual: underspecified_step (mechanism.update[0] / claims.sample_efficiency.prediction.metric): The reserved-token rows are zero only in the 'reference' lift, but the gate is defined to skip reserved tokens 'whatever their lift rows are'; behavior of readout at a query when x_t = ';' (query is read on the query token, then ';' follows) is not specified, so which token the readout is applied t...",
+       "residual: arithmetic_slip (mechanism.learning.few_shot_argument (1)): The bound eps <= lambda/(lambda + sigma_min^2) is stated as 'about 1e-5' for lambda=1e-6 with 24 Fourier demonstrations, but this depends on sigma_min^2 of the stacked keys which is not computed and could be of order 1 to 10, giving 1e-7 to 1e-6, so the number does not follow from the stated formula."
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-0872e0e280bc",
+       "call-b5fc3f3658c0",
+       "call-c46a84bd05b2"
+      ],
+      "reasons": [
+       "prior art: novel. The search returned 0 papers, so no found work addresses the duration-inference mechanism. The label is novel by definition. The theory card cites 2209.09977, 2307.16518, and 2605.00836 as references, but none appear in the search results, so they are not cited as evidence. This label reflects only the absence of results and does not confirm novelty against the wider literature.",
+       "textbook transplant: no (recorded, not gated): The source construction is the Koopman semigroup law K^{t1+t2} = K^{t1} K^{t2}, used with known sampling times and an offline or gradient-fitted flow. The card makes the elapsed time a latent integer inferred online by orbit matching. It couples that inference to RLS identification through transport",
+       "reduction critic: none, radical_enough True: Escape test, step 1: the broken invariant holds in the card's own equations. In u[2] to u[4] the written key z_t = (K_{t-1}^T)^{e_t-1} u_t is a function of the prefix state. The candidate predictors (K^T)^c are tied powers of one operator, not independent conjugate components. A duration-3 write therefore moves every power's prediction. The SUGS bank..."
+      ],
+      "verdict": "pass"
+     },
+     "S3": {
+      "by_calls": [
+       "call-20c48010b241",
+       "call-4c02ca7b93f8",
+       "job-c63a4e2d2d1f",
+       "job-dfd9832f8f73",
+       "call-f1f1dbc15bcc",
+       "call-ec5bbe34c829",
+       "call-a344ac174188",
+       "call-b2137e592932"
+      ],
+      "reasons": [
+       "judges did not agree after 2 round(s): last votes ['undetermined', 'infeasible']"
+      ],
+      "verdict": "undetermined"
+     }
+    },
+    "summary": "Notation: x_t is always a token, u_t = Phi[x_{t-1}] and v_t = Phi[x_t] are token lifts, and z_{t,c} are orbit points (write keys).\n\nPretraining learns a token lift Phi, tied as the decoder, and a hard pair gate w_beta. At inference the whole in-context state is one operator K (d\u00d7d), its inverse Gram matrix P, and an integer duration e_t.\n\nPairs that contain a reserved token (BOS or ';') are always skipped. Content pairs with w_beta^T[u_t; v_t] < 0 are also skipped. For each written adjacent pair (x_{t-1}, x_t), the model forms the orbit z_{t,c} = (K_{t-1}^T)^c u_t for c = 0..M.\n- If u_t lies in directions the operator has not identified yet (u_t^T P_{t-1} u_t >= tau), the duration is taken to be 1.\n- Otherwise the duration e_t is the power c in {1..M} whose orbit point z_{t,c} lands closest to v_t.\n\nThe pair is then written into K by recursive least squares. The key is the transported orbit point z_{t,e_t-1}, not the raw lift, so that K^T z_{t,e_t-1} \u2248 v_t. A demonstration of rule B = A^3 therefore becomes a one-step demonstration of A at a token that may never have appeared.\n\nPrediction applies the operator for the most recently inferred duration: y_t = (K_t^T)^{e_t} Phi[x_t].\n\nConsequences:\n- After about d demonstrations of one rule identify the flow, each further rule in the cyclic semigroup it generates (every shift on a prime cycle) is used correctly after one demonstration.\n- The number of rules is not capped by slots.\n- Group-theoretic predictions follow. For example, on a cycle of 64 an even base shift cannot express an odd new shift.\n\nThe write key depends on the prefix through powers of the current operator, and the 'components' (the powers K^c) are tied rather than independent. So the state is neither a sum of per-token writes nor a mixture of independent conjugate regressions. Cost is O(M d^2 + V d) per token.",
+    "terminal_stage": "S3",
+    "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes",
+    "written_by": "backfill"
+   }
+  },
+  {
+   "record_id": "oc-b5d3989d0e5d",
+   "seq": 288,
+   "record": {
+    "archive_cell": null,
+    "arm": null,
+    "budget": null,
+    "card_id": "card-46dbb349",
+    "card_path": "s3checks-card-46dbb349-20261011-r2/cards/card-46dbb349/v2.json",
+    "card_sha256": "52f1b954e644768230801660294289773e1ac269be2412169c1864fb26eff24e",
+    "card_version": 2,
+    "causes": [
+     {
+      "code": "obligation_failed:capacity_semigroup_membership_composite_cycle",
+      "detail": "executed check violated stated obligation 'capacity_semigroup_membership_composite_cycle' (replayed): Composite p=64, Fourier lift frequencies 1..8, M=63, 500 trials each: odd base accuracy 0.996 (needs >=0.9); even base with odd new shift accuracy 0.300 (needs <=0.15). For condition ii the counterexample is the first hit, since a hit is the violation.; counterexample {\"condition\": \"i\", \"trial\": 329, \"sA\": 17, \"sB\": 9, \"q\": 61, \"pred\": 14, \"expected\": 6}",
+      "evidence": [
+       {
+        "kind": "s3_gate",
+        "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/s3_gate/card-46dbb349-v1-6715b7.json",
+        "sha256": "e3b81eb1507daadfd80a6a15480620e80f7832aaf3d37bf2d03076201beb37b8"
+       },
+       {
+        "kind": "judges",
+        "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/judges/card-46dbb349-v1-5c3f99.json",
+        "sha256": "54b924f2c523af1928743d0365ebe5568d7b033b5b1f040f705b516f256e261d"
+       },
+       {
+        "kind": "disproof",
+        "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/disproof/card-46dbb349-v1-5938d2.json",
+        "sha256": "e978a2450e51368de7ef5ba48c11cde64b1147a55af6d73683b9300d9788b3d2"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-4b11ed98b4f3"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-d3a9ed4ec376"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-bcc64a2871f1"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-12c0abe66866"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-b6fb314bae25"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-f02ec872a09a"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-8b1874c709f4"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-4ec1ea85d2f8"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-882bf3b89274"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-2b4292a39a12"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-6bea1e1bc050"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-fd0a7ac59351"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-318dc56f6653"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-fc97dc44c1e0"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-52bc2f973c85"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-ade2df5f5bc4"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-8dfbcd714c7f"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-19d42146187e"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-8df9bbfa7928"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-1f6acaebe6b6"
+       }
+      ]
+     },
+     {
+      "code": "obligation_failed:stability_error_accumulation_numerics",
+      "detail": "executed check violated stated obligation 'stability_error_accumulation_numerics' (replayed): Float64, 500 sampled one-shot trials with 8 extra rules, p=61: worst ||K^T-T||_2=1.11e+01, worst M*eps=6.67e+02 vs delta_min^2/4=0.0651; min eig of P 1.26e-01. Sampled only, and float32 is not tested; the stated power bound is checked numerically, not derived.; counterexample {\"trial\": 3, \"sA\": 42, \"eps\": 0.007303416629861763, \"M_eps\": 0.43820499779170574, \"delta_min_sq_over_4\": 0.06511083160530479, \"min_eig_P\": 0.26460284599926487, \"power_bound_ok\": true}",
+      "evidence": [
+       {
+        "kind": "s3_gate",
+        "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/s3_gate/card-46dbb349-v1-6715b7.json",
+        "sha256": "e3b81eb1507daadfd80a6a15480620e80f7832aaf3d37bf2d03076201beb37b8"
+       },
+       {
+        "kind": "judges",
+        "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/judges/card-46dbb349-v1-5c3f99.json",
+        "sha256": "54b924f2c523af1928743d0365ebe5568d7b033b5b1f040f705b516f256e261d"
+       },
+       {
+        "kind": "disproof",
+        "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/disproof/card-46dbb349-v1-5938d2.json",
+        "sha256": "e978a2450e51368de7ef5ba48c11cde64b1147a55af6d73683b9300d9788b3d2"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-4b11ed98b4f3"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-d3a9ed4ec376"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-bcc64a2871f1"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-12c0abe66866"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-b6fb314bae25"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-f02ec872a09a"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-8b1874c709f4"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-4ec1ea85d2f8"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-882bf3b89274"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-2b4292a39a12"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-6bea1e1bc050"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-fd0a7ac59351"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-318dc56f6653"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-fc97dc44c1e0"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-52bc2f973c85"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-ade2df5f5bc4"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-8dfbcd714c7f"
+       },
+       {
+        "kind": "job",
+        "ref": "s3checks-card-46dbb349-20261011-r2/job-19d42146187e"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-8df9bbfa7928"
+       },
+       {
+        "kind": "call",
+        "ref": "s3checks-card-46dbb349-20261011-r2/call-1f6acaebe6b6"
+       }
+      ]
+     }
+    ],
+    "core_idea": "Treat every rule in the context as the same in-context-identified Koopman flow run for a different, unknown integer duration. For each demonstration, the model infers the duration by matching the demonstration against powers of the current operator, then writes it back into that single operator as a one-step pair transported along the inferred orbit. Once one rule has identified the flow, every other rule in its cyclic semigroup is learned from a single example.",
+    "cost": {
+     "executor_jobs": 15,
+     "model_calls": 5,
+     "tokens": 228827
+    },
+    "definitions": [],
+    "difference_statement": null,
+    "evidence": [
+     {
+      "kind": "s3_gate",
+      "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/s3_gate/card-46dbb349-v1-6715b7.json",
+      "sha256": "e3b81eb1507daadfd80a6a15480620e80f7832aaf3d37bf2d03076201beb37b8"
+     },
+     {
+      "kind": "judges",
+      "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/judges/card-46dbb349-v1-5c3f99.json",
+      "sha256": "54b924f2c523af1928743d0365ebe5568d7b033b5b1f040f705b516f256e261d"
+     },
+     {
+      "kind": "disproof",
+      "ref": "s3checks-card-46dbb349-20261011-r2/artifacts/disproof/card-46dbb349-v1-5938d2.json",
+      "sha256": "e978a2450e51368de7ef5ba48c11cde64b1147a55af6d73683b9300d9788b3d2"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011-r2/call-4b11ed98b4f3"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011-r2/call-d3a9ed4ec376"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-bcc64a2871f1"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-12c0abe66866"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-b6fb314bae25"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011-r2/call-f02ec872a09a"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-8b1874c709f4"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-4ec1ea85d2f8"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-882bf3b89274"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-2b4292a39a12"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-6bea1e1bc050"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-fd0a7ac59351"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-318dc56f6653"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-fc97dc44c1e0"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-52bc2f973c85"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-ade2df5f5bc4"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-8dfbcd714c7f"
+     },
+     {
+      "kind": "job",
+      "ref": "s3checks-card-46dbb349-20261011-r2/job-19d42146187e"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011-r2/call-8df9bbfa7928"
+     },
+     {
+      "kind": "call",
+      "ref": "s3checks-card-46dbb349-20261011-r2/call-1f6acaebe6b6"
+     }
+    ],
+    "kill_codes": [
+     "obligation_failed:capacity_semigroup_membership_composite_cycle",
+     "obligation_failed:stability_error_accumulation_numerics"
+    ],
+    "kill_detail": "gate rule: check_violation; executed check violated stated obligation 'capacity_semigroup_membership_composite_cycle' (replayed): Composite p=64, Fourier lift frequencies 1..8, M=63, 500 trials each: odd base accuracy 0.996 (needs >=0.9); even base with odd new shift accuracy 0.300 (needs <=0.15). For condition ii the counterexample is the first hit, since a hit is the violation.; counterexample {\"condition\": \"i\", \"trial\": 329, \"sA\": 17, \"sB\": 9, \"q\": 61, \"pred\": 14, \"expected\": 6}",
+    "legacy": true,
+    "lens": "neural_odes_koopman",
+    "lineage_id": "card-46dbb349",
+    "mechanism_signature": {
+     "signature": "sig-b400312d8e07c4e5",
+     "skeleton": {
+      "learn": [
+       "gradient_training",
+       "in_context_write"
+      ],
+      "read": [
+       "argmax_select",
+       "bilinear_product",
+       "count_increment",
+       "outer_product_write",
+       "softmax_read",
+       "threshold_branch"
+      ],
+      "state": [
+       [
+        "V",
+        "d"
+       ],
+       [
+        "2d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        "d",
+        "d"
+       ],
+       [
+        1
+       ]
+      ],
+      "write": [
+       "additive_accumulate",
+       "append_slot",
+       "argmax_select",
+       "bilinear_product",
+       "distance_kernel",
+       "normalize",
+       "outer_product_write",
+       "threshold_branch"
+      ]
+     },
+     "source": "extracted",
+     "tokens": [
+      "w:additive_accumulate",
+      "w:append_slot",
+      "w:argmax_select",
+      "w:bilinear_product",
+      "w:distance_kernel",
+      "w:normalize",
+      "w:outer_product_write",
+      "w:threshold_branch",
+      "r:argmax_select",
+      "r:bilinear_product",
+      "r:count_increment",
+      "r:outer_product_write",
+      "r:softmax_read",
+      "r:threshold_branch",
+      "l:gradient_training",
+      "l:in_context_write",
+      "s:rank0",
+      "s:rank1",
+      "s:rank2"
+     ],
+     "version": 1
+    },
+    "missing": [
+     "difference_statement",
+     "premises",
+     "definitions",
+     "commitments",
+     "arm",
+     "archive_cell"
+    ],
+    "non_reduction_argument": {
+     "broken_invariant": "The SUGS mapping relies on two facts.\n- (a) The components are independent conjugate linear-Gaussian regressions. Each has sufficient statistics sum_{i: assigned to j} (u_i u_i^T, u_i v_i^T) over the raw regressor/target pairs assigned to it. The bank is therefore a sum of per-pair writes, with u_i a function of token x_{i-1} only.\n- (b) A pair assigned to component j changes only component j's predictive.\n\nThis card breaks both in updates u[1] to u[4].\n- There is one operator K. The candidate components are its powers K^c, whose predictive (K^T)^c u is a degree-c polynomial in the state, so no per-component conjugate posterior exists.\n- The write uses the key z_t = (K_{t-1}^T)^{e_t-1} u_t, the previous operator applied e_t - 1 times. The statistics are therefore sum_s (z_s z_s^T, z_s v_s^T) over keys that depend on the whole prefix, not on one token each.\n- A duration-3 pair changes the predictions for every duration at once.\n\nThe toy example shows the break. The B pair (1,4) is written with key \u2248 Phi[3], a token absent from the pair. The one-shot query is answered correctly (0), where the SUGS fresh component answers 4.",
+     "known_family": "other_known: sequential greedy (SUGS) Dirichlet-process / CRP mixture of conjugate Bayesian linear regressions (Mixture-of-Memories MesaNet with a likelihood router)",
+     "why_unrepairable": "Repair 1 (strongest): SUGS with one component per duration c, i.e. M independent conjugate regressions routed by predictive likelihood. Each component would be fitted only from pairs routed to it, so a rule seen once has a one-pair posterior. That is exactly the fresh_mode_pred = 4 baseline in the toy. To match the card, the posterior mean of component c would have to equal the c-th power of component 1's mean, and every pair routed to c would have to update component 1 through the transported key. No conjugate mixture has that nonlinear tie.\n\nRepair 2: MesaNet or linear attention with a learned key map. The key z_t = (K_{t-1}^T)^{e_t-1} Phi[x_{t-1}] depends on the operator identified so far and on a discrete test against it, so no feature map of the tokens produces it. In the toy, input token 1 would get key Phi[1] if the base were unidentified or if e = 1, and it gets key \u2248 Phi[3] here.\n\nRepair 3: Mixture-of-Memories with a likelihood router, or a lifted state enumerating durations. Both store separate per-duration statistics, so neither can transfer one demonstration of rule A^3 into the operator of A.\n\nRepair 4: TTT on the loss ||(K^T)^e u - v||^2. This needs e as an input, and it takes a gradient step through the power instead of an exact RLS write of the transported pair, so it gives a different K after the same pair. A critic can check this on the toy's third write.\n\nRepair 5: a discrete-logarithm or subgroup routine over given group labels. No group or labels are given. The group is the semigroup of an operator identified in context on a learned lift, and identification and exponent inference are coupled through the transported keys.\n\nThe observable differences are the claims themselves:\n- one-shot new rules without slots, where MesaNet and SUGS fail;\n- the odd/even split on a cycle of 64, which no mixture predicts;\n- order dependence, where MesaNet is order-invariant."
+    },
+    "operator": null,
+    "outcome": "dead",
+    "override": true,
+    "parent_ids": [],
+    "premises": [],
+    "run": "s3checks-card-46dbb349-20261011-r2",
+    "source_run": "run-20261010T181300Z",
+    "stage_verdicts": {
+     "S0": {
+      "by_calls": [
+       "call-b6c398a82318"
+      ],
+      "reasons": [
+       "card validates against the theory_card schema",
+       "nearest existing card card-537e161c at TF-IDF cosine 0.416 (threshold 0.6)"
+      ],
+      "verdict": "pass"
+     },
+     "S1": {
+      "by_calls": [
+       "call-700e974df42a",
+       "job-cd52587d776d"
+      ],
+      "reasons": [
+       "gate: passed with 8 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+       "residual: notation_clash (mechanism.state[e_t].shape): e_t is a scalar integer but its shape is written as [1], which reads as a length-1 vector and is inconsistent with its use as an exponent and loop count.",
+       "residual: missing_definition (mechanism.state (K_t, P_t, e_t) / mechanism.update): Time indexing is ambiguous: the readout uses K_t and e_t at position t, but nothing says the first pair (BOS, x_1) is the first processed pair, and no rule handles t=1 where u_t = Phi[BOS] is a zero row under the reference lift.",
+       "residual: underspecified_step (mechanism.update[3] (duration inference)): The gate u^T P u >= tau uses P_{t-1}, but a pair being written when K_{t-1}=0 and the orbit is all zero beyond c=0 has argmin over z_c=0 for every c, so the tie rule resolves it only implicitly, and the interaction with tau is not stated.",
+       "residual: underspecified_step (mechanism.update[0] / claims.sample_efficiency.prediction.metric): The reserved-token rows are zero only in the 'reference' lift, but the gate is defined to skip reserved tokens 'whatever their lift rows are'; behavior of readout at a query when x_t = ';' (query is read on the query token, then ';' follows) is not specified, so which token the readout is applied t...",
+       "residual: arithmetic_slip (mechanism.learning.few_shot_argument (1)): The bound eps <= lambda/(lambda + sigma_min^2) is stated as 'about 1e-5' for lambda=1e-6 with 24 Fourier demonstrations, but this depends on sigma_min^2 of the stacked keys which is not computed and could be of order 1 to 10, giving 1e-7 to 1e-6, so the number does not follow from the stated formula."
+      ],
+      "verdict": "pass"
+     },
+     "S2": {
+      "by_calls": [
+       "call-0872e0e280bc",
+       "call-b5fc3f3658c0",
+       "call-c46a84bd05b2"
+      ],
+      "reasons": [
+       "prior art: novel. The search returned 0 papers, so no found work addresses the duration-inference mechanism. The label is novel by definition. The theory card cites 2209.09977, 2307.16518, and 2605.00836 as references, but none appear in the search results, so they are not cited as evidence. This label reflects only the absence of results and does not confirm novelty against the wider literature.",
+       "textbook transplant: no (recorded, not gated): The source construction is the Koopman semigroup law K^{t1+t2} = K^{t1} K^{t2}, used with known sampling times and an offline or gradient-fitted flow. The card makes the elapsed time a latent integer inferred online by orbit matching. It couples that inference to RLS identification through transport",
+       "reduction critic: none, radical_enough True: Escape test, step 1: the broken invariant holds in the card's own equations. In u[2] to u[4] the written key z_t = (K_{t-1}^T)^{e_t-1} u_t is a function of the prefix state. The candidate predictors (K^T)^c are tied powers of one operator, not independent conjugate components. A duration-3 write therefore moves every power's prediction. The SUGS bank..."
+      ],
+      "verdict": "pass"
+     },
+     "S3": {
+      "by_calls": [
+       "call-4b11ed98b4f3",
+       "call-d3a9ed4ec376",
+       "job-bcc64a2871f1",
+       "job-12c0abe66866",
+       "job-b6fb314bae25",
+       "call-f02ec872a09a",
+       "job-8b1874c709f4",
+       "job-4ec1ea85d2f8",
+       "job-882bf3b89274",
+       "job-2b4292a39a12",
+       "job-6bea1e1bc050",
+       "job-fd0a7ac59351",
+       "job-318dc56f6653",
+       "job-fc97dc44c1e0",
+       "job-52bc2f973c85",
+       "job-ade2df5f5bc4",
+       "job-8dfbcd714c7f",
+       "job-19d42146187e",
+       "call-8df9bbfa7928",
+       "call-1f6acaebe6b6"
+      ],
+      "reasons": [
+       "gate rule: check_violation",
+       "executed check violated stated obligation 'capacity_semigroup_membership_composite_cycle' (replayed): Composite p=64, Fourier lift frequencies 1..8, M=63, 500 trials each: odd base accuracy 0.996 (needs >=0.9); even base with odd new shift accuracy 0.300 (needs <=0.15). For condition ii the counterexample is the first hit, since a hit is the violation.; counterexample {\"condition\": \"i\", \"trial\"...",
+       "executed check violated stated obligation 'stability_error_accumulation_numerics' (replayed): Float64, 500 sampled one-shot trials with 8 extra rules, p=61: worst ||K^T-T||_2=1.11e+01, worst M*eps=6.67e+02 vs delta_min^2/4=0.0651; min eig of P 1.26e-01. Sampled only, and float32 is not tested; the stated power bound is checked numerically, not derived.; counterexample {\"trial\": 3, \"sA\": 42, \"ep...",
+       "round 1 feasibility_judge_a (claude-opus-5-5): infeasible (confidence 0.88); fatal: capabilities[2] condition (ii) is refuted by a reproduced executed check: even base with odd new shift on p=64 gives accuracy 0.300 > 0.15. The out-of-semigroup B pair is written into K before the query, as a transported pair with an odd offset. This corrupts the operator, so the readout is not confined to even...",
+       "round 1 feasibility_judge_b (qwen3.6-35b-a3b-mlx): infeasible (confidence 0.95); fatal: capacity_semigroup_membership_composite_cycle refuted by obligation check (accuracy 0.300 > 0.15 for even/odd case).; stability_error_accumulation_numerics refuted by obligation check (M*eps ~ 6.67e+02 >> 0.065, violating margin condition).; The card's theoretical bound M*eps < delta_min^2/4 is not maintaine...",
+       "obligation check complexity_time_memory_total (complexity): discharged (replayed): Hand-tallied op counts of the update and readout as written: exponent in d 1.999 (d 512 to 1024, M=60, V=63), exponent in M 0.995 (M 480 to 960, d=16); inference state 1553 numbers at d=16, V=63. Not instrumented; training BPTT memory O(nMd) is outside this check."
+      ],
+      "verdict": "infeasible_proved"
+     }
+    },
+    "summary": "Notation: x_t is always a token, u_t = Phi[x_{t-1}] and v_t = Phi[x_t] are token lifts, and z_{t,c} are orbit points (write keys).\n\nPretraining learns a token lift Phi, tied as the decoder, and a hard pair gate w_beta. At inference the whole in-context state is one operator K (d\u00d7d), its inverse Gram matrix P, and an integer duration e_t.\n\nPairs that contain a reserved token (BOS or ';') are always skipped. Content pairs with w_beta^T[u_t; v_t] < 0 are also skipped. For each written adjacent pair (x_{t-1}, x_t), the model forms the orbit z_{t,c} = (K_{t-1}^T)^c u_t for c = 0..M.\n- If u_t lies in directions the operator has not identified yet (u_t^T P_{t-1} u_t >= tau), the duration is taken to be 1.\n- Otherwise the duration e_t is the power c in {1..M} whose orbit point z_{t,c} lands closest to v_t.\n\nThe pair is then written into K by recursive least squares. The key is the transported orbit point z_{t,e_t-1}, not the raw lift, so that K^T z_{t,e_t-1} \u2248 v_t. A demonstration of rule B = A^3 therefore becomes a one-step demonstration of A at a token that may never have appeared.\n\nPrediction applies the operator for the most recently inferred duration: y_t = (K_t^T)^{e_t} Phi[x_t].\n\nConsequences:\n- After about d demonstrations of one rule identify the flow, each further rule in the cyclic semigroup it generates (every shift on a prime cycle) is used correctly after one demonstration.\n- The number of rules is not capped by slots.\n- Group-theoretic predictions follow. For example, on a cycle of 64 an even base shift cannot express an odd new shift.\n\nThe write key depends on the prefix through powers of the current operator, and the 'components' (the powers K^c) are tied rather than independent. So the state is neither a sum of per-token writes nor a mixture of independent conjugate regressions. Cost is O(M d^2 + V d) per token.",
+    "terminal_stage": "S3",
+    "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes",
+    "written_by": "backfill"
+   }
+  }
+ ]
+}

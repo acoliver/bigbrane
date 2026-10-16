@@ -1,0 +1,156 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Two-table chaining by a resolver that answers any address",
+  "summary": "Two tables arrive in context as pairs and are kept in a sorted bank. A resolver accepts an address and returns the entry filed under it, chaining through both tables in one call, so f(g(x)) costs a single resolver call per probe.",
+  "core_idea": "File context tables in a sorted bank and let a resolver chain through them in one call per probe.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "G",
+        "type": "integer matrix",
+        "shape": [
+          "C",
+          2
+        ],
+        "meaning": "Sorted bank of filed entries (address, entry), C = 64, kept in ascending address order."
+      },
+      {
+        "name": "ng",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Entries filed."
+      },
+      {
+        "name": "w0",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Address waiting for its entry."
+      },
+      {
+        "name": "lv",
+        "type": "integer",
+        "shape": [
+          1
+        ],
+        "meaning": "Bracket level used as an address for brackets."
+      },
+      {
+        "name": "Res",
+        "type": "resolver",
+        "shape": [
+          1
+        ],
+        "meaning": "Resolver: Res(s, j) returns the entry reached from address s after j filings, in one call."
+      },
+      {
+        "name": "Em",
+        "type": "integer map",
+        "shape": [
+          "T"
+        ],
+        "meaning": "Learned map from resolved entry to emitted symbol."
+      }
+    ],
+    "update": [
+      {
+        "latex": "w0=\\varnothing \\Rightarrow w0 \\leftarrow x_t;\\;\\text{else insert } (w0, x_t) \\text{ into } G \\text{ keeping ascending order},\\; ng \\leftarrow ng+1",
+        "plain": "each pair is filed by insertion into the sorted bank (shifting at most C rows)",
+        "name": "file"
+      }
+    ],
+    "readout": [
+      {
+        "latex": "\\hat{y}_t = \\mathrm{Em}[\\mathrm{Res}(x_t, 2)]",
+        "plain": "a probe is resolved through two filings (g then f) by one resolver call that follows the filed pointer twice, and mapped by Em; chains use Res(x_t, j) with j up to 9, strings and brackets use j = 1 with the position or level as address"
+      }
+    ],
+    "learning": {
+      "description": "Em is fitted by majority from a frequency tally over the m training items; the number of filings j and the address source are chosen by a search on training accuracy.",
+      "few_shot_argument": "Em is the identity on 32 symbols; m = 24 items with 32 probes each cover them."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "O(C)",
+      "memory": "O(C)",
+      "total_sequence": "O(n C)",
+      "constants_notes": "Filing shifts at most C rows; a probe costs one resolver call. 2C + 5 words."
+    },
+    "sample_efficiency": {
+      "mechanism": "Resolver calls leave only Em to learn.",
+      "prediction": {
+        "metric": "examples_to_composition_T32",
+        "value": 24,
+        "statement": "From m = 24 composition items with T = 32, per-query accuracy is at least 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "two-hop composition",
+        "prediction": "Exact at T = 4, 16, 32 with C = 64."
+      },
+      {
+        "task": "variable binding",
+        "prediction": "Exact at hops 1, 4, 8."
+      },
+      {
+        "task": "recall, copy, nesting",
+        "prediction": "Exact at K = 8, 32, 64, L = 8, 32, 64 and depth 2, 4, 8, 16."
+      },
+      {
+        "task": "limit",
+        "prediction": "Tables with more than C = 64 filed pairs in total (T = 33 gives 66) lose a filing, so some probe is answered wrongly."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A composition instance at T <= 32 answered wrongly by the hand-set bank.",
+    "24 items at T = 32 after which composition accuracy is below 0.99."
+  ],
+  "toy_example": {
+    "description": "Sorted filing of two T = 2 tables and one resolver call per probe.",
+    "python": "import json\npairs = [(1, 3), (0, 2), (3, 5), (2, 4)]\nG = []\nfor a, b in pairs:\n    G.append((a, b))\n    G.sort()\ndef res(s, j):\n    for _ in range(j):\n        s = dict(G)[s]\n    return s\nprint(json.dumps({\"bank\": [list(p) for p in G], \"f_g_0\": res(0, 2), \"f_g_1\": res(1, 2)}))\n",
+    "expected": {
+      "bank": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          5
+        ]
+      ],
+      "f_g_0": 4,
+      "f_g_1": 5
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

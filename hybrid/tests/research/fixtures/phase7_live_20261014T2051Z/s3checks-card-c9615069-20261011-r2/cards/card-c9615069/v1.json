@@ -1,0 +1,298 @@
+{
+  "claims": {
+    "capabilities": [
+      {
+        "prediction": "At L = 0, top-1 accuracy >= 0.95 and mean p(correct) >= 0.9 (mean over seeds). For every L up to 4000 and every seed, |acc(L) - acc(0)| <= 0.02. Mechanism: after training, filler pairs and value->filler and filler->key pairs have rho <= kappa (see learning), so they fire no pulse, create no record and cannot evict key-value records. Filler tokens enter a only as free mass. Their only effect on key readouts is the eta-floor and u-weighted share they take in routing the free key mass x_q <= 1 - rho. No claim is made beyond L = 4000.",
+        "task": "One-shot associative recall: k1 v1 ... k8 v8 then query k_i, with the setup of the sample-efficiency claim. Filler variant: L filler tokens drawn uniformly from 96-127 are inserted before the query, with L in {0, 500, 1000, 2000, 4000}. Each L is evaluated on 1000 held-out sequences for each of 5 trained seeds."
+      },
+      {
+        "prediction": "(a) C_ra = rho and C_qa = rho(1-rho) exactly, with y_a = (1-rho)^2. With trained rho >= 0.9: p(a|r) >= 0.9 and p(a|q) <= 0.15. A one-hot count cache, linear attention or delta rule leaves row q untouched and keeps p(a|q) high. (b) C_qb = rho and C_qa = rho(1-rho), so p(b|q) >= 0.9 and p(a|q) <= 0.15.",
+        "task": "Ownership transfer and overwrite. (a) Stream q a r a, then query q and query r. (b) Stream q a q b, then query q. Fresh tokens, trained model."
+      },
+      {
+        "prediction": "The held-out value is top-1 in >= 90% of trials, with mean probability >= 0.35. Its availability is y = 1, against y <= 1 - rho for demonstrated values and eta for tokens not in context. An ablation that routes the free mass by u alone (replace y + eta by 1) gives the held-out value mean probability <= 0.05 when u is spread over the 64 value tokens.",
+        "task": "Elimination: list an inventory of m = 8 values, demonstrate 7 of the 8 pairs of a random bijection, then query the 8th key. 1000 trials."
+      },
+      {
+        "prediction": "The cross-ratio C03 C14 / (C04 C13) is 1.7277 in A and 1.0514 in B at rho = 0.5 (the toy example), against 0.4125 after the prefix. For a trained model (rho >= 0.9), |log(cr_A / cr_B)| >= 0.2. Any model whose readout is a Sinkhorn or equilibrium scaling of a kernel K_ij that depends only on cell (i,j)'s own write history gives cr_A = cr_B exactly.",
+        "task": "Order dependence that no per-cell kernel can produce: two streams share the prefix 0 3 1 4 0 4 1 3 (with key->value rate rho fixed for analysis), then A appends 2 3 0 3 and B appends 2 5 0 3. The cells (0,3), (0,4), (1,3) and (1,4) have identical write histories (same positions) in A and B."
+      },
+      {
+        "prediction": "For K <= 16, accuracy >= 0.9. For K = 32, all stored records have the equal concentration rho, so each new complex beyond 16 evicts the record with the smallest tau, which is the oldest. The last 16 pairs score >= 0.9 and the first 16 score <= 0.15, and overall accuracy is 0.5 ± 0.1. An evicted key and its evicted value both become free, so an evicted key spreads its mass over the roughly 16 freed values. The state holds at most P_max bindings.",
+        "task": "Capacity: one-shot recall of K = 8, 16 or 32 fresh pairs with P_max = 16. 1000 held-out sequences per K for each of 5 trained seeds, and accuracies are averaged over seeds."
+      }
+    ],
+    "complexity": {
+      "constants_notes": "Each fired pulse computes rho in O(r) and touches only the stored records in row i and column j. That is O(P_max) by scan, or O(deg) with row and column index lists. The cached row and column sums are updated in O(1) per changed record. Pruning and the min-concentration eviction cost O(P_max). The readout costs O(V) to form p, the same as any output softmax. Memory is the parameters (2Vr + V + 1), a, the two cached V-arrays of row and column sums, and 4 P_max numbers for the records (i, j, C_ij, tau_ij). Nothing grows with n. Training by BPTT stores the touched records per step.",
+      "memory": "O(V r + P_max)",
+      "time_per_token": "O(V + P_max)",
+      "total_sequence": "O(n (V + P_max))"
+    },
+    "sample_efficiency": {
+      "mechanism": "One mass-action pulse binds a fraction rho_ij of the free key mass to the demonstrated value. Conservation and the exchange reactions make that binding exclusive and revisable. Pretraining learns only the type-level rate prior.",
+      "prediction": {
+        "metric": "In-context exposures per new key-value pair needed to reach top-1 recall >= 0.95 (K = 8 pairs, V = 128 with keys 0-31, values 32-95 and filler 96-127, r = 8, P_max = 64, 1000 held-out sequences with fresh pairings).",
+        "statement": "One exposure gives top-1 recall >= 0.95 and mean p(correct) >= 0.9. Secondary prediction: the median over 5 seeds of the number of pretraining sequences (Adam, learning rate 1e-2, batch 32) before held-out one-shot recall first reaches 0.95 is <= 3000. Only 2Vr + V + 1 parameters are trained, and they need only learn that key-value types have rho near 1 while all other type pairs have rho <= kappa.",
+        "value": 1
+      }
+    }
+  },
+  "core_idea": "Each demonstrated pair (i, j) fires one pulse of irreversible mass-action reactions: free X_i binds free Y_j, a free X_i displaces other keys from complexes holding Y_j, and a free Y_j displaces other values from complexes holding X_i. The complex concentrations are the memory, so bindings compete through conserved totals and through the order in which they arrived, not through an equilibrium of accumulated counts.",
+  "created_by_call": "call-b86bf8206bb9",
+  "extensions": [
+    {
+      "description": "Add the reverse reaction C_ij -> X_i + Y_j with a small learned off-rate applied at each step, which multiplies every entry by (1 - k_off). This gives graceful forgetting on very long streams. The core claims use k_off = 0.",
+      "name": "Slow dissociation (forgetting)"
+    },
+    {
+      "description": "Following the continuous-time Markov chain view in W2989086808, replace each deterministic pulse by sampling integer reaction events with the same propensities. At unit counts this gives strict one-to-one bindings.",
+      "name": "Finite-count stochastic pulses"
+    },
+    {
+      "description": "Replace the unit totals a_i with learned per-type capacities, so that function words can bind several successors. The conservation-based x and y then use the capacities in place of a.",
+      "equations": [
+        {
+          "latex": "x_i = s^L_i a_i - \\sum_l C_{il},\\quad y_j = s^R_j a_j - \\sum_m C_{mj}",
+          "plain": "x[i] = sL[i]*a[i] - rowsum_i(C); y[j] = sR[j]*a[j] - colsum_j(C)"
+        }
+      ],
+      "name": "Learned capacities"
+    }
+  ],
+  "falsifiers": [
+    "On the order-dependence task, a trained model gives |log(cr_A / cr_B)| < 0.05. The memory would then act like a per-cell kernel, and the card collapses into the parent's Sinkhorn family.",
+    "On ownership transfer (q a r a, then query q), the trained model gives p(a|q) >= 0.5 while p(a|r) >= 0.9. Exchange would then not be releasing displaced keys.",
+    "One-shot recall of K = 8 pairs fails to reach top-1 0.95 with one exposure but reaches it with two or more.",
+    "After pretraining, more than 5% of filler-filler type pairs keep rho > kappa, or recall accuracy with L = 4000 fillers falls by more than 0.02 from L = 0. Either would show that the unpredictable-successor gradient does not close the gate.",
+    "With V, r and P_max fixed, measured time per token grows by more than 10% from n = 1,000 to n = 64,000."
+  ],
+  "id": "card-c9615069",
+  "known_relatives": [
+    {
+      "claimed_difference": "In a count cache, cell (i,j) changes only when (i,j) is shown, by a state-independent increment, and writes commute. Here a pulse on (i,j) rescales every entry in row i and column j by factors that depend on the current free masses x_i and y_j, and the increment to C_ij is quadratic in the state. So cells that are not shown at step t change, and the order of writes matters beyond any decay.",
+      "name": "Linear attention / one-hot count cache (Transformers are RNNs)",
+      "relation": "Both keep a V x V type-indexed memory written when a pair is shown."
+    },
+    {
+      "claimed_difference": "The delta rule only touches row i, with beta_t a function of the input. Here column j is also rescaled by (1 - rho x_i), where x_i = a_i - sum_l C_il is a function of the state. A committed key therefore cannot steal a value, and a free key can. The resulting recursion is quadratic in C, while the delta rule's is linear.",
+      "name": "Delta rule / gated DeltaNet",
+      "relation": "With one-hot keys, the delta rule decays row i and writes cell (i,j), which resembles value-side exchange."
+    },
+    {
+      "claimed_difference": "There is no matrix scaling and no equilibrium. The memory is the trajectory of irreversible kinetics and does not lie on the toric variety of any per-cell kernel. Its 2x2 cross-ratios depend on demonstrations of other cells and on their order (capability 4).",
+      "name": "Sinkhorn / OT attention with dustbin (Sinkformer, SuperGlue) and pointer-sentinel mixtures",
+      "relation": "The parent card reduced to this family. The readout also mixes a bound part with a background."
+    },
+    {
+      "claimed_difference": "There is no learned recurrent matrix and no elementwise nonlinearity f(W h + U x). The recurrence is the mass-action map of a fixed set of three elementary reactions. It is sparse in the support of the state, preserves the stoichiometric totals exactly and keeps the state nonnegative. The only learned part is the type-level rate prior.",
+      "name": "Nonlinear RNNs and multiplicative RNNs",
+      "relation": "Any state-dependent recurrence is an RNN in the broad sense."
+    }
+  ],
+  "lens": "chemical_reaction_networks",
+  "mechanism": {
+    "learning": {
+      "description": "E_raw, F_raw, l and c are trained by next-token cross-entropy with backpropagation through time over the pulse recursion. Each fired pulse is a polynomial map of C and rho_ij, so gradients flow through C and, through rho_ij, into E and F (d rho / d k = 1/(1+k)^2). The discrete parts are handled as follows. (1) Gate: the indicator 1[rho > kappa] is computed without gradient. When it is 1, the pulse is in the graph and rho receives gradient. When it is 0, the step is the identity and that rho receives no gradient from that step. (2) Pruning and eviction: the set of deleted records is computed without gradient (stop-gradient on the comparison and on the argmin), and deletion is applied as multiplication of those entries by a constant 0 mask. Deleted entries pass zero gradient, and surviving entries pass gradient unchanged. (3) Readout: differentiable in C, l and c. Pretraining uses synthetic binding sequences with fresh random pairings, value->key transitions to random fresh keys, and runs of filler tokens (96-127) at random positions whose successors are uniformly random. So no binding is ever stored in weights. How the filler and bridge rates fall below kappa: if a pair (f, f') or (v, k) whose successor is unpredictable fires with rho > kappa, it binds X_f to Y_f', which raises C[f,f'] in f's readout and lowers its free mass. The next time f appears with a different random successor, the loss at that token increases with C[f,f']. The gradient on rho_{ff'} is therefore positive in the loss until rho falls below kappa, and then the gate closes. Key->value rates rise toward 1 because the value after a demonstrated key at query time is predicted by C[key, value]. Nothing is updated by gradient at test time.",
+      "equations": [
+        {
+          "latex": "\\mathcal{L} = -\\sum_t \\log p_t(w_{t+1})",
+          "name": "training loss",
+          "plain": "loss = - sum over t of log p_t[w_{t+1}], backpropagated through the sequence of pulses, with gate and deletion masks held constant."
+        },
+        {
+          "latex": "C \\leftarrow M \\odot C,\\quad M = \\mathrm{stopgrad}(\\mathbb{1}[\\text{record kept}])",
+          "name": "masked deletion in the backward pass",
+          "plain": "After each pulse: M[e] = 0 for records deleted by pruning or eviction and 1 otherwise, computed without gradient. C = M * C."
+        }
+      ],
+      "few_shot_argument": "Take a fresh pair (i, j) with x_i = y_j = 1 and no competitors. One pulse sets C_ij = rho_ij. The readout of key i then puts mass at least rho_ij on j, so one demonstration is enough once pretraining has driven rho to about 0.95 for key-value types. Overwriting also takes one shot: after (q,a), the pulse for (q,b) gives C_qb = rho and C_qa = rho(1-rho). Ownership transfer takes one shot: after (q,a) and then (r,a), C_ra = rho and C_qa = rho(1-rho), so q is released and its free mass is routed to values that are still free. Elimination comes from conservation. A key that was never demonstrated routes all its mass by u ⊙ (y + eta), and every demonstrated value has y = 1 - rho or less, so the one value left free in the inventory takes most of the probability. All of these follow from the conserved stoichiometry and the mass-action pulse. There is no lookup and no gradient step."
+    },
+    "readout": [
+      {
+        "latex": "p_t(v) = C_t[q,v] + x_q\\,\\frac{u_v\\,(y_v + \\eta)}{\\sum_{v'} u_{v'}(y_{v'} + \\eta)},\\quad q = w_t",
+        "name": "bound row plus free mass routed to available values",
+        "plain": "Runs last at step t, after steps 1-5. q = w_t. x_q = a[q] - sum_v C[q,v]. y = a - column sums of C. g = u*(y+eta); g = g/sum(g). p[v] = C[q,v] + x_q*g[v]. Because a[q] = 1, sum_v p[v] = sum_v C[q,v] + x_q = 1 exactly."
+      }
+    ],
+    "state": [
+      {
+        "meaning": "V is the vocabulary size and r is the rank of the rate prior. E = Theta[:, :r] and F = Theta[:, r:] are each V x r. The rate constant for left species X_i meeting right species Y_j is k_ij = E_i . F_j, and the pulse extent is rho_ij = k_ij / (1 + k_ij), which lies in [0, 1). E_raw and F_raw are initialized so that every k_ij is about 1 (rho about 0.5, above the gate kappa), so every type pair starts out reacting and receives gradient. This prior encodes which token types react, for example keys with values. It never stores a binding.",
+        "name": "Theta = [E | F]",
+        "shape": [
+          "V",
+          "2r"
+        ],
+        "type": "learned parameter block, nonnegative (E = softplus(E_raw), F = softplus(F_raw))"
+      },
+      {
+        "meaning": "u = softmax(l) is the background distribution over the V tokens. It is used only to route a key's free mass in the readout.",
+        "name": "l",
+        "shape": [
+          "V"
+        ],
+        "type": "learned parameter vector (logits)"
+      },
+      {
+        "meaning": "eta = softplus(c) > 0 is the availability floor used when routing free key mass. It keeps the routing denominator positive and gives tokens not present in context a small share.",
+        "name": "c",
+        "shape": [
+          1
+        ],
+        "type": "learned scalar parameter"
+      },
+      {
+        "meaning": "a_t[i] = 1 if token i has occurred in w_1..w_t, else 0, with a_0 = 0. It is the conserved total of both X_i and Y_i.",
+        "name": "a_t",
+        "shape": [
+          "V"
+        ],
+        "type": "binary vector (conserved species totals)"
+      },
+      {
+        "meaning": "C_t[i,j] is the concentration of complex C_ij = X_i:Y_j. All indexing (C_t[i,j], rows, columns, row and column sums) refers to this V x V matrix, and entries not stored are 0. It is stored as a list of at most P_max records (i, j, C_t[i,j], tau_ij), where tau_ij is the step of the last pulse that wrote cell (i,j). tau is used only to break ties in eviction. P_max is a fixed capacity independent of n. Free amounts are derived through conservation rather than stored: x_i = a_t[i] - sum_l C_t[i,l] and y_j = a_t[j] - sum_m C_t[m,j]. Implementations cache the row sums and column sums as two V-arrays and update them whenever an entry changes. C_0 = 0 (no records).",
+        "name": "C_t (complex matrix)",
+        "shape": [
+          "V",
+          "V"
+        ],
+        "type": "sparse nonnegative V x V matrix with at most P_max nonzero entries"
+      }
+    ],
+    "update": [
+      {
+        "latex": "a_t = a_{t-1} \\lor e_{w_t}",
+        "name": "species injection (step 1 of t)",
+        "plain": "if a[w_t] == 0: a[w_t] = 1. The new X and Y mass enters free, because no entry of C involves w_t yet. This runs first at every t."
+      },
+      {
+        "latex": "i = w_{t-1},\\; j = w_t,\\; \\rho = \\frac{E_i^{\\top}F_j}{1 + E_i^{\\top}F_j},\\; \\text{fire iff } t \\ge 2 \\text{ and } \\rho > \\kappa",
+        "name": "pulse extent and gate (step 2 of t)",
+        "plain": "i = w[t-1]; j = w[t]; k = dot(E[i], F[j]); rho = k/(1+k). The pulse fires only if t >= 2 and rho > kappa, with kappa = 1e-3 fixed. If it does not fire, steps 3-5 are skipped entirely: C_t = C_{t-1}, no tau changes, nothing is pruned or evicted, and the readout at t uses C_t = C_{t-1} with the updated a_t."
+      },
+      {
+        "latex": "x_i = a_i - \\sum_l C_{il},\\; y_j = a_j - \\sum_m C_{mj},\\; \\mathrm{row}_i = \\sum_{l \\ne j} C_{il},\\; \\mathrm{col}_j = \\sum_{m \\ne i} C_{mj}",
+        "name": "pre-pulse free masses and competitors (step 3 of t, only if fired)",
+        "plain": "All four quantities are computed from C_{t-1} (with a_t) before any entry is changed. C_{t-1} is the matrix left after step 5 of the previous fired step, so it already reflects all earlier pruning and eviction. row_i is X_i mass already bound to other values. col_j is Y_j mass already bound to other keys."
+      },
+      {
+        "latex": "C_{ij} \\mathrel{+}= \\rho\\,(x_i y_j + x_i\\,\\mathrm{col}_j + y_j\\,\\mathrm{row}_i);\\quad C_{mj} \\mathrel{*}= (1 - \\rho x_i)\\;(m \\ne i);\\quad C_{il} \\mathrel{*}= (1 - \\rho y_j)\\;(l \\ne j)",
+        "name": "mass-action pulse: binding plus two strand-exchange reactions (step 4 of t, only if fired)",
+        "plain": "Using the pre-pulse values: C[i,j] += rho*(x_i*y_j + x_i*col_j + y_j*row_i). For every stored entry (m,j) with m != i: C[m,j] *= (1 - rho*x_i), because X_i displaces X_m and X_m is released. For every stored entry (i,l) with l != j: C[i,l] *= (1 - rho*y_j), because Y_j displaces Y_l and Y_l is released. Create the record (i,j) if it is absent, and set tau_ij = t. Mass is conserved exactly. New x_i = x_i(1 - rho(y_j + col_j)) >= 0 and new y_j = y_j(1 - rho(x_i + row_i)) >= 0. Released X_m and Y_l become free."
+      },
+      {
+        "latex": "C_{ij} < \\epsilon \\Rightarrow C_{ij} := 0;\\quad \\text{while } \\mathrm{nnz}(C) > P_{\\max}:\\; C_{(m,l)^*} := 0,\\; (m,l)^* = \\arg\\min_{(m,l)} (C_{ml}, \\tau_{ml})",
+        "name": "finite volume: pruning, then eviction (step 5 of t, only if fired)",
+        "plain": "Runs immediately after step 4 and before the readout at t, so the readout at t and step 3 at the next fired step both see the pruned matrix. First delete every record with C < eps (eps = 1e-4). Then, while more than P_max records remain, delete the record with the smallest concentration, breaking ties by the smallest tau (the oldest pulse). A pulse creates at most one record, so this deletes at most one record per step. Deleting a record returns its mass to the free pools through conservation. The cached row and column sums are updated."
+      }
+    ]
+  },
+  "non_reduction_argument": {
+    "broken_invariant": "The parent's mapping relied on two properties. (1) The state is a count matrix N in which cell (i,j) changes only when pair (i,j) is shown, by an increment that does not depend on the state. The state is therefore a commutative sum of one-hot outer-product writes. (2) The readout is a scaling of a kernel K_ij = f(history of cell (i,j)), so the plan lies on the toric variety: every 2x2 cross-ratio P_ij P_kl / (P_il P_kj) equals K_ij K_kl / (K_il K_kj) and depends only on those four cells' own histories. The pulse (update step 4) breaks both properties. The increment to C_ij is rho(x_i y_j + x_i col_j + y_j row_i), where x_i, y_j, row_i and col_j are linear in C, so the recursion is quadratic in the state. The same pulse rescales every entry (m,j) by (1 - rho x_i) and every entry (i,l) by (1 - rho y_j), so cells change when other cells are shown. In the toy example the block cells (0,3), (0,4), (1,3) and (1,4) have identical write histories in streams A and B, yet their cross-ratio is 1.7277 in A and 1.0514 in B.",
+    "known_family": "other_known: gated one-hot outer-product count cache (linear attention / bigram cache, LFU-capped) read through unbalanced Sinkhorn normalization with a dustbin and a pointer-sentinel mix",
+    "why_unrepairable": "Strongest repair: Sinkhorn or equilibrium scaling of a kernel K_ij = f_theta(times and counts of the writes to cell (i,j)), with any learned f (decay, recency, saturation) and any marginals or dustbin. Whatever f is, the cross-ratio of a 2x2 block is fixed by the four cells' histories, so it must agree on streams A and B, and our state does not. Second repair: a gated delta rule with one-hot keys. It modifies only row i, with beta_t depending on the input. Matching us would need a column-j rescaling by (1 - rho x_i), with x_i = 1 - sum_l C_il read from the state, and that makes the recursion nonlinear in S. Third repair: a two-sided linear update S <- A_t S B_t + W_t with input-dependent A_t and B_t. It is linear in S (vec(S) evolves by B_t^T ⊗ A_t), so it cannot produce factors and increments that are products of state entries. A larger lifted state could hold monomials of C, but the pulse generates higher-degree products at every step, so no finite fixed lift closes. What remains is the generic catch-all of a nonlinear RNN. The card concedes that class, but its member here is a fixed, parameter-free mass-action map that conserves stoichiometry, not f(W h + U x)."
+  },
+  "parent_ids": [],
+  "references": [
+    {
+      "source_id": "W2989086808",
+      "why": "This paper models a reaction system through mass-action propensity functions over a sparse set of candidate reactions, learned with l1 sparsity. I take the mass-action propensity law for elementary bimolecular reactions (rate = k times the product of reactant amounts) and the sparse reaction support. The context switches reactions on, and the rates come from a learned low-rank type prior."
+    },
+    {
+      "source_id": "1712.06281",
+      "why": "This paper identifies a small set of influential reactions and builds a reduced mechanism from them. I use the same idea in the finite volume: only P_max complex species and their reactions are kept, and the weakest are dissolved."
+    }
+  ],
+  "source_transplant": {
+    "change": "Reactions do not run continuously. A reaction fires as one unit pulse (one explicit step of the rate equations) only when the context presents its pair. The rates come from a learned low-rank type prior and saturate as rho = k/(1+k). The set of complex species is capped at P_max, and the weakest complexes are dissolved. The current token's bound row and free fraction are read out as a next-token distribution.",
+    "object": "Mass-action kinetics of elementary bimolecular reactions with stoichiometric conservation: binding X_i + Y_j -> C_ij and the exchange reactions X_i + C_mj -> C_ij + X_m and Y_j + C_il -> C_ij + Y_l, each with propensity k times the product of reactant concentrations, over a sparse reaction support.",
+    "source_ids": [
+      "W2989086808",
+      "1712.06281"
+    ]
+  },
+  "status": {
+    "stage": "S3",
+    "verdicts": {
+      "S0": {
+        "by_calls": [
+          "call-743304b4a072"
+        ],
+        "reasons": [
+          "card validates against the theory_card schema",
+          "nearest existing card card-8dc4db49 at TF-IDF cosine 0.529 (threshold 0.6)"
+        ],
+        "verdict": "pass"
+      },
+      "S1": {
+        "by_calls": [
+          "call-7feaf2efa443",
+          "job-72fe7290936a"
+        ],
+        "reasons": [
+          "gate: passed with 7 residual fixable finding(s) after 2 revision(s); no fatal finding and the toy example reproduced",
+          "residual: notation_clash (mechanism.update[3] (step 4 pulse) and mechanism.state (C_t, a_t)): The increment C_ij += rho*(x_i*y_j + x_i*col_j + y_j*row_i) is quadratic in the totals while C_ij is linear, so the equation is only dimensionally consistent when a_t is fixed at 1; the card must state that unit-total normalization explicitly or write the binding term in scale-free form.",
+          "residual: underspecified_step (mechanism.readout[0]): The routing g = u*(y+eta)/sum(g) is undefined when sum(g) = 0, which happens when eta = 0 (as in the toy example) and every value in u's support is fully bound (y_v = 0); the card needs a stated fallback for this empty-denominator case.",
+          "residual: vague_secondary_claim (claims.capabilities[1] (ownership transfer, falsifier)): The falsifier fires only at p(a|q) >= 0.5 while the prediction requires p(a|q) <= 0.15, so the band 0.15 to 0.5 is neither confirmed nor refuted and the threshold does not match its prediction.",
+          "residual: vague_secondary_claim (claims.capabilities[4] (capacity, K = 32)): The claim that 'all stored records have the equal concentration rho' contradicts the pulse dynamics, which rescale entries by (1 - rho x_i) and (1 - rho y_j), so eviction by smallest C is not the same as eviction by oldest; the claim must either state the actual eviction order or drop the equal-concentration premise.",
+          "residual: vague_secondary_claim (claims.capabilities[4] (capacity, K = 32)): The phrase 'an evicted key spreads its mass over the roughly 16 freed values' has no number and no tolerance, so the stated outcome cannot be checked beyond the accuracy band.",
+          "residual: notation_clash (toy_example.python and mechanism.state (Theta = [E | F], shape V x 2r)): The toy code uses E and F as length-V vectors with k = E[prev]*F[w] (rank r = 1, scalar product), while the state specifies V x r matrices and k_ij = E_i . F_j, so the executed example does not match the stated shapes for general r.",
+          "residual: vague_secondary_claim (claims.sample_efficiency.prediction (secondary statement)): The secondary prediction 'median over 5 seeds of pretraining sequences before held-out one-shot recall first reaches 0.95 is <= 3000' does not define how recall is checked during pretraining (evaluation frequency, held-out set size, or the K and V used).",
+          "toy example reproduced 7 expected value(s)"
+        ],
+        "verdict": "pass"
+      },
+      "S2": {
+        "by_calls": [
+          "call-75997f8fea4c",
+          "call-5a795b33ea6b",
+          "call-a969e1f35d92"
+        ],
+        "reasons": [
+          "prior art: novel. No listed paper addresses the proposed mechanism: irreversible mass-action binding and exchange pulses over conserved species totals, used as a sequence memory with a rate prior. The chemical reaction network papers (e.g., W2121645289, W2577697440, W4220792669) study mass-action kinetics, but not as an in-context memory, so they do not address the mechanism. The closest work is the delta-rule and ",
+          "textbook transplant: no (recorded, not gated): The stoichiometry is the textbook one: bimolecular binding plus two strand-exchange reactions under mass action with conserved totals. Each pulse is one forward-Euler step of those rate equations. The card changes the dynamics, though. Only the reactions of the presented pair fire, as a single satur",
+          "reduction critic: none, radical_enough True: The broken invariant holds for the core equations. Step 4 rescales cells other than (i,j) by factors that depend on x_i and y_j, which are linear in C, so writes neither commute nor stay state-independent. I re-ran the prefix by hand with rho = 0.5 and got C03 = 0.2578, C14 = 0.2578, C04 = 0.375, C13 = 0.4297, cross-ratio 0.4125, which matches the card. In stream A, the 2 3 pulse scales C03 and C1"
+        ],
+        "verdict": "pass"
+      },
+      "S3": {
+        "by_calls": [
+          "call-19c829e77c39",
+          "call-bf5ecffedd47",
+          "job-0561ac699aa1",
+          "job-ff75663b2064",
+          "job-857aad1ebd19",
+          "call-b6cff3a9ec52",
+          "call-6efd0d83f5bf"
+        ],
+        "reasons": [
+          "confirmed disproof of 'For K = 32, all stored records have the equal concentration rho, so each new complex beyond 16 evicts the record with the smallest tau, which is the oldest. The last 16 pairs score >= 0.9 and the firs': Eviction is by smallest C, and tau only breaks exact ties. Trained rho_kv = E_i.F_j varies across key-value type pairs (for example 0.93 versus 0.99), so the weakest-rho record is evicted regardless of age. A fresh pair with a low rho is evicted the moment it is written, which gives non-contiguous survival and breaks 'last 16 >= 0.9, first 16 <= 0.15'. The check uses rho drawn from [0.9, 0.99] for",
+          "confirmed disproof of 'Secondary prediction: the median over 5 seeds of the number of pretraining sequences (Adam, learning rate 1e-2, batch 32) before held-out one-shot recall first reaches 0.95 is <= 3000.': 3000 sequences at batch 32 is about 94 Adam steps. Adam moves each raw parameter by at most about lr = 1e-2 per step, so total movement is at most about 0.94. With softplus parameters starting at k ~ 1, driving filler, bridge and other pairs to rho <= 1e-3 (k <= 1e-3) needs raw parameters near -7 or lower. This is unreachable in 94 steps. Gate closure is therefore impossible within the budget, and",
+          "confirmed disproof of 'An ablation that routes the free mass by u alone gives mean probability <= 0.05; and held-out value mean probability >= 0.35 with y + eta routing': The 0.35 threshold depends on eta and u, not on the equations. Held-out share = 1/(1 + 7(1-rho) + 56 eta) with u uniform. If trained eta is about 0.05 (not forbidden by the card), the share is 1/(1+0.7+2.8)=0.22 < 0.35. The card gives no constraint forcing eta <= 0.02.",
+          "round 1 feasibility_judge_a (claude-opus-5-5): infeasible (confidence 0.8); fatal: Capacity K=32 (capability 5): eviction is by smallest C, and tau breaks only exact ties. Trained rho_ij = E_i.F_j/(1 + E_i.F_j) varies across key-value types, so the survivors are the 16 highest-rho records, not the 16 newest. The executed check printed disproved: true, with first-16 and last-16 survival both at 0.50, so 'last 16 >= 0.9, first 16 <= 0.15' is refuted.; Elimination (capability 3): t",
+          "round 1 feasibility_judge_b (qwen3.6-35b-a3b-mlx): infeasible (confidence 0.95); fatal: Eviction order claim for K=32 is refuted by executed check showing random survival instead of age-based eviction.; Pretraining budget claim is refuted by optimizer step analysis showing rho cannot reach kappa=1e-3 within 3000 sequences.; Elimination mean probability >= 0.35 is refuted by check showing sensitivity to eta, dropping below threshold at plausible values."
+        ],
+        "verdict": "infeasible_proved"
+      }
+    }
+  },
+  "summary": "Tokens are chemical species. When token i first appears, one unit of a left species X_i and one unit of a right species Y_i enter the volume, both free. The memory is a sparse V x V matrix of complex concentrations C_ij with at most P_max nonzero entries. Free amounts follow from conservation: x_i = a_i - sum_l C_il and y_j = a_j - sum_m C_mj.\n\nWhen the adjacent pair (w_{t-1}, w_t) = (i, j) has a learned rate rho_ij above a threshold, it fires one pulse of three bimolecular mass-action reactions at that rate:\n- binding: X_i + Y_j -> C_ij;\n- key-side exchange: X_i + C_mj -> C_ij + X_m;\n- value-side exchange: Y_j + C_il -> C_ij + Y_l.\n\nThe pulse adds rho (x_i y_j + x_i col_j + y_j row_i) to C_ij. It multiplies every other entry in column j by (1 - rho x_i) and every other entry in row i by (1 - rho y_j). The update is quadratic in the state. A cell changes when a different cell is demonstrated, and the size of the change depends on how much free mass the rest of the network has left. The memory is therefore not a sum of per-pair writes, and it is not the equilibrium of any kernel built from per-pair histories.\n\nEach step runs in a fixed order: injection, gate, pulse (if gated on), finite-volume pruning and eviction, then readout. The readout for the current token q is its bound row C_q plus its free fraction x_q, and the free fraction is routed to a background u reweighted by the free value mass y. This gives one-shot recall, one-shot overwrite, ownership transfer (a key whose value is taken by another key is released) and elimination toward values that are still free. Cost per token is O(V + P_max), independent of n.",
+  "title": "Strand-Exchange Binding Kinetics: in-context bindings as irreversible mass-action binding and displacement pulses under conservation laws",
+  "toy_example": {
+    "description": "Keys 0, 1, 2 and values 3, 4, 5. E and F make k = 1 (so rho = 0.5) for every key->value pair and k = 0 for every other pair, so value->key bridges are gated out. Both streams share the prefix 0 3 1 4 0 4 1 3, which demonstrates all four cells of the 2x2 block {0,1} x {3,4}. Stream A appends 2 3 0 3 and stream B appends 2 5 0 3. The four block cells have identical write histories in A and B, so a per-cell-kernel Sinkhorn model would give equal cross-ratios. The pulses give 1.7277 and 1.0514. P_max = 16 is never reached, so eviction does not trigger. The script also prints key 0's free fraction and its readout over values in B, using u uniform over values and eta = 0 as a limiting case.",
+    "expected": {
+      "cr_A": 1.7277,
+      "cr_B": 1.0514,
+      "cr_prefix": 0.4125,
+      "mass_q0_B": 1.0,
+      "p_q0_B_values": [
+        0.4931,
+        0.404,
+        0.1029
+      ],
+      "x0_A": 0.28,
+      "x0_B": 0.2309
+    },
+    "python": "import json\nimport numpy as np\nV = 6\nE = np.array([1, 1, 1, 0, 0, 0], dtype=float)\nF = np.array([0, 0, 0, 1, 1, 1], dtype=float)\nkappa, eps, Pmax = 1e-3, 1e-4, 16\nu = np.array([0, 0, 0, 1, 1, 1], dtype=float) / 3.0\neta = 0.0\ndef run(seq):\n    a = np.zeros(V)\n    C = {}\n    prev = None\n    for w in seq:\n        if a[w] == 0:\n            a[w] = 1.0\n        if prev is not None:\n            k = E[prev] * F[w]\n            rho = k / (1.0 + k)\n            if rho > kappa:\n                i, j = prev, w\n                xi = a[i] - sum(c for (p, q), c in C.items() if p == i)\n                yj = a[j] - sum(c for (p, q), c in C.items() if q == j)\n                col = sum(c for (p, q), c in C.items() if q == j and p != i)\n                row = sum(c for (p, q), c in C.items() if p == i and q != j)\n                cij = C.get((i, j), 0.0)\n                new = {}\n                for (p, q), c in C.items():\n                    if (p, q) == (i, j):\n                        continue\n                    if q == j:\n                        new[(p, q)] = c * (1.0 - rho * xi)\n                    elif p == i:\n                        new[(p, q)] = c * (1.0 - rho * yj)\n                    else:\n                        new[(p, q)] = c\n                new[(i, j)] = cij + rho * (xi * yj + xi * col + yj * row)\n                new = {kk: c for kk, c in new.items() if c >= eps}\n                while len(new) > Pmax:\n                    kmin = min(new, key=lambda z: new[z])\n                    del new[kmin]\n                C = new\n        prev = w\n    return a, C\ndef cross(C):\n    return C[(0, 3)] * C[(1, 4)] / (C[(0, 4)] * C[(1, 3)])\ndef readout(a, C, q):\n    Cq = np.zeros(V)\n    colsum = np.zeros(V)\n    for (p, s), c in C.items():\n        colsum[s] += c\n        if p == q:\n            Cq[s] += c\n    xq = a[q] - Cq.sum()\n    y = a - colsum\n    g = u * (y + eta)\n    g = g / g.sum()\n    return Cq + xq * g, xq\nprefix = [0, 3, 1, 4, 0, 4, 1, 3]\nseqA = prefix + [2, 3, 0, 3]\nseqB = prefix + [2, 5, 0, 3]\n_, Cp = run(prefix)\naA, CA = run(seqA)\naB, CB = run(seqB)\npA, x0A = readout(aA, CA, 0)\npB, x0B = readout(aB, CB, 0)\nout = {\n    \"cr_prefix\": round(float(cross(Cp)), 4),\n    \"cr_A\": round(float(cross(CA)), 4),\n    \"cr_B\": round(float(cross(CB)), 4),\n    \"x0_A\": round(float(x0A), 4),\n    \"x0_B\": round(float(x0B), 4),\n    \"p_q0_B_values\": [round(float(t), 4) for t in pB[3:]],\n    \"mass_q0_B\": round(float(pB.sum()), 4)\n}\nprint(json.dumps(out))\n"
+  },
+  "version": 1
+}

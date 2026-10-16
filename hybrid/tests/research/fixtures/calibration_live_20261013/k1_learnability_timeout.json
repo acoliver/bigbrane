@@ -1,0 +1,106 @@
+{
+ "source": "runs/calibration-math-20261013T120132Z/k1-run1: math_check card-ca11b001-v1-bd6cef.json (O9.a attempt 1), receipt mathlib-f5484d3ea965, prover call call-c22b8bb6d9a4 (sources for O9.a and O10.a); timings from results/phase4-20261013T073748Z/p4-timing/fraction.timing.json and overhead.timing.json (host, one thread)",
+ "check": {
+  "attempt": 1,
+  "bound": null,
+  "card_id": "card-ca11b001",
+  "check_hashes": {
+   "bbmath/__init__.py": "28b8b372a11ae7decd2380677bff5673811e0811ffee200bb0ae4d0ef7d4ac08",
+   "bbmath/conservation.py": "49e58e2fa6edb96c2b1a0c1aca86fad0d129683ac2977de68fd36bac1a376c47",
+   "bbmath/constructions.py": "9ae2bd6703dbbf886da2ac5d0791277cecb519f69f30ebb3e4454060cc781d2f",
+   "bbmath/cost.py": "9aa846b209587388bcf4aa72096e2753aa0c7f09e66e3b103d7f3770573cb6da",
+   "bbmath/learnability.py": "1110df1956d6beec304d436afb87e3205c0cfdd60469c01bd2c9957cb971fff7",
+   "bbmath/magic_x.py": "f7f9d9090a4711856d123dbe16aaffaa403933f2e993c514f56eb689af40c822",
+   "bbmath/references.py": "0dc162343403127e53532d2a53e472d5c4daea72f2756d9be591fac67973efa1",
+   "bbmath/selfcheck.py": "253176996615c81a68bcf771c4e7046df5cf43424700945a9b11c35c7162e3da",
+   "bbmath/spec_checks.py": "a93d500eba25c51aa8313033ee7e1adcbf68297cab07574219a4db9c3fe9f183",
+   "bbmath/tiers.py": "db333fe97390e7ed662031bd90dece5e17b11056d8bc49653df22d16d74e0952",
+   "main.py": "3abc6288dde5deed8435985febc477ea0a8c2e69deb5a8de0fb60b47354967d4"
+  },
+  "counterexample": null,
+  "decided": false,
+  "details": {},
+  "evidence": "",
+  "form": "learnability",
+  "job_ids": [
+   "mathlib-f5484d3ea965"
+  ],
+  "prover_call": "call-c22b8bb6d9a4",
+  "prover_fault": false,
+  "purpose": "prove",
+  "reasons": [
+   "first run timeout: wall cap 1800s exceeded"
+  ],
+  "runs": [
+   {
+    "detail": "wall cap 1800s exceeded",
+    "job_id": "mathlib-f5484d3ea965",
+    "printed": null,
+    "status": "timeout",
+    "stderr_tail": "",
+    "stdout_tail": ""
+   }
+  ],
+  "stage": "M",
+  "statement_id": "O9.a",
+  "statement_sha256": "e46ad205eaf3ce73813ddcf5e25bb715ec0762efde835df43031235e2d1f3806",
+  "status": "unknown",
+  "tier": "executed"
+ },
+ "spec": {
+  "examples": 3000,
+  "params": {
+   "D": 4
+  },
+  "seeds": [
+   0,
+   1,
+   2
+  ],
+  "size": 4,
+  "task": "copy",
+  "test_count": 256,
+  "threshold": 0.99
+ },
+ "learners": {
+  "O9.a": "def build_vocab(layout, examples):\n    top = 0\n    for key in layout:\n        val = np.asarray(layout[key])\n        if val.size > 0 and val.dtype.kind in 'iuf':\n            top = max(top, int(val.max()))\n    for ex in examples:\n        for tok in ex['tokens']:\n            top = max(top, int(tok))\n        for q in ex['queries']:\n            top = max(top, int(q[1]))\n    return top + 8\n\ndef softmax_last(s):\n    m = s.max(-1, keepdims=True)\n    e = np.exp(s - m)\n    return e / e.sum(-1, keepdims=True)\n\ndef forward(params, X):\n    d = params['E'].shape[1]\n    B, T = X.shape\n    sq = np.sqrt(d)\n    h = params['E'][X] + params['P'][:T][None, :, :]\n    mask = np.triu(np.full((T, T), -1e30), 1)[None, :, :]\n    caches = []\n    for l in range(2):\n        Wa = params['Wa' + repr_id(l)]\n        Wc = params['Wc' + repr_id(l)]\n        Wp = params['Wp' + repr_id(l)]\n        Wo = params['Wo' + repr_id(l)]\n        U = params['U' + repr_id(l)]\n        Vm = params['V' + repr_id(l)]\n        a = h @ Wa\n        c = h @ Wc\n        p = h @ Wp\n        s = np.einsum('bid,bjd->bij', p, a) / sq + mask\n        w = softmax_last(s)\n        r = np.einsum('bij,bjd->bid', w, c)\n        g = h + r @ Wo\n        z = g @ Vm\n        m = np.maximum(0.0, z)\n        hn = g + m @ U\n        caches.append((h, a, c, p, w, r, g, z, m))\n        h = hn\n    return h, caches\n\ndef repr_id(l):\n    if l == 0:\n        return 'a'\n    return 'b'\n\ndef init_params(v, d, npos, seed):\n    rng = np.random.default_rng(seed)\n    params = {}\n    params['E'] = rng.normal(0.0, 0.02, (v, d))\n    params['P'] = rng.normal(0.0, 0.02, (npos, d))\n    for l in range(2):\n        for nm in ['Wa', 'Wc', 'Wp', 'Wo', 'U', 'V']:\n            params[nm + repr_id(l)] = rng.normal(0.0, 0.02, (d, d))\n    params['O'] = rng.normal(0.0, 0.02, (d, v))\n    return params\n\ndef learn(layout, examples, seed):\n    d = 64\n    v = build_vocab(layout, examples)\n    tmax = 1\n    for ex in examples:\n        tmax = max(tmax, len(ex['tokens']))\n    npos = max(tmax, 256)\n    params = init_params(v, d, npos, seed)\n    if len(examples) == 0:\n        return params\n    B = len(examples)\n    X = np.zeros((B, tmax), dtype=int)\n    qb = []\n    qt = []\n    qy = []\n    for b in range(B):\n        toks = examples[b]['tokens']\n        for t in range(len(toks)):\n            X[b, t] = int(toks[t])\n        for q in examples[b]['queries']:\n            qb.append(b)\n            qt.append(int(q[0]))\n            qy.append(int(q[1]))\n    if len(qb) == 0:\n        return params\n    qb = np.array(qb, dtype=int)\n    qt = np.array(qt, dtype=int)\n    qy = np.array(qy, dtype=int)\n    N = len(qb)\n    sq = np.sqrt(d)\n    lr = 0.01\n    for step in range(1000):\n        h2, caches = forward(params, X)\n        hq = h2[qb, qt]\n        logits = hq @ params['O']\n        prob = softmax_last(logits)\n        dl = prob.copy()\n        dl[np.arange(N), qy] -= 1.0\n        dl = dl / N\n        grads = {}\n        grads['O'] = hq.T @ dl\n        dh = np.zeros_like(h2)\n        dh[qb, qt] = dl @ params['O'].T\n        for l in [1, 0]:\n            h, a, c, p, w, r, g, z, m = caches[l]\n            k = repr_id(l)\n            Wa = params['Wa' + k]\n            Wc = params['Wc' + k]\n            Wp = params['Wp' + k]\n            Wo = params['Wo' + k]\n            U = params['U' + k]\n            Vm = params['V' + k]\n            grads['U' + k] = np.einsum('btd,bte->de', m, dh)\n            dm = dh @ U.T\n            dz = dm * (z > 0)\n            grads['V' + k] = np.einsum('btd,bte->de', g, dz)\n            dg = dh + dz @ Vm.T\n            grads['Wo' + k] = np.einsum('btd,bte->de', r, dg)\n            dr = dg @ Wo.T\n            dw = np.einsum('bid,bjd->bij', dr, c)\n            dc = np.einsum('bij,bid->bjd', w, dr)\n            ds = w * (dw - (dw * w).sum(-1, keepdims=True))\n            ds = ds / sq\n            dp = np.einsum('bij,bjd->bid', ds, a)\n            da = np.einsum('bij,bid->bjd', ds, p)\n            grads['Wa' + k] = np.einsum('btd,bte->de', h, da)\n            grads['Wc' + k] = np.einsum('btd,bte->de', h, dc)\n            grads['Wp' + k] = np.einsum('btd,bte->de', h, dp)\n            dh = dg + dp @ Wp.T + da @ Wa.T + dc @ Wc.T\n        dE = np.zeros_like(params['E'])\n        np.add.at(dE, X, dh)\n        grads['E'] = dE\n        dP = np.zeros_like(params['P'])\n        dP[:tmax] = dh.sum(0)\n        grads['P'] = dP\n        for key in grads:\n            params[key] = params[key] - lr * grads[key]\n    return params\n\ndef init(layout, params):\n    ps = {}\n    for key in params:\n        ps[key] = np.asarray(params[key], dtype=float)\n    d = ps['E'].shape[1]\n    return {'params': ps, 't': 0, 'A': [[], []], 'C': [[], []], 'h': np.zeros(d)}\n\ndef update(state, token):\n    ps = state['params']\n    d = ps['E'].shape[1]\n    sq = np.sqrt(d)\n    t = state['t']\n    pt = min(t, ps['P'].shape[0] - 1)\n    tok = min(int(token), ps['E'].shape[0] - 1)\n    h = ps['E'][tok] + ps['P'][pt]\n    for l in range(2):\n        k = repr_id(l)\n        a = h @ ps['Wa' + k]\n        c = h @ ps['Wc' + k]\n        p = h @ ps['Wp' + k]\n        state['A'][l].append(a)\n        state['C'][l].append(c)\n        A = np.array(state['A'][l])\n        C = np.array(state['C'][l])\n        s = A @ p / sq\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ C\n        g = h + r @ ps['Wo' + k]\n        h = g + np.maximum(0.0, g @ ps['V' + k]) @ ps['U' + k]\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    logits = state['h'] @ state['params']['O']\n    return int(np.argmax(logits))\n",
+  "O10.a": "def build_vocab(layout, examples):\n    top = 0\n    for key in layout:\n        val = np.asarray(layout[key])\n        if val.size > 0 and val.dtype.kind in 'iuf':\n            top = max(top, int(val.max()))\n    for ex in examples:\n        for tok in ex['tokens']:\n            top = max(top, int(tok))\n        for q in ex['queries']:\n            top = max(top, int(q[1]))\n    return top + 8\n\ndef softmax_last(s):\n    m = s.max(-1, keepdims=True)\n    e = np.exp(s - m)\n    return e / e.sum(-1, keepdims=True)\n\ndef repr_id(l):\n    if l == 0:\n        return 'a'\n    return 'b'\n\ndef forward(params, X):\n    d = params['E'].shape[1]\n    B, T = X.shape\n    sq = np.sqrt(d)\n    h = params['E'][X] + params['P'][:T][None, :, :]\n    mask = np.triu(np.full((T, T), -1e30), 1)[None, :, :]\n    caches = []\n    for l in range(2):\n        k = repr_id(l)\n        a = h @ params['Wa' + k]\n        c = h @ params['Wc' + k]\n        p = h @ params['Wp' + k]\n        s = np.einsum('bid,bjd->bij', p, a) / sq + mask\n        w = softmax_last(s)\n        r = np.einsum('bij,bjd->bid', w, c)\n        g = h + r @ params['Wo' + k]\n        z = g @ params['V' + k]\n        m = np.maximum(0.0, z)\n        hn = g + m @ params['U' + k]\n        caches.append((h, a, c, p, w, r, g, z, m))\n        h = hn\n    return h, caches\n\ndef init_params(v, d, npos, seed):\n    rng = np.random.default_rng(seed)\n    params = {}\n    params['E'] = rng.normal(0.0, 0.02, (v, d))\n    params['P'] = rng.normal(0.0, 0.02, (npos, d))\n    for l in range(2):\n        for nm in ['Wa', 'Wc', 'Wp', 'Wo', 'U', 'V']:\n            params[nm + repr_id(l)] = rng.normal(0.0, 0.02, (d, d))\n    params['O'] = rng.normal(0.0, 0.02, (d, v))\n    return params\n\ndef learn(layout, examples, seed):\n    d = 64\n    v = build_vocab(layout, examples)\n    tmax = 1\n    for ex in examples:\n        tmax = max(tmax, len(ex['tokens']))\n    npos = max(tmax, 256)\n    params = init_params(v, d, npos, seed)\n    if len(examples) == 0:\n        return params\n    B = len(examples)\n    X = np.zeros((B, tmax), dtype=int)\n    qb = []\n    qt = []\n    qy = []\n    for b in range(B):\n        toks = examples[b]['tokens']\n        for t in range(len(toks)):\n            X[b, t] = int(toks[t])\n        for q in examples[b]['queries']:\n            qb.append(b)\n            qt.append(int(q[0]))\n            qy.append(int(q[1]))\n    if len(qb) == 0:\n        return params\n    qb = np.array(qb, dtype=int)\n    qt = np.array(qt, dtype=int)\n    qy = np.array(qy, dtype=int)\n    N = len(qb)\n    sq = np.sqrt(d)\n    lr = 0.01\n    for step in range(1000):\n        h2, caches = forward(params, X)\n        hq = h2[qb, qt]\n        prob = softmax_last(hq @ params['O'])\n        dl = prob.copy()\n        dl[np.arange(N), qy] -= 1.0\n        dl = dl / N\n        grads = {}\n        grads['O'] = hq.T @ dl\n        dh = np.zeros_like(h2)\n        dh[qb, qt] = dl @ params['O'].T\n        for l in [1, 0]:\n            h, a, c, p, w, r, g, z, m = caches[l]\n            k = repr_id(l)\n            grads['U' + k] = np.einsum('btd,bte->de', m, dh)\n            dz = (dh @ params['U' + k].T) * (z > 0)\n            grads['V' + k] = np.einsum('btd,bte->de', g, dz)\n            dg = dh + dz @ params['V' + k].T\n            grads['Wo' + k] = np.einsum('btd,bte->de', r, dg)\n            dr = dg @ params['Wo' + k].T\n            dw = np.einsum('bid,bjd->bij', dr, c)\n            dc = np.einsum('bij,bid->bjd', w, dr)\n            ds = w * (dw - (dw * w).sum(-1, keepdims=True)) / sq\n            dp = np.einsum('bij,bjd->bid', ds, a)\n            da = np.einsum('bij,bid->bjd', ds, p)\n            grads['Wa' + k] = np.einsum('btd,bte->de', h, da)\n            grads['Wc' + k] = np.einsum('btd,bte->de', h, dc)\n            grads['Wp' + k] = np.einsum('btd,bte->de', h, dp)\n            dh = dg + dp @ params['Wp' + k].T + da @ params['Wa' + k].T + dc @ params['Wc' + k].T\n        dE = np.zeros_like(params['E'])\n        np.add.at(dE, X, dh)\n        grads['E'] = dE\n        dP = np.zeros_like(params['P'])\n        dP[:tmax] = dh.sum(0)\n        grads['P'] = dP\n        for key in grads:\n            params[key] = params[key] - lr * grads[key]\n    return params\n\ndef init(layout, params):\n    ps = {}\n    for key in params:\n        ps[key] = np.asarray(params[key], dtype=float)\n    d = ps['E'].shape[1]\n    return {'params': ps, 't': 0, 'A': [[], []], 'C': [[], []], 'h': np.zeros(d)}\n\ndef update(state, token):\n    ps = state['params']\n    d = ps['E'].shape[1]\n    sq = np.sqrt(d)\n    t = state['t']\n    pt = min(t, ps['P'].shape[0] - 1)\n    tok = min(int(token), ps['E'].shape[0] - 1)\n    h = ps['E'][tok] + ps['P'][pt]\n    for l in range(2):\n        k = repr_id(l)\n        a = h @ ps['Wa' + k]\n        c = h @ ps['Wc' + k]\n        p = h @ ps['Wp' + k]\n        state['A'][l].append(a)\n        state['C'][l].append(c)\n        A = np.array(state['A'][l])\n        C = np.array(state['C'][l])\n        s = A @ p / sq\n        s = s - s.max()\n        w = np.exp(s)\n        w = w / w.sum()\n        r = w @ C\n        g = h + r @ ps['Wo' + k]\n        h = g + np.maximum(0.0, g @ ps['V' + k]) @ ps['U' + k]\n    state['h'] = h\n    state['t'] = t + 1\n    return state\n\ndef predict(state):\n    logits = state['h'] @ state['params']['O']\n    return int(np.argmax(logits))\n"
+ },
+ "receipt": {
+  "status": "timeout",
+  "detail": "wall cap 1800s exceeded",
+  "exit_code": 137,
+  "run_s": 1800.1708661669982
+ },
+ "same_experiment": {
+  "O9.a": {
+   "claim_id": "sample_efficiency.prediction",
+   "sha256": "e46ad205eaf3ce73813ddcf5e25bb715ec0762efde835df43031235e2d1f3806",
+   "definitions": [
+    "D3",
+    "D4",
+    "D6",
+    "D7"
+   ]
+  },
+  "O10.a": {
+   "claim_id": "P4.copy",
+   "sha256": "e46ad205eaf3ce73813ddcf5e25bb715ec0762efde835df43031235e2d1f3806",
+   "definitions": [
+    "D3",
+    "D4",
+    "D6",
+    "D7"
+   ]
+  }
+ },
+ "fraction_timing": {
+  "examples": 300,
+  "seed": 0,
+  "train_s": 28.900678291975055,
+  "train_empty_s": 0.00041500001680105925,
+  "train_wrong_s": 28.730570707994048,
+  "one_test_pass_s": 0.06809554196661338,
+  "wall_s": 58.04666354105575
+ }
+}

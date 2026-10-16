@@ -1,0 +1,118 @@
+{
+  "id": "card-00000000",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-000000000000",
+  "lens": "neutral",
+  "title": "Row-damped matrix memory with error feedback and a root-mean-square read",
+  "summary": "A matrix memory has each of its rows damped by its own factor, computed from the current symbol. The damped memory then receives error feedback: the gap between the symbol's target vector and what the damped memory returns for the symbol's direction vector, laid back along that direction with a learned rate. Reading multiplies the memory by a cue and rescales the result to unit root mean square.",
+  "core_idea": "Damp every row of a matrix memory by a symbol-dependent factor, feed back the gap between target and recall along the symbol's direction, and read with a cue followed by root-mean-square rescaling.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "M",
+        "type": "real matrix",
+        "shape": [
+          "d",
+          "d"
+        ],
+        "meaning": "Matrix memory; row i is damped by the i-th entry of lambda_t before each error feedback step."
+      }
+    ],
+    "update": [
+      {
+        "name": "projections",
+        "latex": "r_t = W_r e_t,\\; g_t = W_g e_t,\\; \\lambda_t = \\sigma(W_\\lambda e_t),\\; \\eta_t = \\sigma(w_\\eta^{\\top} e_t)",
+        "plain": "direction r_t = W_r e_t, target g_t = W_g e_t, row factors lambda_t = sigmoid(W_lambda e_t) in (0,1)^d, rate eta_t = sigmoid(w_eta . e_t); e_t = E[x_t]"
+      },
+      {
+        "name": "row damping",
+        "latex": "\\bar{M}_t = \\mathrm{diag}(\\lambda_t) M_{t-1}",
+        "plain": "M_bar = diag(lambda_t) M_(t-1), each row multiplied by its own decay"
+      },
+      {
+        "name": "error feedback",
+        "latex": "M_t = \\bar{M}_t + \\eta_t (g_t - \\bar{M}_t r_t) r_t^{\\top}",
+        "plain": "M_t = M_bar + eta_t * outer(g_t - M_bar r_t, r_t)"
+      }
+    ],
+    "readout": [
+      {
+        "name": "read",
+        "latex": "o_t = M_t c_t,\\; y_t = \\frac{o_t}{\\sqrt{\\mathrm{mean}(o_t^2) + \\epsilon}} \\odot s",
+        "plain": "o_t = M_t c_t with cue c_t = W_c e_t; y_t = o_t / sqrt(mean(o_t^2) + eps), elementwise times the learned scale vector s"
+      },
+      {
+        "name": "symbol",
+        "latex": "\\hat{x}_{t+1} = \\arg\\max_v (O y_t)_v",
+        "plain": "next symbol scores O y_t over the V symbols"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix and offset is learned by gradient descent on the cross-entropy of the next symbol over a training corpus, with backpropagation through the whole sequence.",
+      "few_shot_argument": "Nothing in the design helps with few examples; training needs about 2500 sequences before recall of 4 pairs is reliable."
+    }
+  },
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(d^2 + d V)",
+      "memory": "Theta(d^2)",
+      "total_sequence": "Theta(n d^2 + n d V)",
+      "constants_notes": "Row damping, one recall product, one rank-one feedback step and one cue product per symbol, plus the output map; the memory is d^2 numbers."
+    },
+    "sample_efficiency": {
+      "mechanism": "Plain gradient training; nothing tailored to small data.",
+      "prediction": {
+        "metric": "examples_to_recall_K4",
+        "value": 2500,
+        "statement": "Starting from random weights, 2500 sequences of 4 pairs over 16 symbols bring recall to 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "Exact with hand-set orthonormal directions, every row factor 1 and rate 1 whenever K <= d."
+      },
+      {
+        "task": "coordinate-specific horizons",
+        "prediction": "A row with factor near 0 is wiped at that symbol while the other rows persist, so separate output coordinates can keep separate time spans."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "With every row factor 1 and rate 1, writing one direction twice leaves a blend of both targets.",
+    "Counted operations grow faster than linearly in n at fixed d and V."
+  ],
+  "toy_example": {
+    "description": "Two feedback steps on a two by two memory with row factors (1, 0.5).",
+    "python": "import json, math\nM = [[0.0, 0.0], [0.0, 0.0]]\ndef step(M, r, g, lam, eta):\n    Mb = [[lam[i] * M[i][j] for j in range(2)] for i in range(2)]\n    rec = [Mb[i][0] * r[0] + Mb[i][1] * r[1] for i in range(2)]\n    return [[Mb[i][j] + eta * (g[i] - rec[i]) * r[j] for j in range(2)] for i in range(2)]\nM = step(M, [1.0, 0.0], [2.0, 2.0], [1.0, 1.0], 1.0)\nM = step(M, [0.0, 1.0], [1.0, -1.0], [1.0, 0.5], 1.0)\no = [M[i][0] for i in range(2)]\nms = sum(v * v for v in o) / 2\ny = [v / math.sqrt(ms + 1e-6) for v in o]\nprint(json.dumps({\"memory\": M, \"read\": [round(v, 6) for v in y]}))\n",
+    "expected": {
+      "memory": [
+        [
+          2.0,
+          1.0
+        ],
+        [
+          1.0,
+          -1.0
+        ]
+      ],
+      "read": [
+        1.264911,
+        0.632455
+      ]
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}

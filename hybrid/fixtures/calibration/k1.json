@@ -1,0 +1,224 @@
+{
+  "id": "card-ca11b001",
+  "version": 1,
+  "parent_ids": [],
+  "created_by_call": "call-ca11b0000000",
+  "lens": "neutral",
+  "title": "Two rounds of weighted retrieval over stored pairs",
+  "summary": "Every position writes an address vector and a content vector into a growing store. A probe vector computed from the current position scores every stored address, the scores are turned into weights by normalized exponentials, and the weighted sum of contents is mixed back into the position's working vector. Two such rounds are stacked and the last working vector is read out.",
+  "core_idea": "Retrieve from every earlier position by content, with exponential score weights, in a fixed number of stacked rounds.",
+  "mechanism": {
+    "state": [
+      {
+        "name": "A_l",
+        "type": "real matrix",
+        "shape": [
+          "t",
+          "d"
+        ],
+        "meaning": "Address vectors written by every position read so far, one row per position, kept separately for each round l = 1, 2."
+      },
+      {
+        "name": "C_l",
+        "type": "real matrix",
+        "shape": [
+          "t",
+          "d"
+        ],
+        "meaning": "Content vectors written by every position read so far, one row per position, kept separately for each round l = 1, 2."
+      },
+      {
+        "name": "h",
+        "type": "real vector",
+        "shape": [
+          "d"
+        ],
+        "meaning": "Working vector of the current position; each round rewrites it."
+      }
+    ],
+    "update": [
+      {
+        "name": "embed",
+        "latex": "h^0_t = E[x_t] + P[t]",
+        "plain": "h0_t = E[x_t] + P[t], a symbol table row plus a position table row"
+      },
+      {
+        "name": "write",
+        "latex": "a^l_t = W^l_a h^{l-1}_t,\\; c^l_t = W^l_c h^{l-1}_t",
+        "plain": "a_t = W_a h, c_t = W_c h, appended as new rows of A_l and C_l"
+      },
+      {
+        "name": "retrieve",
+        "latex": "w_i = \\frac{\\exp(p^l_t \\cdot a^l_i/\\sqrt{d})}{\\sum_{j \\le t} \\exp(p^l_t \\cdot a^l_j/\\sqrt{d})},\\; r^l_t = \\sum_{i \\le t} w_i c^l_i,\\; p^l_t = W^l_p h^{l-1}_t",
+        "plain": "p = W_p h; w_i = exp(p . a_i / sqrt(d)) / sum_j exp(p . a_j / sqrt(d)) over stored rows; r = sum_i w_i c_i"
+      },
+      {
+        "name": "mix",
+        "latex": "g = h^{l-1}_t + W^l_o r^l_t,\\; h^l_t = g + U^l \\max(0, V^l g)",
+        "plain": "g = h + W_o r; h_new = g + U max(0, V g), for each round l = 1, 2"
+      }
+    ],
+    "readout": [
+      {
+        "name": "readout",
+        "latex": "\\hat{y}_t = \\arg\\max_v (h^2_t O)_v",
+        "plain": "y_hat = argmax(h2 O) over the V symbols"
+      }
+    ],
+    "learning": {
+      "description": "Every matrix (E, P, W_a, W_c, W_p, W_o, U, V, O) is learned by gradient descent on the cross-entropy of the next symbol, computed through both rounds.",
+      "few_shot_argument": "Nothing in the mechanism is specific to few examples; it learns a rule such as copying at L = 4 from about 3000 examples, which is the number this card states."
+    }
+  },
+  "resources": {
+    "architecture": {
+      "hidden": "d",
+      "precision_bits": 64,
+      "state_bits": null
+    },
+    "stream_symbols": [
+      "t"
+    ],
+    "dimensions": {},
+    "cost": {
+      "sizes": [
+        "d",
+        "V"
+      ],
+      "d": "d",
+      "rounds": "2",
+      "why": "The complexity claim is stated in n, d and V for the two rounds of the mechanism."
+    },
+    "tasks": {
+      "copy": {
+        "d": "16+8*ceiling(log(2*L)/log(2))",
+        "rounds": "2",
+        "state_words": "(8*L+1)*(16+8*ceiling(log(2*L)/log(2)))+1",
+        "why": "Copying needs a position code that separates 2L positions, so d grows with log2 of the length; two rounds (find the position, read its symbol). State: two rounds of address and content rows, one row of d numbers per position read (t up to 2L), the working vector and a position counter."
+      },
+      "recall": {
+        "d": "8*K+64",
+        "rounds": "2",
+        "state_words": "(4*(3*K+1)+1)*(8*K+64)+1",
+        "why": "The first round binds each item to the one before it and the second retrieves the item stored after the match; d grows linearly with K so every item of the max(2K, 16) possible ones gets its own direction. t up to 3K+1."
+      },
+      "dyck": {
+        "d": "16*depth+64",
+        "rounds": "depth",
+        "state_words": "(8*depth**2+1)*(16*depth+64)+1",
+        "why": "One round per nesting level, as the capability claim states; t up to 4 depth positions."
+      },
+      "composition": {
+        "d": "16*T+64",
+        "rounds": "2",
+        "state_words": "(4*(5*T+3)+1)*(16*T+64)+1",
+        "why": "The first round retrieves g(x) and the second f at that point; d grows with the table size; t up to 5T+3."
+      },
+      "binding": {
+        "d": "16*hops+64",
+        "rounds": "hops+1",
+        "state_words": "(2*(hops+1)*(4*hops+7)+1)*(16*hops+64)+1",
+        "why": "One round per link of the chain plus the final read, as the capability claim states; t up to 4 hops+7."
+      }
+    },
+    "learning": {
+      "copy": {
+        "size": 4,
+        "examples": 3000,
+        "d": "64",
+        "rounds": "2"
+      },
+      "recall": {
+        "size": 4,
+        "examples": 3000,
+        "d": "64",
+        "rounds": "2"
+      },
+      "dyck": {
+        "size": 2,
+        "examples": 1500,
+        "d": "64",
+        "rounds": "2"
+      },
+      "composition": {
+        "size": 4,
+        "examples": 4000,
+        "d": "64",
+        "rounds": "2"
+      }
+    },
+    "why": "Two rounds at a fixed width for learning; for the hand-set tasks the width and rounds grow with the size as the capability claims state."
+  },
+  "limits": [
+    {
+      "task": "other",
+      "size": null,
+      "resources": "a learned position table P with N rows, one per position the model is built to read, at any width d and any number of rounds",
+      "why": "The embed update forms h0_t = E[x_t] + P[t] at every position t, so reading position t needs row t of P. A table of N rows has no row N + 1, so on a stream of N + 1 tokens the update is undefined at the last position whatever the weights: no fixed model of this mechanism processes every length. This is a limit of the update's domain, not of the P2 tasks, whose streams the table is sized for.",
+      "kind": "update"
+    }
+  ],
+  "claims": {
+    "complexity": {
+      "time_per_token": "Theta(t d + d^2)",
+      "memory": "Theta(n d)",
+      "total_sequence": "Theta(n^2 d + n d^2)",
+      "constants_notes": "Per round at position t: three d by d products, t probe-address products of d terms, t exponentials and a weighted sum of t contents; two rounds. The store holds two rows of d numbers per position per round."
+    },
+    "sample_efficiency": {
+      "mechanism": "Gradient descent on the next-symbol loss, with no structure for few examples. Example counts m this card states for its learning rule at the solvable cases, each reaching 0.99 on three seeds: 3000 for copying at L = 4, 3000 for recall at K = 4, 1500 for bracket nesting at depth 2 and 4000 for two-hop lookup at table size 4. Information account for each count, one target-rule class per task (m counts whole training instances, each with all its scored answers). Copying at L = 4. Class definition: every selector s from the output indices {0,...,3} to the source positions {0,...,3}; the rule answers at output index i with the source symbol at position s(i), and the target is s(i) = i. Size justification: each of the 4 output indices has 4 choices, so |H| = 4^4 = 256; two different selectors differ at some index i, and a source string with different symbols at the two selected positions gives them different answers. log2 |H| = 8. Recall at K = 4. Class definition: the K stored pairs sorted by the id of their first token as k_0 < ... < k_3, with second tokens v_0, ..., v_3 (the sorting only names the pairs; the input keeps its shuffled order); every selector s from {0,...,3} to {0,...,3}; the rule answers a request for k_i with v_s(i), and the target is s(i) = i. Size justification: each of the 4 ranks has 4 choices, so |H| = 4^4 = 256; two different selectors differ at some rank, and pairs with different second tokens at the two selected ranks give them different answers. log2 |H| = 8. Bracket nesting at depth 2. Class definition: the six nonempty stack contexts (0), (1), (0,0), (0,1), (1,0), (1,1), listed bottom to top; every map from these contexts to the two closing tokens, evaluated after each scored prefix; the target maps a context to the closer of its top bracket. Size justification: two choices for each of six contexts, so |H| = 2^6 = 64; all six contexts occur in valid depth-2 prefixes, so different maps give different answers there. log2 |H| = 6. Two-hop lookup at table size 4. Class definition: every selector s from {0,...,3} to {0,...,3}; given the tables g and f in the input and the request x, the rule answers f(g(s(x))), and the target is s(x) = x. Size justification: each of the 4 requests has 4 choices, so |H| = 4^4 = 256; when two selectors differ at some x, tables g and f that send the two selected arguments to different outputs give them different answers. log2 |H| = 8. Prior bits: 0, relative to these declared classes: the task protocol supplies the token encoding and the restriction to each class, and the mechanism receives no hand-set member of it. This is a restricted-class information bound, not a claim that learning the parsing or lookup operation is free. Bits per example (one whole instance): at most 8 for copying (4 answers over 4 symbols), 16 for recall (4 answers over 16 symbols), 7 for bracket nesting (7 scored closers of one bit), and 8 for two-hop lookup (4 answers over 4 symbols). The account assumes a target drawn uniformly from each class, so it bounds m from below only; the counts m above are this card's stated claim and are not derived from it.",
+      "prediction": {
+        "metric": "examples_to_copy_L4",
+        "value": 3000,
+        "statement": "From random weights, gradient descent on 3000 copy examples at L = 4 over 4 symbols reaches per-string accuracy 0.99."
+      }
+    },
+    "capabilities": [
+      {
+        "task": "copy a string after a separator",
+        "prediction": "With hand-set weights the probe at output step i matches the address written at input position i, so every string is copied exactly at every listed length when d grows with the log of the length."
+      },
+      {
+        "task": "associative recall of K pairs",
+        "prediction": "With hand-set weights the first round binds each item to the one before it and the second retrieves the item stored after the matching one; per-query accuracy 1.0 at every listed K."
+      },
+      {
+        "task": "two-type bracket nesting",
+        "prediction": "The legal closing bracket is predicted exactly up to depth D when the number of rounds grows with D; with two fixed rounds and fixed precision the error does not vanish for all depths as the length grows."
+      },
+      {
+        "task": "two-hop lookup and chained assignments",
+        "prediction": "The first round retrieves g(x) and the second retrieves f at that point, so f(g(x)) is answered exactly; chained assignments need one round per link."
+      },
+      {
+        "task": "parity of a long binary string",
+        "prediction": "With a fixed number of rounds and fixed precision, no setting of the weights decides the parity of every binary string as the length grows."
+      }
+    ]
+  },
+  "known_relatives": [
+    {
+      "name": "not assessed",
+      "relation": "This card does not compare its mechanism with others.",
+      "claimed_difference": "No difference from earlier work is claimed."
+    }
+  ],
+  "falsifiers": [
+    "A hand-set configuration with two rounds fails to copy strings of length 8 over 4 symbols.",
+    "The counted operations of the reference code grow more slowly than n^2 at fixed d."
+  ],
+  "toy_example": {
+    "description": "One retrieval step over three stored pairs with a probe along the first address.",
+    "python": "import json, math\nd = 2\naddresses = [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]\ncontents = [[2.0, 0.0], [0.0, 3.0], [1.0, 1.0]]\nprobe = [4.0, 0.0]\nscores = [sum(p * a for p, a in zip(probe, row)) / math.sqrt(d) for row in addresses]\ntop = max(scores)\nweights = [math.exp(s - top) for s in scores]\ntotal = sum(weights)\nweights = [w / total for w in weights]\nread = [sum(w * row[j] for w, row in zip(weights, contents)) for j in range(d)]\nprint(json.dumps({\"weight_0\": round(weights[0], 9), \"read_0\": round(read[0], 9), \"read_1\": round(read[1], 9)},\n                 sort_keys=True))\n",
+    "expected": {
+      "read_0": 1.456943144,
+      "read_1": 0.571761427,
+      "weight_0": 0.485647715
+    }
+  },
+  "references": [],
+  "status": {
+    "stage": "S0",
+    "verdicts": {}
+  }
+}
