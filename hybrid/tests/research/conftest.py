@@ -9,6 +9,11 @@ import pytest
 from hybrid import diskguard, localmodels
 
 
+def pytest_configure(config):
+    # Decision P4P: the replay that trains a card-supplied learner for minutes (test_p4p_protocols.py).
+    config.addinivalue_line("markers", "slow: trains for minutes; runs only with BIGBRANE_RUN_SLOW=1")
+
+
 @pytest.fixture(autouse=True)
 def roomy_workspace(monkeypatch):
     monkeypatch.setattr(diskguard, "path_free_bytes", lambda path, statvfs=None: 10**15)

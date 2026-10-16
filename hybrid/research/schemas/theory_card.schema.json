@@ -317,7 +317,19 @@
         "d": {"type": "string", "minLength": 1},
         "rounds": {"type": "string", "minLength": 1},
         "symbols": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
-        "why": {"type": "string"}
+        "why": {"type": "string"},
+        "protocol": {"$ref": "#/$defs/learning_protocol"}
+      }
+    },
+    "learning_protocol": {
+      "description": "Decision P4P: a measured P4 learning protocol the card supplies for this task. source is the repo-relative path of the complete learner source (RECIPE, learn, init, update, predict), stored next to the card's fixture; sha256 is the hash of its exact bytes, checked when the card is loaded (a mismatch stops the load); provenance says where the protocol was measured. Stage M submits this learner to the frozen learnability check verbatim and asks the prover for none. Set by the operator for calibration cards only; never part of an explorer draft.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "sha256", "provenance"],
+      "properties": {
+        "source": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]*[.]py$"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "provenance": {"type": "string", "minLength": 1}
       }
     },
     "card_limit": {

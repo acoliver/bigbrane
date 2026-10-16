@@ -5,6 +5,14 @@ MathRunner staged, with the staged bbmath modules) inside the test process inste
 and caches the printed result by request, so the replay and later runs cost nothing. Lean and Z3 jobs are not
 needed by these fakes (P3 uses SymPy, answered by the scripted default of math_fakes).
 
+Decision P4P: calibration card K2 supplies measured learners for P4.recall and P4.composition, which train for minutes
+on m = 2500 and 3000 examples. The full check of such a learner (its exact source hash, on the same experiment: task,
+size, m, seeds, threshold, layout, widths evaluated at the size, architecture contract) is answered with the result the
+host measured for it on check seeds 0 to 2 (fixtures/p4_protocols, copied from results/p4-protocols-20261016). The
+research tests set the P4 test count to 40 (conftest.py SCRIPTED_PROTOCOL), so the test count is not compared: the
+measured result at 500 test instances stands in for it. The timing probe still runs for real, and the slow replay in
+test_p4p_protocols.py trains the recall learner through the same runner.
+
 The scripted roles write the eleven profile obligations for a calibration card, the prover answers with reference
 code from hybrid/math/references.py (unbounded constructions for a card that passes P2, capped ones for a card that
 fails it) and small learners that really learn from their examples.
@@ -12,6 +20,7 @@ fails it) and small learners that really learn from their examples.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import importlib.util
 import io
 import json
@@ -27,6 +36,31 @@ from hybrid.tests.research import math_fakes as mf
 
 _CACHE: dict[str, str] = {}
 _JOB_LOCK = threading.Lock()
+P4_PROTOCOLS = Path(__file__).parent / "fixtures" / "p4_protocols"
+
+
+def experiment_key(spec: dict, architecture) -> str:
+    """A learnability experiment as the check runs it, without its test count: task, size, m, seeds, threshold, the
+    generator layout and the widths evaluated at the size, and the architecture contract. The layout is compared
+    without its echo of the given params: {"V": 16} and {"V": 16, "n_keys": 16} build the same recall layout."""
+    from hybrid.math import constructions
+    from hybrid.research.stages import card_resources
+    task, size = spec["task"], spec["size"]
+    name = constructions.SIZE_NAME[task]
+    widths = {key: card_resources.evaluate(value, {name: size}) for key, value in (spec.get("widths") or {}).items()}
+    layout = {key: value for key, value in constructions.layout(task, size, spec.get("params")).items()
+              if key != "params"}
+    return json.dumps([task, size, spec["examples"], sorted(spec["seeds"]), spec.get("threshold"), layout, widths,
+                       architecture], sort_keys=True, default=str)
+
+
+def measured_protocols() -> dict[tuple[str, str], dict]:
+    """The recorded host results of the card-supplied learners, by (source sha256, experiment_key)."""
+    found = {}
+    for path in sorted(P4_PROTOCOLS.glob("*-confirmation.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        found[(record["sha256"], experiment_key(record["spec"], record["architecture_contract"]))] = record["result"]
+    return found
 
 
 class FastExecutor:
@@ -34,6 +68,9 @@ class FastExecutor:
         self.tmp_path = Path(tmp_path).resolve()
         self.tmp_path.mkdir(parents=True, exist_ok=True)
         self.jobs: list = []
+        # Jobs answered with a recorded protocol result (decision P4P).
+        self.measured: list = []
+        self._measured = measured_protocols()
 
     def _answer(self, job, stdout: str):
         out, err = self.tmp_path / f"{job.job_id}.stdout", self.tmp_path / f"{job.job_id}.stderr"
@@ -53,6 +90,12 @@ class FastExecutor:
             return self._answer(job, json.dumps(mf.sympy_default(request), sort_keys=True) + "\n")
         if request["kind"] in ("z3", "predicate_agreement"):
             return self._answer(job, json.dumps(mf.z3_default(request), sort_keys=True) + "\n")
+        if request["kind"] == "learnability":
+            sha = hashlib.sha256(request["source"].encode("utf-8")).hexdigest()
+            result = self._measured.get((sha, experiment_key(request["spec"], request.get("architecture"))))
+            if result is not None:
+                self.measured.append(job)
+                return self._answer(job, json.dumps(result, default=str, sort_keys=True) + "\n")
         # Stages call the executor through asyncio.to_thread, so cards in M and C at once run jobs on several threads;
         # redirect_stdout swaps the process-wide sys.stdout, so one job at a time.
         with _JOB_LOCK:

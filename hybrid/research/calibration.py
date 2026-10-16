@@ -145,7 +145,9 @@ def anonymization_problems(card: dict, *, extra_terms: tuple[str, ...] = ()) -> 
 
 
 def load_cards(keys=CARD_KEYS, directory: Path = FIXTURES) -> dict[str, dict]:
-    """The calibration cards, each validated against the theory card schema and checked for anonymity."""
+    """The calibration cards, each validated against the theory card schema and checked for anonymity. Decision P4P:
+    every learning protocol a card supplies is read and its sha256 checked here, so a changed or missing learner
+    source stops the load (card_resources.ProtocolError) before any model call."""
     cards = {}
     for key in keys:
         card = json.loads((directory / f"{key}.json").read_text(encoding="utf-8"))
@@ -153,6 +155,10 @@ def load_cards(keys=CARD_KEYS, directory: Path = FIXTURES) -> dict[str, dict]:
         problems = anonymization_problems(card)
         if problems:
             raise ValueError(f"calibration card {key} is not anonymous: {problems}")
+        try:
+            card_resources.learning_protocols(card)
+        except card_resources.ProtocolError as exc:
+            raise card_resources.ProtocolError(f"calibration card {key}: {exc}") from exc
         cards[key] = card
     check_complete(cards)
     return cards

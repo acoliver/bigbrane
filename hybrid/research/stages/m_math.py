@@ -74,6 +74,16 @@ s = n^b with total cost at most n^coupled_max_cost_exponent and state at most n^
 when the target gate applies, a card with b > 0 on no P2 slot fails with ``obligation_failed:target_coupled``.
 Calibration records it only.
 
+Card learning protocols (decisions P4P and P4W). A card may supply, per P4 task, a measured learner under
+``resources.learning.<task>.protocol`` (card_resources.learning_protocols). Its sha256 is checked before any model call
+(StageError on a mismatch). Every frozen learnability statement that is the card's learning case of such a task
+(task, size, examples m, d and rounds: card_resources.protocol_applies) is checked with the supplied source verbatim,
+together with the checks without a prover, through the same ``execute_check`` path: the same runner, timing probe,
+admission and caps, seeds, threshold, controls and architecture survey. The prover is never asked for a learner for
+it, so a failed protocol check stays failed (no attempts, no retries). Its ``math_check`` artifact and event carry
+``learner`` (origin card, path, sha256, provenance), and a ``learning_protocol`` event records the hash before the
+check. The statements still freeze as before. Without a protocol nothing changes: the prover writes the learner.
+
 Concurrency. The checks without a prover, and the checks of one prover round, run at once (``execute_checks``); the
 executor's host-wide job slots (hybrid/slots.py, ``[math] max_parallel_jobs``) bound how many jobs run, and every job
 keeps its own caps. Learnability statements of the same frozen experiment still run one after another, so the
@@ -188,6 +198,9 @@ def fixer_user(ctx: StageContext, card_id: str, card: dict, claims: list[dict]) 
         # FIX-18: the card's own P3 limits, which the limits and the P3 statements formalize.
         if card_resources.limits_text(card):
             parts.append(card_resources.limits_text(card))
+        # Decision P4P: the P4 tasks whose learner the card supplies; its recipe, width and m are used verbatim.
+        if card_resources.protocols_text(card):
+            parts.append(card_resources.protocols_text(card))
     # FIX-6: new section file; a premise about the card's own frozen definitions is settled at stage M.
     parts.append(load_section("premise_settlement"))
     # FIX-7: new section file; a definition that restates the card's own mechanism has kind "mechanism".
@@ -456,12 +469,13 @@ async def run_check(ctx: StageContext, card_id: str, stage: str, statement: dict
 async def execute_check(ctx: StageContext, card_id: str, stage: str, statement: dict, *, purpose: str,
                         text: str | None = None, attempt: int | None = None, prover_call: str | None = None,
                         spec_override: dict | None = None, history: "ResourceHistory | None" = None,
-                        refused: str | None = None, skipped: str | None = None) -> dict:
+                        refused: str | None = None, skipped: str | None = None, learner: dict | None = None) -> dict:
     """The check of ``run_check`` without recording it: the jobs run and the check record is returned, but no
     artifact or event is written (``record_check`` does that), so concurrent checks can be recorded in statement
     order. A resource failure is noted in ``history`` here, before any later check of the same experiment runs.
     ``skipped`` is a host reason the check has nothing to run (FIX-6: a conformance audit whose reference statement did
-    not hold); it is recorded as unknown, not as a prover fault."""
+    not hold); it is recorded as unknown, not as a prover fault. ``learner`` (decision P4P) records where a
+    card-supplied learner came from (LearningProtocol.record); the check itself is the same."""
     frozen = load_frozen(ctx, card_id)
     if frozen is None:
         raise RuntimeError(f"{card_id}: a check ran before any statement was frozen")
@@ -469,6 +483,8 @@ async def execute_check(ctx: StageContext, card_id: str, stage: str, statement: 
             "purpose": purpose, "attempt": attempt, "prover_call": prover_call, "statement_sha256": statement["sha256"],
             "text": text, "reasons": [], "counterexample": None, "job_ids": [], "check_hashes": {}, "runs": [],
             "tier": mathrecords.FORM_TIER[statement["form"]], "prover_fault": False}
+    if learner is not None:
+        base["learner"] = dict(learner)
     unchanged = (history.unchanged(statement, text) if history is not None and statement["form"] == "learnability"
                  else None)
     if skipped:
@@ -560,7 +576,8 @@ def record_check(ctx: StageContext, card_id: str, stage: str, statement: dict, c
     ctx.emit("math_check", {"card_id": card_id, "stage": stage, "statement_id": statement["id"],
                             "purpose": check["purpose"], "status": check["status"], "decided": check["decided"], "artifact": name,
                             "job_ids": check["job_ids"],
-                            **({"resource": check["resource"]["kind"]} if check.get("resource") else {})})
+                            **({"resource": check["resource"]["kind"]} if check.get("resource") else {}),
+                            **({"learner": check["learner"]} if check.get("learner") else {})})
     return dict(check, artifact=name)
 
 
@@ -1127,16 +1144,17 @@ def exhausted_failure(limit: int, split: bool) -> str:
             "what the check measured.")
 
 
-async def prove(ctx: StageContext, card_id: str, card: dict, record: dict,
-                checks: dict[str, dict]) -> tuple[list[str], set[str], list[lineage.LoopStop]]:
+async def prove(ctx: StageContext, card_id: str, card: dict, record: dict, checks: dict[str, dict],
+                supplied=frozenset()) -> tuple[list[str], set[str], list[lineage.LoopStop]]:
     """Prover rounds for the Lean and executed statements. Updates ``checks`` with the latest check of each.
     Returns the call ids, the models that answered, and the stop that ended the rounds while statements still failed
     (``stall:prover`` when a round repeated the previous round's failures exactly, ``budget:prover`` when the attempts
-    ran out), recorded as ``loop_stop`` events."""
+    ran out), recorded as ``loop_stop`` events. ``supplied`` (decision P4P) holds the statements whose learner the
+    card supplies: the prover is never asked for them, whatever their check showed."""
     limit = ctx.cfg["math"]["max_prover_attempts"]
     used = Counter(e["statement_id"] for e in ctx.card_events(card_id, "proof_attempt"))
     pending = [s for s in all_statements(record) if s["form"] in mathrecords.PROVER_FORMS
-               and not holds(checks.get(s["id"]))]
+               and s["id"] not in supplied and not holds(checks.get(s["id"]))]
     failures = {sid: failure_text(c) for sid, c in checks.items() if not holds(c)}
     calls, models, stops = [], set(), []
     history = ResourceHistory(record)
@@ -1389,9 +1407,13 @@ def coupled_summary(block: dict | None) -> dict | None:
 
 
 def check_summary(check: dict) -> dict:
-    return {k: check.get(k) for k in ("statement_id", "form", "purpose", "attempt", "status", "decided", "tier",
-                                      "evidence", "counterexample", "artifact", "job_ids", "text", "bound",
-                                      "details", "resource")}
+    summary = {k: check.get(k) for k in ("statement_id", "form", "purpose", "attempt", "status", "decided", "tier",
+                                         "evidence", "counterexample", "artifact", "job_ids", "text", "bound",
+                                         "details", "resource")}
+    if check.get("learner"):
+        # Decision P4P: a card-supplied learner, with its hash.
+        summary["learner"] = check["learner"]
+    return summary
 
 
 def write_ledger(ctx: StageContext, card_id: str, stage: str, definitions: list[dict], ledger: list[dict]) -> str:
@@ -1486,10 +1508,49 @@ def incomplete_verdict(ctx: StageContext, card_id: str, card: dict, items: list[
 
 # ----- the stage ---------------------------------------------------------------------------------------------------
 
+def card_protocols(card: dict) -> dict[str, card_resources.LearningProtocol]:
+    """The card's learning protocols with their hashes verified (decision P4P); a mismatch stops the stage before any
+    model call or job."""
+    try:
+        return card_resources.learning_protocols(card)
+    except card_resources.ProtocolError as exc:
+        raise StageError(f"card learning protocol refused; nothing was run: {exc}") from exc
+
+
+def protocol_statements(record: dict, protocols: dict) -> dict[str, card_resources.LearningProtocol]:
+    """The frozen learnability statements whose learner the card supplies, by statement id: each statement that is
+    the card's learning case of a task with a protocol (card_resources.protocol_applies)."""
+    found = {}
+    for statement in all_statements(record):
+        if statement["form"] != "learnability" or not isinstance(statement["spec"], dict):
+            continue
+        protocol = protocols.get(statement["spec"].get("task"))
+        if protocol is not None and card_resources.protocol_applies(protocol, statement["spec"]):
+            found[statement["id"]] = protocol
+    return found
+
+
+def protocol_requests(ctx: StageContext, card_id: str, record: dict,
+                      supplied: dict[str, card_resources.LearningProtocol]) -> list[dict]:
+    """The checks of the card-supplied learners, in statement order: the supplied source verbatim through the same
+    check as a prover learner. Each is recorded first in a ``learning_protocol`` event with its hash."""
+    requests = []
+    for statement in all_statements(record):
+        protocol = supplied.get(statement["id"])
+        if protocol is None:
+            continue
+        ctx.emit("learning_protocol", {"card_id": card_id, "stage": STAGE, "statement_id": statement["id"],
+                                       **protocol.record()})
+        requests.append({"statement": statement, "purpose": "card_protocol", "text": protocol.source, "attempt": 1,
+                         "learner": protocol.record()})
+    return requests
+
+
 async def run(ctx: StageContext, card_id: str) -> str | None:
     require_math(ctx)
     verify_manifest()
     card = ctx.card(card_id)
+    protocols = card_protocols(card)
     claims = mathrecords.formal_claims(claim_items(card))
     if profile_required(ctx):
         claims += profile.profile_claims()
@@ -1499,15 +1560,21 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
             card = await complete_card(ctx, card_id, card)
             if card is None:
                 return None
+            protocols = card_protocols(card)
         record = await fix_and_freeze(ctx, card_id, card, claims)
     calls = list(record["fixer_calls"])
 
     checks: dict[str, dict] = {}
     auto = [s for s in all_statements(record) if s["form"] in mathrecords.AUTO_FORMS]
-    results = await execute_checks(ctx, card_id, STAGE, [{"statement": s, "purpose": "auto"} for s in auto])
-    for check in record_in_order(ctx, card_id, STAGE, auto, results):
+    # Decision P4P: the card-supplied learners run with the checks that need no prover.
+    supplied = protocol_statements(record, protocols)
+    requests = ([{"statement": s, "purpose": "auto"} for s in auto]
+                + protocol_requests(ctx, card_id, record, supplied))
+    statements = [request["statement"] for request in requests]
+    results = await execute_checks(ctx, card_id, STAGE, requests, ResourceHistory(record))
+    for check in record_in_order(ctx, card_id, STAGE, statements, results):
         checks[check["statement_id"]] = check
-    prover_calls, prover_models, prover_stops = await prove(ctx, card_id, card, record, checks)
+    prover_calls, prover_models, prover_stops = await prove(ctx, card_id, card, record, checks, set(supplied))
     await audit_conformance(ctx, card_id, record, checks)
     calls += prover_calls
     breaches = families.violations({"statement_fixer": record["fixer_model"], "prover": prover_models,

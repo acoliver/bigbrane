@@ -173,7 +173,16 @@ def defines(source: str | None, name: str | None) -> bool:
 # ----- what the challenger reads ---------------------------------------------------------------------------------------
 
 def _check_view(check: dict) -> dict:
-    return {k: check.get(k) for k in ("form", "status", "decided", "evidence", "counterexample", "text")}
+    view = {k: check.get(k) for k in ("form", "status", "decided", "evidence", "counterexample", "text")}
+    if check.get("learner"):
+        # Decision P4P: the learner in `text` is the card's supplied protocol, used verbatim.
+        view["learner"] = check["learner"]
+    return view
+
+
+def card_supplied(check: dict | None) -> bool:
+    """Whether a stage M check ran a learner the card supplied (decision P4P)."""
+    return bool(check) and (check.get("learner") or {}).get("origin") == "card"
 
 
 def _dumps(value) -> str:
@@ -1276,6 +1285,13 @@ async def settle_materiality(ctx: StageContext, card_id: str, finding: dict, ite
         if statement["form"] not in REPLAYABLE:
             out.append(dict(piece, disposition="unresolved",
                             reason=f"{sid} is a {statement['form']} statement, which has no witness to replay"))
+            continue
+        if card_supplied(checks.get(sid)):
+            # Decision P4P: the card's measured learning protocol is used verbatim; no variant replaces it.
+            out.append(dict(piece, disposition="out_of_scope",
+                            reason=f"{sid}'s learner is the card's supplied learning protocol (sha256 "
+                                   f"{checks[sid]['learner'].get('sha256')}), used verbatim (decision P4P): its "
+                                   "recipe, width and m are the card's, and no conforming variant replaces it"))
             continue
         replay = await replay_conforming(ctx, card_id, statement, target, (checks.get(sid) or {}).get("text"),
                                          precision_bits)

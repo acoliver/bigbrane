@@ -40,12 +40,25 @@ reports a card that states none, so it is gated exactly like missing resources. 
 card's limits and formalizes them: ``limit_copy_problems`` returns a problem for a limit in the fixer's answer that is
 not one of the card's, and for a card limit the answer leaves out; ``frozen_limits`` freezes only the card's limits,
 with the card's own text, so a limit the fixer invents never reaches the profile.
+
+Learning protocols (decisions P4P and P4W). Calibration P4 failed because the prover wrote a fresh training recipe and
+learner in every card-run (results/p4-diag-20261016/REPORT.md). A card may now supply, per P4 task, a measured
+protocol under ``resources.learning.<task>.protocol``: the repo-relative path of the complete learner source, its
+sha256 and a provenance note. ``learning_protocols`` reads each source and checks its hash; a missing file, a path
+outside the repo or a hash mismatch raises ProtocolError, so a card whose protocol changed is never run. Stage M then
+submits that learner verbatim to the frozen learnability check (m_math) and asks the prover for none. The protocol is
+operator data: an explorer draft never states one (common.draft_schema leaves it out), and when a card's author
+restates its resources (``request_resources``) the card keeps its own protocols and loses any the author added or
+changed (``keep_card_protocols``).
 """
 from __future__ import annotations
 
 import ast
 import copy
+import hashlib
 import json
+from dataclasses import dataclass
+from pathlib import Path
 
 import sympy as sp
 
@@ -67,6 +80,122 @@ LIMIT_KINDS = ("state", "update", "readout")
 PROTOCOL_SYMBOLS = frozenset({"V"})
 STATE_P5 = {"copy": ("copy", "L"), "recall": ("recall", "K"), "dyck": ("dyck", "depth")}
 P5_PARAM = {"copy": ("D", constructions.DEFAULTS["copy"]["D"]), "recall": ("V", constructions.DEFAULTS["recall"]["V"])}
+# Decision P4P: protocol sources are repo-relative paths, resolved against the repository root.
+REPO_ROOT = Path(__file__).resolve().parents[3]
+PROTOCOL_KEY = "protocol"
+
+
+# ----- learning protocols (decisions P4P, P4W) -----------------------------------------------------------------------
+
+class ProtocolError(ValueError):
+    """A card's learning protocol cannot be used: its source is missing, outside the repo, or not the hashed bytes."""
+
+
+@dataclass(frozen=True)
+class LearningProtocol:
+    """One card-supplied P4 learner: the task, the card's learning entry it was measured for, and the verified
+    source."""
+    task: str
+    path: str
+    sha256: str
+    provenance: str
+    source: str
+    size: int
+    examples: int
+    d: str
+    rounds: str
+
+    def record(self) -> dict:
+        """What a check artifact and the ledger keep about the learner: it came from the card, with its hash."""
+        return {"origin": "card", "task": self.task, "path": self.path, "sha256": self.sha256,
+                "provenance": self.provenance}
+
+
+def protocol_source(path: str, sha256: str, root: Path = REPO_ROOT) -> str:
+    """The text of a protocol source, after checking that ``path`` stays inside ``root`` and that the file's bytes
+    hash to ``sha256``. Raises ProtocolError otherwise."""
+    if not isinstance(path, str) or not path or Path(path).is_absolute() or ".." in Path(path).parts:
+        raise ProtocolError(f"learning protocol source {path!r} must be a relative path inside the repository")
+    file = (root / path).resolve()
+    if not file.is_relative_to(root.resolve()) or not file.is_file():
+        raise ProtocolError(f"learning protocol source {path} does not exist in the repository")
+    raw = file.read_bytes()
+    found = hashlib.sha256(raw).hexdigest()
+    if found != sha256:
+        raise ProtocolError(f"learning protocol source {path} has sha256 {found}; the card states {sha256}")
+    return raw.decode("utf-8")
+
+
+def learning_protocols(card: dict, root: Path = REPO_ROOT) -> dict[str, LearningProtocol]:
+    """The card's learning protocols by P4 task, each source read and its hash verified (ProtocolError on any
+    problem). Empty for a card that supplies none."""
+    resources = card.get("resources")
+    learning = (resources.get("learning") if isinstance(resources, dict) else None) or {}
+    found: dict[str, LearningProtocol] = {}
+    for task, entry in learning.items():
+        protocol = (entry or {}).get(PROTOCOL_KEY)
+        if protocol is None:
+            continue
+        missing_fields = [key for key in ("source", "sha256", "provenance") if not protocol.get(key)]
+        if missing_fields:
+            raise ProtocolError(f"resources.learning.{task}.protocol lacks {', '.join(missing_fields)}")
+        source = protocol_source(protocol["source"], protocol["sha256"], root)
+        found[task] = LearningProtocol(task=task, path=protocol["source"], sha256=protocol["sha256"],
+                                       provenance=protocol["provenance"], source=source, size=entry.get("size"),
+                                       examples=entry.get("examples"), d=entry.get("d"), rounds=entry.get("rounds"))
+    return found
+
+
+def protocol_applies(protocol: LearningProtocol, spec) -> bool:
+    """Whether a frozen learnability statement is the experiment the protocol was measured for: the card's learning
+    case of its task (size, examples m, d and rounds). Any other learnability statement keeps a prover learner."""
+    if not isinstance(spec, dict) or spec.get("task") != protocol.task:
+        return False
+    if spec.get("size") != protocol.size or spec.get("examples") != protocol.examples:
+        return False
+    widths = spec.get("widths") or {}
+    names = {constructions.SIZE_NAME[protocol.task]}
+    return all(widths.get(key) is not None and same(widths[key], wanted, names)
+               for key, wanted in (("d", protocol.d), ("rounds", protocol.rounds)))
+
+
+LEARNING_CASE = ("size", "examples", "d", "rounds")
+
+
+def keep_card_protocols(card: dict, resources: dict) -> tuple[dict, list[str]]:
+    """Decision P4P: the resources an author returned, with the learning protocols operator data. Each learning task
+    keeps the card's own protocol while its learning case (size, examples, d, rounds) is unchanged; a protocol the
+    author added, changed or left on a changed case is removed. Returns the resources and the tasks whose
+    author-stated protocol was removed."""
+    resources = copy.deepcopy(resources)
+    own = ((card.get("resources") or {}).get("learning") or {})
+    dropped = []
+    for task, entry in (resources.get("learning") or {}).items():
+        if not isinstance(entry, dict):
+            continue
+        stated = entry.pop(PROTOCOL_KEY, None)
+        before = own.get(task) or {}
+        kept = before.get(PROTOCOL_KEY)
+        if kept is not None and all(entry.get(key) == before.get(key) for key in LEARNING_CASE):
+            entry[PROTOCOL_KEY] = copy.deepcopy(kept)
+        if stated is not None and stated != entry.get(PROTOCOL_KEY):
+            dropped.append(task)
+    return resources, dropped
+
+
+def protocols_text(card: dict) -> str:
+    """The fixer's note on the card's learning protocols: which P4 tasks have a supplied learner. Empty when none."""
+    resources = card.get("resources")
+    learning = (resources.get("learning") if isinstance(resources, dict) else None) or {}
+    tasks = sorted(task for task, entry in learning.items() if (entry or {}).get(PROTOCOL_KEY))
+    if not tasks:
+        return ""
+    return ("CARD LEARNING PROTOCOLS (decision P4P). The card supplies the complete learner for the P4 learnability "
+            "statement of " + ", ".join(tasks) + " (resources.learning.<task>.protocol, verified by its sha256). The "
+            "host submits that learner verbatim to the frozen check; the prover writes none for it. Freeze those "
+            "statements exactly as for any other P4 task, with the card's size, examples m and widths. A card-supplied "
+            "protocol is used verbatim: write no definition that sets or changes its training recipe (initialization, "
+            "optimizer, learning rate, schedule, epochs, batch size, augmentation), its width or its m.")
 
 
 # ----- formulas ------------------------------------------------------------------------------------------------------
@@ -691,7 +820,8 @@ async def request_resources(ctx: StageContext, card_id: str, items: list[str], s
                         "are wrong) and one sentence on why these are the mechanism's resources, as JSON."])
     reply = await ctx.call(explorer_role(ctx, card_id), system, user, request_schema())
     revised = copy.deepcopy(ctx.store.get_card(card_id))
-    revised["resources"] = reply.parsed["resources"]
+    # Decision P4P: the card keeps its own learning protocols; the author can neither add nor change one.
+    revised["resources"], dropped = keep_card_protocols(card, reply.parsed["resources"])
     if "limits" in reply.parsed:
         revised["limits"] = reply.parsed["limits"]
     revised["version"] = ctx.store.next_version(card_id)
@@ -703,5 +833,6 @@ async def request_resources(ctx: StageContext, card_id: str, items: list[str], s
     store_revision(ctx, revised, reply.call_id, stage=stage, purpose="resources", missing=items)
     ctx.emit("card_resources_requested", {"card_id": card_id, "stage": stage, "call_id": reply.call_id,
                                           "missing_before": items, "missing_after": missing(revised),
-                                          "version": revised["version"]})
+                                          "version": revised["version"],
+                                          **({"protocols_dropped": dropped} if dropped else {})})
     return revised
