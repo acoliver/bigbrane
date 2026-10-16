@@ -31,6 +31,7 @@ Bigbrane is an automated research lab for sequence learners outside the transfor
   - K1 composition: 0.565 to 0.62 accuracy against a 0.99 threshold, in all three runs;
   - K2 recall: 0.82 to 0.99 across seeds;
   - K2 composition: 0.66 to 0.998 across seeds.
+- Rescored with profile and target included (scripts/score_calibration.py uses the acceptance items): 20261015T200147Z, reported as 83/84, is 101/108, and every K1 and K2 run fails the profile. 20261016T051933Z is 99/108.
 - The system's own report records "profile: expected pass, got fail" for these runs. Its acceptance rule is the right one; my tracked score was the misleading part.
 - An outside review on 2026-10-16 pointed this out. I stopped the run in progress (20261016T141847Z), since another full run cannot fix it.
 
