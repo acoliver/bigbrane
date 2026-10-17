@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from hybrid.gateway.paths import load_config as load_gateway_config
 from hybrid.gateway.paths import token_path
 
 from .config import BackendConfig, ModelsConfig
@@ -33,10 +34,23 @@ class GatewayToken:
     source: str            # "env BIGBRANE_GATEWAY_TOKEN" or the token file path
 
 
-def token_file() -> Path:
+def gateway_root() -> Path:
     # Same root as hybrid.gateway.paths.state_dir(), without creating the directory.
-    root = Path(os.environ.get("BIGBRANE_GATEWAY_HOME") or Path.home() / ".bigbrane-gateway")
-    return token_path(root)
+    return Path(os.environ.get("BIGBRANE_GATEWAY_HOME") or Path.home() / ".bigbrane-gateway")
+
+
+def token_file() -> Path:
+    return token_path(gateway_root())
+
+
+MODELS_MARGIN_S = 15.0
+
+
+def models_timeout_s() -> float:
+    """The client's wait for GET /v1/models. The gateway may spend its configured upstream_timeout_s on a provider's
+    model list before answering from its cache, so a client timeout equal to it races the answer (seen 2026-10-17: a
+    10 s client against a 10 s upstream timeout, answers at 10.0 to 11.4 s). The client waits that long plus a margin."""
+    return load_gateway_config(gateway_root()).models.upstream_timeout_s + MODELS_MARGIN_S
 
 
 def gateway_token(config: BackendConfig) -> GatewayToken | None:
@@ -72,13 +86,15 @@ def required_models(config: ModelsConfig, backend: str) -> list[str]:
 
 
 def check_backend(config: ModelsConfig, backend: str, transport: httpx.BaseTransport | None = None,
-                  timeout_s: float = 10.0) -> dict:
+                  timeout_s: float | None = None) -> dict:
     """GET <base_url>/models with the bearer token; every model the active routing sends here must be listed."""
     cfg = config.backends[backend]
     token = gateway_token(cfg)
     if token is None:
         raise _not_running(cfg, f"no token ({cfg.api_key_env} is unset and {token_file()} does not exist)")
     url = f"{cfg.base_url}/models"
+    if timeout_s is None:
+        timeout_s = models_timeout_s()
     try:
         with httpx.Client(transport=transport, timeout=timeout_s) as client:
             response = client.get(url, headers={"authorization": f"Bearer {token.value}"})
