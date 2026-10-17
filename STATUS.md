@@ -44,16 +44,17 @@ Bigbrane is an automated research lab for sequence learners outside the transfor
 6. **Bench reliability.** The same seed and settings gave both near-perfect and chance results on one configuration. The fixed bench has not been run.
 7. **Speed.** GPT and local-model calls run one at a time; a full calibration takes about 8 hours.
 
+## Stopping rule (decision SR, 2026-10-17)
+
+Gate work stops after one passing calibration. The 30-idea live batch runs next, without waiting for the planted test or the bench sweep, and is judged by what survives and why things die. If new preconditions start appearing before the batch, that is the floundering this rule exists to stop.
+
 ## Where it is going
 
-In order. Each step gates the next.
-
-1. Diagnose P4 on K1 and K2 directly: train the recipes outside the pipeline, find which input varies between passing and failing seeds, and fix where that input comes from.
-2. Make the tracked calibration score the system's own acceptance rule, profile and target included, and close items 3 and 5 above.
-3. Run one clean calibration and accept it only at full agreement.
-4. Build a positive control: at least one planted card that is new by construction and should survive. Then run the planted test.
-5. Run the bench acceptance sweep.
-6. Run the live batch of 30 ideas.
+1. Done on branch p4-diagnosis (PR #1): P4 diagnosed and fixed at its source (card-supplied learners, decisions P4P, P4W, P4K); the tracked score uses the full acceptance rule; cost and S6 defects fixed.
+2. Now: calibration 20261017T030854Z on that branch, scored on the full rule.
+3. Next, under the stopping rule: the 30-idea live batch (plan section 14), judged by what survives and why things die.
+4. Alongside the batch, never gating it: a probe of whether the "is it new?" check wrongly reduces mechanisms known to be non-equivalent; and, for any survivor, the bench against tuned baselines on equal data and compute.
+5. The planted test and the bench acceptance sweep follow when they can use the batch's results.
 
 The real measure of progress is a surviving idea that beats tuned baselines on equal data and compute. Nothing has done that yet.
 
