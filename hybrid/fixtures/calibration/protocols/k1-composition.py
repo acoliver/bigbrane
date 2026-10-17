@@ -29,29 +29,30 @@ def gw(x, g):
 def grads(p, X, Y, qs, mask1, mask2, d, V):
     Bn, L = X.shape
     sc = np.float64(1.0 / np.sqrt(d))
-    h0 = p['E'][X] + p['P'][:L][None]
-    A1 = mm(h0, p['Wa1'])
-    C1 = mm(h0, p['Wc1'])
-    P1 = mm(h0, p['Wp1'])
+    Pm = p['P'][:L]
+    Wco1 = p['Wc1'] @ p['Wo1']
+    Wco2 = p['Wc2'] @ p['Wo2']
+    h0 = p['E'][X] + Pm[None]
+    A1 = (p['E'] @ p['Wa1'])[X] + (Pm @ p['Wa1'])[None]
+    P1 = (p['E'] @ p['Wp1'])[X] + (Pm @ p['Wp1'])[None]
+    O1 = (p['E'] @ Wco1)[X] + (Pm @ Wco1)[None]
     S1 = (P1 @ A1.transpose(0, 2, 1)) * sc + mask1
     S1 = S1 - S1.max(-1, keepdims=True)
     W1 = np.exp(S1)
     W1 = W1 / W1.sum(-1, keepdims=True)
-    R1 = W1 @ C1
-    G1 = h0 + mm(R1, p['Wo1'])
+    G1 = h0 + W1 @ O1
     Z1 = mm(G1, p['V1'])
     M1 = np.maximum(Z1, 0)
     h1 = G1 + mm(M1, p['U1'])
-    A2 = mm(h1, p['Wa2'])
-    C2 = mm(h1, p['Wc2'])
     hq = h1[:, qs]
     P2 = mm(hq, p['Wp2'])
-    S2 = (P2 @ A2.transpose(0, 2, 1)) * sc + mask2
+    Q2 = P2 @ p['Wa2'].T
+    S2 = (Q2 @ h1.transpose(0, 2, 1)) * sc + mask2
     S2 = S2 - S2.max(-1, keepdims=True)
     W2 = np.exp(S2)
     W2 = W2 / W2.sum(-1, keepdims=True)
-    R2 = W2 @ C2
-    G2 = hq + mm(R2, p['Wo2'])
+    H2 = W2 @ h1
+    G2 = hq + mm(H2, Wco2)
     Z2 = mm(G2, p['V2'])
     M2 = np.maximum(Z2, 0)
     h2 = G2 + mm(M2, p['U2'])
@@ -71,39 +72,41 @@ def grads(p, X, Y, qs, mask1, mask2, d, V):
     dZ2 = mm(dh2, p['U2'].T) * (Z2 > 0)
     g['V2'] = gw(G2, dZ2)
     dG2 = dh2 + mm(dZ2, p['V2'].T)
-    g['Wo2'] = gw(R2, dG2)
-    dR2 = mm(dG2, p['Wo2'].T)
-    dhq = dG2
-    dW2 = dR2 @ C2.transpose(0, 2, 1)
-    dC2 = W2.transpose(0, 2, 1) @ dR2
+    gWco2 = gw(H2, dG2)
+    g['Wc2'] = gWco2 @ p['Wo2'].T
+    g['Wo2'] = p['Wc2'].T @ gWco2
+    dH2 = mm(dG2, Wco2.T)
+    dW2 = dH2 @ h1.transpose(0, 2, 1)
+    dh1 = W2.transpose(0, 2, 1) @ dH2
     dS2 = W2 * (dW2 - (dW2 * W2).sum(-1, keepdims=True)) * sc
-    dP2 = dS2 @ A2
-    dA2 = dS2.transpose(0, 2, 1) @ P2
+    dQ2 = dS2 @ h1
+    dh1 += dS2.transpose(0, 2, 1) @ Q2
+    g['Wa2'] = gw(dQ2, P2)
+    dP2 = dQ2 @ p['Wa2']
     g['Wp2'] = gw(hq, dP2)
-    dhq = dhq + mm(dP2, p['Wp2'].T)
-    g['Wa2'] = gw(h1, dA2)
-    g['Wc2'] = gw(h1, dC2)
-    dh1 = mm(dA2, p['Wa2'].T) + mm(dC2, p['Wc2'].T)
-    dh1[:, qs] += dhq
+    dh1[:, qs] += dG2 + mm(dP2, p['Wp2'].T)
     g['U1'] = gw(M1, dh1)
     dZ1 = mm(dh1, p['U1'].T) * (Z1 > 0)
     g['V1'] = gw(G1, dZ1)
     dG1 = dh1 + mm(dZ1, p['V1'].T)
-    g['Wo1'] = gw(R1, dG1)
-    dR1 = mm(dG1, p['Wo1'].T)
-    dW1 = dR1 @ C1.transpose(0, 2, 1)
-    dC1 = W1.transpose(0, 2, 1) @ dR1
+    dW1 = dG1 @ O1.transpose(0, 2, 1)
+    dO1 = W1.transpose(0, 2, 1) @ dG1
     dS1 = W1 * (dW1 - (dW1 * W1).sum(-1, keepdims=True)) * sc
     dP1 = dS1 @ A1
     dA1 = dS1.transpose(0, 2, 1) @ P1
-    g['Wp1'] = gw(h0, dP1)
-    g['Wa1'] = gw(h0, dA1)
-    g['Wc1'] = gw(h0, dC1)
-    dh0 = dG1 + mm(dP1, p['Wp1'].T) + mm(dA1, p['Wa1'].T) + mm(dC1, p['Wc1'].T)
     ohx = (X.reshape(-1)[:, None] == np.arange(V)[None, :]).astype(np.float64)
-    g['E'] = ohx.T @ dh0.reshape(-1, d)
+    nb = dG1.shape[-1]
+    S = ohx.T @ np.concatenate([dP1, dA1, dO1, dG1], axis=-1).reshape(-1, 4 * nb)
+    SP, SA, SO, SG = S[:, :nb], S[:, nb:2 * nb], S[:, 2 * nb:3 * nb], S[:, 3 * nb:]
+    TP, TA, TO, TG = dP1.sum(0), dA1.sum(0), dO1.sum(0), dG1.sum(0)
+    g['Wp1'] = p['E'].T @ SP + Pm.T @ TP
+    g['Wa1'] = p['E'].T @ SA + Pm.T @ TA
+    gWco1 = p['E'].T @ SO + Pm.T @ TO
+    g['Wc1'] = gWco1 @ p['Wo1'].T
+    g['Wo1'] = p['Wc1'].T @ gWco1
+    g['E'] = SG + SP @ p['Wp1'].T + SA @ p['Wa1'].T + SO @ Wco1.T
     gP = np.zeros_like(p['P'])
-    gP[:L] = dh0.sum(0)
+    gP[:L] = TG + TP @ p['Wp1'].T + TA @ p['Wa1'].T + TO @ Wco1.T
     g['P'] = gP
     return g
 

@@ -162,8 +162,8 @@
         "rounds": "2",
         "protocol": {
           "source": "hybrid/fixtures/calibration/protocols/k1-composition.py",
-          "sha256": "80d8d44382ef404ceb1257d82db39501f8677856d9b9655166b4b8d150c67d46",
-          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-composition-r1-source.py, decisions P4P and P4K), the r1 learner from results/p4-k1-bimodal-20261016: it is the measured learner that does not reliably learn composition. Under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 4000 it passed 2 of 3 check seeds (seed 0 at 1.0, seed 1 at 0.566, seed 2 at 1.0), so the expected verdict is violated."
+          "sha256": "c0f092e6cd7a6832bf3841c2466699058eeebea56be3311f3fbfb3d7b18b79af",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-composition-r1-source.py, decisions P4P and P4K), the r1 learner from results/p4-k1-bimodal-20261016: it is the measured learner that does not reliably learn composition. Decision KD1 (results/kd1-20261017) rewrote it as an exact algebraic equivalent so its cost fits the 1440 CPU s admission in the pinned tools container: the products of the symbol and position tables with the address, probe and content weights are gathered by token, W_c and W_o are folded into one matrix, and the second round is evaluated at the query positions as a bilinear form (gradients equal to the previous code to 5.6e-16 in float64; the recipe is unchanged at 400 epochs, batch 200 and learning rate 0.002). The container check projects 956.6 CPU s. Under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 4000 it passed 2 of 3 check seeds (seed 0 at 1, seed 1 at 0.566, seed 2 at 1), so the expected verdict is violated."
         }
       }
     },

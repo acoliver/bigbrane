@@ -18,19 +18,19 @@
     10001,
     10002
   ],
-  "name": "k1-composition-r1-confirmation",
+  "name": "k1-composition-confirmation",
   "per_seed_wall": [
     {
       "seed": 0,
-      "total_s": 147.87665308301803
+      "total_s": 320.732
     },
     {
       "seed": 1,
-      "total_s": 135.32359399995767
+      "total_s": 315.608
     },
     {
       "seed": 2,
-      "total_s": 144.23121583403554
+      "total_s": 315.607
     }
   ],
   "phase": "confirmation",
@@ -325,24 +325,44 @@
     "threshold": 0.99,
     "tier": "executed",
     "wall_clock": {
+      "train_cpu_s": [
+        {
+          "empty": 0.001,
+          "seed": 0,
+          "true": 153.239,
+          "wrong": 160.054
+        },
+        {
+          "empty": 0.001,
+          "seed": 1,
+          "true": 158.846,
+          "wrong": 149.381
+        },
+        {
+          "empty": 0.001,
+          "seed": 2,
+          "true": 157.085,
+          "wrong": 151.641
+        }
+      ],
       "train_s": [
         {
           "empty": 0.0,
           "seed": 0,
-          "true": 72.821,
-          "wrong": 73.344
+          "true": 156.582,
+          "wrong": 164.15
         },
         {
           "empty": 0.0,
           "seed": 1,
-          "true": 71.898,
-          "wrong": 61.92
+          "true": 163.345,
+          "wrong": 152.263
         },
         {
           "empty": 0.0,
           "seed": 2,
-          "true": 70.534,
-          "wrong": 71.751
+          "true": 160.922,
+          "wrong": 154.685
         }
       ]
     }
@@ -352,8 +372,8 @@
     1,
     2
   ],
-  "sha256": "80d8d44382ef404ceb1257d82db39501f8677856d9b9655166b4b8d150c67d46",
-  "source": "results/p4-protocols2-20261016/k1-composition-r1-source.py",
+  "sha256": "c0f092e6cd7a6832bf3841c2466699058eeebea56be3311f3fbfb3d7b18b79af",
+  "source": "results/kd1-20261017/staging/hybrid/fixtures/calibration/protocols/k1-composition.py",
   "spec": {
     "examples": 4000,
     "seeds": [
@@ -371,7 +391,7 @@
       "rounds": "2"
     }
   },
-  "started_utc": "2026-10-16T21:15:54Z",
+  "started_utc": "20261017T223117Z",
   "task": "k1-composition",
-  "wall_s": 427.43935029092245
+  "wall_s": 1961.9
 }
