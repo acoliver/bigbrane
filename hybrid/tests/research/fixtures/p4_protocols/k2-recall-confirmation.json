@@ -13,19 +13,19 @@
     10001,
     10002
   ],
-  "name": "k2-recall128-confirmation",
+  "name": "k2-recall-confirmation",
   "per_seed_wall": [
     {
       "seed": 0,
-      "total_s": 112.20362612500321
+      "total_s": 201.517
     },
     {
       "seed": 1,
-      "total_s": 119.49751879193354
+      "total_s": 165.984
     },
     {
       "seed": 2,
-      "total_s": 116.0973986670142
+      "total_s": 164.675
     }
   ],
   "phase": "confirmation",
@@ -88,17 +88,17 @@
       "violations": []
     },
     "counterexample": null,
-    "evidence": "recall at K=4 from m=2500 examples: seed 0 accuracy 0.9960 (control 0.0265), seed 1 accuracy 0.9975 (control 0.0210), seed 2 accuracy 0.9935 (control 0.0200); threshold 0.99; recipe {\"augmentation\": \"per example and per batch, a fresh random relabeling of token ids within the key-id class and within the value-id class, applied consistently to the input tokens and the answers\", \"batch_size\": 64, \"clip\": 1.0, \"d\": 128, \"emb_scale\": 0.5, \"epochs\": 400, \"init\": \"weights uniform(-1/sqrt(d),1/sqrt(d)); E normal(0,0.5); retain bias 1, other biases 0, no output bias; s,y start at 0\", \"learning_rate\": 0.002, \"loss\": \"next-symbol cross-entropy at the scored positions, full backpropagation through time\", \"optimizer\": \"AdamW b1=0.9 b2=0.999 eps=1e-8, decoupled weight decay on matrices, global gradient-norm clip\", \"retain_bias\": 1.0, \"schedule\": \"cosine decay to 0.1x over all steps\", \"weight_decay\": 0.0005} applied to the true data and both controls; observed on the listed sizes: recall K=4 m=2500 seed=0, recall K=4 m=2500 seed=1, recall K=4 m=2500 seed=2",
+    "evidence": "recall at K=4 from m=2500 examples: seed 0 accuracy 0.9990 (control 0.0265), seed 1 accuracy 0.9965 (control 0.0210), seed 2 accuracy 0.9970 (control 0.0200); threshold 0.99; recipe {\"augmentation\": \"per example and per batch, a fresh random relabeling of token ids within the key-id class and within the value-id class, applied consistently to the input tokens and the answers\", \"batch_size\": 128, \"clip\": 1.0, \"d\": 128, \"emb_scale\": 0.5, \"epochs\": 300, \"init\": \"weights uniform(-1/sqrt(d),1/sqrt(d)); E normal(0,0.5); retain bias 1, other biases 0, no output bias; s,y start at 0\", \"learning_rate\": 0.004, \"loss\": \"next-symbol cross-entropy at the scored positions, full backpropagation through time\", \"optimizer\": \"AdamW b1=0.9 b2=0.999 eps=1e-8, decoupled weight decay on matrices, global gradient-norm clip\", \"retain_bias\": 1.0, \"schedule\": \"cosine decay to 0.1x over all steps\", \"weight_decay\": 0.0005} applied to the true data and both controls; observed on the listed sizes: recall K=4 m=2500 seed=0, recall K=4 m=2500 seed=1, recall K=4 m=2500 seed=2",
     "examples": 2500,
     "recipe": {
       "augmentation": "per example and per batch, a fresh random relabeling of token ids within the key-id class and within the value-id class, applied consistently to the input tokens and the answers",
-      "batch_size": 64,
+      "batch_size": 128,
       "clip": 1.0,
       "d": 128,
       "emb_scale": 0.5,
-      "epochs": 400,
+      "epochs": 300,
       "init": "weights uniform(-1/sqrt(d),1/sqrt(d)); E normal(0,0.5); retain bias 1, other biases 0, no output bias; s,y start at 0",
-      "learning_rate": 0.002,
+      "learning_rate": 0.004,
       "loss": "next-symbol cross-entropy at the scored positions, full backpropagation through time",
       "optimizer": "AdamW b1=0.9 b2=0.999 eps=1e-8, decoupled weight decay on matrices, global gradient-norm clip",
       "retain_bias": 1.0,
@@ -107,7 +107,7 @@
     },
     "results": [
       {
-        "accuracy": 0.996,
+        "accuracy": 0.999,
         "control_accuracy": 0.0265,
         "curves": {
           "empty": {
@@ -115,126 +115,136 @@
             "points": []
           },
           "true": {
-            "count": 9,
+            "count": 10,
             "points": [
               {
                 "epoch": 0.0,
-                "loss": 2.589717,
-                "train_accuracy": 0.2185
+                "loss": 2.649936,
+                "train_accuracy": 0.1995
               },
               {
-                "epoch": 50.0,
-                "loss": 0.79677,
-                "train_accuracy": 0.5708
+                "epoch": 37.0,
+                "loss": 0.820341,
+                "train_accuracy": 0.6325
               },
               {
-                "epoch": 100.0,
-                "loss": 0.263098,
-                "train_accuracy": 0.8879
+                "epoch": 74.0,
+                "loss": 0.14049,
+                "train_accuracy": 0.9568
               },
               {
-                "epoch": 150.0,
-                "loss": 0.110263,
-                "train_accuracy": 0.9654
+                "epoch": 111.0,
+                "loss": 0.047282,
+                "train_accuracy": 0.9894
               },
               {
-                "epoch": 200.0,
-                "loss": 0.061345,
-                "train_accuracy": 0.984
+                "epoch": 148.0,
+                "loss": 0.028217,
+                "train_accuracy": 0.9946
               },
               {
-                "epoch": 250.0,
-                "loss": 0.037001,
-                "train_accuracy": 0.9903
+                "epoch": 185.0,
+                "loss": 0.020608,
+                "train_accuracy": 0.9959
               },
               {
-                "epoch": 300.0,
-                "loss": 0.026109,
-                "train_accuracy": 0.9932
+                "epoch": 222.0,
+                "loss": 0.016624,
+                "train_accuracy": 0.9962
               },
               {
-                "epoch": 350.0,
-                "loss": 0.01932,
-                "train_accuracy": 0.9972
+                "epoch": 259.0,
+                "loss": 0.012029,
+                "train_accuracy": 0.9983
               },
               {
-                "epoch": 399.0,
-                "loss": 0.018202,
-                "train_accuracy": 0.9956
+                "epoch": 296.0,
+                "loss": 0.011733,
+                "train_accuracy": 0.998
+              },
+              {
+                "epoch": 299.0,
+                "loss": 0.010693,
+                "train_accuracy": 0.9982
               }
             ]
           },
           "wrong": {
-            "count": 9,
+            "count": 10,
             "points": [
               {
                 "epoch": 0.0,
-                "loss": 2.91198,
-                "train_accuracy": 0.0651
+                "loss": 2.92755,
+                "train_accuracy": 0.0597
               },
               {
-                "epoch": 50.0,
-                "loss": 2.77872,
-                "train_accuracy": 0.0611
-              },
-              {
-                "epoch": 100.0,
-                "loss": 2.777283,
-                "train_accuracy": 0.0619
-              },
-              {
-                "epoch": 150.0,
-                "loss": 2.777536,
-                "train_accuracy": 0.0624
-              },
-              {
-                "epoch": 200.0,
-                "loss": 2.774188,
-                "train_accuracy": 0.0637
-              },
-              {
-                "epoch": 250.0,
-                "loss": 2.773551,
-                "train_accuracy": 0.0562
-              },
-              {
-                "epoch": 300.0,
-                "loss": 2.773679,
-                "train_accuracy": 0.0643
-              },
-              {
-                "epoch": 350.0,
-                "loss": 2.772726,
+                "epoch": 37.0,
+                "loss": 2.783001,
                 "train_accuracy": 0.0627
               },
               {
-                "epoch": 399.0,
-                "loss": 2.773252,
-                "train_accuracy": 0.0598
+                "epoch": 74.0,
+                "loss": 2.782422,
+                "train_accuracy": 0.0658
+              },
+              {
+                "epoch": 111.0,
+                "loss": 2.778097,
+                "train_accuracy": 0.062
+              },
+              {
+                "epoch": 148.0,
+                "loss": 2.774494,
+                "train_accuracy": 0.0667
+              },
+              {
+                "epoch": 185.0,
+                "loss": 2.774561,
+                "train_accuracy": 0.0603
+              },
+              {
+                "epoch": 222.0,
+                "loss": 2.773772,
+                "train_accuracy": 0.0661
+              },
+              {
+                "epoch": 259.0,
+                "loss": 2.773223,
+                "train_accuracy": 0.0589
+              },
+              {
+                "epoch": 296.0,
+                "loss": 2.772957,
+                "train_accuracy": 0.0625
+              },
+              {
+                "epoch": 299.0,
+                "loss": 2.772365,
+                "train_accuracy": 0.0697
               }
             ]
           }
         },
         "empty_control_accuracy": 0.0265,
         "first_error": {
-          "expected": 18,
-          "instance": 7,
-          "position": 9,
-          "predicted": 31,
+          "expected": 16,
+          "instance": 49,
+          "position": 10,
+          "predicted": 21,
           "tokens": [
-            1,
-            31,
+            13,
+            16,
             7,
-            18,
-            3,
-            18,
-            14,
-            24,
+            16,
+            8,
+            30,
+            9,
+            21,
             32,
-            3,
-            14,
-            1,
-            7
+            13,
+            7,
+            8,
+            9
           ],
           "tokens_total": 13
         },
@@ -242,13 +252,13 @@
         "reason": null,
         "recipe": {
           "augmentation": "per example and per batch, a fresh random relabeling of token ids within the key-id class and within the value-id class, applied consistently to the input tokens and the answers",
-          "batch_size": 64,
+          "batch_size": 128,
           "clip": 1.0,
           "d": 128,
           "emb_scale": 0.5,
-          "epochs": 400,
+          "epochs": 300,
           "init": "weights uniform(-1/sqrt(d),1/sqrt(d)); E normal(0,0.5); retain bias 1, other biases 0, no output bias; s,y start at 0",
-          "learning_rate": 0.002,
+          "learning_rate": 0.004,
           "loss": "next-symbol cross-entropy at the scored positions, full backpropagation through time",
           "optimizer": "AdamW b1=0.9 b2=0.999 eps=1e-8, decoupled weight decay on matrices, global gradient-norm clip",
           "retain_bias": 1.0,
@@ -257,10 +267,10 @@
         },
         "seed": 0,
         "state_peak_words": 140288,
-        "wrong_control_accuracy": 0.0715
+        "wrong_control_accuracy": 0.0625
       },
       {
-        "accuracy": 0.9975,
+        "accuracy": 0.9965,
         "control_accuracy": 0.021,
         "curves": {
           "empty": {
@@ -268,126 +278,136 @@
             "points": []
           },
           "true": {
-            "count": 9,
+            "count": 10,
             "points": [
               {
                 "epoch": 0.0,
-                "loss": 2.589639,
-                "train_accuracy": 0.1986
+                "loss": 2.666926,
+                "train_accuracy": 0.1861
               },
               {
-                "epoch": 50.0,
-                "loss": 1.06237,
-                "train_accuracy": 0.5114
+                "epoch": 37.0,
+                "loss": 1.186918,
+                "train_accuracy": 0.4157
               },
               {
-                "epoch": 100.0,
-                "loss": 0.243344,
-                "train_accuracy": 0.9084
+                "epoch": 74.0,
+                "loss": 0.282608,
+                "train_accuracy": 0.8872
               },
               {
-                "epoch": 150.0,
-                "loss": 0.094636,
-                "train_accuracy": 0.9718
+                "epoch": 111.0,
+                "loss": 0.090052,
+                "train_accuracy": 0.9735
               },
               {
-                "epoch": 200.0,
-                "loss": 0.054197,
-                "train_accuracy": 0.9867
+                "epoch": 148.0,
+                "loss": 0.04628,
+                "train_accuracy": 0.9892
               },
               {
-                "epoch": 250.0,
-                "loss": 0.038561,
-                "train_accuracy": 0.9896
+                "epoch": 185.0,
+                "loss": 0.031126,
+                "train_accuracy": 0.993
               },
               {
-                "epoch": 300.0,
-                "loss": 0.0295,
-                "train_accuracy": 0.9932
+                "epoch": 222.0,
+                "loss": 0.024728,
+                "train_accuracy": 0.9943
               },
               {
-                "epoch": 350.0,
-                "loss": 0.023277,
-                "train_accuracy": 0.994
+                "epoch": 259.0,
+                "loss": 0.020041,
+                "train_accuracy": 0.9957
               },
               {
-                "epoch": 399.0,
-                "loss": 0.021278,
-                "train_accuracy": 0.9941
+                "epoch": 296.0,
+                "loss": 0.017977,
+                "train_accuracy": 0.9967
+              },
+              {
+                "epoch": 299.0,
+                "loss": 0.018467,
+                "train_accuracy": 0.9956
               }
             ]
           },
           "wrong": {
-            "count": 9,
+            "count": 10,
             "points": [
               {
                 "epoch": 0.0,
-                "loss": 2.91214,
-                "train_accuracy": 0.0625
+                "loss": 2.926429,
+                "train_accuracy": 0.059
               },
               {
-                "epoch": 50.0,
-                "loss": 2.780723,
-                "train_accuracy": 0.0652
+                "epoch": 37.0,
+                "loss": 2.784264,
+                "train_accuracy": 0.0664
               },
               {
-                "epoch": 100.0,
-                "loss": 2.779416,
-                "train_accuracy": 0.0636
+                "epoch": 74.0,
+                "loss": 2.777858,
+                "train_accuracy": 0.0617
               },
               {
-                "epoch": 150.0,
-                "loss": 2.776679,
-                "train_accuracy": 0.0661
+                "epoch": 111.0,
+                "loss": 2.777855,
+                "train_accuracy": 0.0584
               },
               {
-                "epoch": 200.0,
-                "loss": 2.774293,
-                "train_accuracy": 0.064
+                "epoch": 148.0,
+                "loss": 2.774437,
+                "train_accuracy": 0.061
               },
               {
-                "epoch": 250.0,
-                "loss": 2.774278,
-                "train_accuracy": 0.0633
+                "epoch": 185.0,
+                "loss": 2.773399,
+                "train_accuracy": 0.0649
               },
               {
-                "epoch": 300.0,
-                "loss": 2.773517,
-                "train_accuracy": 0.0619
+                "epoch": 222.0,
+                "loss": 2.773112,
+                "train_accuracy": 0.0572
               },
               {
-                "epoch": 350.0,
-                "loss": 2.773321,
-                "train_accuracy": 0.0606
+                "epoch": 259.0,
+                "loss": 2.773666,
+                "train_accuracy": 0.0582
               },
               {
-                "epoch": 399.0,
-                "loss": 2.773093,
-                "train_accuracy": 0.0627
+                "epoch": 296.0,
+                "loss": 2.773175,
+                "train_accuracy": 0.0618
+              },
+              {
+                "epoch": 299.0,
+                "loss": 2.772503,
+                "train_accuracy": 0.0657
               }
             ]
           }
         },
         "empty_control_accuracy": 0.021,
         "first_error": {
-          "expected": 28,
-          "instance": 61,
-          "position": 12,
-          "predicted": 31,
+          "expected": 22,
+          "instance": 96,
+          "position": 11,
+          "predicted": 24,
           "tokens": [
-            11,
-            28,
-            10,
+            3,
+            18,
+            12,
+            22,
+            5,
+            24,
+            15,
             31,
-            8,
-            29,
-            15,
-            20,
             32,
-            8,
-            10,
+            3,
             15,
-            11
+            12,
+            5
           ],
           "tokens_total": 13
         },
@@ -395,13 +415,13 @@
         "reason": null,
         "recipe": {
           "augmentation": "per example and per batch, a fresh random relabeling of token ids within the key-id class and within the value-id class, applied consistently to the input tokens and the answers",
-          "batch_size": 64,
+          "batch_size": 128,
           "clip": 1.0,
           "d": 128,
           "emb_scale": 0.5,
-          "epochs": 400,
+          "epochs": 300,
           "init": "weights uniform(-1/sqrt(d),1/sqrt(d)); E normal(0,0.5); retain bias 1, other biases 0, no output bias; s,y start at 0",
-          "learning_rate": 0.002,
+          "learning_rate": 0.004,
           "loss": "next-symbol cross-entropy at the scored positions, full backpropagation through time",
           "optimizer": "AdamW b1=0.9 b2=0.999 eps=1e-8, decoupled weight decay on matrices, global gradient-norm clip",
           "retain_bias": 1.0,
@@ -410,10 +430,10 @@
         },
         "seed": 1,
         "state_peak_words": 140288,
-        "wrong_control_accuracy": 0.0555
+        "wrong_control_accuracy": 0.064
       },
       {
-        "accuracy": 0.9935,
+        "accuracy": 0.997,
         "control_accuracy": 0.02,
         "curves": {
           "empty": {
@@ -421,126 +441,136 @@
             "points": []
           },
           "true": {
-            "count": 9,
+            "count": 10,
             "points": [
               {
                 "epoch": 0.0,
-                "loss": 2.657269,
-                "train_accuracy": 0.1873
+                "loss": 2.701599,
+                "train_accuracy": 0.1813
               },
               {
-                "epoch": 50.0,
-                "loss": 0.691813,
-                "train_accuracy": 0.6651
+                "epoch": 37.0,
+                "loss": 0.995742,
+                "train_accuracy": 0.5368
               },
               {
-                "epoch": 100.0,
-                "loss": 0.170106,
-                "train_accuracy": 0.9426
+                "epoch": 74.0,
+                "loss": 0.232294,
+                "train_accuracy": 0.9159
               },
               {
-                "epoch": 150.0,
-                "loss": 0.086303,
-                "train_accuracy": 0.9763
+                "epoch": 111.0,
+                "loss": 0.078319,
+                "train_accuracy": 0.9791
               },
               {
-                "epoch": 200.0,
-                "loss": 0.049126,
-                "train_accuracy": 0.9858
+                "epoch": 148.0,
+                "loss": 0.042461,
+                "train_accuracy": 0.99
               },
               {
-                "epoch": 250.0,
-                "loss": 0.029892,
-                "train_accuracy": 0.9929
+                "epoch": 185.0,
+                "loss": 0.031026,
+                "train_accuracy": 0.9928
               },
               {
-                "epoch": 300.0,
-                "loss": 0.022127,
-                "train_accuracy": 0.9949
+                "epoch": 222.0,
+                "loss": 0.020965,
+                "train_accuracy": 0.9953
               },
               {
-                "epoch": 350.0,
-                "loss": 0.018994,
-                "train_accuracy": 0.9955
-              },
-              {
-                "epoch": 399.0,
-                "loss": 0.01703,
+                "epoch": 259.0,
+                "loss": 0.018521,
                 "train_accuracy": 0.9961
+              },
+              {
+                "epoch": 296.0,
+                "loss": 0.017817,
+                "train_accuracy": 0.9962
+              },
+              {
+                "epoch": 299.0,
+                "loss": 0.015717,
+                "train_accuracy": 0.9967
               }
             ]
           },
           "wrong": {
-            "count": 9,
+            "count": 10,
             "points": [
               {
                 "epoch": 0.0,
-                "loss": 2.903039,
-                "train_accuracy": 0.0606
+                "loss": 2.918945,
+                "train_accuracy": 0.0607
               },
               {
-                "epoch": 50.0,
-                "loss": 2.779493,
-                "train_accuracy": 0.0633
+                "epoch": 37.0,
+                "loss": 2.787772,
+                "train_accuracy": 0.0616
               },
               {
-                "epoch": 100.0,
-                "loss": 2.778493,
-                "train_accuracy": 0.0602
+                "epoch": 74.0,
+                "loss": 2.782635,
+                "train_accuracy": 0.0594
               },
               {
-                "epoch": 150.0,
-                "loss": 2.776642,
-                "train_accuracy": 0.061
+                "epoch": 111.0,
+                "loss": 2.776657,
+                "train_accuracy": 0.0634
               },
               {
-                "epoch": 200.0,
-                "loss": 2.775156,
-                "train_accuracy": 0.0653
+                "epoch": 148.0,
+                "loss": 2.776364,
+                "train_accuracy": 0.0637
               },
               {
-                "epoch": 250.0,
-                "loss": 2.774105,
-                "train_accuracy": 0.0583
+                "epoch": 185.0,
+                "loss": 2.774411,
+                "train_accuracy": 0.0605
               },
               {
-                "epoch": 300.0,
-                "loss": 2.773541,
-                "train_accuracy": 0.0659
+                "epoch": 222.0,
+                "loss": 2.772975,
+                "train_accuracy": 0.0605
               },
               {
-                "epoch": 350.0,
-                "loss": 2.773252,
-                "train_accuracy": 0.0623
+                "epoch": 259.0,
+                "loss": 2.773682,
+                "train_accuracy": 0.0635
               },
               {
-                "epoch": 399.0,
-                "loss": 2.772781,
-                "train_accuracy": 0.0633
+                "epoch": 296.0,
+                "loss": 2.773248,
+                "train_accuracy": 0.0615
+              },
+              {
+                "epoch": 299.0,
+                "loss": 2.773268,
+                "train_accuracy": 0.0589
               }
             ]
           }
         },
         "empty_control_accuracy": 0.02,
         "first_error": {
-          "expected": 31,
-          "instance": 11,
+          "expected": 29,
+          "instance": 39,
           "position": 12,
-          "predicted": 30,
+          "predicted": 23,
           "tokens": [
-            1,
-            31,
-            3,
-            30,
-            6,
+            5,
             23,
-            13,
+            0,
+            16,
+            2,
+            17,
+            9,
             29,
             32,
-            3,
-            13,
-            6,
-            1
+            2,
+            5,
+            0,
+            9
           ],
           "tokens_total": 13
         },
@@ -548,13 +578,13 @@
         "reason": null,
         "recipe": {
           "augmentation": "per example and per batch, a fresh random relabeling of token ids within the key-id class and within the value-id class, applied consistently to the input tokens and the answers",
-          "batch_size": 64,
+          "batch_size": 128,
           "clip": 1.0,
           "d": 128,
           "emb_scale": 0.5,
-          "epochs": 400,
+          "epochs": 300,
           "init": "weights uniform(-1/sqrt(d),1/sqrt(d)); E normal(0,0.5); retain bias 1, other biases 0, no output bias; s,y start at 0",
-          "learning_rate": 0.002,
+          "learning_rate": 0.004,
           "loss": "next-symbol cross-entropy at the scored positions, full backpropagation through time",
           "optimizer": "AdamW b1=0.9 b2=0.999 eps=1e-8, decoupled weight decay on matrices, global gradient-norm clip",
           "retain_bias": 1.0,
@@ -563,7 +593,7 @@
         },
         "seed": 2,
         "state_peak_words": 140288,
-        "wrong_control_accuracy": 0.051
+        "wrong_control_accuracy": 0.0595
       }
     ],
     "size": 4,
@@ -572,24 +602,44 @@
     "threshold": 0.99,
     "tier": "executed",
     "wall_clock": {
-      "train_s": [
+      "train_cpu_s": [
         {
           "empty": 0.001,
           "seed": 0,
-          "true": 58.026,
-          "wrong": 53.722
+          "true": 96.888,
+          "wrong": 96.125
         },
         {
           "empty": 0.001,
           "seed": 1,
-          "true": 57.485,
-          "wrong": 61.517
+          "true": 83.1,
+          "wrong": 79.506
         },
         {
           "empty": 0.001,
           "seed": 2,
-          "true": 51.302,
-          "wrong": 64.324
+          "true": 80.552,
+          "wrong": 81.932
+        }
+      ],
+      "train_s": [
+        {
+          "empty": 0.001,
+          "seed": 0,
+          "true": 101.545,
+          "wrong": 99.971
+        },
+        {
+          "empty": 0.001,
+          "seed": 1,
+          "true": 85.262,
+          "wrong": 80.721
+        },
+        {
+          "empty": 0.001,
+          "seed": 2,
+          "true": 81.632,
+          "wrong": 83.042
         }
       ]
     }
@@ -599,8 +649,8 @@
     1,
     2
   ],
-  "sha256": "2f7c9e301962b659208a2aa62a42e6d71319b76d05b4b3079f73d1d61dc04fd7",
-  "source": "results/p4-protocols-20261016/k2-recall128-source.py",
+  "sha256": "5905fdfb33939f82f8d50300cf62153d1b4f6d1c332c209a90de86a7e9e8b038",
+  "source": "results/kd1-20261017/staging/hybrid/fixtures/calibration/protocols/k2-recall.py",
   "spec": {
     "examples": 2500,
     "params": {
@@ -622,6 +672,6 @@
       "rounds": "1"
     }
   },
-  "started_utc": "2026-10-16T18:21:54Z",
-  "wall_s": 347.8044955409132
+  "started_utc": "20261017T214559Z",
+  "wall_s": 1117.6
 }
