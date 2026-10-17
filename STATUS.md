@@ -50,11 +50,11 @@ Gate work stops after one passing calibration. The 30-idea live batch runs next,
 
 ## Where it is going
 
-1. Done on branch p4-diagnosis (PR #1): P4 diagnosed and fixed at its source (card-supplied learners, decisions P4P, P4W, P4K); the tracked score uses the full acceptance rule; cost and S6 defects fixed.
-2. Now: calibration 20261017T030854Z on that branch, scored on the full rule.
-3. Next, under the stopping rule: the 30-idea live batch (plan section 14), judged by what survives and why things die.
-4. Alongside the batch, never gating it: a probe of whether the "is it new?" check wrongly reduces mechanisms known to be non-equivalent; and, for any survivor, the bench against tuned baselines on equal data and compute.
-5. The planted test and the bench acceptance sweep follow when they can use the batch's results.
+1. Done on branch p4-diagnosis (PR #1): P4 fixed at its source (card-supplied learners, decisions P4P, P4W, P4K), CPU-time admission (CT), full-rule scoring, cost and S6 fixes.
+2. Done: the last calibration (20261017T045735Z, one round under SR3) matched 27 of 29 items; every cell verdict was right. The two misses and an earlier defect are in KNOWN-DEFECTS.md and are flagged when they appear in batch kills.
+3. Now: the 30-idea live batch `discovery-live-20261017` (launched 2026-10-17 06:57Z, commit e40246c), judged by what survives and why things die (plan section 14).
+4. Alongside the batch, never gating it: the novelty probe (results/novelty-probe-20261017) and re-validating calibration learners inside the pinned container (KD1).
+5. Any survivor goes to the bench against tuned baselines on equal data and compute.
 
 The real measure of progress is a surviving idea that beats tuned baselines on equal data and compute. Nothing has done that yet.
 
