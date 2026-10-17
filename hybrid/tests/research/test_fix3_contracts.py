@@ -295,7 +295,7 @@ def test_a_refused_source_costs_an_attempt_but_no_job_and_the_next_round_names_t
 
     script = cf.script("k1", load_cards(("k1",))["k1"])
     script["prover"] = prover
-    h = Harness(tmp_path, "k1", script=script)
+    h = Harness(tmp_path, "k1", script=script, protocols=False)
     h.m()
     copy_jobs = [j for j in h.executor.jobs if _request(j).get("kind", "").startswith("learnability")
                  and _request(j)["spec"]["task"] == "copy"]

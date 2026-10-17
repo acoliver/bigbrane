@@ -26,9 +26,13 @@ from hybrid.tests.research.test_orchestrator_fakes import FakeLLM, make_orchestr
 
 class Harness:
     def __init__(self, tmp_path, key="k1", *, script=None, target=False, fixer=None, passes_p2=None,
-                 profile_on=True, card=None):
+                 profile_on=True, card=None, protocols=True):
+        """``protocols=False`` runs the calibration card without the learning protocols it supplies (decision P4P),
+        for a test that uses the card as a vehicle and expects the prover to write every learner."""
         self.key = key
         self.card = card or load_cards((key,))[key]
+        if not protocols:
+            self.card = cf.without_protocols(self.card)
         self.run_dir = (tmp_path / "run").resolve()
         self.ledger = Ledger(self.run_dir)
         self.store = Store(self.run_dir, self.ledger)
@@ -101,7 +105,8 @@ def test_without_the_profile_the_fixer_schema_keeps_the_phase3_forms():
 
 
 def test_every_slot_records_its_status_and_the_tier_it_reached(tmp_path):
-    h = Harness(tmp_path)
+    # K1 without its P4 protocols: with them P4.composition fails (decision P4K) and a failed slot records no tier.
+    h = Harness(tmp_path, protocols=False)
     assert h.m() is None   # the card's own claims are not formalized by this fixer, so M is undetermined
     block = h.verdict("M")["profile"]
     assert block["passed"] and set(block["slots"]) == set(profile.SLOTS)
@@ -210,7 +215,8 @@ def test_p5_violating_a_conservation_law_fails_with_its_counterexample(tmp_path)
     # FIX-16: the carried-state budget is the card's (resources.architecture.state_bits), and each P5 entry's
     # state_bits is derived from it. Here k1 states a 32-bit carried state while its numbers claim copy at 0.99 for L
     # up to 64 (128 bits at D = 4); the fixer copies the card's constant budget as the statement's state_bits.
-    card = copy.deepcopy(load_cards(("k1",))["k1"])
+    # No P4 protocols: the changed architecture contract is another experiment than the recorded learners ran.
+    card = cf.without_protocols(load_cards(("k1",))["k1"])
     card["resources"]["architecture"]["state_bits"] = 32
     answer = cf.fixer_output("k1", card)
     p5 = next(o for o in answer["obligations"] if o["claim_id"] == "P5")["statements"][0]["conservation"]
@@ -227,7 +233,7 @@ def test_p5_violating_a_conservation_law_fails_with_its_counterexample(tmp_path)
 # ----- the target gate ----------------------------------------------------------------------------------------------
 
 def test_the_target_gate_fails_the_quadratic_card_at_m_when_enabled(tmp_path):
-    h = Harness(tmp_path, "k1", target=True)
+    h = Harness(tmp_path, "k1", target=True, protocols=False)   # the profile holds without K1's composition learner
     assert h.m() is None
     verdict = h.verdict("M")
     assert verdict["verdict"] == "fail" and "obligation_failed:target" in verdict["kill_codes"]

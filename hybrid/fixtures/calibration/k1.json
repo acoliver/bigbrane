@@ -126,25 +126,45 @@
         "size": 4,
         "examples": 3000,
         "d": "64",
-        "rounds": "2"
+        "rounds": "2",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k1-copy.py",
+          "sha256": "e264cfca5b7c15a156a233cdf0b1ae87c73c9b0b7233e4deaefb58f6a93dbc6a",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-copy-candidate1-source.py, decision P4P): it passed development seeds 101, 102 and 103, then check seeds 0, 1 and 2 at 1.0, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 3000."
+        }
       },
       "recall": {
         "size": 4,
         "examples": 3000,
         "d": "64",
-        "rounds": "2"
+        "rounds": "2",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k1-recall.py",
+          "sha256": "ead21867ef878030a7fa0488975fe713f35fb327c0ac54b28e5635521b0595ab",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-recall-candidate1-source.py, decision P4P): it passed development seeds 101, 102 and 103, then check seeds 0, 1 and 2 at 1.0, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 3000."
+        }
       },
       "dyck": {
         "size": 2,
         "examples": 1500,
         "d": "64",
-        "rounds": "2"
+        "rounds": "2",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k1-nesting.py",
+          "sha256": "760d56fa2728c06d8eb51cef0c683424ab286e0e23fe53dcdd8c77d68f41988e",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-dyck-candidate1-source.py, decision P4P): it passed development seeds 101, 102 and 103, then check seeds 0, 1 and 2 at 1.0, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 1500."
+        }
       },
       "composition": {
         "size": 4,
         "examples": 4000,
         "d": "64",
-        "rounds": "2"
+        "rounds": "2",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k1-composition.py",
+          "sha256": "80d8d44382ef404ceb1257d82db39501f8677856d9b9655166b4b8d150c67d46",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-composition-r1-source.py, decisions P4P and P4K), the r1 learner from results/p4-k1-bimodal-20261016: it is the measured learner that does not reliably learn composition. Under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 4000 it passed 2 of 3 check seeds (seed 0 at 1.0, seed 1 at 0.566, seed 2 at 1.0), so the expected verdict is violated."
+        }
       }
     },
     "why": "Two rounds at a fixed width for learning; for the hand-set tasks the width and rounds grow with the size as the capability claims state."

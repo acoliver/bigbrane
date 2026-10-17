@@ -1,0 +1,527 @@
+{
+  "architecture_contract": {
+    "hidden": "d",
+    "precision_bits": 64
+  },
+  "generator_control": [
+    30000,
+    30001,
+    30002
+  ],
+  "generator_test": [
+    20000,
+    20001,
+    20002
+  ],
+  "generator_train": [
+    10000,
+    10001,
+    10002
+  ],
+  "name": "k1-copy-candidate1-confirmation",
+  "per_seed_wall": [
+    {
+      "seed": 0,
+      "total_s": 21.062346459017135
+    },
+    {
+      "seed": 1,
+      "total_s": 20.802186834043823
+    },
+    {
+      "seed": 2,
+      "total_s": 19.09262187499553
+    }
+  ],
+  "phase": "confirmation",
+  "result": {
+    "architecture": {
+      "checked": true,
+      "points": [
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "2",
+            "vocab": "5"
+          },
+          "float_bits": 64,
+          "point": {
+            "L": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "2",
+            "vocab": "5"
+          },
+          "float_bits": 64,
+          "point": {
+            "L": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "2",
+            "vocab": "5"
+          },
+          "float_bits": 64,
+          "point": {
+            "L": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        }
+      ],
+      "violations": []
+    },
+    "counterexample": null,
+    "evidence": "copy at L=4 from m=3000 examples: seed 0 accuracy 1.0000 (control 0.0000), seed 1 accuracy 1.0000 (control 0.0000), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"batch_size\": 100, \"beta1\": 0.9, \"beta2\": 0.98, \"clip_norm\": 1.0, \"d\": 64, \"epochs\": 120, \"eps\": 1e-08, \"init\": \"gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)\", \"loss\": \"next-symbol cross-entropy at query positions, through both rounds\", \"lr\": 0.003, \"min_lr_frac\": 0.05, \"optimizer\": \"adamw\", \"rounds\": 2, \"schedule\": \"cosine\", \"warmup_steps\": 200, \"weight_decay\": 0.01} applied to the true data and both controls; observed on the listed sizes: copy L=4 m=3000 seed=0, copy L=4 m=3000 seed=1, copy L=4 m=3000 seed=2",
+    "examples": 3000,
+    "recipe": {
+      "batch_size": 100,
+      "beta1": 0.9,
+      "beta2": 0.98,
+      "clip_norm": 1.0,
+      "d": 64,
+      "epochs": 120,
+      "eps": 1e-08,
+      "init": "gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)",
+      "loss": "next-symbol cross-entropy at query positions, through both rounds",
+      "lr": 0.003,
+      "min_lr_frac": 0.05,
+      "optimizer": "adamw",
+      "rounds": 2,
+      "schedule": "cosine",
+      "warmup_steps": 200,
+      "weight_decay": 0.01
+    },
+    "results": [
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 20.0,
+                "loss": 0.0,
+                "lr": 0.002904,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 40.0,
+                "loss": 0.0,
+                "lr": 0.002434,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 60.0,
+                "loss": 0.0,
+                "lr": 0.001706,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 80.0,
+                "loss": 0.0,
+                "lr": 0.00094,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.0,
+                "lr": 0.000363,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 120.0,
+                "loss": 0.0,
+                "lr": 0.00015,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 20.0,
+                "loss": 1.384305,
+                "lr": 0.002904,
+                "train_accuracy": 0.278833
+              },
+              {
+                "epoch": 40.0,
+                "loss": 1.364833,
+                "lr": 0.002434,
+                "train_accuracy": 0.3115
+              },
+              {
+                "epoch": 60.0,
+                "loss": 1.339707,
+                "lr": 0.001706,
+                "train_accuracy": 0.34
+              },
+              {
+                "epoch": 80.0,
+                "loss": 1.312044,
+                "lr": 0.00094,
+                "train_accuracy": 0.36775
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.289695,
+                "lr": 0.000363,
+                "train_accuracy": 0.384583
+              },
+              {
+                "epoch": 120.0,
+                "loss": 1.280206,
+                "lr": 0.00015,
+                "train_accuracy": 0.3895
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "batch_size": 100,
+          "beta1": 0.9,
+          "beta2": 0.98,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 120,
+          "eps": 1e-08,
+          "init": "gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)",
+          "loss": "next-symbol cross-entropy at query positions, through both rounds",
+          "lr": 0.003,
+          "min_lr_frac": 0.05,
+          "optimizer": "adamw",
+          "rounds": 2,
+          "schedule": "cosine",
+          "warmup_steps": 200,
+          "weight_decay": 0.01
+        },
+        "seed": 0,
+        "state_peak_words": 52418,
+        "wrong_control_accuracy": 0.002
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 20.0,
+                "loss": 0.0,
+                "lr": 0.002904,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 40.0,
+                "loss": 0.0,
+                "lr": 0.002434,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 60.0,
+                "loss": 0.0,
+                "lr": 0.001706,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 80.0,
+                "loss": 0.0,
+                "lr": 0.00094,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.0,
+                "lr": 0.000363,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 120.0,
+                "loss": 0.0,
+                "lr": 0.00015,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 20.0,
+                "loss": 1.380861,
+                "lr": 0.002904,
+                "train_accuracy": 0.279083
+              },
+              {
+                "epoch": 40.0,
+                "loss": 1.358493,
+                "lr": 0.002434,
+                "train_accuracy": 0.32175
+              },
+              {
+                "epoch": 60.0,
+                "loss": 1.333995,
+                "lr": 0.001706,
+                "train_accuracy": 0.346083
+              },
+              {
+                "epoch": 80.0,
+                "loss": 1.305214,
+                "lr": 0.00094,
+                "train_accuracy": 0.37225
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.283315,
+                "lr": 0.000363,
+                "train_accuracy": 0.389333
+              },
+              {
+                "epoch": 120.0,
+                "loss": 1.27394,
+                "lr": 0.00015,
+                "train_accuracy": 0.395583
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "batch_size": 100,
+          "beta1": 0.9,
+          "beta2": 0.98,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 120,
+          "eps": 1e-08,
+          "init": "gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)",
+          "loss": "next-symbol cross-entropy at query positions, through both rounds",
+          "lr": 0.003,
+          "min_lr_frac": 0.05,
+          "optimizer": "adamw",
+          "rounds": 2,
+          "schedule": "cosine",
+          "warmup_steps": 200,
+          "weight_decay": 0.01
+        },
+        "seed": 1,
+        "state_peak_words": 52418,
+        "wrong_control_accuracy": 0.004
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 20.0,
+                "loss": 0.0,
+                "lr": 0.002904,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 40.0,
+                "loss": 0.0,
+                "lr": 0.002434,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 60.0,
+                "loss": 0.0,
+                "lr": 0.001706,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 80.0,
+                "loss": 0.0,
+                "lr": 0.00094,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.0,
+                "lr": 0.000363,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 120.0,
+                "loss": 0.0,
+                "lr": 0.00015,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 20.0,
+                "loss": 1.382903,
+                "lr": 0.002904,
+                "train_accuracy": 0.281
+              },
+              {
+                "epoch": 40.0,
+                "loss": 1.362533,
+                "lr": 0.002434,
+                "train_accuracy": 0.311917
+              },
+              {
+                "epoch": 60.0,
+                "loss": 1.334367,
+                "lr": 0.001706,
+                "train_accuracy": 0.344583
+              },
+              {
+                "epoch": 80.0,
+                "loss": 1.305244,
+                "lr": 0.00094,
+                "train_accuracy": 0.367833
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.283875,
+                "lr": 0.000363,
+                "train_accuracy": 0.39075
+              },
+              {
+                "epoch": 120.0,
+                "loss": 1.27378,
+                "lr": 0.00015,
+                "train_accuracy": 0.394333
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "batch_size": 100,
+          "beta1": 0.9,
+          "beta2": 0.98,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 120,
+          "eps": 1e-08,
+          "init": "gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)",
+          "loss": "next-symbol cross-entropy at query positions, through both rounds",
+          "lr": 0.003,
+          "min_lr_frac": 0.05,
+          "optimizer": "adamw",
+          "rounds": 2,
+          "schedule": "cosine",
+          "warmup_steps": 200,
+          "weight_decay": 0.01
+        },
+        "seed": 2,
+        "state_peak_words": 52418,
+        "wrong_control_accuracy": 0.002
+      }
+    ],
+    "size": 4,
+    "status": "discharged",
+    "task": "copy",
+    "threshold": 0.99,
+    "tier": "executed",
+    "wall_clock": {
+      "train_s": [
+        {
+          "empty": 0.0,
+          "seed": 0,
+          "true": 11.697,
+          "wrong": 8.955
+        },
+        {
+          "empty": 0.0,
+          "seed": 1,
+          "true": 11.684,
+          "wrong": 8.735
+        },
+        {
+          "empty": 0.0,
+          "seed": 2,
+          "true": 8.785,
+          "wrong": 9.74
+        }
+      ]
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "sha256": "e264cfca5b7c15a156a233cdf0b1ae87c73c9b0b7233e4deaefb58f6a93dbc6a",
+  "source": "results/p4-protocols2-20261016/k1-copy-candidate1-source.py",
+  "spec": {
+    "examples": 3000,
+    "params": {
+      "D": 4
+    },
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "size": 4,
+    "task": "copy",
+    "test_count": 500,
+    "threshold": 0.99,
+    "widths": {
+      "d": "64",
+      "positions": "8",
+      "rounds": "2"
+    }
+  },
+  "started_utc": "2026-10-16T21:16:50Z",
+  "task": "k1-copy",
+  "wall_s": 60.965771417017095
+}

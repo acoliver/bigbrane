@@ -114,7 +114,12 @@
         "size": 4,
         "examples": 1500,
         "d": "64",
-        "rounds": "1"
+        "rounds": "1",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k2-copy.py",
+          "sha256": "cf38d4628ab6cf2d850316aa98fb64edaa946fc5da8433ecc337087da16911c9",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k2-copy-candidate1-source.py, decision P4P): it passed development seeds 101, 102 and 103, then check seeds 0, 1 and 2 at 1.0, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 1500."
+        }
       },
       "recall": {
         "size": 4,
@@ -131,7 +136,12 @@
         "size": 2,
         "examples": 1200,
         "d": "64",
-        "rounds": "1"
+        "rounds": "1",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k2-nesting.py",
+          "sha256": "1ff702d960a4610dfdf1ed06e05abb3d96b9aff0ff8824ae0094910e027e4b63",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k2-dyck-candidate1-source.py, decision P4P): it passed development seeds 101, 102 and 103, then check seeds 0, 1 and 2 at 1.0, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 1200."
+        }
       },
       "composition": {
         "size": 4,

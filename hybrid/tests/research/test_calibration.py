@@ -133,6 +133,9 @@ def factory(cards, *, p2_by_run=None, composition_by_run=None):
         passes = (p2_by_run or {}).get((key, run))
         key_learns = "obligation_failed:P4.composition" not in expected[key].get("kill_codes_include", [])
         learns = (composition_by_run or {}).get((key, run), key_learns)
+        if learns:
+            # A card with a supplied composition learner (K1: it fails one check seed) learns only by this answer.
+            executor.reach_threshold("composition")
         llm = FakeLLM(ledger.run_dir, ledger, cf.script(key, cards[key], passes_p2=passes, learns_composition=learns))
         return cal.Deps(llm, executor, "image", MathRunner(executor, mf.IMAGE, ledger.run_dir))
     return build

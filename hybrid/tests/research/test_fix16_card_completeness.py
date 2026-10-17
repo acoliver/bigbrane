@@ -245,13 +245,16 @@ def resources_reply(index, user):
 
 def test_in_a_normal_run_the_author_is_asked_for_the_missing_resources_under_the_revision_budget(tmp_path):
     book = FakeBook(grants=1)
-    ctx, llm = stage_context(tmp_path, incomplete_k2(), {"card_resources": resources_reply}, book=book)
+    # The test is about the revision round, not the learners: a card without protocols keeps the author's resources
+    # as stated (a protocol stays only on an unchanged learning case, and this card's copy case is incomplete).
+    incomplete = cf.without_protocols(incomplete_k2())
+    ctx, llm = stage_context(tmp_path, incomplete, {"card_resources": resources_reply}, book=book)
     card = asyncio.run(m_math.complete_card(ctx, K2["id"], ctx.card(K2["id"])))
-    assert card is not None and cr.missing(card) == [] and card["resources"] == K2["resources"]
+    assert card is not None and cr.missing(card) == [] and card["resources"] == cf.without_protocols(K2)["resources"]
     assert [c["prompt"] for c in llm.calls] == ["card_resources"]
     assert "resources.tasks.recall.d (a formula in K)" in llm.calls[0]["user"]
     assert book.rounds == [{"stage": "M", "loop": "math_revision", "round_id": "resources-v1",
-                            "failing": sorted(cr.missing(incomplete_k2()))}]
+                            "failing": sorted(cr.missing(incomplete))}]
     assert ctx.card(K2["id"])["version"] == 2
     asked = ctx.card_events(K2["id"], "card_resources_requested")
     assert asked[0]["missing_after"] == [] and asked[0]["stage"] == "M"

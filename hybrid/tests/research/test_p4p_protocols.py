@@ -1,12 +1,15 @@
 """Decisions P4P and P4W: card-supplied P4 learning protocols.
 
 Calibration P4 failed because the prover wrote a fresh training recipe and learner in every card-run
-(results/p4-diag-20261016/REPORT.md). Card K2 now supplies the two learners that passed check seeds 0 to 2 on the host
-(results/p4-protocols-20261016/REPORT.md): composition at d = 64 and recall at d = 128 (P4W moves K2's recall learning
-width from 64 to 128). Stage M checks such a learner verbatim through the same check as a prover learner and asks the
-prover for none; a hash mismatch stops the load and the stage; without a protocol nothing changes.
+(results/p4-diag-20261016/REPORT.md). Cards K1 and K2 now supply a measured learner for every P4 task: K2 composition
+at d = 64 and recall at d = 128 (results/p4-protocols-20261016/REPORT.md; P4W moves K2's recall learning width from 64
+to 128), and K1 copy, recall, nesting and composition plus K2 copy and nesting (results/p4-protocols2-20261016/REPORT.md).
+The K1 composition learner is the measured learner that does not reliably learn composition (decision P4K): it passed 2
+of 3 check seeds, so its recorded verdict is violated. Stage M checks such a learner verbatim through the same check as
+a prover learner and asks the prover for none; a hash mismatch stops the load and the stage; without a protocol
+nothing changes.
 
-The full checks of the two K2 learners are answered with their recorded host results in the stage tests
+The full checks of the learners are answered with their recorded host results in the stage tests
 (calibration_fakes.FastExecutor). ``test_the_k2_recall_protocol_replays_through_the_stage_m_learnability_path`` trains
 the recall learner for real on check seed 0 through the stage's runner; it takes minutes, so it is marked slow and runs
 only with BIGBRANE_RUN_SLOW=1.
@@ -23,7 +26,7 @@ from pathlib import Path
 
 import pytest
 
-from hybrid.math import learnability, profile
+from hybrid.math import constructions, learnability, profile
 from hybrid.math.runner import LIBRARY_CAPS, MathRunner
 from hybrid.research import calibration as cal
 from hybrid.research.schemas import SchemaViolation, validate
@@ -33,22 +36,59 @@ from hybrid.tests.research import calibration_fakes as cf
 from hybrid.tests.research import math_fakes as mf
 from hybrid.tests.research.test_profile_stage import Harness
 
-# The sha256 values results/p4-protocols-20261016/REPORT.md gives for the validated sources.
+# The sha256 values results/p4-protocols-20261016/REPORT.md gives for the K2 composition and recall sources.
 COMPOSITION_SHA = "005fda026e7fa10d41df4eb0a96b8e3cb4b347a25484de449363bc9350cc0645"
 RECALL_SHA = "2f7c9e301962b659208a2aa62a42e6d71319b76d05b4b3079f73d1d61dc04fd7"
 PROTOCOL_DIR = cal.FIXTURES / "protocols"
 SUPPLIED_SLOTS = ("P4.recall", "P4.composition")
 
+# Every card protocol: (card, learning task) -> (file name stem, sha256 of the validated source, the report that
+# validated it). The file stem names the task as the card does ("nesting" for the dyck learning task). The K1 and K2
+# copy, K1 recall, nesting and composition and K2 nesting hashes are those of results/p4-protocols2-20261016/protocols.json.
+P1 = "results/p4-protocols-20261016"
+P2 = "results/p4-protocols2-20261016"
+PROTOCOLS = {
+    ("k1", "copy"): ("k1-copy", "e264cfca5b7c15a156a233cdf0b1ae87c73c9b0b7233e4deaefb58f6a93dbc6a", P2),
+    ("k1", "recall"): ("k1-recall", "ead21867ef878030a7fa0488975fe713f35fb327c0ac54b28e5635521b0595ab", P2),
+    ("k1", "dyck"): ("k1-nesting", "760d56fa2728c06d8eb51cef0c683424ab286e0e23fe53dcdd8c77d68f41988e", P2),
+    ("k1", "composition"): ("k1-composition", "80d8d44382ef404ceb1257d82db39501f8677856d9b9655166b4b8d150c67d46", P2),
+    ("k2", "copy"): ("k2-copy", "cf38d4628ab6cf2d850316aa98fb64edaa946fc5da8433ecc337087da16911c9", P2),
+    ("k2", "recall"): ("k2-recall", RECALL_SHA, P1),
+    ("k2", "dyck"): ("k2-nesting", "1ff702d960a4610dfdf1ed06e05abb3d96b9aff0ff8824ae0094910e027e4b63", P2),
+    ("k2", "composition"): ("k2-composition", COMPOSITION_SHA, P1),
+}
+# The card's frozen learning case each protocol was validated for: size, examples m, d, rounds.
+LEARNING_CASES = {
+    ("k1", "copy"): (4, 3000, "64", "2"), ("k1", "recall"): (4, 3000, "64", "2"),
+    ("k1", "dyck"): (2, 1500, "64", "2"), ("k1", "composition"): (4, 4000, "64", "2"),
+    ("k2", "copy"): (4, 1500, "64", "1"), ("k2", "recall"): (4, 2500, "128", "1"),
+    ("k2", "dyck"): (2, 1200, "64", "1"), ("k2", "composition"): (4, 3000, "64", "1"),
+}
+PRECISION = {"k1": 64, "k2": 32}
+# The recorded host verdict of each protocol: K1 composition is the measured learner that fails (decision P4K).
+RECORDED_STATUS = {key: "violated" if key == ("k1", "composition") else "discharged" for key in PROTOCOLS}
+PROTOCOL_CASES = sorted(PROTOCOLS)
+P4_SLOT_OF_TASK = {tasks[0]: slot for slot, tasks in profile.P4_SLOTS.items()}
+
+
+def card_of(key: str) -> dict:
+    return copy.deepcopy(cal.load_cards((key,))[key])
+
 
 def k2() -> dict:
-    return copy.deepcopy(cal.load_cards(("k2",))["k2"])
+    return card_of("k2")
 
 
-def without_protocols(card: dict) -> dict:
+def only_protocols(card: dict, tasks) -> dict:
+    """The card with the protocols of the other learning tasks removed."""
     card = copy.deepcopy(card)
-    for entry in card["resources"]["learning"].values():
-        entry.pop("protocol", None)
+    for task, entry in card["resources"]["learning"].items():
+        if task not in tasks:
+            entry.pop("protocol", None)
     return card
+
+
+without_protocols = cf.without_protocols
 
 
 def slot_statements(record: dict, slots) -> dict[str, dict]:
@@ -66,52 +106,79 @@ def check_artifacts(h: Harness, statement_id: str) -> list[dict]:
 
 # ----- 1. the card field and the K2 fixture ------------------------------------------------------------------------
 
-def test_k2_loads_with_both_protocols_and_their_sha256_match_the_report():
-    protocols = cr.learning_protocols(k2())
-    assert sorted(protocols) == ["composition", "recall"]
-    assert protocols["composition"].sha256 == COMPOSITION_SHA and protocols["recall"].sha256 == RECALL_SHA
-    for task, sha in (("composition", COMPOSITION_SHA), ("recall", RECALL_SHA)):
-        path = PROTOCOL_DIR / f"k2-{task}.py"
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == sha
-        assert protocols[task].path == f"hybrid/fixtures/calibration/protocols/k2-{task}.py"
-        assert protocols[task].source == path.read_text(encoding="utf-8")
-        assert protocols[task].provenance.startswith("Measured learner from results/p4-protocols-20261016")
+@pytest.mark.parametrize("key", ["k1", "k2"])
+def test_each_card_carries_a_protocol_for_every_p4_task_and_their_sha256_match_the_reports(key):
+    protocols = cr.learning_protocols(card_of(key))
+    assert sorted(protocols) == ["composition", "copy", "dyck", "recall"]
+    for task, protocol in protocols.items():
+        stem, sha, report = PROTOCOLS[(key, task)]
+        path = PROTOCOL_DIR / f"{stem}.py"
+        assert protocol.sha256 == sha and hashlib.sha256(path.read_bytes()).hexdigest() == sha
+        assert protocol.path == f"hybrid/fixtures/calibration/protocols/{stem}.py"
+        assert protocol.source == path.read_text(encoding="utf-8")
+        assert protocol.provenance.startswith(f"Measured learner from {report} ")
     record = protocols["recall"].record()
-    assert record == {"origin": "card", "task": "recall", "path": "hybrid/fixtures/calibration/protocols/k2-recall.py",
-                      "sha256": RECALL_SHA, "provenance": protocols["recall"].provenance}
+    stem = PROTOCOLS[(key, "recall")][0]
+    assert record == {"origin": "card", "task": "recall", "path": f"hybrid/fixtures/calibration/protocols/{stem}.py",
+                      "sha256": PROTOCOLS[(key, "recall")][1], "provenance": protocols["recall"].provenance}
 
 
-def test_k2_recall_learns_at_width_128_and_k1_is_unchanged():
+def test_the_protocol_directory_holds_exactly_the_cards_sources():
+    assert sorted(path.name for path in PROTOCOL_DIR.glob("*.py")) == sorted(f"{s}.py" for s, _, _ in PROTOCOLS.values())
+
+
+@pytest.mark.parametrize("key, task", PROTOCOL_CASES)
+def test_each_protocol_is_wired_to_the_cards_frozen_learning_case(key, task):
+    """The protocol applies only when the card's learning entry is the case it was validated for."""
+    entry = card_of(key)["resources"]["learning"][task]
+    assert (entry["size"], entry["examples"], entry["d"], entry["rounds"]) == LEARNING_CASES[(key, task)]
+
+
+def test_the_k1_composition_provenance_says_the_learner_does_not_reliably_learn_composition():
+    protocol = cr.learning_protocols(card_of("k1"))["composition"]
+    assert "does not reliably learn composition" in protocol.provenance and "P4K" in protocol.provenance
+    assert "passed 2 of 3 check seeds" in protocol.provenance
+    assert "the expected verdict is violated" in protocol.provenance
+    for key, task in PROTOCOL_CASES:
+        if (key, task) != ("k1", "composition"):
+            provenance = cr.learning_protocols(card_of(key))[task].provenance
+            assert "violated" not in provenance and "P4K" not in provenance
+
+
+def test_k2_recall_learns_at_width_128_and_k1_stays_at_width_64():
     cards = cal.load_cards(("k1", "k2"))
     learning = cards["k2"]["resources"]["learning"]
     assert learning["recall"]["d"] == "128"
     assert {task: entry["d"] for task, entry in learning.items() if task != "recall"} == {
         "copy": "64", "dyck": "64", "composition": "64"}
     assert "recall, which learns at a store width of 128" in cards["k2"]["resources"]["why"]
-    assert cr.learning_protocols(cards["k1"]) == {}
-    assert not cal.anonymization_problems(cards["k2"])
+    assert {entry["d"] for entry in cards["k1"]["resources"]["learning"].values()} == {"64"}
+    assert not cal.anonymization_problems(cards["k1"]) and not cal.anonymization_problems(cards["k2"])
 
 
-@pytest.mark.parametrize("task", ["composition", "recall"])
-def test_each_protocol_source_states_the_cards_frozen_width_and_precision(task):
-    """The learner's own RECIPE width and float32 arithmetic equal the card's learning d and its 32-bit contract."""
-    card = k2()
+@pytest.mark.parametrize("key, task", PROTOCOL_CASES)
+def test_each_protocol_source_states_the_cards_frozen_width_and_precision(key, task):
+    """The learner's own RECIPE width and its arithmetic equal the card's learning d and its precision contract."""
+    card = card_of(key)
     protocol = cr.learning_protocols(card)[task]
     recipe = learnability.recipe_of(learnability.load_learner(protocol.source))
     entry = card["resources"]["learning"][task]
-    assert recipe["d"] == cr.evaluate(entry["d"], {"T" if task == "composition" else "K": entry["size"]})
-    assert card["resources"]["architecture"] == {"hidden": "d", "precision_bits": 32, "state_bits": None}
-    assert "float32" in protocol.source and "float64" not in protocol.source
+    width = recipe["d"] if "d" in recipe else recipe["width_d"]
+    assert width == cr.evaluate(entry["d"], {constructions.SIZE_NAME[task]: entry["size"]})
+    assert card["resources"]["architecture"] == {"hidden": "d", "precision_bits": PRECISION[key], "state_bits": None}
+    wrong, right = ("float64", "float32") if key == "k2" else ("float32", "float64")
+    assert right in protocol.source and wrong not in protocol.source
 
 
-@pytest.mark.parametrize("task, name", [("composition", "k2-composition"), ("recall", "k2-recall")])
-def test_the_stage_m_request_is_the_experiment_the_protocol_was_confirmed_on(task, name):
+@pytest.mark.parametrize("key, task", PROTOCOL_CASES)
+def test_the_stage_m_request_is_the_experiment_the_protocol_was_confirmed_on(key, task):
     """The statement the host freezes from the card, sent through m_math.library_request with the frozen architecture
     contract, is the experiment of the recorded confirmation: same source hash, task, size, m, seeds, threshold,
     layout, widths at the size and contract (the recorded request wrote the widths as numbers)."""
-    card = k2()
+    name = PROTOCOLS[(key, task)][0]
+    card = card_of(key)
     protocol = cr.learning_protocols(card)[task]
-    spec, problems = cr.normalize_statement(card, f"P4.{task}", "learnability", {"task": task})
+    spec, problems = cr.normalize_statement(card, P4_SLOT_OF_TASK[task], "learnability", {"task": task})
     assert problems == [] and cr.protocol_applies(protocol, spec)
     contract, problems = cr.normalize_architecture(card, None)
     assert problems == []
@@ -120,7 +187,8 @@ def test_the_stage_m_request_is_the_experiment_the_protocol_was_confirmed_on(tas
     assert recorded["sha256"] == protocol.sha256 == hashlib.sha256(request["source"].encode()).hexdigest()
     assert cf.experiment_key(request["spec"], request["architecture"]) == cf.experiment_key(
         recorded["spec"], recorded["architecture_contract"])
-    assert recorded["result"]["status"] == "discharged" and recorded["result"]["architecture"]["violations"] == []
+    assert recorded["result"]["status"] == RECORDED_STATUS[(key, task)]
+    assert recorded["result"]["architecture"]["violations"] == []
 
 
 def test_a_protocol_applies_only_to_the_cards_learning_case():
@@ -157,7 +225,7 @@ def test_a_changed_or_missing_source_or_a_path_outside_the_repo_is_refused(tmp_p
     (root / "protocols" / "k2-recall.py").write_bytes(source + b"\n")
     card = k2()
     card["resources"]["learning"]["recall"]["protocol"]["source"] = "protocols/k2-recall.py"
-    card["resources"]["learning"].pop("composition")
+    card = only_protocols(card, ("recall",))
     with pytest.raises(cr.ProtocolError, match="the card states " + RECALL_SHA):
         cr.learning_protocols(card, root)
     (root / "protocols" / "k2-recall.py").write_bytes(source)
@@ -196,7 +264,8 @@ def test_stage_m_stops_on_a_hash_mismatch_before_any_call_or_job(tmp_path):
 # ----- 3. a supplied protocol skips the prover and is checked by the same runner -----------------------------------
 
 def test_a_supplied_protocol_is_checked_verbatim_by_the_same_runner_and_the_prover_is_never_asked(tmp_path):
-    h = Harness(tmp_path, "k2")
+    """K2 as it was first wired: learners for composition and recall, prover learners for copy and nesting."""
+    h = Harness(tmp_path, "k2", card=only_protocols(k2(), ("composition", "recall")))
     h.m()
     record = h.frozen()
     supplied = slot_statements(record, SUPPLIED_SLOTS)
@@ -257,6 +326,34 @@ def test_a_supplied_protocol_is_checked_verbatim_by_the_same_runner_and_the_prov
     validate("math_verdict", verdict)
 
 
+@pytest.mark.parametrize("key", ["k1", "k2"])
+def test_every_p4_slot_of_a_calibration_card_runs_its_supplied_learner_and_the_prover_writes_none(tmp_path, key):
+    h = Harness(tmp_path, key)
+    h.m()
+    supplied = slot_statements(h.frozen(), tuple(profile.P4_SLOTS))
+    protocols = cr.learning_protocols(h.card)
+    assert sorted(s["spec"]["task"] for s in supplied.values()) == sorted(protocols) == [
+        "composition", "copy", "dyck", "recall"]
+    assert not set(supplied) & {item["statement_id"] for item in prover_items(h)}
+    assert not [e for e in h.ledger.iter_events("proof_attempt") if e["data"]["statement_id"] in supplied]
+    assert len(h.executor.measured) == 8
+    verdict = h.verdict("M")
+    for sid, statement in supplied.items():
+        task = statement["spec"]["task"]
+        protocol = protocols[task]
+        [check] = check_artifacts(h, sid)
+        assert check["text"] == protocol.source and check["purpose"] == "card_protocol"
+        assert check["learner"] == protocol.record() and check["learner"]["sha256"] == PROTOCOLS[(key, task)][1]
+        assert check["details"]["architecture"]["violations"] == []
+        assert check["status"] == RECORDED_STATUS[(key, task)]
+        assert verdict["checks"][sid]["learner"]["origin"] == "card"
+    # K1 composition is the measured learner that does not reliably learn composition (decision P4K): its slot fails.
+    for slot, tasks in profile.P4_SLOTS.items():
+        expected = "failed" if (key, tasks[0]) == ("k1", "composition") else "observed"
+        assert h.slot("M", slot)["status"] == expected, slot
+    validate("math_verdict", verdict)
+
+
 def test_the_statements_still_freeze_from_the_card(tmp_path):
     """The frozen P4 statements are what the card states (recall at d = 128 and m = 2500, composition at d = 64 and
     m = 3000), with the protocol seeds and threshold, and the freeze event comes before any check."""
@@ -313,7 +410,7 @@ def test_without_a_protocol_the_prover_writes_every_learner(tmp_path, key):
 def test_a_prover_message_without_protocols_is_unchanged_by_the_feature(tmp_path):
     """The prover's message for a learnability statement is the same function of the card and record as before: the
     protocol text appears only for the fixer and the challenger."""
-    h = Harness(tmp_path, "k1")
+    h = Harness(tmp_path, "k1", card=without_protocols(card_of("k1")))
     h.m()
     prover = [c["user"] for c in h.llm.calls if c["prompt"] == "prover"]
     assert prover and not any("CARD LEARNING PROTOCOLS" in user or "decision P4P" in user for user in prover)
@@ -325,7 +422,7 @@ def test_the_fixer_is_told_the_protocol_is_used_verbatim(tmp_path):
     h = Harness(tmp_path, "k2")
     h.m()
     fixer = next(c for c in h.llm.calls if c["prompt"] == "statement_fixer")["user"]
-    assert "CARD LEARNING PROTOCOLS (decision P4P)" in fixer and "statement of composition, recall" in fixer
+    assert "CARD LEARNING PROTOCOLS (decision P4P)" in fixer and "statement of composition, copy, dyck, recall" in fixer
     assert "A card-supplied protocol is used verbatim" in fixer
     assert "write no definition that sets or changes its training recipe" in fixer
     assert '"sha256": "' + RECALL_SHA + '"' in fixer
@@ -348,7 +445,8 @@ def test_the_fixer_cannot_change_a_protocol_tasks_width_or_m():
 
 
 def test_the_challenger_sees_the_origin_and_no_variant_replaces_a_card_learner(tmp_path):
-    h = Harness(tmp_path, "k2")
+    """K2 as it was first wired: copy has a prover learner, recall a card learner."""
+    h = Harness(tmp_path, "k2", card=only_protocols(k2(), ("composition", "recall")))
     h.m()
     record = h.frozen()
     verdict = h.verdict("M")
@@ -379,12 +477,37 @@ def test_the_challenger_sees_the_origin_and_no_variant_replaces_a_card_learner(t
     assert len(list(h.ledger.iter_events("math_check"))) == before
 
 
+@pytest.mark.parametrize("key", ["k1", "k2"])
+def test_every_check_shows_the_challenger_its_card_learner(tmp_path, key):
+    h = Harness(tmp_path, key)
+    h.m()
+    record = h.frozen()
+    verdict = h.verdict("M")
+    for sid, statement in slot_statements(record, tuple(profile.P4_SLOTS)).items():
+        view = c_challenge._check_view(dict(verdict["checks"][sid]))
+        assert view["learner"]["origin"] == "card"
+        assert view["learner"]["sha256"] == PROTOCOLS[(key, statement["spec"]["task"])][1]
+
+
+@pytest.mark.parametrize("key", ["k1", "k2"])
+def test_authors_keep_all_four_protocols_of_a_card_and_lose_one_on_a_changed_case(key):
+    card = card_of(key)
+    own = copy.deepcopy(card["resources"])
+    kept, dropped = cr.keep_card_protocols(card, own)
+    assert kept == card["resources"] and dropped == []
+    answer = copy.deepcopy(own)
+    answer["learning"]["copy"]["examples"] += 100
+    kept, dropped = cr.keep_card_protocols(card, answer)
+    assert dropped == ["copy"] and "protocol" not in kept["learning"]["copy"]
+    assert sorted(cr.learning_protocols({"resources": kept})) == ["composition", "dyck", "recall"]
+
+
 def test_explorers_cannot_state_a_protocol_and_authors_keep_only_the_cards_own():
     learning = draft_schema()["$defs"]["learning_resources"]["properties"]
     assert "protocol" not in learning and "learning_protocol" not in draft_schema()["$defs"]
     from hybrid.research.schemas import load_schema
     assert "protocol" in load_schema("theory_card")["$defs"]["learning_resources"]["properties"]
-    card = k2()
+    card = only_protocols(k2(), ("composition", "recall"))
     own = copy.deepcopy(card["resources"])
     # An author who restates the card's resources keeps its protocols unchanged.
     kept, dropped = cr.keep_card_protocols(card, own)

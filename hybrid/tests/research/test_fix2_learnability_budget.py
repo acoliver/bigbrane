@@ -134,7 +134,7 @@ def test_the_prompts_ask_for_a_schedule_that_fits_and_for_batched_linear_algebra
 
 
 def test_the_stage_states_the_budget_of_its_own_runner_to_both_roles(tmp_path):
-    h = Harness(tmp_path, "k1")
+    h = Harness(tmp_path, "k1", protocols=False)
     h.ctx.math.library_caps = Caps(wall_s=900, memory_mb=2048, pids=64)
     h.m()
     fixer = next(c for c in h.llm.calls if c["prompt"] == "statement_fixer")
@@ -248,7 +248,7 @@ def overrun_harness(tmp_path) -> tuple[Harness, ProbeExecutor]:
     """Card k1 with the profile; the copy learner's probe prints k1's recorded phases, and the runner's cap is 200 s
     (FIX-16: m is k1's stated 3000, so the recorded phases scaled from the probe's 300 examples project well above
     160 s)."""
-    h = Harness(tmp_path, "k1")
+    h = Harness(tmp_path, "k1", protocols=False)
     executor = ProbeExecutor(tmp_path / "exec2", timing=k1_timing())
     h.ctx.math = MathRunner(executor, mf.IMAGE, h.run_dir, library_caps=Caps(wall_s=200, memory_mb=4096, pids=64))
     return h, executor
@@ -310,12 +310,12 @@ def test_after_a_timeout_an_equivalent_experiment_needs_a_probe_showing_a_lower_
 def two_copy_statements(tmp_path, *, variant: bool):
     """Card k1 whose P4.copy has two copy statements of the same experiment; the full copy job times out after a
     probe that projects it fits. With ``variant`` the prover sends a cosmetically different second source."""
-    card = calibration.load_cards(("k1",))["k1"]
+    card = cf.without_protocols(calibration.load_cards(("k1",))["k1"])
     fixer = cf.fixer_output("k1", card)
     obligation = next(o for o in fixer["obligations"] if o["claim_id"] == "P4.copy")
     # FIX-16: both statements copy k1's stated P4 copy case (resources.learning.copy).
     obligation["statements"] = [cf.learnability("copy", card=card), cf.learnability("copy", card=card)]
-    h = Harness(tmp_path, "k1", fixer=fixer)
+    h = Harness(tmp_path, "k1", fixer=fixer, card=card)
     # A probe that projects a fit: 50 s per scaled phase per seed at the full m. FIX-16: m is k1's stated copy case
     # (3000), so the probe runs 300 examples and its scaled phases are a tenth of that.
     m = card["resources"]["learning"]["copy"]["examples"]
@@ -389,7 +389,7 @@ def test_the_recorded_null_learners_get_feedback_naming_what_to_send(tmp_path):
                 attempt["source"] = None
                 attempt["notes"] = notes["O10.a"]
         return answer
-    h = Harness(tmp_path, "k2")
+    h = Harness(tmp_path, "k2", protocols=False)
     h.llm.script["prover"] = prover
     h.m()
     retries = [c["user"] for c in h.llm.calls if c["prompt"] == "prover" and '"form": "learnability"' in c["user"]]
