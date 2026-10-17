@@ -20,9 +20,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from hybrid.executor.job import Caps
 from hybrid.math import cost, learnability, profile
-from hybrid.math.runner import LIBRARY_CAPS, MathRunner
+from hybrid.math.runner import LIBRARY_CAPS, JobHangGuard, MathRunner, cpu_capped
 from hybrid.research import calibration
 from hybrid.research.stages import m_math
 from hybrid.research.stages.common import load_prompt, load_section
@@ -43,20 +42,33 @@ def live(name: str):
 
 
 def k1_timing(examples: int | None = None) -> dict:
-    """The host phases of k1's learner on one seed and 300 examples, as a probe would print them."""
+    """The host phases of k1's learner on one seed and 300 examples, as a probe would print them. The recorded
+    seconds were measured single-threaded on an idle host, where wall and CPU time agree; decision CT reads them as
+    CPU seconds."""
     measured = live("k1_learnability_timeout.json")["fraction_timing"]
     phases = {phase: 0.0 for phase in learnability.SCALED_PHASES + learnability.FIXED_PHASES}
     phases.update(train=measured["train_s"], train_empty=measured["train_empty_s"],
                   train_wrong=measured["train_wrong_s"], test=measured["one_test_pass_s"],
                   test_empty=measured["one_test_pass_s"], test_wrong=measured["one_test_pass_s"])
-    return {"seed": 0, "examples": examples or measured["examples"], "total_s": sum(phases.values()),
-            "phases": phases, "probe_accuracy": 0.003906}
+    return {"seed": 0, "examples": examples or measured["examples"], "clock": "process_cpu",
+            "total_cpu_s": sum(phases.values()), "phases_cpu": phases,
+            "total_wall_s": sum(phases.values()), "phases_wall": dict(phases), "probe_accuracy": 0.003906}
+
+
+def cap_report(job, kind: str, cpu_s: float) -> str:
+    """What the driver prints when RLIMIT_CPU stops a job at its cap (jobmain.cap_report)."""
+    cap = json.loads((Path(job.input_dir) / "request.json").read_text())["cpu_cap_s"]
+    return json.dumps({"status": "unknown", "counterexample": None,
+                       "evidence": f"CPU cap reached: the {kind} job used {cpu_s:.1f} s of process CPU time",
+                       "cpu_cap": {"cpu_s": cpu_s, "wall_s": 2.5 * cpu_s, "cap_cpu_s": cap, "kind": kind}}) + "\n"
 
 
 class ProbeExecutor(cf.FastExecutor):
     """FastExecutor whose learnability jobs for ``task`` follow a script: the probe prints ``timing`` (scaled to the
     probe's example count) or stops with ``probe_status``; the full job stops with ``full_status``. Other jobs run
-    the staged driver as usual."""
+    the staged driver as usual. Decision CT: status ``cpu_cap`` answers the driver's cap report (RLIMIT_CPU soft
+    limit), ``cpu_kill`` the hard limit's SIGKILL (exit 137, no report), and ``timeout`` the executor's wall-clock hang
+    guard."""
 
     def __init__(self, tmp_path, *, task="copy", timing=None, probe_status="ok", full_status="ok"):
         super().__init__(tmp_path)
@@ -72,13 +84,20 @@ class ProbeExecutor(cf.FastExecutor):
         return SimpleNamespace(status=status, detail=f"wall cap {job.caps.wall_s:.0f}s exceeded", exit_code=137,
                                run_s=job.caps.wall_s, stdout_path=str(out), stderr_path=str(err))
 
+    def _scripted_stop(self, job, status, kind):
+        self.jobs.append(job)
+        if status == "cpu_cap":
+            return self._answer(job, cap_report(job, kind, job.caps.cpu_s + 0.4))
+        if status == "cpu_kill":
+            return dict_namespace(self._stopped(job, "candidate_error"), detail="", exit_code=137)
+        return self._stopped(job, status)
+
     def run(self, job):
         request = json.loads((Path(job.input_dir) / "request.json").read_text())
         scripted = request.get("spec", {}).get("task") == self.task if isinstance(request.get("spec"), dict) else False
         if scripted and request["kind"] == "learnability_probe":
             if self.probe_status != "ok":
-                self.jobs.append(job)
-                return self._stopped(job, self.probe_status)
+                return self._scripted_stop(job, self.probe_status, request["kind"])
             if self.timing is not None:
                 self.jobs.append(job)
                 timing = dict(self.timing, examples=learnability.probe_examples(request["spec"]))
@@ -86,9 +105,12 @@ class ProbeExecutor(cf.FastExecutor):
                            "counterexample": None, "tier": "executed", "timing": timing}
                 return self._answer(job, json.dumps(printed) + "\n")
         if scripted and request["kind"] == "learnability" and self.full_status != "ok":
-            self.jobs.append(job)
-            return self._stopped(job, self.full_status)
+            return self._scripted_stop(job, self.full_status, request["kind"])
         return super().run(job)
+
+
+def dict_namespace(namespace, **changes):
+    return SimpleNamespace(**{**vars(namespace), **changes})
 
 
 def copy_learnability(executor) -> list[str]:
@@ -109,16 +131,20 @@ def k1_request() -> dict:
 
 def test_the_fixer_template_states_the_runner_caps_and_the_cost_of_the_controls():
     text = profile.template_text(LIBRARY_CAPS)
-    assert "1800 s wall clock, 4096 MB of memory and 1 CPU" in text
+    # Decision CT: the budget is the 1800 s CPU cap; the wall clock is a hang guard at 3 x (1800 + 30 s grace).
+    assert "1800 s of process CPU time, 4096 MB of memory and 1 CPU" in text
+    assert "a busy host does not count against it" in text and "wall-clock guard of 5490 s" in text
     assert "on no examples (control)" in text and "random answers (control)" in text
     assert "6 trainings on m examples, 3 on none and 9 test passes" in text
-    assert "One training on m examples therefore has about 240 s on one core" in text
+    assert "A projection above 1440 CPU s (80% of the cap)" in text
+    assert "One training on m examples therefore has about 240 s of CPU time on one core" in text
     # FIX-3 moved the recipe to the prover; the budget now binds the prover's recipe instead of a frozen schedule.
-    assert "The prover's recipe must fit about 240 s per training on m examples on one core" in text
+    assert "The prover's recipe must fit about 240 s of CPU time per training on m examples on one core" in text
     assert "fewer than 3 seeds, lowering the threshold below 0.99 or dropping a control" in text
     # Read from the caps given, not from a literal.
-    other = profile.template_text(Caps(wall_s=600, memory_mb=2048, pids=64))
-    assert "600 s wall clock, 2048 MB" in other and "has about 80 s on one core" in other and "4096 MB" not in other
+    other = profile.template_text(cpu_capped(600, memory_mb=2048, pids=64))
+    assert "600 s of process CPU time, 2048 MB" in other and "has about 80 s of CPU time on one core" in other
+    assert "4096 MB" not in other and "wall-clock guard of 1890 s" in other
 
 
 def test_the_prompts_ask_for_a_schedule_that_fits_and_for_batched_linear_algebra():
@@ -135,12 +161,13 @@ def test_the_prompts_ask_for_a_schedule_that_fits_and_for_batched_linear_algebra
 
 def test_the_stage_states_the_budget_of_its_own_runner_to_both_roles(tmp_path):
     h = Harness(tmp_path, "k1", protocols=False)
-    h.ctx.math.library_caps = Caps(wall_s=900, memory_mb=2048, pids=64)
+    h.ctx.math.library_caps = cpu_capped(900, memory_mb=2048, pids=64)
     h.m()
     fixer = next(c for c in h.llm.calls if c["prompt"] == "statement_fixer")
-    assert "900 s wall clock, 2048 MB" in fixer["user"] and "about 120 s on one core" in fixer["user"]
+    assert "900 s of process CPU time, 2048 MB" in fixer["user"]
+    assert "about 120 s of CPU time on one core" in fixer["user"]
     learners = [c["user"] for c in h.llm.calls if c["prompt"] == "prover" and '"form": "learnability"' in c["user"]]
-    assert learners and all("LEARNABILITY BUDGET" in u and "900 s wall clock" in u for u in learners)
+    assert learners and all("LEARNABILITY BUDGET" in u and "900 s of process CPU time" in u for u in learners)
     others = [c["user"] for c in h.llm.calls if c["prompt"] == "prover" and '"form": "learnability"' not in c["user"]]
     assert others and not any("LEARNABILITY BUDGET (the runner's caps)" in u for u in others)
 
@@ -158,22 +185,43 @@ def test_the_recorded_k1_timeout_check_is_read_back_with_its_reason():
     assert text.strip() != "status unknown:"
 
 
-def test_a_full_job_that_hits_the_cap_is_a_resource_failure_with_the_cap_and_the_projection(tmp_path):
+def fitting_timing() -> dict:
     fitting = k1_timing()
-    fitting["phases"] = dict(fitting["phases"], train=10.0, train_wrong=10.0)   # projects about 600 s
-    executor = ProbeExecutor(tmp_path / "exec", timing=fitting, full_status="timeout")
+    fitting["phases_cpu"] = dict(fitting["phases_cpu"], train=10.0, train_wrong=10.0)   # projects about 600 CPU s
+    return fitting
+
+
+def test_a_full_job_that_reaches_the_cpu_cap_is_a_resource_failure_with_the_cap_and_the_projection(tmp_path):
+    executor = ProbeExecutor(tmp_path / "exec", timing=fitting_timing(), full_status="cpu_cap")
     record = MathRunner(executor, mf.IMAGE, tmp_path / "work").check_library(k1_request())
-    assert kinds(executor) == ["learnability_probe", "learnability"]   # a timeout is not replayed
+    assert kinds(executor) == ["learnability_probe", "learnability"]   # an unknown report is not replayed
+    assert executor.requests()[1]["cpu_cap_s"] == 1800 and executor.jobs[1].caps.wall_s == 5490
     assert (record["status"], record["decided"], record["counterexample"]) == ("unknown", False, None)
     resource = record["resource"]
-    assert resource["kind"] == "timeout" and resource["cap_s"] == 1800 and resource["run_s"] == 1800
-    assert 590 < resource["projected_s"] < 620
-    assert "ran out of its 1800 s wall cap" in record["evidence"] and "wall cap 1800s exceeded" in record["evidence"]
+    assert resource["kind"] == "cpu_cap" and resource["cap_cpu_s"] == 1800 and resource["cpu_s"] == 1800.4
+    assert resource["wall_cap_s"] == 5490 and 590 < resource["projected_cpu_s"] < 620
+    assert "reached its CPU cap of 1800 s of process CPU time" in record["evidence"]
+    assert "1800.4 CPU s" in record["evidence"]
     assert "projected full check 60" in record["evidence"] and "not a pass and not a counterexample" in record["evidence"]
     check = {"status": record["status"], "evidence": record["evidence"], "reasons": record["problems"],
              "runs": record["runs"], "probe": record["probe"], "resource": resource}
     feedback = m_math.failure_text(check)
-    assert "executor status timeout after 1800.0 s" in feedback and "training on true answers 10.00 s" in feedback
+    assert "CPU time: training on true answers 10.00 s" in feedback and "resource failure" in feedback
+
+
+def test_a_full_job_killed_at_the_hard_cpu_limit_is_the_same_cap_stop(tmp_path):
+    executor = ProbeExecutor(tmp_path / "exec", timing=fitting_timing(), full_status="cpu_kill")
+    record = MathRunner(executor, mf.IMAGE, tmp_path / "work").check_library(k1_request())
+    assert record["status"] == "unknown" and record["resource"]["kind"] == "cpu_cap"
+    assert record["resource"]["cpu_s"] is None and "reached its CPU cap of 1800 s" in record["evidence"]
+
+
+def test_a_full_job_stopped_by_the_wall_hang_guard_is_an_environment_failure_not_a_resource_failure(tmp_path):
+    executor = ProbeExecutor(tmp_path / "exec", timing=fitting_timing(), full_status="timeout")
+    with pytest.raises(JobHangGuard) as exc:
+        MathRunner(executor, mf.IMAGE, tmp_path / "work").check_library(k1_request())
+    assert exc.value.kind == "learnability" and exc.value.caps.wall_s == 5490 and exc.value.caps.cpu_s == 1800
+    assert "environment failure" in str(exc.value) and "hang guard of 5490 s" in str(exc.value)
 
 
 # ----- 3. the timing probe: one seed, about 300 examples, controls counted, never deciding ------------------------
@@ -184,12 +232,15 @@ def test_the_projection_counts_both_controls_and_every_seed():
     measured = live("k1_learnability_timeout.json")["fraction_timing"]
     expected = 3 * ((measured["train_s"] + measured["train_wrong_s"]) * 10 + measured["train_empty_s"]
                     + 3 * measured["one_test_pass_s"])
-    assert learnability.projected_seconds(spec, timing) == pytest.approx(expected)
+    assert learnability.projected_cpu_seconds(spec, timing) == pytest.approx(expected)
     assert 1700 < expected < 1800   # REPORT.md: about 1729 to 1792 s against the 1800 s cap
-    without_control = dict(timing, phases=dict(timing["phases"], train_wrong=0.0))
-    assert learnability.projected_seconds(spec, without_control) < 0.55 * expected
+    without_control = dict(timing, phases_cpu=dict(timing["phases_cpu"], train_wrong=0.0))
+    assert learnability.projected_cpu_seconds(spec, without_control) < 0.55 * expected
     one_seed = dict(spec, seeds=[0])
-    assert learnability.projected_seconds(one_seed, timing) == pytest.approx(expected / 3)
+    assert learnability.projected_cpu_seconds(one_seed, timing) == pytest.approx(expected / 3)
+    # Decision CT: the wall phases are information only; inflating them changes nothing.
+    contended = dict(timing, phases_wall={k: 3.5 * v for k, v in timing["phases_wall"].items()})
+    assert learnability.projected_cpu_seconds(spec, contended) == pytest.approx(expected)
 
 
 def test_the_recorded_k1_cost_is_refused_before_any_full_job(tmp_path):
@@ -197,24 +248,37 @@ def test_the_recorded_k1_cost_is_refused_before_any_full_job(tmp_path):
     record = MathRunner(executor, mf.IMAGE, tmp_path / "work").check_library(k1_request())
     assert kinds(executor) == ["learnability_probe"]
     probe_job = executor.jobs[0]
-    assert probe_job.job_id.startswith("mathprobe-") and probe_job.caps.wall_s == pytest.approx(480.0)
+    assert probe_job.job_id.startswith("mathprobe-") and probe_job.caps.cpu_s == pytest.approx(480.0)
+    assert probe_job.caps.wall_s == pytest.approx(1530.0)   # the probe's hang guard: 3 x (480 + 30 s grace)
+    assert executor.requests()[0]["cpu_cap_s"] == pytest.approx(480.0)
     assert (record["status"], record["decided"], record["runs"]) == ("unknown", False, [])
     resource = record["resource"]
-    assert resource["kind"] == "projected_overrun" and resource["fit_s"] == pytest.approx(1440.0)
-    assert 1700 < resource["projected_s"] < 1800
-    for phrase in ("projects 17", "above the 1440 s admitted (80% of the 1800 s cap)", "training on true answers 28.90 s",
+    assert resource["kind"] == "projected_overrun" and resource["fit_cpu_s"] == pytest.approx(1440.0)
+    assert 1700 < resource["projected_cpu_s"] < 1800
+    for phrase in ("projects 17", "above the 1440 CPU s admitted (80% of the 1800 s CPU cap)",
+                   "CPU time: training on true answers 28.90 s",
                    "wrong-answer control 28.73 s", "np.einsum with optimize=True",
                    "The seeds, m, the threshold and both data controls stay as they are"):
         assert phrase in record["evidence"], phrase
     assert record["probe"]["job_id"] == probe_job.job_id and record["probe"]["timing"]["examples"] == 300
 
 
-def test_a_probe_that_hits_its_own_cap_refuses_the_full_job(tmp_path):
-    executor = ProbeExecutor(tmp_path / "exec", probe_status="timeout")
+def test_a_probe_that_reaches_its_own_cpu_cap_refuses_the_full_job(tmp_path):
+    executor = ProbeExecutor(tmp_path / "exec", probe_status="cpu_cap")
     record = MathRunner(executor, mf.IMAGE, tmp_path / "work").check_library(k1_request())
     assert kinds(executor) == ["learnability_probe"]
-    assert record["resource"]["kind"] == "probe_timeout" and record["resource"]["projected_at_least_s"] == 1440
-    assert "did not finish within its own cap of 480 s" in record["evidence"] and record["status"] == "unknown"
+    resource = record["resource"]
+    assert resource["kind"] == "probe_cpu_cap" and resource["projected_at_least_cpu_s"] == 1440
+    assert resource["probe_cpu_s"] == pytest.approx(480.4)
+    assert "reached its own CPU cap of 480 s" in record["evidence"] and record["status"] == "unknown"
+
+
+def test_a_probe_stopped_by_the_wall_hang_guard_raises_an_environment_failure(tmp_path):
+    executor = ProbeExecutor(tmp_path / "exec", probe_status="timeout")
+    with pytest.raises(JobHangGuard) as exc:
+        MathRunner(executor, mf.IMAGE, tmp_path / "work").check_library(k1_request())
+    assert exc.value.kind == "learnability_probe" and exc.value.caps.wall_s == pytest.approx(1530.0)
+    assert kinds(executor) == ["learnability_probe"]
 
 
 def test_the_probe_decides_nothing_and_a_learner_that_fits_gets_the_full_check(tmp_path):
@@ -222,8 +286,9 @@ def test_the_probe_decides_nothing_and_a_learner_that_fits_gets_the_full_check(t
     probe = learnability.timing_probe(spec, cf.LEARNERS["copy"])
     assert probe["status"] == "unknown" and probe["probe"] and probe["timing"]["examples"] == 300
     assert probe["timing"]["seed"] == 0 and probe["timing"]["probe_accuracy"] >= 0.99   # a perfect learner, still unknown
-    assert set(probe["timing"]["phases"]) == set(learnability.SCALED_PHASES + learnability.FIXED_PHASES)
-    assert probe["projected_s"] > 0 and "decides nothing" in probe["evidence"]
+    assert set(probe["timing"]["phases_cpu"]) == set(learnability.SCALED_PHASES + learnability.FIXED_PHASES)
+    assert set(probe["timing"]["phases_wall"]) == set(probe["timing"]["phases_cpu"])
+    assert probe["projected_cpu_s"] > 0 and "decides nothing" in probe["evidence"]
     executor = cf.FastExecutor(tmp_path / "exec")
     record = MathRunner(executor, mf.IMAGE, tmp_path / "work").check_library(
         {"kind": "learnability", "spec": spec, "source": cf.LEARNERS["copy"]})
@@ -245,12 +310,12 @@ def test_a_learner_that_crashes_in_the_probe_is_reported_without_a_full_job(tmp_
 
 
 def overrun_harness(tmp_path) -> tuple[Harness, ProbeExecutor]:
-    """Card k1 with the profile; the copy learner's probe prints k1's recorded phases, and the runner's cap is 200 s
+    """Card k1 with the profile; the copy learner's probe prints k1's recorded phases, and the runner's CPU cap is 200 s
     (FIX-16: m is k1's stated 3000, so the recorded phases scaled from the probe's 300 examples project well above
     160 s)."""
     h = Harness(tmp_path, "k1", protocols=False)
     executor = ProbeExecutor(tmp_path / "exec2", timing=k1_timing())
-    h.ctx.math = MathRunner(executor, mf.IMAGE, h.run_dir, library_caps=Caps(wall_s=200, memory_mb=4096, pids=64))
+    h.ctx.math = MathRunner(executor, mf.IMAGE, h.run_dir, library_caps=cpu_capped(200, memory_mb=4096, pids=64))
     return h, executor
 
 
@@ -269,10 +334,12 @@ def test_at_stage_m_a_projected_overrun_leaves_p4_unknown_and_reaches_the_next_r
     assert (check["status"], check["decided"]) == ("unknown", False)
     assert check["resource"]["kind"] == "unchanged_source"   # round 2 resent round 1's refused source
     probes = [e["data"] for e in h.ledger.iter_events("math_probe") if e["data"]["statement_id"] == "O7.a"]
-    assert len(probes) == 1 and probes[0]["decides"] is False and probes[0]["projected_s"] > probes[0]["fit_s"]
+    assert len(probes) == 1 and probes[0]["decides"] is False
+    assert probes[0]["projected_cpu_s"] > probes[0]["fit_cpu_s"] and probes[0]["cap_cpu_s"] == 200
     retry = [c["user"] for c in h.llm.calls if c["prompt"] == "prover" and '"statement_id": "O7.a"' in c["user"]][1]
     assert "previous_attempt_failed" in retry and "resource failure" in retry
-    assert "above the 160 s admitted (80% of the 200 s cap)" in retry and "training on true answers 28.90 s" in retry
+    assert "above the 160 CPU s admitted (80% of the 200 s CPU cap)" in retry
+    assert "training on true answers 28.90 s" in retry
 
 
 # ----- 4. an experiment that ran out of its cap is not run again at the same cost ---------------------------------
@@ -293,23 +360,24 @@ def test_two_claims_with_the_same_frozen_experiment_share_one_history_entry():
     assert history.key(statements["O10.a"]) != history.key(statements["O1.a"])
 
 
-def test_after_a_timeout_an_equivalent_experiment_needs_a_probe_showing_a_lower_cost():
+def test_after_a_cpu_cap_stop_an_equivalent_experiment_needs_a_probe_showing_a_lower_cost():
     history, statements = k2_history()
     learner = live("k1_learnability_timeout.json")["learners"]
     assert history.admit(statements["O11.a"]) is None and history.unchanged(statements["O11.a"], learner["O9.a"]) is None
-    history.note(statements["O10.a"], {"attempt": 1, "resource": {"kind": "timeout", "projected_s": 1300.0}},
+    history.note(statements["O10.a"], {"attempt": 1, "resource": {"kind": "cpu_cap", "projected_cpu_s": 1300.0}},
                  learner["O9.a"])
     admit = history.admit(statements["O11.a"])
-    same_cost = admit({"projected_s": 1250.0, "cap_s": 1800})
-    assert "O10.a attempt 1" in same_cost and "projected 1300 s" in same_cost and "1250 s" in same_cost
-    assert admit({"projected_s": 1000.0, "cap_s": 1800}) is None   # at most 80% of 1300 s
+    same_cost = admit({"projected_cpu_s": 1250.0, "cap_cpu_s": 1800})
+    assert "O10.a attempt 1" in same_cost and "projected 1300 CPU s" in same_cost and "1250 CPU s" in same_cost
+    assert "reached its 1800 s CPU cap" in same_cost
+    assert admit({"projected_cpu_s": 1000.0, "cap_cpu_s": 1800}) is None   # at most 80% of 1300 CPU s
     assert "this exact source already stopped" in history.unchanged(statements["O11.a"], learner["O9.a"])
     assert history.unchanged(statements["O11.a"], learner["O10.a"]) is None   # the second k1 source differs
 
 
 def two_copy_statements(tmp_path, *, variant: bool):
-    """Card k1 whose P4.copy has two copy statements of the same experiment; the full copy job times out after a
-    probe that projects it fits. With ``variant`` the prover sends a cosmetically different second source."""
+    """Card k1 whose P4.copy has two copy statements of the same experiment; the full copy job reaches its CPU cap
+    after a probe that projects it fits. With ``variant`` the prover sends a cosmetically different second source."""
     card = cf.without_protocols(calibration.load_cards(("k1",))["k1"])
     fixer = cf.fixer_output("k1", card)
     obligation = next(o for o in fixer["obligations"] if o["claim_id"] == "P4.copy")
@@ -320,8 +388,9 @@ def two_copy_statements(tmp_path, *, variant: bool):
     # (3000), so the probe runs 300 examples and its scaled phases are a tenth of that.
     m = card["resources"]["learning"]["copy"]["examples"]
     scale = m / learnability.probe_examples({"examples": m})
-    fitting = dict(k1_timing(), phases=dict(k1_timing()["phases"], train=50.0 / scale, train_wrong=50.0 / scale))
-    executor = ProbeExecutor(tmp_path / "exec2", timing=fitting, full_status="timeout")
+    fitting = dict(k1_timing(), phases_cpu=dict(k1_timing()["phases_cpu"], train=50.0 / scale,
+                                                 train_wrong=50.0 / scale))
+    executor = ProbeExecutor(tmp_path / "exec2", timing=fitting, full_status="cpu_cap")
     h.ctx.math = MathRunner(executor, mf.IMAGE, h.run_dir)
     base = cf.prover_output("k1")
 
@@ -335,7 +404,7 @@ def two_copy_statements(tmp_path, *, variant: bool):
     return h, executor
 
 
-def test_the_same_source_for_an_equivalent_experiment_is_not_run_after_a_timeout(tmp_path):
+def test_the_same_source_for_an_equivalent_experiment_is_not_run_after_a_cpu_cap_stop(tmp_path):
     h, executor = two_copy_statements(tmp_path, variant=False)
     h.m()
     copy_kinds = copy_learnability(executor)
@@ -343,7 +412,7 @@ def test_the_same_source_for_an_equivalent_experiment_is_not_run_after_a_timeout
     checks = [json.loads((h.run_dir / "artifacts" / "math_check" / e["data"]["artifact"]).read_text())
               for e in h.ledger.iter_events("math_check") if e["data"]["statement_id"] in ("O7.a", "O7.b")]
     kinds_seen = [(c["statement_id"], c["attempt"], (c.get("resource") or {}).get("kind")) for c in checks]
-    assert kinds_seen[0] == ("O7.a", 1, "timeout") and ("O7.b", 1, "unchanged_source") in kinds_seen
+    assert kinds_seen[0] == ("O7.a", 1, "cpu_cap") and ("O7.b", 1, "unchanged_source") in kinds_seen
     assert all(c["status"] == "unknown" and not c["decided"] for c in checks)
     assert "unproven:P4.copy" in h.verdict("M")["kill_codes"]
 
@@ -367,7 +436,7 @@ def test_a_learnability_statement_outside_the_profile_still_gets_the_contract_an
     assert m_math.obligation_of(record, "O10.a")["claim_id"] == "sample_efficiency.prediction"
     user = m_math.prover_user(card, record, o10, {})
     assert "PROFILE OBLIGATIONS" not in user
-    assert "LEARNABILITY BUDGET" in user and "1800 s wall clock" in user and "SANDBOX." in user
+    assert "LEARNABILITY BUDGET" in user and "1800 s of process CPU time" in user and "SANDBOX." in user
     assert "learn(layout, examples, seed)" in load_prompt("prover")
 
 

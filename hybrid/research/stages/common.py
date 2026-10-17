@@ -152,6 +152,7 @@ class ExecResult:
     stderr: str
     run_s: float
     out_dir: Path | None = None   # the job's output directory (files the job wrote under /out)
+    exit_code: int | None = None  # the receipt's exit code (MathRunner reads the CPU hard limit's SIGKILL from it)
 
     @property
     def ok(self) -> bool:

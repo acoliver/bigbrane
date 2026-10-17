@@ -550,7 +550,7 @@ def test_the_k2_recall_protocol_replays_through_the_stage_m_learnability_path(tm
     record = runner.check_library(request)
     assert executor.measured == []
     assert record["probe"]["status"] == "ok" and record["resource"] is None
-    assert record["probe"]["projected_s"] <= learnability.PROBE_FIT * LIBRARY_CAPS.wall_s
+    assert record["probe"]["projected_cpu_s"] <= learnability.PROBE_FIT * LIBRARY_CAPS.cpu_s
     printed = record["runs"][0]["printed"]
     (tmp_path / "replay-result.json").write_text(json.dumps({"probe": record["probe"], "printed": printed},
                                                             default=str, indent=1))

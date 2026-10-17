@@ -39,10 +39,12 @@ Order of work, each step recorded before the next starts:
    check the frozen artifact is re-read and its hash and the statement's hash compared with the freeze event
    (StageError on a difference), and the runner verifies MANIFEST.json again. A learnability check runs a timing
    probe first (MathRunner.check_learnability; event ``math_probe``, never deciding); a projected overrun or a full
-   job stopped by the wall cap is a resource failure: status unknown, recorded under ``resource`` with the cap and
+   job stopped at the CPU cap is a resource failure: status unknown, recorded under ``resource`` with the cap and
    the measured and projected cost, and shown to the prover in the next round. ``ResourceHistory`` keeps such
-   failures by frozen experiment, so an unchanged source is not run again and, after a full timeout, an equivalent
-   experiment runs its full job only when its probe shows a lower cost.
+   failures by frozen experiment, so an unchanged source is not run again and, after a full job stopped at its CPU
+   cap, an equivalent experiment runs its full job only when its probe shows a lower CPU cost. Decision CT: costs,
+   caps and projections are process CPU seconds; a job stopped by the wall-clock hang guard is an environment
+   failure (MathRunner raises JobHangGuard, this stage raises StageError from it), never a resource failure.
    P2 constructions (FIX-6) get the same within-run memory: each construction statement's best measured attempt
    (per-size accuracy and state, full source) and its ``frozen_contract`` (the rounds, widths, hidden width, positions
    and state words its check allows at each size), with the prompt section construction_contract: the frozen contract
@@ -535,6 +537,9 @@ async def execute_check(ctx: StageContext, card_id: str, stage: str, statement: 
             record = await asyncio.to_thread(ctx.math.check_library, request, admit=admit)
         except manifest.ManifestMismatch as exc:
             raise StageError(f"math check files differ from MANIFEST.json: {exc}") from exc
+        except math_runner.JobHangGuard as exc:
+            # Decision CT: the wall cap of a CPU-capped job is a hang guard; its stop is the environment's failure.
+            raise StageError(f"{statement['id']}: {exc}") from exc
         printed = (record["runs"][0].get("printed") or {}) if record["runs"] else {}
         check = dict(base, status=record["status"], decided=record["decided"], evidence=record["evidence"],
                      reasons=record["problems"], counterexample=record["counterexample"], runs=record["runs"],
@@ -571,8 +576,9 @@ def record_check(ctx: StageContext, card_id: str, stage: str, statement: dict, c
         probe = check["probe"]
         ctx.emit("math_probe", {"card_id": card_id, "stage": stage, "statement_id": statement["id"],
                                 "attempt": check["attempt"], "job_id": probe["job_id"], "status": probe["status"],
-                                "run_s": probe["run_s"], "projected_s": probe["projected_s"], "cap_s": probe["cap_s"],
-                                "fit_s": probe["fit_s"], "artifact": name, "decides": False})
+                                "run_s": probe["run_s"], "cpu_s": probe["cpu_s"],
+                                "projected_cpu_s": probe["projected_cpu_s"], "cap_cpu_s": probe["cap_cpu_s"],
+                                "fit_cpu_s": probe["fit_cpu_s"], "artifact": name, "decides": False})
     ctx.emit("math_check", {"card_id": card_id, "stage": stage, "statement_id": statement["id"],
                             "purpose": check["purpose"], "status": check["status"], "decided": check["decided"], "artifact": name,
                             "job_ids": check["job_ids"],
@@ -666,9 +672,10 @@ def holds(check: dict | None) -> bool:
 
 # ----- learnability experiments that stopped for their cost -------------------------------------------------------
 
-# After an equivalent experiment ran out of its cap, a new source's probe must project at most this share of the
-# projection that experiment's probe made: that projection fell short of the real cost, so the new one must beat it by
-# the margin the probe leaves (learnability.PROBE_FIT) to be expected to fit.
+# After an equivalent experiment ran out of its CPU cap, a new source's probe must project at most this share of the
+# CPU time that experiment's probe projected: that projection fell short of the real cost, so the new one must beat it
+# by the margin the probe leaves (learnability.PROBE_FIT) to be expected to fit. Decision CT: both projections are
+# process CPU seconds, so the ratio compares the two learners' costs and not the host load at the two probes.
 COST_IMPROVEMENT = learnability.PROBE_FIT
 
 
@@ -701,32 +708,32 @@ class ResourceHistory:
                 f"{entry['kind']}); it would cost the same again. Send a source with a lower measured cost.")
 
     def admit(self, statement: dict):
-        """The runner's ``admit`` for a new source: after a full job of this experiment ran out of its cap, the new
-        source's timing probe must project at most COST_IMPROVEMENT of what that job's probe projected."""
+        """The runner's ``admit`` for a new source: after a full job of this experiment reached its CPU cap, the new
+        source's timing probe must project at most COST_IMPROVEMENT of the CPU time that job's probe projected."""
         entry = self.stopped.get(self.key(statement))
-        if entry is None or entry["timeout_projected_s"] is None:
+        if entry is None or entry["cap_projected_cpu_s"] is None:
             return None
-        old = entry["timeout_projected_s"]
+        old = entry["cap_projected_cpu_s"]
 
         def admit(probe: dict) -> str | None:
-            if probe["projected_s"] <= COST_IMPROVEMENT * old:
+            if probe["projected_cpu_s"] <= COST_IMPROVEMENT * old:
                 return None
-            return (f"an equivalent frozen experiment ({entry['timeout_statement']}: the same statement and "
-                    f"definitions) ran out of its {probe['cap_s']:.0f} s cap although its timing probe projected "
-                    f"{old:.0f} s; this source's probe projects {probe['projected_s']:.0f} s, not below "
-                    f"{COST_IMPROVEMENT:.0%} of that, so the same timeout is expected")
+            return (f"an equivalent frozen experiment ({entry['cap_statement']}: the same statement and "
+                    f"definitions) reached its {probe['cap_cpu_s']:.0f} s CPU cap although its timing probe projected "
+                    f"{old:.0f} CPU s; this source's probe projects {probe['projected_cpu_s']:.0f} CPU s, not below "
+                    f"{COST_IMPROVEMENT:.0%} of that, so the same cap stop is expected")
         return admit
 
     def note(self, statement: dict, check: dict, text: str | None) -> None:
         resource = check["resource"]
         entry = self.stopped.setdefault(self.key(statement), {
             "first": f"{statement['id']} attempt {check['attempt']}", "kind": resource["kind"], "sources": set(),
-            "timeout_projected_s": None, "timeout_statement": None})
+            "cap_projected_cpu_s": None, "cap_statement": None})
         entry["sources"].add(_sha(text))
-        if resource["kind"] == "timeout" and resource.get("projected_s") is not None:
-            if entry["timeout_projected_s"] is None or resource["projected_s"] < entry["timeout_projected_s"]:
-                entry.update(timeout_projected_s=resource["projected_s"],
-                             timeout_statement=f"{statement['id']} attempt {check['attempt']}")
+        if resource["kind"] == "cpu_cap" and resource.get("projected_cpu_s") is not None:
+            if entry["cap_projected_cpu_s"] is None or resource["projected_cpu_s"] < entry["cap_projected_cpu_s"]:
+                entry.update(cap_projected_cpu_s=resource["projected_cpu_s"],
+                             cap_statement=f"{statement['id']} attempt {check['attempt']}")
 
 
 # ----- prover -----------------------------------------------------------------------------------------------------
@@ -756,7 +763,8 @@ def prover_user(card: dict, record: dict, todo: list[dict], failures: dict[str, 
         text += "\n\n" + contracts
     if any(s["form"] == "learnability" for s in todo):
         caps = caps or math_runner.LIBRARY_CAPS
-        text += "\n\n" + learnability.budget_text(caps.wall_s, caps.memory_mb, caps.cpus, profile.P4_SEEDS)
+        text += "\n\n" + learnability.budget_text(caps.cpu_s, caps.wall_s, caps.memory_mb, caps.cpus,
+                                                   profile.P4_SEEDS)
         text += "\n\n" + RECIPE_NOTE
         # FIX-5: new section file; the best attempt, the passing-recipe rule and the learner's CURVE.
         text += "\n\n" + load_section("recipe_carry")
@@ -916,9 +924,9 @@ def failure_text(check: dict) -> str:
         if tail and counterexample is None:
             parts.append("output tail:\n" + tail[-1500:])
     probe = check.get("probe")
-    if probe and probe.get("projected_s") is not None and not check.get("resource"):
-        parts.append(f"timing probe (decides nothing): projected full check {probe['projected_s']:.0f} s against the "
-                     f"{probe['cap_s']:.0f} s cap")
+    if probe and probe.get("projected_cpu_s") is not None and not check.get("resource"):
+        parts.append(f"timing probe (decides nothing): projected full check {probe['projected_cpu_s']:.0f} CPU s "
+                     f"against the {probe['cap_cpu_s']:.0f} s CPU cap")
     return "\n".join(parts)[:6000]
 
 

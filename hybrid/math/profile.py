@@ -570,8 +570,8 @@ def consistency(limits: list[dict], p2: dict[str, dict[int, bool]], p5_specs: li
 
 def template_text(caps) -> str:
     """The fixed shape, rendered for the statement fixer's message. ``caps`` are the runner's library caps (an object
-    with ``wall_s``, ``memory_mb`` and ``cpus``, hybrid.math.runner.LIBRARY_CAPS in a run): the P4 budget is stated
-    from them, never from a literal here."""
+    with ``cpu_s``, ``wall_s``, ``memory_mb`` and ``cpus``, hybrid.math.runner.LIBRARY_CAPS in a run): the P4 budget
+    is stated from them, never from a literal here."""
     lines = [f"PROFILE TEMPLATE ({PROFILE_VERSION}). Claim ids and what each requires:"]
     for slot in SLOTS:
         lines.append(f"- {slot} (forms: {', '.join(SLOT_FORMS[slot])}; tier reached: "
@@ -704,9 +704,10 @@ def p4_budget_text(caps) -> str:
     1000 full-batch epochs on m=3000 for card k1 (definition D7) with no budget in view and the check ran out of its
     1800 s cap; in the smoke that followed it froze width 16, learning rate 0.01 and 50 epochs, which fit the budget
     but did not learn (seed-0 loss 3.000009 to 2.987527), and the prover could not change it. Decision FIX-3: the
-    statement fixes the model class, m, seeds, threshold, controls and budget; the prover chooses the recipe."""
-    per_training = learnability.PROBE_FIT * caps.wall_s / (learnability.TRAININGS_ON_M * P4_SEEDS)
-    return (learnability.budget_text(caps.wall_s, caps.memory_mb, caps.cpus, P4_SEEDS)
+    statement fixes the model class, m, seeds, threshold, controls and budget; the prover chooses the recipe. The
+    budget is the CPU cap ``caps.cpu_s`` (decision CT); ``caps.wall_s`` is only the hang guard."""
+    per_training = learnability.PROBE_FIT * caps.cpu_s / (learnability.TRAININGS_ON_M * P4_SEEDS)
+    return (learnability.budget_text(caps.cpu_s, caps.wall_s, caps.memory_mb, caps.cpus, P4_SEEDS)
             + " P4 TRAINING RECIPE. The frozen learnability statement and its definitions fix the model class (the "
             "card's architecture and learning rule, with the widths and sizes the card states; when the card leaves "
             "a width open, a definition may give the range the prover chooses from), the example count m, the "
@@ -717,6 +718,7 @@ def p4_budget_text(caps) -> str:
             "so a recipe that succeeds without the data still fails. Do not freeze optimizer settings, learning "
             "rates, epoch counts or initialization scales in a definition unless the card itself states them as "
             "part of its learning rule: an untested frozen schedule that cannot learn leaves the slot failed with no "
-            f"repair. The prover's recipe must fit about {per_training:.0f} s per training on m examples on one core. "
+            f"repair. The prover's recipe must fit about {per_training:.0f} s of CPU time per training on m examples on one "
+            "core. "
             f"Never fit the budget by lowering m below the card's count, using fewer than {P4_SEEDS} seeds, lowering "
             f"the threshold below {P4_THRESHOLD} or dropping a control: those are fixed.")

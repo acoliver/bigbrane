@@ -104,17 +104,19 @@ class FastExecutor:
 
     @staticmethod
     def _recorded_probe(spec: dict, wall_s: float) -> dict:
-        """A timing probe report whose projection of the full check is the recorded seconds per seed."""
+        """A timing probe report whose projection of the full check is the recorded seconds per seed. The host
+        measured them single-threaded with nothing else running, where wall and process CPU time agree; decision CT
+        projects CPU seconds, so they stand in for the CPU phases."""
         n = learnability_check.probe_examples(spec)
         phases = {phase: 0.0 for phase in learnability_check.SCALED_PHASES + learnability_check.FIXED_PHASES}
         phases["train"] = wall_s * n / spec["examples"]
-        timing = {"seed": spec["seeds"][0], "examples": n, "total_s": wall_s, "phases": phases,
-                  "probe_accuracy": 0.0}
-        projected = learnability_check.projected_seconds(spec, timing)
+        timing = {"seed": spec["seeds"][0], "examples": n, "clock": "process_cpu", "total_cpu_s": wall_s,
+                  "phases_cpu": phases, "total_wall_s": wall_s, "phases_wall": dict(phases), "probe_accuracy": 0.0}
+        projected = learnability_check.projected_cpu_seconds(spec, timing)
         return {"status": "unknown", "tier": "executed", "counterexample": None, "probe": True, "timing": timing,
-                "projected_s": round(projected, 3),
+                "projected_cpu_s": round(projected, 3),
                 "evidence": (f"timing probe only, decides nothing: recorded host time of seed {timing['seed']}, "
-                             f"{wall_s:.1f} s; projected full check {projected:.1f} s (scripted)")}
+                             f"{wall_s:.1f} s; projected full check {projected:.1f} CPU s (scripted)")}
 
     def _answer(self, job, stdout: str):
         out, err = self.tmp_path / f"{job.job_id}.stdout", self.tmp_path / f"{job.job_id}.stderr"

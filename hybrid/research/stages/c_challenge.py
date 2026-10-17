@@ -124,6 +124,7 @@ import re
 from hybrid.llm.errors import SchemaValidationError
 from hybrid.math import architecture, constructions, manifest, profile, spec_checks
 from hybrid.math import findings as finding_checks
+from hybrid.math import runner as math_runner
 from hybrid.research import citations, families, mathrecords
 from hybrid.research.stages import m_math
 from hybrid.research.stages import match_adjudication as ma
@@ -1764,6 +1765,9 @@ async def _library(ctx: StageContext, card_id: str, label: str, request: dict, p
         record = await asyncio.to_thread(ctx.math.check_library, request)
     except manifest.ManifestMismatch as exc:
         raise StageError(f"math check files differ from MANIFEST.json: {exc}") from exc
+    except math_runner.JobHangGuard as exc:
+        # Decision CT: the wall cap of a CPU-capped library job is a hang guard; its stop is the environment's failure.
+        raise StageError(f"{label}: {exc}") from exc
     printed = (record["runs"][0].get("printed") or {}) if record["runs"] else {}
     check = {"card_id": card_id, "stage": stage, "statement_id": label, "purpose": purpose, "form": request["kind"],
              "status": record["status"], "decided": record["decided"], "evidence": record["evidence"],

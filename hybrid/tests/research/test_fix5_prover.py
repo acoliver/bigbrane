@@ -192,8 +192,9 @@ def test_the_next_round_shows_the_best_attempt_with_full_source_seeds_controls_a
     assert best["recipe"] == {"method": "fixed offset", "offset": 1}
     assert [s["seed"] for s in best["seeds"]] == [0, 1, 2]
     seed = best["seeds"][0]
-    assert {"accuracy", "empty_control_accuracy", "wrong_control_accuracy", "train_s"} <= set(seed)
+    assert {"accuracy", "empty_control_accuracy", "wrong_control_accuracy", "train_s", "train_cpu_s"} <= set(seed)
     assert set(seed["train_s"]) == {"true", "empty", "wrong"}       # read from the check's wall-clock record
+    assert set(seed["train_cpu_s"]) == {"true", "empty", "wrong"}   # decision CT: the CPU time the budget counts
     curve = seed["curve_true_data"]
     assert curve["count"] == 30 and len(curve["points"]) == pm.PROMPT_CURVE_POINTS
     assert curve["points"][0] == {"step": 0.0, "loss": 1.0} and curve["points"][-1]["step"] == 29.0
