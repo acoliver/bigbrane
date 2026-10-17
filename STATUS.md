@@ -70,6 +70,10 @@ The laptop lid was closed at 08:51Z. On AC power with no external display, macOS
 
 No idea survived: 0 of 28 cards that left R passed S2, so nothing reached the math checks or the bench. The run finished cleanly (40 cards, every kill coded, no budget kills, hashes intact, 18 new archive cells), but failed the radicality targets: 0% S2 pass (target 40%) and a 78% repeat rate (target 30%). Most cards were known mechanisms in new notation. At least 3 kills came from gate defects (KD4 and KD7) and 3 more are suspect (KD5); all 11 affected cards were re-checked on the fixed code and none passed, each now dying on a reduction, a radicality judgment or a specific error in the card (results/defect-recheck-20261017/RESULT.md). Five cards were left unscored by transport errors during clamshell sleep under a `complete` stop (KD6) and were finished by a resume. Full score: results/discovery-live-20261017/SCORE.md.
 
+## KD1 verification calibration (started 2026-10-17 23:32Z)
+
+All three calibration learners now fit the container CPU admission: K2 recall 653 and K2 composition 485 CPU s projected, both passing check seeds in the container; K1 composition 957, deciding `violated` as its card expects (KD1, commits 6fbb637 and e53fce7). The previous calibration (calibration-math-20261017T045735Z) missed 2 of 29 items, both from KD1 refusals: K1's `obligation_failed:P4.composition` kill code and K2's profile. A k1 and k2 re-run is in progress: results in results/calibration-math-20261017T233205Z, card-runs under runs/calibration-math-20261017T233208Z, log tmp/verify-kd567/calib.log. KD1 is confirmed when k1 carries that kill code and k2's profile passes.
+
 ## Layout
 
 | Path | Contents |
