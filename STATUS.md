@@ -58,6 +58,10 @@ Gate work stops after one passing calibration. The 30-idea live batch runs next,
 
 The real measure of progress is a surviving idea that beats tuned baselines on equal data and compute. Nothing has done that yet.
 
+## Novelty gate probe (2026-10-17)
+
+Eight published mechanisms outside the excluded families (pushdown and queue automata, counter machine, inside algorithm, Earley, Viterbi, SEQUITUR, Rule 110) went through S2 alone. All eight reduced to their right sources with exact executed checks. Two disguised excluded mechanisms (a gated diagonal recurrence and a delta-rule memory) were both killed as excluded. One false out-of-scope kill: the counter machine was labelled `excluded_family:ssm` because the gate took the family from the critic's free label, not the comparator the host counted (KD4, being fixed). So the gate finds prior art correctly; its one error came from a lifted-state argument. Scorer and full write-up: results/novelty-probe-20261017/ (score_probe.py, RESULT.md).
+
 ## Layout
 
 | Path | Contents |
@@ -77,3 +81,5 @@ The real measure of progress is a surviving idea that beats tuned baselines on e
 Run records (`runs/`, `results/`), caches, virtual environments and local state are kept out of the repo. Sealed answers for the planted test live outside the workspace.
 
 Run the tests with `.venv-hybrid/bin/python -m pytest hybrid/tests -q -p no:cacheprovider --ignore=hybrid/tests/test_probes.py`. They need Python 3.12 with numpy, torch (CPU), sympy, httpx, jsonschema and jinja2, plus Podman for the executor and bench tests.
+- (05:3x) FINDING: K1 composition is EXPECTED to fail (expected.json k1 profile fail, kill code obligation_failed:P4.composition, decision P4K: fixed protocol passes 1 of 12 seeds at m=4000; test_p4p_protocols pins RECORDED_STATUS violated and "passed 2 of 3 check seeds"). So the brief's "pass all dev seeds" does not apply to K1 composition: a learner that passes would flip the verdict. Goal there = same bimodal behaviour at <= 1440 projected CPU s, check verdict still violated. Never touch expected.json.
+- K1 composition v2 learner = float32 (1.85x cheaper in container) + exact-math tables: A,C,P projections of h0=E[X]+P as (E@W)[X]+(P@W) and the three backward projection matmuls plus dh0 as OH.T-reduced V=15 row tables (cand/k1c-v2.py; tools/gradeq.py: grads equal to old f32 within 2e-7). Removes 9 of ~24 N-row matmuls. Recipe otherwise unchanged (400 epochs, b200, lr .002). Host search running: search-k1comp-g.log (seeds 101-106).
