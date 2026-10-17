@@ -37,7 +37,11 @@ def citations_request(paper_id: str, limit: int) -> Request:
 
 
 def parse_search(body: str, fetched_at: str) -> list[Paper]:
-    data = _load(body).get("data")
+    payload = _load(body)
+    data = payload.get("data")
+    if data is None and payload.get("total") == 0:
+        # A search with no hits answers {"total": 0, "offset": 0} and omits "data" (seen 2026-10-17).
+        return []
     if not isinstance(data, list):
         raise ValueError("Semantic Scholar search response has no 'data' array")
     return [paper for paper in (parse_paper(item, fetched_at) for item in data) if paper is not None]
