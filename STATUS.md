@@ -66,6 +66,10 @@ Eight published mechanisms outside the excluded families (pushdown and queue aut
 
 The laptop lid was closed at 08:51Z. On AC power with no external display, macOS clamshell sleep overrides `caffeinate`, so the machine only wakes for about 45 s every 15 minutes. The batch `discovery-live-20261017` is still alive but advances only in those windows, and model calls in flight at sleep fail in transit (they fall back and retry). It resumes at normal speed when the lid is opened or an external display is attached. At the pause: about 320 model calls, 30 cards drafted, 19 S2 verdicts, none past S2.
 
+## Batch discovery-live-20261017 result (2026-10-17)
+
+No idea survived: 0 of 28 cards that left R passed S2, so nothing reached the math checks or the bench. The run finished cleanly (40 cards, every kill coded, no budget kills, hashes intact, 18 new archive cells), but failed the radicality targets: 0% S2 pass (target 40%) and a 78% repeat rate (target 30%). Most cards were known mechanisms in new notation. At least 3 kills came from gate defects (KD4 and KD7) and 3 more are suspect (KD5); those cards are being re-checked with the fixes. Five cards were left unscored by transport errors during clamshell sleep under a `complete` stop (KD6) and were finished by a resume. Full score: results/discovery-live-20261017/SCORE.md.
+
 ## Layout
 
 | Path | Contents |
