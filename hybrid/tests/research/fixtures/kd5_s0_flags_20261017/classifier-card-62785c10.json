@@ -1,0 +1,26 @@
+{
+  "call_id": "call-4c811165e424",
+  "card_id": "card-62785c10",
+  "model": "qwen3.6-35b-a3b-mlx",
+  "parsed": {
+    "difference_is_real": true,
+    "difference_why": "The SSM family is defined by affine or linear state transitions with continuous, Lipschitz coefficients. This card's parameter update is a wrapped, non-Lipschitz nonlinear synchronization law that forces finite-time capture, altering the core update equation from a linear recurrence to a discontinuous nonlinear controller.",
+    "evidence": {
+      "learning_rule": "\"On DEMO(j,a,b), set omega[j] = wrap(omega[j] + sign(e0)*(abs(e0)-max(sqrt(abs(e0))-tau/2,0)**2)); leave all other omega entries unchanged.\"",
+      "objective": "\"Learning occurs only on DEMO events through the exact solution of the capture differential equation.\"",
+      "structure_source": "\"The d rule offsets... initialized to zero.\" / \"Learning occurs only on DEMO events\"",
+      "substrate": "\"omega\", \"type\": \"carried continuous rule parameters\", \"shape\": [\"d\"]",
+      "unit": "\"On READ, set q = floor(V*theta/(2*pi)+0.5) mod V; return p(v)=1 if v==q and 0 otherwise, for v=0,...,V-1.\""
+    },
+    "family": "ssm",
+    "family_why": "The query transport equation theta <- (theta + omega_j) mod 2pi implements a linear rotation on the phase state, which maps directly to an SSM transition h_t = A h_{t-1} when represented in sine-cosine coordinates.",
+    "learning_rule": "closed_form_algebraic",
+    "objective": "constraint_consistency",
+    "structure_source": "learned_from_data",
+    "substrate": "dense_vector",
+    "unit": "subword_token"
+  },
+  "recorded_gate": "excluded_family:ssm",
+  "role": "arm_classifier",
+  "source": "runs/discovery-live-20261017/llm/calls/call-4c811165e424.json"
+}

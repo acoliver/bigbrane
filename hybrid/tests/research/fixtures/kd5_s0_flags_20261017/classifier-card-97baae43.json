@@ -1,0 +1,26 @@
+{
+  "call_id": "call-618e7e14ca40",
+  "card_id": "card-97baae43",
+  "model": "qwen3.6-35b-a3b-mlx",
+  "parsed": {
+    "difference_is_real": null,
+    "difference_why": "The SSM form strictly requires the transition matrix to depend only on the input x_t, but here the pop operation multiplies by W_{top(M_{t-1})}^{-1}, a matrix selected based on the state's own column sums, fundamentally altering the recurrence to be piecewise and state-dependent rather than input-driven.",
+    "evidence": {
+      "learning_rule": "The only quantity learned in context is the pairing table P, by closed-form counting.",
+      "objective": "p_t(y) = ... next-token distribution over closer and non-closer tokens",
+      "structure_source": "The roles rho, the generators G and the codewords W_j are a built-in prior",
+      "substrate": "M, type: nonnegative integer matrix of determinant 1 (element of the monoid SL(2,N))",
+      "unit": "rho(v) = (open, j) with j in {0..K-1}, (close, c) with c in {0..K-1}, or other."
+    },
+    "family": "ssm",
+    "family_why": "The push operation matches the SSM form h_t = A(x_t) h_{t-1} as a right multiplication by an input-chosen matrix W_j, but the pop operation depends on decoding the top of the stack from M_{t-1}, making it state-dependent.",
+    "learning_rule": "closed_form_algebraic",
+    "objective": "next_unit",
+    "structure_source": "builtin_prior",
+    "substrate": "geometric_topological",
+    "unit": "subword_token"
+  },
+  "recorded_gate": "excluded_family:ssm",
+  "role": "arm_classifier",
+  "source": "runs/discovery-live-20261017/llm/calls/call-618e7e14ca40.json"
+}

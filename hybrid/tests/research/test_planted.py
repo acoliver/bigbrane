@@ -227,7 +227,7 @@ def test_each_type_stops_where_its_fake_verdicts_send_it_and_two_runs_agree(tmp_
     assert report["accepted"], json.dumps({k: [(r["stop"], r["kill_codes"], r["notes"]) for r in c["results"]] for k, c in report["cards"].items()}, indent=1)
     for run in (0, 1):
         got = results_of(report, run)
-        assert (got[MAIN["T1"]]["stop"], got[MAIN["T1"]]["kill_codes"]) == ("G", ["excluded_family:linear_attention"])
+        assert (got[MAIN["T1"]]["stop"], got[MAIN["T1"]]["kill_codes"]) == ("P", ["excluded_family:linear_attention"])
         assert (got[MAIN["T2"]]["stop"], got[MAIN["T2"]]["kill_codes"]) == ("P", ["not_radical:R3"])
         assert (got[MAIN["T3"]]["stop"], got[MAIN["T3"]]["kill_codes"]) == ("C", ["magic_x:A1"])
         assert got[MAIN["T4"]]["stop"] == "M"
@@ -324,7 +324,8 @@ def test_the_held_back_set_runs_separately_and_a_later_batch_meets_its_planted_o
 
 def test_a_planted_origin_that_survived_is_reported_on_its_variant(tmp_path, world):
     report = run_test(tmp_path, world, "held_back", keys=[HELD["T1"], HELD["T6"]],
-                      overrides={"arm_classifier": {"T1": lambda m, i, u: pf.classification("none")}})
+                      overrides={"arm_classifier": {"T1": lambda m, i, u: pf.classification("none")},
+                              "reduction_critic": {"T1": pf.critic()}})
     got = results_of(report)
     assert got[HELD["T1"]]["stop"] == "T"
     assert got[HELD["T6"]]["notes"] == [f"origin {HELD['T1']} had not died when this card entered"]

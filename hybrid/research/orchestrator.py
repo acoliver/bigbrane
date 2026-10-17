@@ -35,7 +35,7 @@ from typing import Any
 
 from hybrid.executor.job import Caps
 from hybrid.research import graveyard, lineage
-from hybrid.research.ledger import Ledger
+from hybrid.research.ledger import Ledger, unresolved_stage_errors
 from hybrid.research.stages import STAGE_RUNNERS
 from hybrid.research.stages.common import (CURRENT_CARD, S3_MODES, Budget, CodeRunner,
                                            RunBudgetExhausted, StageContext, StageError, pipeline_order)
@@ -49,6 +49,8 @@ ACTOR = "orchestrator"
 OPTIONAL_KEYS = {"run.seed"}
 # The seed every run used before the lens seed was derived from the run id (run.toml shipped seed = 0).
 LEGACY_LENS_SEED = 0
+# The run drained with cards left on a stage_error (infrastructure failure, no verdict); --resume requeues them.
+STAGE_ERRORS_REASON = "stage_errors"
 # [explore] keys added after runs had started; a config file without them gets these values.
 EXPLORE_DEFAULTS = {"graveyard_max": 20, "graveyard_runs": [], "p_escape": 1.0, "escape_reserve": 0.3}
 
@@ -530,7 +532,12 @@ class Orchestrator:
 
     def _check_idle(self) -> None:
         if self.explorers_live == 0 and self.pending == 0:
-            self._stop("complete")
+            # A card that ended on a stage_error has no verdict and no outcome, so the run is not complete: the
+            # distinct reason says --resume will requeue it (KD6).
+            self._stop(STAGE_ERRORS_REASON if self._stage_errored() else "complete")
+
+    def _stage_errored(self) -> list[dict]:
+        return unresolved_stage_errors(self.ledger.iter_events())
 
     def _enqueue(self, stage: str, card_id: str) -> None:
         index = self.order.index(stage)
@@ -918,6 +925,9 @@ class Orchestrator:
             left["escape"] = list(self.escapes._queue)
         summary = {"run_id": self.run_id, "reason": self.stop_reason, "budget": self.budget.snapshot(),
                    "queued_unfinished": left, "requeued_at_start": requeued, "cards": self.store.list_cards()}
+        errored = self._stage_errored()
+        if errored:
+            summary["stage_errors"] = errored
         # FIX-17: each card's skill scale at target, from its latest stage M decision.
         coupled_by_card = {e["data"]["card_id"]: e["data"]["target_coupled"]
                            for e in self.ledger.iter_events("math_decision")

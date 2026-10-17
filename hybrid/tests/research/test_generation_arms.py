@@ -335,8 +335,8 @@ def test_families_config_excludes_the_d8_families_and_lists_the_known_ones():
 
 
 @pytest.mark.parametrize("family,real,cell,code", [
-    ("linear_attention", None, OPEN_CELL, "excluded_family:linear_attention"),
-    ("delta_rule", None, OPEN_CELL, "excluded_family:delta_rule"),
+    ("linear_attention", None, OPEN_CELL, None),     # KD5: an excluded family is a flag at S0; S2 decides the kill
+    ("delta_rule", None, OPEN_CELL, None),
     ("none", None, CLOSED_CELL, "not_radical:R1"),
     ("hopfield_associative_memory", False, OPEN_CELL, "no_difference"),
     ("exact_match_cache", None, OPEN_CELL, "no_difference"),

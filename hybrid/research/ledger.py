@@ -121,3 +121,18 @@ class Ledger:
         for event in events:
             if type is None or event["type"] == type:
                 yield event
+
+
+def unresolved_stage_errors(events) -> list[dict]:
+    """Cards whose latest stage_error has no later verdict, in the order the errors happened (KD6). A stage_error is
+    an infrastructure failure, not a research verdict, so only a verdict from a later attempt resolves it."""
+    open_errors: dict[str, dict] = {}
+    for event in events:
+        data = event["data"]
+        if event["type"] == "stage_error":
+            open_errors.pop(data["card_id"], None)
+            open_errors[data["card_id"]] = {"card_id": data["card_id"], "stage": data["stage"],
+                                            "error": str(data.get("error", ""))[:200]}
+        elif event["type"] == "verdict":
+            open_errors.pop(data["card_id"], None)
+    return list(open_errors.values())

@@ -12,7 +12,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from hybrid.research.ledger import Ledger
+from hybrid.research.ledger import Ledger, unresolved_stage_errors
 from hybrid.research.schemas import validate
 from hybrid.research.store import Store
 
@@ -492,6 +492,7 @@ def summarize(run_dir: Path, ledger: Ledger, store: Store) -> dict:
         "cards": cards,
         "stage_counts": dict(sorted(stage_counts.items())),
         "verdict_counts": sorted(Counter((e["data"]["stage"], e["data"]["verdict"]) for e in verdict_events).items()),
+        "stage_errors": unresolved_stage_errors(events),
         "usage": usage,
         "calls_total": sum(row["calls"] for row in usage),
         "tokens_total": sum(row["input"] + row["output"] for row in usage),
@@ -549,6 +550,10 @@ def render_text(summary: dict) -> str:
         lines.append("  none recorded")
     for (stage, verdict), count in summary["verdict_counts"]:
         lines.append(f"  {stage} {verdict}: {count}")
+    if summary["stage_errors"]:
+        lines.append(f"Stage errors without a later verdict: {len(summary['stage_errors'])} "
+                     "(infrastructure failures, no research verdict; --resume requeues them)")
+        lines.extend(f"  {e['card_id']} at {e['stage']}: {e['error']}" for e in summary["stage_errors"])
 
     lines.append("")
     lines.append("Calls per model:")
