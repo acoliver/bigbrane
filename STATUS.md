@@ -62,6 +62,10 @@ The real measure of progress is a surviving idea that beats tuned baselines on e
 
 Eight published mechanisms outside the excluded families (pushdown and queue automata, counter machine, inside algorithm, Earley, Viterbi, SEQUITUR, Rule 110) went through S2 alone. All eight reduced to their right sources with exact executed checks. Two disguised excluded mechanisms (a gated diagonal recurrence and a delta-rule memory) were both killed as excluded. One false out-of-scope kill: the counter machine was labelled `excluded_family:ssm` because the gate took the family from the critic's free label, not the comparator the host counted (KD4, being fixed). So the gate finds prior art correctly; its one error came from a lifted-state argument. Scorer and full write-up: results/novelty-probe-20261017/ (score_probe.py, RESULT.md).
 
+## Batch pause (2026-10-17 08:51Z)
+
+The laptop lid was closed at 08:51Z. On AC power with no external display, macOS clamshell sleep overrides `caffeinate`, so the machine only wakes for about 45 s every 15 minutes. The batch `discovery-live-20261017` is still alive but advances only in those windows, and model calls in flight at sleep fail in transit (they fall back and retry). It resumes at normal speed when the lid is opened or an external display is attached. At the pause: about 320 model calls, 30 cards drafted, 19 S2 verdicts, none past S2.
+
 ## Layout
 
 | Path | Contents |
