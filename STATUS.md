@@ -68,7 +68,7 @@ The laptop lid was closed at 08:51Z. On AC power with no external display, macOS
 
 ## Batch discovery-live-20261017 result (2026-10-17)
 
-No idea survived: 0 of 28 cards that left R passed S2, so nothing reached the math checks or the bench. The run finished cleanly (40 cards, every kill coded, no budget kills, hashes intact, 18 new archive cells), but failed the radicality targets: 0% S2 pass (target 40%) and a 78% repeat rate (target 30%). Most cards were known mechanisms in new notation. At least 3 kills came from gate defects (KD4 and KD7) and 3 more are suspect (KD5); those cards are being re-checked with the fixes. Five cards were left unscored by transport errors during clamshell sleep under a `complete` stop (KD6) and were finished by a resume. Full score: results/discovery-live-20261017/SCORE.md.
+No idea survived: 0 of 28 cards that left R passed S2, so nothing reached the math checks or the bench. The run finished cleanly (40 cards, every kill coded, no budget kills, hashes intact, 18 new archive cells), but failed the radicality targets: 0% S2 pass (target 40%) and a 78% repeat rate (target 30%). Most cards were known mechanisms in new notation. At least 3 kills came from gate defects (KD4 and KD7) and 3 more are suspect (KD5); all 11 affected cards were re-checked on the fixed code and none passed, each now dying on a reduction, a radicality judgment or a specific error in the card (results/defect-recheck-20261017/RESULT.md). Five cards were left unscored by transport errors during clamshell sleep under a `complete` stop (KD6) and were finished by a resume. Full score: results/discovery-live-20261017/SCORE.md.
 
 ## Layout
 
