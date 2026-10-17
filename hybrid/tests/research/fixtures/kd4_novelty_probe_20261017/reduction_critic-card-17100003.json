@@ -1,0 +1,152 @@
+{
+  "comparators": [
+    {
+      "base_family": "other_known",
+      "base_form": "Minsky (1967) two-counter machine with INC/DEC and zero-test branches, as a one-way deterministic acceptor",
+      "id": "minsky_two_counter",
+      "limit_only": false,
+      "parameter_mapping": "card q -> finite control state; card c1, c2 -> counters 1, 2; card delta -> machine program; card y_t -> acceptance at halt",
+      "read": "y_t = 1[q_t = c and c1_t = 0 and c2_t = 0]",
+      "transformations": [],
+      "update": "(q_t, c1_t, c2_t) = delta(q_{t-1}, c1_{t-1}, c2_{t-1}, x_t). a in phase a: c1+=1. b in phase a/b with c1>0: c1-=1, c2+=1, q=b. c in phase b/c with c1=0 and c2>0: c2-=1, q=c. Otherwise q=dead with counters fixed."
+    },
+    {
+      "base_family": "ssm",
+      "base_form": "Input-dependent linear recurrence h_t = A(x_t) h_{t-1}, y_t = C h_t (SSM family form with non-diagonal input-dependent A_t)",
+      "id": "onehot_lifted_input_dep_ssm",
+      "limit_only": false,
+      "parameter_mapping": "card delta(., x) -> 0/1 transition matrix M(x) for x in {a,b,c}; card acceptance predicate -> linear read vector C indicating configuration (c,0,0); card initial (0,0,a) -> h_0 = e_(a,0,0)",
+      "read": "y_t = C h_t, C = e_(c,0,0)^T",
+      "transformations": [
+        {
+          "type": "lifted_state",
+          "what": "Replace the integer counters and phase with a one-hot vector over all reachable configurations (dimension 4(n+1)^2 + 1, growing with n). Every zero-tested branch then becomes a fixed linear transition chosen by the input token."
+        }
+      ],
+      "update": "h_t = M(x_t) h_{t-1}, h_0 = e_(a,0,0). Here h is one-hot over {a,b,c} x [0,n]^2 plus {dead}, and M(x) e_(q,c1,c2) = e_delta(q,c1,c2,x), with e_dead fixed by every M(x)."
+    },
+    {
+      "base_family": "ssm",
+      "base_form": "Input-conditioned affine update on the card's own counter coordinates without state tests (the card's named closest comparator)",
+      "id": "blind_affine_counter",
+      "limit_only": false,
+      "parameter_mapping": "card c1, c2 -> affine state coordinates; card phase q and zero tests have no image (expected to fail the 0/1/2 zero-test witness and the aabbbcc rejection)",
+      "read": "y_t = w0 + w1 c1_t + w2 c2_t",
+      "transformations": [],
+      "update": "c1_t = c1_{t-1} + [x_t=a] - [x_t=b]; c2_t = c2_{t-1} + [x_t=b] - [x_t=c]"
+    }
+  ],
+  "confidence": 0.9,
+  "difference_if_any": "In native coordinates nothing differs from Minsky's construction; the card states this itself. Against the lifted linear recurrence, the remaining difference is efficiency only. The counter machine keeps O(log n) bits. The one-hot lift needs an O(n^2)-dimensional state, an exponential blow-up in state bits, and its transition matrix family must be defined uniformly as n grows (a shift operator with a zero boundary). Against the blind affine update on the same coordinates (c1 += [x=a] - [x=b], c2 += [x=b] - [x=c]), the difference is real. The state-tested branch to dead, and the indicator read, cannot be written affinely in (c1, c2). This is the card's stated 0/1/2 second-difference witness. No learning rule exists: the program is supplied.",
+  "family": "ssm",
+  "family_why": "Under a lifted_state repair (a one-hot state over reachable (q, c1, c2) configurations, growing with n), each token applies a fixed input-selected 0/1 matrix, h_t = M(x_t) h_{t-1}, and the read is linear, y_t = C h_t. That is the ssm form with input-dependent A_t. In native O(log n) coordinates it is a counter machine and outside every listed family.",
+  "mapping": "Identity mapping onto the Minsky (1967, ch. 14) two-counter machine used as a one-way deterministic acceptor. The card's (q, c1, c2) is the machine's finite control and two counters. The card's delta is the machine's program: INC c1 on 'a' in phase a; on 'b', test c1>0, then DEC c1 and INC c2; on 'c', test c1=0 and c2>0, then DEC c2; every other case goes to an absorbing reject state. The card's y_t = 1[q=c, c1=0, c2=0] is the halting acceptance condition. Adversarial lift into an out-of-scope family: index a one-hot vector h_t by the reachable configurations (q, c1, c2), with c1, c2 in [0, n] plus a dead state. Each delta(., x) is then a fixed 0/1 transition matrix M(x) that moves e_(q,c1,c2) to e_delta(q,c1,c2,x). Every zero test is absorbed into which basis vectors M(x) sends to e_dead. So h_t = M(x_t) h_{t-1}, with h_0 = e_(a,0,0) and y_t = C h_t, where C is the indicator of (c,0,0). This is an input-dependent linear recurrence (SSM form with A_t = M(x_t), B_t = 0, C_t = C). It is exact for every input of length at most n, and the state dimension is 4(n+1)^2 + 1, which grows with n.",
+  "prior_art_delta": null,
+  "radical_enough": false,
+  "reduces_to": "other_known",
+  "reduction_check": {
+    "comparisons": [
+      {
+        "comparator": "Minsky two-counter machine program (INC/DEC/JZ/JNZ) as one-way acceptor",
+        "counted": true,
+        "declared_id": "minsky_two_counter",
+        "eligibility": "counted",
+        "family": "other_known",
+        "inputs_tested": 305,
+        "limit_only": false,
+        "max_abs_diff": 0.0,
+        "reference": "Minsky (1967), Computation: Finite and Infinite Machines, ch. 14",
+        "transformations": [],
+        "within_tolerance": true
+      },
+      {
+        "comparator": "one-hot lifted input-dependent linear recurrence h_t = M(x_t) h_{t-1}, y_t = C h_t",
+        "counted": false,
+        "declared_id": "onehot_lifted_input_dep_ssm",
+        "eligibility": "another_family",
+        "family": "ssm",
+        "inputs_tested": 305,
+        "limit_only": false,
+        "max_abs_diff": 0.0,
+        "reference": "input-dependent linear recurrence (SSM form); one-hot configuration lift of a counter automaton",
+        "transformations": [
+          "lifted_state"
+        ],
+        "within_tolerance": true
+      },
+      {
+        "comparator": "blind input-conditioned affine counters with affine read w=(1,-1,-1)",
+        "counted": false,
+        "declared_id": "blind_affine_counter",
+        "eligibility": "another_family",
+        "family": "ssm",
+        "inputs_tested": 305,
+        "limit_only": false,
+        "max_abs_diff": 8.0,
+        "reference": "card closest comparator: affine update without state-tested branch",
+        "transformations": [],
+        "within_tolerance": false
+      },
+      {
+        "comparator": "sanity: card final acceptance vs toy answer key (aabbcc, aabbbcc)",
+        "counted": false,
+        "declared_id": null,
+        "eligibility": "undeclared",
+        "family": "other_known",
+        "inputs_tested": 2,
+        "limit_only": false,
+        "max_abs_diff": 0.0,
+        "reference": "card toy_example",
+        "transformations": [],
+        "within_tolerance": true
+      },
+      {
+        "comparator": "sanity: best affine fit to zero-test outputs 1,0,0 on counter 0,1,2",
+        "counted": false,
+        "declared_id": null,
+        "eligibility": "undeclared",
+        "family": "ssm",
+        "inputs_tested": 1,
+        "limit_only": false,
+        "max_abs_diff": 0.3333333333333335,
+        "reference": "card capability witness",
+        "transformations": [],
+        "within_tolerance": false
+      }
+    ],
+    "declared": [
+      {
+        "base_family": "other_known",
+        "eligibility": "counted",
+        "id": "minsky_two_counter",
+        "limit_only": false,
+        "transformations": []
+      },
+      {
+        "base_family": "ssm",
+        "eligibility": "another_family",
+        "id": "onehot_lifted_input_dep_ssm",
+        "limit_only": false,
+        "transformations": [
+          "lifted_state"
+        ]
+      },
+      {
+        "base_family": "ssm",
+        "eligibility": "another_family",
+        "id": "blind_affine_counter",
+        "limit_only": false,
+        "transformations": []
+      }
+    ],
+    "job_id": "job-91e7e9ec66bd",
+    "notes": "Outputs are 0/1 acceptance indicators per prefix, no rescaling. Lifted state uses dimension 3(N+1)^2+1 = 508 ({a,b,c}x[0,N]^2 plus dead, as in the declared update; the mapping text says 4(N+1)^2+1), N=12. M(x) is built from the card delta. Blind affine read weights are fixed a priori, not fitted.",
+    "outcome": "verified",
+    "reduces_to": "other_known",
+    "tolerance": 1e-06
+  },
+  "reduction_outcome": "verified",
+  "textbook_transplant": true,
+  "textbook_why": "This is Minsky's two-counter machine with zero tests (Computation: Finite and Infinite Machines, ch. 14), run as a one-way acceptor on the token stream with an acceptance indicator as readout. The equations change nothing in the construction. Only a specific program (the equal-blocks recognizer) is fixed.",
+  "why": "The card is explicitly a prior-art diagnostic: a textbook two-counter machine recognizing a^n b^n c^n-type equal blocks. It claims no novelty, and its update and read coincide symbol for symbol with Minsky's counter-machine program. Being adversarial, it also falls into the ssm form under a lifted_state repair the policy allows. A one-hot state over reachable configurations turns every zero test into a fixed input-selected transition matrix, giving h_t = M(x_t) h_{t-1} with a linear read. That lift is exact at all finite lengths, but its state grows as O(n^2) rather than O(log n). The separation the card does establish is only against the same-coordinate, input-conditioned affine update, which the card itself labels as not a proof against state lifts. A 1960s automaton applied to a token stream would not surprise anyone who knows counter automata or RNN-computability results (Siegelmann-Sontag). No outcome-store history matches this card."
+}

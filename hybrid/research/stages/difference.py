@@ -5,12 +5,18 @@ transformer, state-space, linear-attention and delta-rule) and the known familie
 memories, exact-match caches). The reduction critic is asked, in a section appended to its user message
 (prompt_sections/family_exclusion.md) and two fields added to its schema in code, which family the card's core belongs
 to (`family`, `family_why`). A verified reduction into an out-of-scope family fails the card with
-`excluded_family:<id>` whatever its `difference_if_any` says: the `LEARNING_RULE:` prefix does not apply. The family is
-the critic's when it names an out-of-scope family; otherwise it comes from the families.toml `reduces_to` mapping of
-the critic's `reduces_to`, and when two families share that value (linear attention and the delta rule) the one whose
-`keywords` occur most often in the critic's mapping and argument is chosen (the first listed on a tie). So a renamed
-linear-attention variant that the critic reduces to `linear_attention` dies even when the critic, misled by the new
-names, answers `family: none`.
+`excluded_family:<id>` whatever its `difference_if_any` says: the `LEARNING_RULE:` prefix does not apply.
+KD4: the family is decided from the comparators the host counted (the ones that verified the reduction, each with the
+family its declaration stated), never from the critic's `family` label, which stays recorded as information. The
+families.toml `reduces_to` lists map a counted comparator's family to the out-of-scope families that contain it; a
+counted family in none of them (other_known, rnn) gives no excluded kill and the card takes the ordinary
+verified-reduction path. When two out-of-scope families share the counted family (linear attention and the delta rule
+both list `linear_attention`), the critic's `family` picks between them when it is one of the two, and otherwise the
+one whose `keywords` occur most often in the counted comparators and the critic's mapping and argument is chosen (the
+first listed on a tie). A reduction verified on the critic's confidence alone has no counted comparator, so the
+claimed `reduces_to` stands as the counted family. So a renamed linear-attention variant that the critic reduces to
+`linear_attention` dies even when the critic, misled by the new names, answers `family: none`, and a Minsky counter
+machine counted as other_known does not die because the critic also argued an uncounted ssm simulation.
 
 Difference statement (`s2.difference_statement`). Written by the proposer (the card's explorer role, prompt
 `difference`, schema schemas/difference.schema.json) after the other S2 gates pass, then checked:
@@ -97,19 +103,32 @@ def critic_section(families: Families) -> str:
     return "\n\n" + "\n".join(lines)
 
 
-def excluded_reduction(critic: dict, reduction: str, families: Families,
-                       keywords: dict[str, tuple[str, ...]]) -> Family | None:
-    """The out-of-scope family a verified reduction falls in, or None (no verified reduction, or none of the
-    families matches)."""
+def excluded_reduction(critic: dict, reduction: str, families: Families, keywords: dict[str, tuple[str, ...]],
+                       counted: list[dict]) -> Family | None:
+    """The out-of-scope family a verified reduction falls in, or None (no verified reduction, or no counted comparator
+    in an out-of-scope family).
+
+    KD4: the family comes from the comparators the host counted (`counted`, from s2_prior_art.counted_comparisons: each
+    has the `family` its declaration stated and the `comparator` text), never from the critic's free `family` label.
+    The candidates are the out-of-scope families whose `reduces_to` lists a counted comparator's family, in the order
+    of families.toml, so any counted comparator in an out-of-scope family decides and a counted family outside every
+    one of them (other_known, rnn, ...) gives no kill whatever the critic says.
+
+    When several candidates share the counted family (linear attention and the delta rule both list
+    `linear_attention`), the critic's `family` picks between them when it is one of the candidates; the label cannot
+    add a family. Otherwise the candidate whose `keywords` occur most often in the counted comparators and the critic's
+    mapping and argument is chosen, the first listed on a tie."""
     if reduction != "verified":
         return None
-    named = critic.get("family")
-    if named and families.is_excluded(named):
-        return families.get(named)
-    candidates = [f for f in families.excluded if critic["reduces_to"] in f.reduces_to]
+    counted_families = {c["family"] for c in counted}
+    candidates = [f for f in families.excluded if counted_families.intersection(f.reduces_to)]
     if len(candidates) <= 1:
         return candidates[0] if candidates else None
-    text = " ".join([critic.get("mapping") or "", critic["why"], critic["difference_if_any"]]).lower()
+    named = next((f for f in candidates if f.id == critic.get("family")), None)
+    if named is not None:
+        return named
+    text = " ".join([*(f"{c.get('declared_id') or ''} {c['comparator']}".replace("_", " ") for c in counted),
+                     critic.get("mapping") or "", critic["why"], critic["difference_if_any"]]).lower()
     scored = [(keyword_hits(text, keywords.get(f.id, ())), -index, f) for index, f in enumerate(candidates)]
     return max(scored, key=lambda item: item[:2])[2]
 

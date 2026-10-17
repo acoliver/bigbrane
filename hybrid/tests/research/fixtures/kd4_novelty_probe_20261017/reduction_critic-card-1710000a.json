@@ -1,0 +1,126 @@
+{
+  "comparators": [
+    {
+      "base_family": "linear_attention",
+      "base_form": "Delta-rule fast weight programmer, Schlag, Irie and Schmidhuber 2021 (arXiv:2102.11174); DeltaNet, Yang et al. 2024 (arXiv:2406.06484)",
+      "id": "deltanet_delta_rule",
+      "limit_only": false,
+      "parameter_mapping": "card S -> W (fast weights); card k, v, q, beta -> key, value, query, write strength; feature map phi = identity",
+      "read": "y_t = S_t q_t",
+      "transformations": [],
+      "update": "S_t = S_{t-1} + beta_t (v_t - S_{t-1} k_t) k_t^T, S_0 = 0"
+    },
+    {
+      "base_family": "linear_attention",
+      "base_form": "Unnormalized linear attention, Katharopoulos et al. 2020, in the card's orientation (plain form declared beside the delta-rule form; expected to differ on nonorthogonal keys or beta<1)",
+      "id": "additive_linear_attention",
+      "limit_only": false,
+      "parameter_mapping": "card S -> S; card k, v, q -> phi(k)=k, v, phi(q)=q; card beta_t -> write gate",
+      "read": "y_t = S_t q_t",
+      "transformations": [
+        {
+          "type": "gate",
+          "what": "scales each write by the card's input-dependent beta_t"
+        }
+      ],
+      "update": "S_t = S_{t-1} + beta_t v_t k_t^T, S_0 = 0"
+    }
+  ],
+  "confidence": 0.99,
+  "difference_if_any": "None. The card is the delta rule as published, with identity feature map and token-only k, v, q, beta. The learning rule (backprop on the token projections) is the standard one, so no LEARNING_RULE difference exists.",
+  "family": "delta_rule",
+  "family_why": "S_t = S_{t-1} + beta_t (v_t - S_{t-1} k_t) k_t^T with read y_t = S_t q_t is exactly the delta_rule family form, with identical symbols. The delta_rule family is out of scope.",
+  "mapping": "Card S (dv x dk, zero init) -> fast weight matrix W_t of Schlag, Irie and Schmidhuber (2021) / DeltaNet S_t (Yang et al. 2024). Card k_t -> key k_t, with phi = identity (no feature map applied). Card v_t -> value v_t. Card q_t -> query q_t. Card beta_t in [0,1] -> write strength beta_t. Update: card S_t = S_{t-1} + beta_t (v_t - S_{t-1} k_t) k_t^T is literally W_t = W_{t-1} + beta_t (v_t - W_{t-1} k_t) k_t^T. Readout: card y_t = S_t q_t is the post-write read y_t = W_t q_t. The equations are identical term by term in the conventional (dv x dk) orientation, so no transposition is needed. The reduces_to enum lumps the delta-rule variant under linear_attention ('with or without decay or a delta rule'). The family is delta_rule.",
+  "prior_art_delta": {
+    "adds_untested_element": false,
+    "element": "",
+    "why": "The card's update S_t = S_{t-1} + beta_t(v_t - S_{t-1}k_t)k_t^T is the delta rule of Schlag, Irie and Schmidhuber (source 2102.11174), and the card states no change to that mechanism. Its readout y_t = S_t q_t is the standard query readout, and its learning is ordinary backpropagation through token projections with no changed learning rule. The card calls itself a positive control and claims no novelty. Sources 2406.06484 and W4405254248 train and evaluate delta-rule models at language-modeling and associative-recall scale, so the capability has been tested. The nonorthogonal-key and beta in {0.2, 0.7, 1} witness is a diagnostic on the existing rule, not a new update term, learning rule, capacity mechanism, or readout, so it does not meet the criterion. The search results do not run that specific check, but that gap concerns a test, not an added element."
+  },
+  "radical_enough": false,
+  "reduces_to": "linear_attention",
+  "reduction_check": {
+    "comparisons": [
+      {
+        "comparator": "Delta-rule fast weight programmer y_t = W_t q_t, W_t = W_{t-1} + beta_t (v_t - W_{t-1} k_t) k_t^T",
+        "counted": true,
+        "declared_id": "deltanet_delta_rule",
+        "eligibility": "counted",
+        "family": "linear_attention",
+        "inputs_tested": 16,
+        "limit_only": false,
+        "max_abs_diff": 5.585782655534936e-16,
+        "reference": "Schlag, Irie and Schmidhuber 2021 arXiv:2102.11174; Yang et al. 2024 arXiv:2406.06484",
+        "transformations": [],
+        "within_tolerance": true
+      },
+      {
+        "comparator": "Unnormalized additive linear attention with write gate beta_t",
+        "counted": true,
+        "declared_id": "additive_linear_attention",
+        "eligibility": "counted",
+        "family": "linear_attention",
+        "inputs_tested": 16,
+        "limit_only": false,
+        "max_abs_diff": 2.7680055402787547,
+        "reference": "Katharopoulos et al. 2020 arXiv:2006.16236",
+        "transformations": [
+          "gate"
+        ],
+        "within_tolerance": false
+      },
+      {
+        "comparator": "Sanity: card update rearranged as S(I - beta k k^T) + beta v k^T",
+        "counted": false,
+        "declared_id": null,
+        "eligibility": "undeclared",
+        "family": "linear_attention",
+        "inputs_tested": 16,
+        "limit_only": false,
+        "max_abs_diff": 5.631268142614137e-16,
+        "reference": "algebraic rearrangement of the card",
+        "transformations": [],
+        "within_tolerance": true
+      },
+      {
+        "comparator": "Card toy example read vs expected 0.5",
+        "counted": false,
+        "declared_id": null,
+        "eligibility": "undeclared",
+        "family": "linear_attention",
+        "inputs_tested": 1,
+        "limit_only": false,
+        "max_abs_diff": 0.0,
+        "reference": "card toy_example",
+        "transformations": [],
+        "within_tolerance": true
+      }
+    ],
+    "declared": [
+      {
+        "base_family": "linear_attention",
+        "eligibility": "counted",
+        "id": "deltanet_delta_rule",
+        "limit_only": false,
+        "transformations": []
+      },
+      {
+        "base_family": "linear_attention",
+        "eligibility": "counted",
+        "id": "additive_linear_attention",
+        "limit_only": false,
+        "transformations": [
+          "gate"
+        ]
+      }
+    ],
+    "job_id": "job-9248d01f343c",
+    "notes": "n=12, dk=4, dv=3. Keys are nonorthogonal (shared component) and have norm <= 1. Beta is in {0.2, 0.7, 1.0, uniform}. For each sequence, the differences are divided by the largest absolute card output.",
+    "outcome": "verified",
+    "reduces_to": "linear_attention",
+    "tolerance": 1e-06
+  },
+  "reduction_outcome": "verified",
+  "textbook_transplant": true,
+  "textbook_why": "This is the Widrow-Hoff/delta-rule fast-weight memory as stated in Schlag, Irie and Schmidhuber (2021), applied unchanged. The card changes nothing beyond fixing parameters for a toy instance.",
+  "why": "The card states itself to be a positive control: the published delta-rule fast-weight update with read-after-write. The update and readout coincide symbol for symbol with Schlag et al. (2021) and DeltaNet (Yang et al. 2024), with no gate, normalizer or other change. The toy checks out: s = 0.5*2 = 1, then 1 + 0.5*(3-1) = 2, read = 2*0.25 = 0.5. Because of the residual term -beta S_{t-1} k_t k_t^T, plain additive linear attention diverges from the card whenever keys are nonorthogonal or beta < 1. The card's witness is designed to show exactly that, so the reduction is to the delta-rule form, not to bare additive linear attention. There is no own-history match. The card is a renamed-free, known out-of-scope mechanism, so it is not radical."
+}

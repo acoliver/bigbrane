@@ -363,8 +363,9 @@ def test_a_disallowed_type_does_not_kill_by_family(tmp_path):
 
 def test_excluded_reduction_still_needs_the_verified_outcome():
     families, keywords = difference._families("hybrid/config/families.toml", "hybrid/config/archive.toml")
-    assert difference.excluded_reduction(critic_537(), "unverified", families, keywords) is None
-    assert difference.excluded_reduction(critic_537(), "verified", families, keywords).id == "delta_rule"
+    counted = [{"declared_id": "mesanet", "family": "linear_attention", "comparator": "MesaNet"}]
+    assert difference.excluded_reduction(critic_537(), "unverified", families, keywords, counted) is None
+    assert difference.excluded_reduction(critic_537(), "verified", families, keywords, counted).id == "delta_rule"
 
 
 # ----- F1: the critic sees each own-history cause whole ---------------------------------------------------------------
