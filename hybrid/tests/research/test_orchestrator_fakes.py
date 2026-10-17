@@ -296,7 +296,10 @@ def make_classifier(labels, found=True):
                                                              "url": "https://arxiv.org/abs/2401.00001",
                                                              "relation": "close"}]
         return {"label": label, "evidence": evidence, "notes": "fake", "queries": ["phase running sum"],
-                "candidates": [f"arxiv:{hit}" for hit in hits], "rejected_evidence": []}
+                "candidates": [{"key": f"arxiv:{hit}", "source": "arxiv", "source_id": hit, "title": "A paper",
+                                "year": 2024, "url": f"https://arxiv.org/abs/{hit}", "excerpt": "An abstract."}
+                               for hit in hits],
+                "rejected_evidence": []}
 
     return classify
 

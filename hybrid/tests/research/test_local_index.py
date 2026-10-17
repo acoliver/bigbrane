@@ -160,7 +160,7 @@ def test_prior_art_finds_and_grounds_local_hits_while_every_remote_source_is_rat
 
     result, calls = asyncio.run(s2_prior_art.prior_art(ctx, make_card(CARD_ID)))
 
-    assert "arxiv:2401.00001" in result["candidates"]
+    assert "arxiv:2401.00001" in [c["key"] for c in result["candidates"]]
     assert [e["source_id"] for e in result["evidence"]] == ["2401.00001"]
     assert result["rejected_evidence"] == []
     receipts = ctx.ledger.of_type("literature_receipt")

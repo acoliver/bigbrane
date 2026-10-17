@@ -60,6 +60,7 @@ LOOP = "send_back"
 WRITER_PROMPT = "difference"
 CHECK_PROMPT = "difference_check"
 R3_PREFIX = "r3"
+LISTED_LITERATURE = 25     # papers of the prior-art search shown to the writer and the checker, evidence included
 
 
 # ----- families ------------------------------------------------------------------------------------------------------
@@ -149,27 +150,38 @@ def named_family(critic: dict, families: Families) -> Family | None:
 
 @dataclass
 class Requirements:
-    literature: dict[str, str]                 # accepted literature ref -> title
+    literature: dict[str, dict]                # accepted literature ref -> its listed paper (see literature_refs)
     outcomes: dict[str, dict]                  # record id -> match dict
     r3: list[dict]                             # {"record_id", "card_id", "exact", "jaccard", "causes": [{id, detail}]}
     family: Family | None
     need: int
     families: Families
+    searched: int = 0                          # papers the prior-art search returned, of which `literature` lists some
 
     def cause_ids(self) -> list[str]:
         return [cause["id"] for target in self.r3 for cause in target["causes"]]
 
 
-def literature_refs(record: dict, pa_result: dict) -> dict[str, str]:
-    """Source ids the prior-art search returned for this card (evidence ids, candidate ids with and without their
-    source prefix), each with a title when known."""
-    refs: dict[str, str] = {}
-    for candidate in pa_result.get("candidates", []):
-        refs[candidate] = ""
-        if ":" in candidate:
-            refs[candidate.split(":", 1)[1]] = ""
+def literature_refs(record: dict, pa_result: dict) -> dict[str, dict]:
+    """The papers of this card's prior-art search that the writer and the checker see and the host accepts as
+    `literature` refs. Each paper is a candidate record (key, source_id, title, year, excerpt) and is reachable under
+    both spellings a ref may take: the key `s2:712c...` and the bare source id.
+
+    The search returns about 80 papers, too many to show with their abstracts, so the listing is bounded to
+    LISTED_LITERATURE papers: first the evidence the classifier cited (with its relation), because the classifier
+    judged those closest, then the remaining candidates in the order the searches returned them. The prompt for the
+    writer and the one for the checker are built from this one listing."""
+    candidates = pa_result["candidates"]
+    by_source_id = {candidate["source_id"]: candidate for candidate in candidates}
+    listed: dict[str, dict] = {}
     for item in record["evidence"]:
-        refs[item["source_id"]] = item["title"]
+        candidate = by_source_id[item["source_id"]]
+        listed.setdefault(candidate["key"], dict(candidate, relation=item["relation"]))
+    for candidate in candidates:
+        listed.setdefault(candidate["key"], candidate)
+    refs: dict[str, dict] = {}
+    for entry in list(listed.values())[:LISTED_LITERATURE]:
+        refs[entry["key"]] = refs[entry["source_id"]] = entry
     return refs
 
 
@@ -184,7 +196,8 @@ def requirements(ctx: StageContext, record: dict, pa_result: dict, matches: list
                        "exact": match.exact, "jaccard": round(match.jaccard, 4),
                        "causes": [{"id": c["id"], "detail": c["detail"]} for c in match.stored.causes()]})
     need = min(2, len({ref.split(":", 1)[-1] for ref in literature}) + len(outcomes))
-    return Requirements(literature, outcomes, r3, named_family(critic, families), need, families)
+    return Requirements(literature, outcomes, r3, named_family(critic, families), need, families,
+                        len(pa_result["candidates"]))
 
 
 def resolves(card: dict, ref: str) -> bool:
@@ -210,9 +223,9 @@ def host_problems(statement: dict, card: dict, req: Requirements) -> dict[str, s
         elif kind == "family" and req.families.get(ref) is not None:
             families.add(ref)
         else:
-            problems[f"unknown_ref:{kind}:{ref}"] = (f"closest_prior names {kind} {ref!r}, which is not a source of "
-                                                    f"this card's prior-art search, one of its own-history records or "
-                                                    f"a family of families.toml")
+            problems[f"unknown_ref:{kind}:{ref}"] = (f"closest_prior names {kind} {ref!r}, which is not a listed "
+                                                    f"source of this card's prior-art search, one of its own-history "
+                                                    f"records or a family of families.toml")
     if len(counted) < req.need:
         problems["closest_prior:count"] = (f"{len(counted)} literature or outcome entries with receipts; at least "
                                            f"{req.need} are required")
@@ -260,11 +273,22 @@ def check_schema(cause_ids: list[str], family: Family | None) -> dict:
                            "required_difference": {"type": "string"}}}
 
 
+def literature_lines(req: Requirements) -> list[str]:
+    papers = {entry["key"]: entry for entry in req.literature.values()}.values()
+    lines = []
+    for paper in papers:
+        year = paper["year"] if paper["year"] is not None else "n.d."
+        relation = f" [cited by the prior-art search as {paper['relation']}]" if "relation" in paper else ""
+        lines.append(f"- {paper['key']} ({year}) {paper['title']}{relation}\n  {paper['excerpt']}")
+    return lines
+
+
 def context_block(record: dict, req: Requirements, critic: dict) -> str:
-    lit = [f"- {ref}: {title or '(title not recorded)'}" for ref, title in req.literature.items() if ":" not in ref]
-    lit += [f"- {ref}" for ref in req.literature if ":" in ref]
-    parts = ["PRIOR-ART SEARCH (cite literature entries by these source ids):\n"
-             + (f"label {record['label']}\n" + ("\n".join(lit) or "(no source returned)")),
+    papers = literature_lines(req)
+    shown = (f"{len(papers)} of the {req.searched} papers the search returned, the cited evidence first and then the "
+             f"others in search order")
+    parts = [f"PRIOR-ART SEARCH (cite literature entries by these source ids; {shown}):\n"
+             + (f"label {record['label']}\n" + ("\n".join(papers) or "(no source returned)")),
              "OWN HISTORY (outcome-store records; cite them by record id, and causes by cause id):\n"
              + ("\n".join(f"- {rid}: {m['card_id']} {m['title'][:80]} ({'exact' if m['exact_signature'] else 'near'}"
                           f" signature, Jaccard {m['jaccard']}), {m['outcome']} at {m['terminal_stage']}, kill codes "

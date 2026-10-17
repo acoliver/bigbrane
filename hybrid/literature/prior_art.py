@@ -66,7 +66,7 @@ async def classify_prior_art(
         "evidence": evidence,
         "notes": verdict["notes"],
         "queries": queries,
-        "candidates": sorted(candidates),
+        "candidates": [_candidate_record(key, paper) for key, paper in candidates.items()],
         "rejected_evidence": rejected,
     }
     sink.append("prior_art_result", ACTOR, result)
@@ -85,11 +85,14 @@ def _ground_evidence(
     cited: list[dict[str, Any]], candidates: dict[str, Paper]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Keep only citations that name a paper the searches actually returned. Citations to
-    papers outside the results are rejected and returned so the caller can see them."""
+    papers outside the results are rejected and returned so the caller can see them.
+
+    The results are listed to the model by key (`s2:712c...`), so it often answers with the key
+    as the source_id. A source_id is taken as a key only when it starts with the cited source and
+    names a returned paper of that source; no other prefix handling applies."""
     grounded, rejected = [], []
     for item in cited:
-        key = f"{item['source']}:{item['source_id']}"
-        paper = candidates.get(key)
+        paper = candidates.get(_cited_key(item["source"], item["source_id"]))
         if paper is None:
             rejected.append(item)
             continue
@@ -105,6 +108,29 @@ def _ground_evidence(
     return grounded, rejected
 
 
+def _cited_key(source: str, source_id: str) -> str:
+    prefix = f"{source}:"
+    return source_id if source_id.startswith(prefix) else prefix + source_id
+
+
+def _excerpt(paper: Paper) -> str:
+    return (paper.abstract or "(no abstract)")[:ABSTRACT_CHARS_IN_PROMPT]
+
+
+def _candidate_record(key: str, paper: Paper) -> dict[str, Any]:
+    """What the later stages need to show a returned paper: its identity, title and the abstract excerpt the
+    classifier saw. Records stay in the order the searches returned the papers."""
+    return {
+        "key": key,
+        "source": paper.source,
+        "source_id": paper.source_id,
+        "title": paper.title,
+        "year": paper.year,
+        "url": paper.url,
+        "excerpt": _excerpt(paper),
+    }
+
+
 def _candidate_prompt(card_text: str, candidates: dict[str, Paper]) -> str:
     lines = [
         "THEORY CARD",
@@ -114,7 +140,6 @@ def _candidate_prompt(card_text: str, candidates: dict[str, Paper]) -> str:
     ]
     for key in sorted(candidates):
         paper = candidates[key]
-        abstract = (paper.abstract or "(no abstract)")[:ABSTRACT_CHARS_IN_PROMPT]
         year = paper.year if paper.year is not None else "n.d."
-        lines.append(f"- [{key}] ({year}) {paper.title}\n  {abstract}")
+        lines.append(f"- [{key}] ({year}) {paper.title}\n  {_excerpt(paper)}")
     return "\n".join(lines)
