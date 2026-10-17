@@ -128,8 +128,8 @@
         "rounds": "1",
         "protocol": {
           "source": "hybrid/fixtures/calibration/protocols/k2-recall.py",
-          "sha256": "2f7c9e301962b659208a2aa62a42e6d71319b76d05b4b3079f73d1d61dc04fd7",
-          "provenance": "Measured learner from results/p4-protocols-20261016 (k2-recall128-source.py, decisions P4P and P4W): it passed development seed 101, then check seeds 0, 1 and 2 at 0.996, 0.9975 and 0.9935 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 128, m = 2500."
+          "sha256": "5905fdfb33939f82f8d50300cf62153d1b4f6d1c332c209a90de86a7e9e8b038",
+          "provenance": "Measured learner from results/p4-protocols-20261016 (k2-recall128-source.py, decisions P4P and P4W), rewritten by decision KD1 (results/kd1-20261017) so its cost fits the 1440 CPU s admission in the pinned tools container: the embedding projection is a table gathered by token (the same mathematics) and the recipe is 300 epochs at batch 128 and learning rate 0.004. It passed development seeds 101, 102 and 103 on the host, then check seeds 0, 1 and 2 in the container at 0.999, 0.9965 and 0.997 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 128, m = 2500."
         }
       },
       "dyck": {
@@ -150,8 +150,8 @@
         "rounds": "1",
         "protocol": {
           "source": "hybrid/fixtures/calibration/protocols/k2-composition.py",
-          "sha256": "005fda026e7fa10d41df4eb0a96b8e3cb4b347a25484de449363bc9350cc0645",
-          "provenance": "Measured learner from results/p4-protocols-20261016 (k2-composition-source.py, decision P4P): it passed development seed 101, then check seeds 0, 1 and 2 at 0.9995, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 3000."
+          "sha256": "37beb27be234fd101a66d51cfe818e9210eeb7e75cb017adfe85b85126925be8",
+          "provenance": "Measured learner from results/p4-protocols-20261016 (k2-composition-source.py, decision P4P), rewritten by decision KD1 (results/kd1-20261017) so its cost fits the 1440 CPU s admission in the pinned tools container: the embedding projection is a table gathered by token (the same mathematics) and the recipe is 300 epochs at batch 128 and learning rate 0.004. It passed development seeds 101, 102 and 103 on the host, then check seeds 0, 1 and 2 in the container at 0.9975, 0.996 and 1 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 3000."
         }
       }
     },

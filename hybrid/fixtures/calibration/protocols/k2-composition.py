@@ -1,4 +1,4 @@
-RECIPE = {'d': 64, 'init': 'E~N(0,0.5^2); W~N(0,1/(2d)); O~N(0,1/d); biases 0 except retain bias 1', 'optimizer': 'adam(0.9,0.999,1e-8), global-norm clip 1.0', 'lr': 0.002, 'lr_schedule': 'cosine to 0', 'epochs': 500, 'batch_size': 64, 'loss': 'next-symbol cross-entropy at query positions, full BPTT', 'emb_scale': 0.5, 'retain_bias': 1.0, 'clip': 1.0, 'augment': 'each epoch, re-shuffle the order of the g pairs, the f pairs and the queries (with their answers) inside every training instance'}
+RECIPE = {'d': 64, 'init': 'E~N(0,0.5^2); W~N(0,1/(2d)); O~N(0,1/d); biases 0 except retain bias 1', 'optimizer': 'adam(0.9,0.999,1e-8), global-norm clip 1.0', 'lr': 0.004, 'lr_schedule': 'cosine to 0', 'epochs': 300, 'batch_size': 128, 'loss': 'next-symbol cross-entropy at query positions, full BPTT', 'emb_scale': 0.5, 'retain_bias': 1.0, 'clip': 1.0, 'augment': 'each epoch, re-shuffle the order of the g pairs, the f pairs and the queries (with their answers) inside every training instance'}
 CURVE = []
 
 def sigm(x):
@@ -48,8 +48,12 @@ def augment(X, A, M, layout, ok, rng):
 def fb(E, W, b, O, xb, ab, mb, d, V):
     B = xb.shape[0]
     T = xb.shape[1]
-    Ex = E[xb]
-    Z = np.zeros((B, T, 2 * d), np.float32)
+    # W stacks the recurrent block Wy (rows 0..d) over the input block We (rows d..2d). The input half of every
+    # gate preactivation takes only V distinct embeddings, so it is a table (E @ We) gathered by token.
+    Wy = W[:d]
+    We = W[d:]
+    Pe = (E @ We)[xb] + b
+    Yp = np.zeros((B, T, d), np.float32)
     R = np.zeros((B, T, d), np.float32)
     I = np.zeros((B, T, d), np.float32)
     Og = np.zeros((B, T, d), np.float32)
@@ -60,9 +64,8 @@ def fb(E, W, b, O, xb, ab, mb, d, V):
     y = np.zeros((B, d), np.float32)
     s = np.zeros((B, d), np.float32)
     for t in range(T):
-        Z[:, t, :d] = y
-        Z[:, t, d:] = Ex[:, t]
-        pre = Z[:, t] @ W + b
+        Yp[:, t] = y
+        pre = y @ Wy + Pe[:, t]
         r = sigm(pre[:, :d])
         ig = sigm(pre[:, d:2 * d])
         o = sigm(pre[:, 2 * d:3 * d])
@@ -98,7 +101,7 @@ def fb(E, W, b, O, xb, ab, mb, d, V):
     DP = np.zeros((B, T, 4 * d), np.float32)
     dyr = np.zeros((B, d), np.float32)
     dsr = np.zeros((B, d), np.float32)
-    WyT = np.ascontiguousarray(W[:d].T)
+    WyT = np.ascontiguousarray(Wy.T)
     for t in reversed(range(T)):
         r = R[:, t]
         ig = I[:, t]
@@ -115,11 +118,11 @@ def fb(E, W, b, O, xb, ab, mb, d, V):
         dsr = ds * r
         dyr = DP[:, t] @ WyT
     DPf = DP.reshape(N, 4 * d)
-    dW = Z.reshape(N, 2 * d).T @ DPf
-    db = DPf.sum(0)
-    dEx = DPf @ np.ascontiguousarray(W[d:].T)
     OH = (xb.reshape(-1)[:, None] == np.arange(V)[None, :]).astype(np.float32)
-    dE = OH.T @ dEx
+    G = OH.T @ DPf
+    dW = np.concatenate([Yp.reshape(N, d).T @ DPf, E.T @ G], axis=0)
+    db = DPf.sum(0)
+    dE = G @ We.T
     return [dE, dW, db, dO], loss, corr, float(mf.sum())
 
 def learn(layout, examples, seed):

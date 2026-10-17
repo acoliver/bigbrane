@@ -37,8 +37,8 @@ from hybrid.tests.research import math_fakes as mf
 from hybrid.tests.research.test_profile_stage import Harness
 
 # The sha256 values results/p4-protocols-20261016/REPORT.md gives for the K2 composition and recall sources.
-COMPOSITION_SHA = "005fda026e7fa10d41df4eb0a96b8e3cb4b347a25484de449363bc9350cc0645"
-RECALL_SHA = "2f7c9e301962b659208a2aa62a42e6d71319b76d05b4b3079f73d1d61dc04fd7"
+COMPOSITION_SHA = "37beb27be234fd101a66d51cfe818e9210eeb7e75cb017adfe85b85126925be8"
+RECALL_SHA = "5905fdfb33939f82f8d50300cf62153d1b4f6d1c332c209a90de86a7e9e8b038"
 PROTOCOL_DIR = cal.FIXTURES / "protocols"
 SUPPLIED_SLOTS = ("P4.recall", "P4.composition")
 
@@ -214,7 +214,7 @@ def test_a_hash_mismatch_stops_the_calibration_load(tmp_path):
     card = json.loads((directory / "k2.json").read_text())
     card["resources"]["learning"]["recall"]["protocol"]["sha256"] = "0" * 64
     (directory / "k2.json").write_text(json.dumps(card))
-    with pytest.raises(cr.ProtocolError, match=r"calibration card k2: .*k2-recall\.py has sha256 2f7c9e30"):
+    with pytest.raises(cr.ProtocolError, match=r"calibration card k2: .*k2-recall\.py has sha256 5905fdfb"):
         cal.load_cards(("k2",), directory)
 
 

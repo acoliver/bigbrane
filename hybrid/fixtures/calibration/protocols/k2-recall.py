@@ -1,4 +1,4 @@
-RECIPE = {"init": "weights uniform(-1/sqrt(d),1/sqrt(d)); E normal(0,0.5); retain bias 1, other biases 0, no output bias; s,y start at 0", "optimizer": "AdamW b1=0.9 b2=0.999 eps=1e-8, decoupled weight decay on matrices, global gradient-norm clip", "learning_rate": 0.002, "schedule": "cosine decay to 0.1x over all steps", "weight_decay": 0.0005, "epochs": 400, "batch_size": 64, "loss": "next-symbol cross-entropy at the scored positions, full backpropagation through time", "d": 128, "emb_scale": 0.5, "retain_bias": 1.0, "clip": 1.0, "augmentation": "per example and per batch, a fresh random relabeling of token ids within the key-id class and within the value-id class, applied consistently to the input tokens and the answers"}
+RECIPE = {"init": "weights uniform(-1/sqrt(d),1/sqrt(d)); E normal(0,0.5); retain bias 1, other biases 0, no output bias; s,y start at 0", "optimizer": "AdamW b1=0.9 b2=0.999 eps=1e-8, decoupled weight decay on matrices, global gradient-norm clip", "learning_rate": 0.004, "schedule": "cosine decay to 0.1x over all steps", "weight_decay": 0.0005, "epochs": 300, "batch_size": 128, "loss": "next-symbol cross-entropy at the scored positions, full backpropagation through time", "d": 128, "emb_scale": 0.5, "retain_bias": 1.0, "clip": 1.0, "augmentation": "per example and per batch, a fresh random relabeling of token ids within the key-id class and within the value-id class, applied consistently to the input tokens and the answers"}
 CURVE = []
 
 def sigm(x):
@@ -19,9 +19,9 @@ def grad(P, tok, tgt, msk, eye, d):
     E, We, Wy, b, O = P
     f32 = np.float32
     B, T = tok.shape
+    # The input projection E[tok] @ We takes only V distinct rows, so it is a table (E @ We) gathered by token.
     OH = eye[tok.reshape(-1)]
-    Xe = OH @ E
-    Ze = (Xe @ We + b).reshape(B, T, 4 * d)
+    Ze = (E @ We)[tok] + b
     Yall = np.zeros((B, T + 1, d), f32)
     Sall = np.zeros((B, T + 1, d), f32)
     Gs = np.empty((B, T, 4 * d), f32)
@@ -72,9 +72,10 @@ def grad(P, tok, tgt, msk, eye, d):
         dyn = dz @ WyT
     dZf = dZ.reshape(B * T, 4 * d)
     dWy = Yall[:, :T].reshape(B * T, d).T @ dZf
-    dWe = Xe.T @ dZf
+    G = OH.T @ dZf
+    dWe = E.T @ G
     db = dZf.sum(0)
-    dE = OH.T @ (dZf @ We.T)
+    dE = G @ We.T
     return loss, correct, [dE, dWe, dWy, db, dO]
 
 def learn(layout, examples, seed):
