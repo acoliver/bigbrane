@@ -1,0 +1,44 @@
+[
+  {
+    "file": "parity.html",
+    "url": "https://cp-algorithms.com/data_structures/disjoint_set_union.html",
+    "final_url": "https://cp-algorithms.com/data_structures/disjoint_set_union.html",
+    "sha256": "f79ac6ae193c0dda8d571593e525121996215323318307e7244e0ad6fda9ccd4",
+    "retrieved_utc": "2026-10-18T20:56:26.393407+00:00"
+  },
+  {
+    "file": "mitchell-ch6.pdf",
+    "url": "https://www.cs.cmu.edu/afs/cs/project/theo-20/www/mlbook/ch6.pdf",
+    "final_url": "https://www.cs.cmu.edu/afs/cs/project/theo-20/www/mlbook/ch6.pdf",
+    "sha256": "32acf40ec79c1cef96ef7c7515113390b46f731a09dde89727f87a5727ab7742",
+    "retrieved_utc": "2026-10-18T20:56:28.389068+00:00"
+  },
+  {
+    "file": "projective.pdf",
+    "url": "https://www.math.chalmers.se/~steif/group.lectures.pdf",
+    "final_url": "https://www.math.chalmers.se/~steif/group.lectures.pdf",
+    "sha256": "768153bea6eb040b150a8274f9aec45fa1a1b175444df1e5bb884ecd5acf23a6",
+    "retrieved_utc": "2026-10-18T20:56:31.281452+00:00"
+  },
+  {
+    "file": "size-principle.pdf",
+    "url": "https://cocosci.princeton.edu/tom/papers/TGbbs.pdf",
+    "final_url": "https://cocosci.princeton.edu/tom/papers/TGbbs.pdf",
+    "sha256": "31b6389f29b4398d32f663f1a0f163257f9b541f51dd1a9854aed1469e2bcc9d",
+    "retrieved_utc": "2026-10-18T20:56:32.365053+00:00"
+  },
+  {
+    "file": "sugs.html",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3812957/",
+    "final_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3812957/",
+    "sha256": "c0d65460ec86d8f9683f05fc0b52c11dc825b54afd63f3866852dea63d3dda97",
+    "retrieved_utc": "2026-10-18T20:56:32.873099+00:00"
+  },
+  {
+    "file": "cappe.pdf",
+    "url": "https://hal.science/hal-00410106v2/document",
+    "final_url": "https://hal.science/hal-00410106v2/document",
+    "sha256": "ae03a7075728038631af7d083ee86889d618e6276a581a3c0779fc29041f56ad",
+    "retrieved_utc": "2026-10-18T20:56:34.647966+00:00"
+  }
+]

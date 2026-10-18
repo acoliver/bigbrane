@@ -1,0 +1,13 @@
+diff --git a/hybrid/literature/sources/arxiv.py b/hybrid/literature/sources/arxiv.py
+index 5e3d1ca..d9b3cf9 100644
+--- a/hybrid/literature/sources/arxiv.py
++++ b/hybrid/literature/sources/arxiv.py
+@@ -8,7 +8,7 @@ from hybrid.literature.paper import Paper, normalize_arxiv_id
+ from hybrid.literature.transport import Request
+ 
+ NAME = "arxiv"
+-BASE_URL = "http://export.arxiv.org/api/query"
++BASE_URL = "https://export.arxiv.org/api/query"
+ _NS = {"atom": "http://www.w3.org/2005/Atom", "arxiv": "http://arxiv.org/schemas/atom"}
+ _ABS_URL = re.compile(r"arxiv\.org/abs/(.+)$")
+ 

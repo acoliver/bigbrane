@@ -134,7 +134,9 @@
                 "diagonal_attention_epsilon_logits_probs",
                 "mesa_mixture_logits",
                 "linear_ssm_zero_lift",
-                "bimap_hard_l1_read"
+                "bimap_hard_l1_read",
+                "parityunionfind582f8abf",
+                "finitePGLversionspaced86dca4b"
                 ]
               },
               "parameters": {

@@ -1,0 +1,92 @@
+{
+  "base_head": "fe264b5996b7177d2fbcca5e9274ca5414210578",
+  "scope": "isolated staged-tree targeted verification; no full suite, LLM or live requests",
+  "counts": {
+    "passed": 121,
+    "failed": 2,
+    "skipped": 0
+  },
+  "modules": {
+    "test_historical_binding": {
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_historical_references": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_reference_replays": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_review_gate_evidence": {
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_phase7_replay": {
+      "passed": 2,
+      "failed": 2,
+      "skipped": 0
+    },
+    "test_arxiv_https": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_parsing": {
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_diagnose": {
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "failed_nodes": [
+    "hybrid.tests.research.test_phase7_replay::test_every_s2_death_gets_its_expected_phase7_code",
+    "hybrid.tests.research.test_phase7_replay::test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+  ],
+  "command": [
+    "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+    "-c",
+    "import socket,sys,pytest\nfrom pathlib import Path\nroot=Path.cwd()\nsys.path.insert(0,str(root))\ndef deny(*args,**kwargs):\n    raise AssertionError('network connections prohibited in packaged checkpoint tests')\nsocket.socket.connect=deny\nsocket.create_connection=deny\nraise SystemExit(pytest.main(sys.argv[1:]))\n",
+    "-c",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/checkpoint-verification/checkout/pyproject.toml",
+    "--confcutdir",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/checkpoint-verification/checkout",
+    "-q",
+    "--basetemp",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/checkpoint-verification/pytest-isolated",
+    "--junitxml",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/checkpoint-verification/isolated-junit.xml",
+    "hybrid/tests/research/test_historical_binding.py",
+    "hybrid/tests/research/test_historical_references.py",
+    "hybrid/tests/research/test_reference_replays.py",
+    "hybrid/tests/research/test_review_gate_evidence.py",
+    "hybrid/tests/research/test_phase7_replay.py",
+    "hybrid/tests/literature/test_arxiv_https.py",
+    "hybrid/tests/literature/test_parsing.py",
+    "results-wt/retrieval-diagnosis/test_diagnose.py"
+  ],
+  "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/checkpoint-verification/checkout",
+  "network": "socket connections prohibited",
+  "absent_raw_evidence": [
+    "historical.json",
+    "publication snapshots",
+    "offline.json",
+    "API caches"
+  ],
+  "local_log_sha256": "43dd37295a517ceeac45dda4b470a3f650f15487bcf79d53de0544e0558185e1",
+  "exit_code": 1,
+  "local_provenance": {
+    "passed": 13,
+    "failed": 0,
+    "scope": "12 diagnostic tests plus publication metadata/snapshot hash check; compact projection equals original saved offline measurements"
+  }
+}

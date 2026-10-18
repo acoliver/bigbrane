@@ -1,6 +1,8 @@
 """Separate executed trace evidence for immutable historical reports. No saved verdict is rewritten."""
 import copy
+import hashlib
 import json
+import runpy
 from functools import lru_cache
 from pathlib import Path
 
@@ -9,7 +11,32 @@ FIXTURES = Path(__file__).parent / 'fixtures' / 'reference_replays'
 
 @lru_cache(maxsize=None)
 def load(name):
+    if name == 'historical':
+        return historical_capture()
     return json.loads((FIXTURES / f'{name}.json').read_text())
+
+
+def historical_capture():
+    """Load the retained full trace, or reproduce it from immutable programs and the observer."""
+    manifest = load('historical_sources')
+    path = FIXTURES / 'historical.json'
+    if path.exists():
+        data = path.read_bytes()
+        assert hashlib.sha256(data).hexdigest() == manifest['capture_sha256']
+        return json.loads(data)
+    root = FIXTURES.parents[4]
+    observer = root / 'results-wt/evidence-recovery/capture_historical.py'
+    capture = runpy.run_path(str(observer))['capture']
+    recovered = copy.deepcopy(manifest['cards'])
+    for card, record in recovered.items():
+        provenance = record['provenance']
+        source = root / provenance['source']
+        assert hashlib.sha256(source.read_bytes()).hexdigest() == provenance['sha256']
+        assert hashlib.sha256(observer.read_bytes()).hexdigest() == provenance['observer_sha256']
+        episodes, stdout = capture(card, source.read_text(), str(source))
+        assert stdout == record['reexecuted_stdout']
+        record['episodes'] = episodes
+    return recovered
 
 
 def fix12_spec(comparator):
@@ -45,3 +72,54 @@ def kd8_record(record):
         if comparison['declared_id'] in ids:
             comparison['reference_samples'] = evidence['reference_samples']
     return replay
+
+
+def historical_evidence(card):
+    """Recovered declarations for the two independently validated historical protocols."""
+    return load('historical_declarations').get(card)
+
+
+def historical_phase7_evidence(entry):
+    """Bind recovered evidence to the original card and critic, never to an expected kill code."""
+    evidence = historical_evidence(entry['card_id'])
+    if evidence is None:
+        return None
+    for field in ('card', 'critic'):
+        encoded = json.dumps(entry[field], sort_keys=True, separators=(',', ':')).encode()
+        if hashlib.sha256(encoded).hexdigest() != evidence['specimen'][f'{field}_sha256']:
+            return None
+    return copy.deepcopy(evidence)
+
+
+def historical_samples(card):
+    """Only input/output evidence is passed to the host; state snapshots remain provenance data."""
+    return [{key: episode[key] for key in ('parameters', 'inputs', 'card_outputs')}
+            for episode in load('historical')[card]['episodes']]
+
+
+def concept_queries(episode):
+    """Map raw CARD-side examples to fixed geometric scores, without consulting the model comparator."""
+    import math
+    import numpy as np
+
+    embeddings = {key: np.asarray(value) for key, value in episode['parameters']['embeddings'].items()}
+
+    def similarity(x, y):
+        u, v = embeddings[x], embeddings[y]
+        distance = math.acosh(1 + 2 * np.sum((u - v) ** 2) / ((1 - u @ u) * (1 - v @ v)))
+        return (2 * math.atanh(np.linalg.norm(u)) + 2 * math.atanh(np.linalg.norm(v)) - distance) / 2
+
+    examples = {}
+    for i, ((word, op, point), output) in enumerate(zip(episode['inputs'], episode['card_outputs'])):
+        if output[0] == 'none':
+            continue
+        if op == '+':
+            examples.setdefault(word, []).append((op, point))
+        elif op == '-' and word in examples:
+            examples[word].append((op, point))
+        elif op == '?' and word in examples:
+            entries = examples[word]
+            anchor = entries[0][1]
+            yield i, {'positive_scores': [similarity(x, anchor) for sign, x in entries if sign == '+'],
+                      'negative_scores': [similarity(x, anchor) for sign, x in entries if sign == '-'],
+                      'query_score': similarity(point, anchor)}, output[1]

@@ -1,0 +1,467 @@
+{
+  "card-582f8abf": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 11032,
+        "card_id": "card-582f8abf",
+        "kind": "executor",
+        "name": "job-a98e425534d6.json",
+        "path": "artifacts/executor/job-a98e425534d6.json",
+        "sha256": "db4c0a270234f35d0dc31c767b70bda3d3ddfad9192058a94bdf28a718822289"
+      },
+      "hash": "96a9a2cce0edb480a72f498ccd39a5e2094c13f59e6ab186076e0e55572efb6b",
+      "prev_hash": "e2448225acf38b1253c65764f43c8e7b0b1bc2fec38693b48a17f893c9ed7bf3",
+      "seq": 291,
+      "ts": "2026-10-10T18:44:27.619437+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-a98e425534d6.json",
+    "source_sha256": "287c53c95710ae1a70a7f35f788035a7f9a98138052bf53f5a25969e17974a88",
+    "functions": [
+      "enc_demo",
+      "enc_ask",
+      "enc_ans",
+      "decode",
+      "Card",
+      "LabeledUF",
+      "known_step",
+      "BFSOracle"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"card vs textbook Z2 labeled union-find (path compression) diff=0; vs BFS oracle diff=0; 13580 steps, 4010 determined asks, 75 trials with C set\"}\n"
+  },
+  "card-14429dbc": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 10411,
+        "card_id": "card-14429dbc",
+        "kind": "executor",
+        "name": "job-dd0bfcfad21a.json",
+        "path": "artifacts/executor/job-dd0bfcfad21a.json",
+        "sha256": "6fecec11a94c27eaee197591ffe2300872e3d762f0cc9f2915467ed0ca4b7a7e"
+      },
+      "hash": "4f1dad0b35f9d99ef689056e60495f2323e1ec5f0322086ca9b146332aae2d21",
+      "prev_hash": "30bed03a179b0d2ed64ea76249fc695ba4673efb2735cea0d588627f266649dc",
+      "seq": 431,
+      "ts": "2026-10-10T18:47:59.118786+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-dd0bfcfad21a.json",
+    "source_sha256": "e3925147a50752ea6fb0a634299321f58c34650922af8307cda071ac7cf4dbfa",
+    "functions": [
+      "unif",
+      "onehot",
+      "Card",
+      "Known",
+      "run"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"compared 63981 readouts over 401 streams; states valid&g>0=2019, invalid=536, full-window demos=521\"}\n"
+  },
+  "card-6de11b01": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 9786,
+        "card_id": "card-6de11b01",
+        "kind": "executor",
+        "name": "job-073666f82626.json",
+        "path": "artifacts/executor/job-073666f82626.json",
+        "sha256": "cffa59887149cde79e8ebc4aa75f4973687dbfa201ac18520f3e06f1cd375a87"
+      },
+      "hash": "59cd5e70f2eb58435ea149a89e7f212d79916d23137700dec9a2020e512d00e5",
+      "prev_hash": "002718bec9354c5c061dae95a751a3821f2b9f3425854d875f3523232c74cbb0",
+      "seq": 438,
+      "ts": "2026-10-10T18:48:31.757892+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-073666f82626.json",
+    "source_sha256": "6ae51f996fb9a8136e95d655f52b16e876eb30edc79c8b32335ea04aed6efb3d",
+    "functions": [
+      "gelu",
+      "make_params",
+      "card_run",
+      "delta_run"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 6.106226635438361e-16, \"notes\": \"36 trials incl. small B to force collisions; gated delta rule with one-hot hashed key + tag memory gate matches card h_t and p_t at every step (gate mismatches=0). Without tag gate (plain one-hot delta rule) max diff=1.23, so the tag/eviction check is required.\"}\n"
+  },
+  "card-7ec5e5c2": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 10377,
+        "card_id": "card-7ec5e5c2",
+        "kind": "executor",
+        "name": "job-7b08c71f58f2.json",
+        "path": "artifacts/executor/job-7b08c71f58f2.json",
+        "sha256": "e2dd4ff011a87d8211e830cf61ca60c437c9bae66bdfba004d375b6428dd52a4"
+      },
+      "hash": "d432321d0d062d6ceea82ac48eeb230e7f84c339ded79d78850345b30e718958",
+      "prev_hash": "c5e4aa3f1ccd14cb1183fbac2d6d4ef47ccd8bdf2bffde473bf4e257d6dac66f",
+      "seq": 578,
+      "ts": "2026-10-10T18:52:31.994070+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-7b08c71f58f2.json",
+    "source_sha256": "3ef8afa81e32b1e5a92366f8e06ac3943926928839ec61cdcd3e0d2cae888a3d",
+    "functions": [
+      "vidx",
+      "card_run",
+      "known_run"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"200 trials, 30693 tokens; card FIFO closure vs product-automaton pair reachability + functionality test; point-mass answers=1206, uniform-answer outputs=1997\"}\n"
+  },
+  "card-6fc7efec": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 12099,
+        "card_id": "card-6fc7efec",
+        "kind": "executor",
+        "name": "job-aa979071293d.json",
+        "path": "artifacts/executor/job-aa979071293d.json",
+        "sha256": "aa98ce5626ec49a7f1b072ba35293dba5f95b04cde0653155f72d292d72329db"
+      },
+      "hash": "4844a0eb479c5bf3983cd4184a9250a8d83117069aef5a88722162e98b6d1408",
+      "prev_hash": "e524130d90f1e41994b758ec50014c36666e1327abf8f71fd9b62ae1381b3a80",
+      "seq": 613,
+      "ts": "2026-10-10T18:54:56.270030+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-aa979071293d.json",
+    "source_sha256": "98f659795d12d0dc4d9afc285edf726523b7196c2465d78fe0efe156a034c3a4",
+    "functions": [
+      "make_isotope",
+      "Card",
+      "ShiftReduceRNTN",
+      "rand_postfix",
+      "calib_tokens"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"card shift/contract vs RNTN tensor T from mapping; 3 calibration sets, 258 expr steps, plus soft messages\"}\n"
+  },
+  "card-8dc4db49": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 9436,
+        "card_id": "card-8dc4db49",
+        "kind": "executor",
+        "name": "job-0e6f6b6daa50.json",
+        "path": "artifacts/executor/job-0e6f6b6daa50.json",
+        "sha256": "3e7ec6e0503a7245bf50f1ac788b2355fe97d187d16aa6da95acdf34f23a961a"
+      },
+      "hash": "c3decc0e7baa29d85e46626889508cc5d81fa2f3516b620140b6ad166feff5c4",
+      "prev_hash": "851d399c322095ee92db66867811971a29db0f4a08455b5987607b388ad5b689",
+      "seq": 723,
+      "ts": "2026-10-10T18:58:45.055397+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-0e6f6b6daa50.json",
+    "source_sha256": "056fef18497b3f5d5228086baf5641783311ef69815687ba67d11504abeda070",
+    "functions": [
+      "card_run",
+      "lse",
+      "known_run"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 5.551115123125783e-16, \"notes\": \"n=60 steps compared; evictions=29, gated-out bigrams=7; known=dense LFU-capped one-hot outer-product state + log-domain dustbin Sinkhorn (J warm-started iters) + sentinel mix; card mass err=2.2e-16; max TV of J=3 vs converged=1.974e-02\"}\n"
+  },
+  "card-d86dca4b": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 12016,
+        "card_id": "card-d86dca4b",
+        "kind": "executor",
+        "name": "job-a609c084ac0c.json",
+        "path": "artifacts/executor/job-a609c084ac0c.json",
+        "sha256": "1ba07b00f94e7343f6354cf59c1b9e7a23f5ca4ec2eeed0a6ac4a7703a66a373"
+      },
+      "hash": "473e9835a009e1171708c0cda3fc85b7c6b926ab6598ed64ff73a3612f3ac25f",
+      "prev_hash": "dab521bdcb8202096c544e2278580810e7532528f170e48a40504627a51c5cda",
+      "seq": 747,
+      "ts": "2026-10-10T18:58:59.856007+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-a609c084ac0c.json",
+    "source_sha256": "436d3e3309b27d434d433c713d2aaaa58cefb453555492b9bd7437eb2550e843",
+    "functions": [
+      "run"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"card FSM vs enumerated PGL(2,p) version space (p=5,7,11), passive+active, noisy/clean streams; 10108 steps compared; rejection/size mismatches=0; group_size_ok=True\"}\n"
+  },
+  "card-d1d383d5": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 8692,
+        "card_id": "card-d1d383d5",
+        "kind": "executor",
+        "name": "job-3015131d972c.json",
+        "path": "artifacts/executor/job-3015131d972c.json",
+        "sha256": "756ce767d8735a35fcb06d78a6b7254e22c35e9cc6a9cadcb04ab584b0b62383"
+      },
+      "hash": "87d6024dff54efb33e11036e1e4211688de55a298f9bf7c3a70bb326cd2d09a7",
+      "prev_hash": "7d52859d45cb095cec66cb0c1088cfb761cfecb9265f074686aa40cc378eefed",
+      "seq": 753,
+      "ts": "2026-10-10T18:59:04.650342+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-3015131d972c.json",
+    "source_sha256": "9dc2c6610bfd006e991ef9ede199ad0e6bdf8bbaaeadc77e621d7c3544590488",
+    "functions": [
+      "make_tokens",
+      "card_run",
+      "known_run",
+      "compare"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 3.505551404714424e-11, \"notes\": \"h, sigma and p compared at every step; general symmetric W mapped to sum_r (a_r.u)^2 a_r via polarization (R=8d^3), Hebbian W via a=xi/d^(2/3); h via identity-transition SSM scan\"}\n"
+  },
+  "card-bc3935ac": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 10537,
+        "card_id": "card-bc3935ac",
+        "kind": "executor",
+        "name": "job-2cd0ec0741cb.json",
+        "path": "artifacts/executor/job-2cd0ec0741cb.json",
+        "sha256": "f0b2c8bc76f0bfc3010b42c31cd001bee4179f478cea9c25e677d123ca4fc2eb"
+      },
+      "hash": "138829b26652184375606c4f5d51058af132a531695e91ec4a01b8f76303fccf",
+      "prev_hash": "5c8239f34b9e11e6967b062b2afa338f1301d312b014205a46dfbe2e1a363d75",
+      "seq": 763,
+      "ts": "2026-10-10T19:00:33.189651+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-2cd0ec0741cb.json",
+    "source_sha256": "800994ee22177f8dd6bed118d02a407bab65fed6484692187e434f0460da13e0",
+    "functions": [
+      "mul",
+      "card_C",
+      "card_adj",
+      "run_card",
+      "gen",
+      "dewey_to_matrix",
+      "interval_contains",
+      "run_known",
+      "make_stream"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"200 streams; dist diff 0, label diff 0, interval-vs-prefix mismatches 0, ~3493 query windows\"}\n"
+  },
+  "card-36725a7c": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 10617,
+        "card_id": "card-36725a7c",
+        "kind": "executor",
+        "name": "job-15958ba3d8bb.json",
+        "path": "artifacts/executor/job-15958ba3d8bb.json",
+        "sha256": "8b213274c2ed5d038289a1ff25695efdefe5bf483d3ce9ac50b55f73db78a8d5"
+      },
+      "hash": "55d84bf6f5ba767f997d352f4c24ac0bebacc7ad4c11247efc9d243e24158782",
+      "prev_hash": "4b074b7fe9caf5143521c1eb38daf6e82f2b06717b7ef5c68e372f47189b78cf",
+      "seq": 1107,
+      "ts": "2026-10-10T19:51:06.836524+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-15958ba3d8bb.json",
+    "source_sha256": "fe866a2315eea970b47f7a24e1230b456409ec8ee128f07c1451eed0b231f215",
+    "functions": [
+      "gate",
+      "card_run",
+      "sugs_run",
+      "fourier_phi",
+      "switched_seq"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 1.341149413747189e-12, \"notes\": \"card vs SUGS (log-det dropped, R-truncated, last-cluster readout) over 120 trials/3516 steps; routing mismatches=0; max rel diff=2.81e-13; trials with >=2 modes=114; min top-2 score gap=3.02e-07; with full predictive log-det SUGS would differ in 1055 routing steps\"}\n"
+  },
+  "card-ddb071bd": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 12221,
+        "card_id": "card-ddb071bd",
+        "kind": "executor",
+        "name": "job-7292aee625ba.json",
+        "path": "artifacts/executor/job-7292aee625ba.json",
+        "sha256": "0aaeeb43ce67afbfd2873480d96ab02e541cf3f392eddc6ac7305c1417c6c0fd"
+      },
+      "hash": "0d4af9f3f75a6531ccc7270c78377079859f2c5cc529c204593fe6f5f192bf5e",
+      "prev_hash": "9f65b9b5b3350ac1883b2e016fd721932ec42cd51f1985b35bf0e5373967ca50",
+      "seq": 1143,
+      "ts": "2026-10-10T19:51:41.065270+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-7292aee625ba.json",
+    "source_sha256": "ab7af5e57788d469b0af43bdcaba7c2c19f5273c5278d688d93eb6e90b4a945b",
+    "functions": [
+      "card_run",
+      "ARTPool",
+      "art_run",
+      "parent_run",
+      "lattice_theta",
+      "capacity_seq",
+      "reinstate_seq"
+    ],
+    "stdout": "{\"equivalent\": false, \"max_abs_diff\": 0.44461806885749666, \"notes\": \"ART/leader-clustering+LFU-FIFO pool+HRR bind vs card on 115 seqs, every step; merges=467 evictions=950; parent H3 phase-norm form differs by 0.982 (repair fails)\"}\n"
+  },
+  "card-dc69816b": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 14139,
+        "card_id": "card-dc69816b",
+        "kind": "executor",
+        "name": "job-c092a49e826f.json",
+        "path": "artifacts/executor/job-c092a49e826f.json",
+        "sha256": "62cc2bbc8c9d9b7355007d905ce32fe33de48a36d7a56799f5d8599d0933d0b0"
+      },
+      "hash": "d011e0850052586f727d66955ad65a1eee7c2a0852bce46e427656ba96ff08ff",
+      "prev_hash": "4248cc259566132d313130fed29d4ab34cd221f8be3e890279d88b9f83a7eae6",
+      "seq": 1149,
+      "ts": "2026-10-10T19:52:01.103440+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-c092a49e826f.json",
+    "source_sha256": "2e1b11e58538c5b230d1ef80bd11402d4d5313d97c0dd323e52e374d3ef26678",
+    "functions": [
+      "gelu",
+      "ident",
+      "softmax",
+      "card_run",
+      "base_predictor",
+      "nge_run",
+      "lifted_delta_run"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"card vs incremental NGE/Find-S+default-hierarchy over 601 scenarios; writes=8405 consolidations=525; event-sequence mismatches=0; toy preds card=[3, 1, 5] known=[3, 1, 5]; lifted 2^N delta-rule repair (subset-sum read) max diff=11.3, differs in 362/601 scenarios\"}\n"
+  },
+  "card-a36f1a3a": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 8561,
+        "card_id": "card-a36f1a3a",
+        "kind": "executor",
+        "name": "job-70e748c284d9.json",
+        "path": "artifacts/executor/job-70e748c284d9.json",
+        "sha256": "14f2e2a2c4773615d14f73df37fa3c2f0cf37a64abf77a545c1281d60be7f65c"
+      },
+      "hash": "95a1011b7bbf98306ef1369e91ac076b634537eda5bcc5eb02e71025b549283c",
+      "prev_hash": "7a9b5623c987450f29cd10cb90aa50f2efaefd039abe900e1fa659aecc57c801",
+      "seq": 1213,
+      "ts": "2026-10-10T19:55:37.377131+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-70e748c284d9.json",
+    "source_sha256": "d193e05c1cb85ca59c798ba55a07bd1417eba68c1350e3ba66726a00dbe7b3b8",
+    "functions": [
+      "softplus",
+      "card_run",
+      "build_tables",
+      "ppgn_readout",
+      "known_run"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 8.881784197001252e-16, \"notes\": \"36 random token streams, 489 ASK steps, 358 non-0.5 outputs; card update/readout vs one-hot-key linear-attention count table + tied 1-channel PPGN (m1=m2=id, m4=tanh([alpha,beta]), diag mask), output scale 1\"}\n"
+  },
+  "card-ffdbe331": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 11442,
+        "card_id": "card-ffdbe331",
+        "kind": "executor",
+        "name": "job-eb4bd16c29ef.json",
+        "path": "artifacts/executor/job-eb4bd16c29ef.json",
+        "sha256": "734e5316f37561251050bb807f1fb79c75f8f517e775bf0e74d81c7d9d61871f"
+      },
+      "hash": "ae52eb56b46aee9567d59dc9feab9e480b9d63f75a03d4e2db83f1bfb36cc7c5",
+      "prev_hash": "c6856bbd27771d854defb565115d83ceef9cbc0c7e5b417c980882dd03cfdbd4",
+      "seq": 1340,
+      "ts": "2026-10-10T20:03:39.632934+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-eb4bd16c29ef.json",
+    "source_sha256": "86d3bf41fb759a799a658da9325288732efd0a5fd11e5fc6fcc0140fbb04c91b",
+    "functions": [
+      "rho",
+      "dist",
+      "G",
+      "Card",
+      "Known",
+      "run",
+      "make_stream",
+      "pt",
+      "ang"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 2.4424906541753444e-15, \"notes\": \"compared 736 queries + all positions (eps-smoothed distributions); 84 inconsistent-evidence queries (g<=h) excluded: Bayesian posterior empty there, card uses point-mass fallback; toy matches card values: True\"}\n"
+  },
+  "card-68612a2a": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 9866,
+        "card_id": "card-68612a2a",
+        "kind": "executor",
+        "name": "job-7f666761c096.json",
+        "path": "artifacts/executor/job-7f666761c096.json",
+        "sha256": "7d6cd194d60c90f0c76dd181f764d3373b5dacd4b527a969f88060c85b2d2be2"
+      },
+      "hash": "34ecaea0c82de355ecb7e4217c8fa6e3f4ccad25ec365837924c05aaa3c3412a",
+      "prev_hash": "b86bfaf689cd78091de256f7826a362f36e4a73b5ffa4a37536337ee10757c05",
+      "seq": 1377,
+      "ts": "2026-10-10T20:06:23.685267+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-7f666761c096.json",
+    "source_sha256": "901ff16747be60e3a9aeff904b115f62023db7398f2cdec56030d560337634ad",
+    "functions": [
+      "softmax_logp",
+      "Card",
+      "Coupled"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 1.4210854715202004e-14, \"notes\": \"steps=99 writes=75 gate/size mismatches=0; card OMP-store vs coupled-dictionary OMP + RAN/ALD-style sparse-residual allocation, FIFO budget d=12>m=8\"}\n"
+  },
+  "card-2c5dd003": {
+    "ledger_event": {
+      "actor": "store",
+      "data": {
+        "bytes": 8739,
+        "card_id": "card-2c5dd003",
+        "kind": "executor",
+        "name": "job-aba523e180a2.json",
+        "path": "artifacts/executor/job-aba523e180a2.json",
+        "sha256": "6289e765a7bc3cc6e77b3decd9f73ae4f026dfc816ec3be935ce596012023f6b"
+      },
+      "hash": "f1ab5d08937d5f9c0030e6626e8d440adfd608e7fc963f1cf87867d40cd13819",
+      "prev_hash": "c8ad3c375247ba81703730eed6f555bf7442a4c48e4a9a7775145bca66586640",
+      "seq": 1434,
+      "ts": "2026-10-10T20:15:56.415790+00:00",
+      "type": "artifact"
+    },
+    "purpose": "reduction_check",
+    "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-aba523e180a2.json",
+    "source_sha256": "7d0c9ff42929553e880bb868745b3e40e423580fa112a6253ca29e97b3b24787",
+    "functions": [
+      "card_run",
+      "online_em_run",
+      "softmax_rows"
+    ],
+    "stdout": "{\"equivalent\": true, \"max_abs_diff\": 5.551115123125783e-16, \"notes\": \"200 random (T,pi0,B0,x) trials; compared p_t, h_t, s_t each step and final readout. Online-EM toy p_next=[0.0555, 0.4342, 0.5103] credit_c=[0.0, 0.115, 0.885]\"}\n"
+  }
+}

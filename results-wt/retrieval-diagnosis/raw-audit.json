@@ -1,0 +1,609 @@
+{
+  "diagnostic_identity_usage": "raw saved-record audit only; excluded from ranking and acceptance",
+  "known_diagnostic_ids": {
+    "Hwang": [
+      "arxiv:1110.5667",
+      "openalex:W1562162659"
+    ],
+    "Srinivas": [
+      "arxiv:2204.09837",
+      "openalex:W4224324225"
+    ],
+    "Silver": [
+      "arxiv:1904.06317",
+      "openalex:W3004416026"
+    ],
+    "Rendle": [
+      "openalex:W2295739661"
+    ],
+    "Rossi": [
+      "arxiv:1906.05059",
+      "openalex:W2949933968"
+    ],
+    "SciPy QAP 2-opt": [],
+    "Rehn": [],
+    "Jiang": [
+      "arxiv:1409.0334",
+      "openalex:W1590474470"
+    ],
+    "Zhou": [
+      "arxiv:0901.0553",
+      "openalex:W2007444087"
+    ],
+    "Sacramento": [
+      "arxiv:1207.7196",
+      "openalex:W1993443853"
+    ],
+    "Stoklosa": [
+      "arxiv:2411.14480",
+      "openalex:W4410878449"
+    ]
+  },
+  "records": [
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/7ddcf098b77a9b61670e0a111f515c46c38669c81a65b6742937fee2ddbb6033.json",
+      "request_params": {
+        "search": "graph motif two-path counting link prediction higher-order",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "record": {
+        "source": "openalex",
+        "source_id": "W2949933968",
+        "title": "Higher-Order Ranking and Link Prediction: From Closing Triangles to Closing Higher-Order Motifs",
+        "url": "http://arxiv.org/abs/1906.05059",
+        "arxiv_id": "1906.05059"
+      },
+      "matches": [
+        "Rossi"
+      ]
+    }
+  ],
+  "pre_reference_cap_matches": [
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4aa0451511e9d74ee8206cfa0e8a96ba57da9a6ab885ba68bd48ba750cffbe51.json",
+      "source_work": "W3174357804",
+      "source_title": "DreamCoder: bootstrapping inductive program synthesis with wake-sleep library learning",
+      "request_params": {
+        "search": "Bayesian program learning library abstraction DreamCoder",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-3485a13f",
+          "queries": [
+            "Bayesian program learning library abstraction DreamCoder"
+          ],
+          "old_candidates": [
+            [
+              71,
+              "openalex:W3174357804"
+            ],
+            [
+              250,
+              "s2:fd963ea665e7a6e49753652dc7efe5affba5feb0"
+            ]
+          ],
+          "current_candidates": [
+            [
+              10,
+              "openalex:W3174357804"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [
+            [
+              66,
+              "openalex:W3174357804"
+            ]
+          ],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 3,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Hwang"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4aa0451511e9d74ee8206cfa0e8a96ba57da9a6ab885ba68bd48ba750cffbe51.json",
+      "source_work": "W4310557242",
+      "source_title": "Top-Down Synthesis for Library Learning",
+      "request_params": {
+        "search": "Bayesian program learning library abstraction DreamCoder",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-3485a13f",
+          "queries": [
+            "Bayesian program learning library abstraction DreamCoder",
+            "library learning DreamCoder compression program synthesis"
+          ],
+          "old_candidates": [
+            [
+              7,
+              "arxiv:2211.16605"
+            ]
+          ],
+          "current_candidates": [
+            [
+              9,
+              "arxiv:2211.16605"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [
+            [
+              65,
+              "arxiv:2211.16605"
+            ]
+          ],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 8,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Hwang"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4e6c90e29627aa145076c3bf87ddc7ae2cee1dbff527512136f35b2a9ad9c1f5.json",
+      "source_work": "W4310557242",
+      "source_title": "Top-Down Synthesis for Library Learning",
+      "request_params": {
+        "search": "library learning DreamCoder compression program synthesis",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-3485a13f",
+          "queries": [
+            "Bayesian program learning library abstraction DreamCoder",
+            "library learning DreamCoder compression program synthesis"
+          ],
+          "old_candidates": [
+            [
+              7,
+              "arxiv:2211.16605"
+            ]
+          ],
+          "current_candidates": [
+            [
+              9,
+              "arxiv:2211.16605"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [
+            [
+              65,
+              "arxiv:2211.16605"
+            ]
+          ],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 8,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Hwang"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/7ddcf098b77a9b61670e0a111f515c46c38669c81a65b6742937fee2ddbb6033.json",
+      "source_work": "W3158161201",
+      "source_title": "Research of Motif-Based Similarity for Link Prediction Problem",
+      "request_params": {
+        "search": "graph motif two-path counting link prediction higher-order",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "graph motif two-path counting link prediction higher-order"
+          ],
+          "old_candidates": [
+            [
+              136,
+              "openalex:W3158161201"
+            ]
+          ],
+          "current_candidates": [
+            [
+              136,
+              "openalex:W3158161201"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [
+            [
+              135,
+              "openalex:W3158161201"
+            ]
+          ],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 7,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4fbb735b5083b7bec4c02315d66ca59acaf2dfb4b473456ba5fcec11d43dc279.json",
+      "source_work": "W2998385767",
+      "source_title": "Link prediction in complex networks based on Significance of Higher-Order Path Index (SHOPI)",
+      "request_params": {
+        "search": "link prediction common neighbors resource allocation index two-path",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "link prediction common neighbors resource allocation index two-path"
+          ],
+          "old_candidates": [
+            [
+              259,
+              "openalex:W2998385767"
+            ]
+          ],
+          "current_candidates": [
+            [
+              258,
+              "openalex:W2998385767"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 13,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4fbb735b5083b7bec4c02315d66ca59acaf2dfb4b473456ba5fcec11d43dc279.json",
+      "source_work": "W2386195190",
+      "source_title": "Link Prediction Based on Common-Neighbors for Dynamic Social Network",
+      "request_params": {
+        "search": "link prediction common neighbors resource allocation index two-path",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "link prediction common neighbors resource allocation index two-path"
+          ],
+          "old_candidates": [
+            [
+              260,
+              "openalex:W2386195190"
+            ]
+          ],
+          "current_candidates": [
+            [
+              259,
+              "openalex:W2386195190"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 5,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4fbb735b5083b7bec4c02315d66ca59acaf2dfb4b473456ba5fcec11d43dc279.json",
+      "source_work": "W1698089153",
+      "source_title": "Link prediction based on local information considering preferential attachment",
+      "request_params": {
+        "search": "link prediction common neighbors resource allocation index two-path",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "link prediction common neighbors resource allocation index two-path"
+          ],
+          "old_candidates": [
+            [
+              262,
+              "openalex:W1698089153"
+            ]
+          ],
+          "current_candidates": [
+            [
+              261,
+              "openalex:W1698089153"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 10,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4fbb735b5083b7bec4c02315d66ca59acaf2dfb4b473456ba5fcec11d43dc279.json",
+      "source_work": "W3153461677",
+      "source_title": "Effect of weak ties on degree and H-index in link prediction of complex network",
+      "request_params": {
+        "search": "link prediction common neighbors resource allocation index two-path",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "link prediction common neighbors resource allocation index two-path"
+          ],
+          "old_candidates": [
+            [
+              263,
+              "openalex:W3153461677"
+            ]
+          ],
+          "current_candidates": [
+            [
+              262,
+              "openalex:W3153461677"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 6,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4fbb735b5083b7bec4c02315d66ca59acaf2dfb4b473456ba5fcec11d43dc279.json",
+      "source_work": "W2998878641",
+      "source_title": "Missing Link Prediction using Common Neighbor and Centrality based Parameterized Algorithm",
+      "request_params": {
+        "search": "link prediction common neighbors resource allocation index two-path",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "link prediction common neighbors resource allocation index two-path"
+          ],
+          "old_candidates": [
+            [
+              264,
+              "openalex:W2998878641"
+            ]
+          ],
+          "current_candidates": [
+            [
+              263,
+              "openalex:W2998878641"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 8,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4ba378c407db1d29a74830296ed7e4181d181704e7da88999816994ec633017f.json",
+      "source_work": "W4401863661",
+      "source_title": "LPFormer: An Adaptive Graph Transformer for Link Prediction",
+      "request_params": {
+        "search": "Katz index higher-order graph proximity sequence prediction",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "Katz index higher-order graph proximity sequence prediction"
+          ],
+          "old_candidates": [
+            [
+              277,
+              "openalex:W4401863661"
+            ]
+          ],
+          "current_candidates": [
+            [
+              276,
+              "openalex:W4401863661"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 2,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4ba378c407db1d29a74830296ed7e4181d181704e7da88999816994ec633017f.json",
+      "source_work": "W3156043790",
+      "source_title": "Link Prediction and Node Classification Based on Multitask Graph Autoencoder",
+      "request_params": {
+        "search": "Katz index higher-order graph proximity sequence prediction",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "Katz index higher-order graph proximity sequence prediction"
+          ],
+          "old_candidates": [
+            [
+              278,
+              "openalex:W3156043790"
+            ]
+          ],
+          "current_candidates": [
+            [
+              277,
+              "openalex:W3156043790"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 3,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/4ba378c407db1d29a74830296ed7e4181d181704e7da88999816994ec633017f.json",
+      "source_work": "W1159605274",
+      "source_title": "Link prediction in large directed graphs",
+      "request_params": {
+        "search": "Katz index higher-order graph proximity sequence prediction",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-f5ee7edb",
+          "queries": [
+            "Katz index higher-order graph proximity sequence prediction"
+          ],
+          "old_candidates": [
+            [
+              279,
+              "openalex:W1159605274"
+            ]
+          ],
+          "current_candidates": [
+            [
+              278,
+              "openalex:W1159605274"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 28,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/8e689752e99d38c54e85ac19f0f1cd85a9f29dbcd446c7ed1e24dde3eb069ecc.json",
+      "source_work": "W2737056279",
+      "source_title": "Link prediction on Twitter",
+      "request_params": {
+        "search": "Adamic-Adar common neighbours inverse log degree link prediction",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-89248ee5",
+          "queries": [
+            "Adamic-Adar common neighbours inverse log degree link prediction"
+          ],
+          "old_candidates": [
+            [
+              262,
+              "openalex:W2737056279"
+            ]
+          ],
+          "current_candidates": [
+            [
+              260,
+              "openalex:W2737056279"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 19,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    },
+    {
+      "cache": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache/openalex/8e689752e99d38c54e85ac19f0f1cd85a9f29dbcd446c7ed1e24dde3eb069ecc.json",
+      "source_work": "W3098181561",
+      "source_title": "Path-based extensions of local link prediction methods for complex networks",
+      "request_params": {
+        "search": "Adamic-Adar common neighbours inverse log degree link prediction",
+        "per-page": "6",
+        "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+      },
+      "contexts": [
+        {
+          "card_id": "card-89248ee5",
+          "queries": [
+            "Adamic-Adar common neighbours inverse log degree link prediction"
+          ],
+          "old_candidates": [
+            [
+              263,
+              "openalex:W3098181561"
+            ]
+          ],
+          "current_candidates": [
+            [
+              261,
+              "openalex:W3098181561"
+            ]
+          ],
+          "initial_rank_at_seed_selection": [],
+          "selected_seed_keys": []
+        }
+      ],
+      "reference_position": 6,
+      "within_100_cap": true,
+      "known_work_matches": [
+        "Zhou"
+      ]
+    }
+  ],
+  "missing_title_or_id_counts": {}
+}

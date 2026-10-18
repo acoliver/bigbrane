@@ -1,6 +1,8 @@
 """Host-owned published equations and explicitly bounded family repairs. No model code is executed here."""
 from __future__ import annotations
 
+from functools import lru_cache
+
 import numpy as np
 
 from hybrid.research.stages.sequitur_reference import sequitur_outputs
@@ -177,6 +179,15 @@ def _softmax(x):
 def extended_outputs(operation: str, p: dict, inputs: list) -> np.ndarray:
     """Specified operations only; malformed external data fails at the comparison boundary."""
     out = []
+    if operation in ("parity_union_find", "pgl_version_space", "nested_size_posterior", "sugs_regression_assignments"):
+        operations = {"parity_union_find": parity_union_find, "pgl_version_space": pgl_version_space,
+                      "nested_size_posterior": nested_size_posterior,
+                      "sugs_regression_assignments": sugs_regression_assignments}
+        return operations[operation](p, inputs)
+    if operation == "parityunionfind582f8abf":
+        return parity_union_find(p, inputs)
+    if operation == "finitePGLversionspaced86dca4b":
+        return pgl_version_space(p, inputs)
     if operation == "sequitur":
         return sequitur_outputs(inputs)
     if operation == "queue_copy":
@@ -334,3 +345,176 @@ def extended_outputs(operation: str, p: dict, inputs: list) -> np.ndarray:
     else:
         raise ValueError(f"unsupported host operation {operation}")
     return np.asarray(out, dtype=float)
+
+
+HISTORICAL_REFERENCE_OPERATIONS = {
+    "parityunionfind582f8abf": ("other_known", ("vertices",), ()),
+    "finitePGLversionspaced86dca4b": ("other_known", ("prime", "mode"), ()),
+}
+# Only independently validated historical protocols enter the production reference contract.
+REFERENCE_OPERATIONS.update(HISTORICAL_REFERENCE_OPERATIONS)
+
+
+def parity_union_find(p: dict, inputs: list) -> np.ndarray:
+    """Z2 potentials, CP-Algorithms DSU parity section; input protocol described in OPERATIONS.md."""
+    n = p["vertices"]
+    if not isinstance(n, int) or isinstance(n, bool) or n < 1:
+        raise ValueError("vertices must be a positive integer")
+    parent, size, parity = list(range(n)), [1] * n, [0] * n
+    inconsistent = False
+
+    def find(i):
+        if parent[i] != i:
+            root, potential = find(parent[i])
+            parity[i] ^= potential
+            parent[i] = root
+        return parent[i], parity[i]
+
+    outputs = []
+    for tok in inputs:
+        if not isinstance(tok, int) or isinstance(tok, bool) or not 0 <= tok < 3 * n * n + 2:
+            raise ValueError("token outside parity constraint protocol")
+        q = 0.5
+        if tok < 3 * n * n:
+            if tok < 2 * n * n:
+                pair, label = divmod(tok, 2)
+            else:
+                pair, label = tok - 2 * n * n, None
+            a, b = divmod(pair, n)
+            ra, pa = find(a)
+            rb, pb = find(b)
+            if label is not None:
+                if ra == rb:
+                    inconsistent |= (pa ^ pb) != label
+                else:
+                    if size[ra] < size[rb]:
+                        ra, rb = rb, ra
+                    parent[rb] = ra
+                    parity[rb] = pa ^ pb ^ label
+                    size[ra] += size[rb]
+            elif ra == rb and not inconsistent:
+                q = float(pa ^ pb)
+        result = np.zeros(3 * n * n + 2)
+        result[-2:] = [1 - q, q]
+        outputs.append(result)
+    return np.asarray(outputs)
+
+
+@lru_cache(maxsize=8)
+def _projective_group(prime):
+    """Enumerate scalar-normalized matrices, not card interpolation or a supplied transition table."""
+    from itertools import product
+
+    matrices = set()
+    for entries in product(range(prime), repeat=4):
+        a, b, c, d = entries
+        if (a * d - b * c) % prime:
+            scale = pow(next(x for x in entries if x), -1, prime)
+            matrices.add(tuple(x * scale % prime for x in entries))
+    permutations = []
+    for a, b, c, d in sorted(matrices):
+        row = []
+        for z in range(prime + 1):
+            numerator, denominator = (a, c) if z == prime else (a * z + b, c * z + d)
+            row.append(prime if denominator % prime == 0 else numerator * pow(denominator, -1, prime) % prime)
+        permutations.append(row)
+    return np.asarray(permutations)
+
+
+def pgl_version_space(p: dict, inputs: list) -> np.ndarray:
+    """Mitchell posterior averaging over the PGL(2,p) action, with explicit empty-space abstention."""
+    prime, mode = p["prime"], p["mode"]
+    if (not isinstance(prime, int) or isinstance(prime, bool) or not 3 <= prime <= 31 or
+            any(prime % d == 0 for d in range(2, int(prime ** 0.5) + 1)) or mode not in ("active", "passive")):
+        raise ValueError("supported projective action needs prime 3..31 and active/passive mode")
+    hypotheses = _projective_group(prime)
+    count = prime + 1
+    outputs, query = [], None
+
+    def predict():
+        if query is not None:
+            return (np.bincount(hypotheses[:, query], minlength=count) / len(hypotheses)
+                    if len(hypotheses) else np.full(count, 1 / count))
+        if mode == "passive":
+            return np.full(count, 1 / count)
+        answer = np.zeros(count)
+        if not len(hypotheses):
+            answer[0] = 1
+        else:
+            # Uniform noiseless hypotheses give information gain equal to predictive entropy.
+            histograms = np.stack([np.bincount(hypotheses[:, x], minlength=count) for x in range(count)])
+            probabilities = histograms / len(hypotheses)
+            entropy = -np.sum(probabilities * np.log(np.where(probabilities > 0, probabilities, 1)), axis=1)
+            answer[np.flatnonzero(np.isclose(entropy, entropy.max(), rtol=0, atol=1e-12))[0]] = 1
+        return answer
+
+    for w in inputs:
+        if not isinstance(w, int) or isinstance(w, bool) or not 0 <= w < count:
+            raise ValueError("token outside projective line")
+        outputs.append(predict())
+        if query is None:
+            query = w
+        else:
+            hypotheses = hypotheses[hypotheses[:, query] == w]
+            query = None
+    outputs.append(predict())
+    return np.asarray(outputs)
+
+
+def nested_size_posterior(p: dict, inputs: list) -> np.ndarray:
+    """Size-principle posterior by quadrature; undefined evidence has no manufactured posterior."""
+    delta, rate = float(p["delta"]), float(p["prior_rate"])
+    if not np.isfinite([delta, rate]).all() or delta <= 0 or rate <= 0:
+        raise ValueError("proper size-principle prior needs positive finite delta and prior_rate")
+    nodes, weights = np.polynomial.legendre.leggauss(64)
+    out = []
+    for sample in inputs:
+        positives = np.asarray(sample["positive_scores"], dtype=float)
+        negatives = np.asarray(sample["negative_scores"], dtype=float)
+        z = float(sample["query_score"])
+        if (not positives.size or positives.ndim != 1 or negatives.ndim != 1 or
+                not np.isfinite(np.r_[positives, negatives, z]).all() or
+                (np.r_[positives, negatives, z] < 0).any()):
+            raise ValueError("size-principle evidence needs nonnegative finite scores and a positive example")
+        low, high = max(0., negatives.max(initial=0.)), positives.min()
+        if low >= high:
+            raise ValueError("empty size-principle posterior support")
+        exponent = delta * len(positives) - rate
+        if abs(exponent) * (high - low) > 100:
+            raise ValueError("posterior exceeds supported quadrature concentration")
+        offset = max(exponent * low, exponent * high)
+
+        def integral(a, b):
+            points = a + (nodes + 1) * (b - a) / 2
+            return (b - a) / 2 * (weights @ np.exp(exponent * points - offset))
+
+        out.append(integral(low, np.clip(z, low, high)) / integral(low, high))
+    return np.asarray(out)
+
+
+def sugs_regression_assignments(p: dict, inputs: list) -> np.ndarray:
+    """Wang-Dunson (2011), eq. 3.1: CRP mass times the normalized Gaussian predictive."""
+    ridge, variance, concentration = (float(p[name]) for name in ("ridge", "variance", "concentration"))
+    if not np.isfinite([ridge, variance, concentration]).all() or min(ridge, variance, concentration) <= 0:
+        raise ValueError("SUGS hyperparameters must be positive and finite")
+    clusters, outputs = [], []
+    for observation in inputs:
+        x, y = (np.asarray(observation[name], dtype=float) for name in ("key", "value"))
+        weight = float(observation["weight"])
+        if (x.ndim != 1 or y.ndim != 1 or not x.size or not y.size or
+                not np.isfinite(np.r_[x, y, weight]).all() or weight <= 0):
+            raise ValueError("SUGS needs finite vector observations and positive precision weights")
+        prior = (ridge * np.eye(len(x)), np.zeros((len(x), len(y))), 0)
+        scores = []
+        for A, B, n in [*clusters, prior]:
+            mean = np.linalg.solve(A, B).T @ x
+            predictive_scale = 1 / weight + x @ np.linalg.solve(A, x)
+            scores.append(np.log(n if n else concentration) - len(y) / 2 * np.log(predictive_scale)
+                          - np.sum((y - mean) ** 2) / (2 * variance * predictive_scale))
+        selected = int(np.argmax(scores))
+        if selected == len(clusters):
+            clusters.append(prior)
+        A, B, n = clusters[selected]
+        clusters[selected] = (A + weight * np.outer(x, x), B + weight * np.outer(x, y), n + 1)
+        outputs.append(selected)
+    return np.asarray(outputs, dtype=float)
