@@ -1,0 +1,742 @@
+{
+  "architecture_contract": {
+    "hidden": "d",
+    "precision_bits": 32
+  },
+  "generator_control": [
+    30000,
+    30001,
+    30002
+  ],
+  "generator_test": [
+    20000,
+    20001,
+    20002
+  ],
+  "generator_train": [
+    10000,
+    10001,
+    10002
+  ],
+  "name": "k2-copy-candidate1-confirmation",
+  "per_seed_wall": [
+    {
+      "seed": 0,
+      "total_s": 21.091544958995655
+    },
+    {
+      "seed": 1,
+      "total_s": 22.714501166017726
+    },
+    {
+      "seed": 2,
+      "total_s": 24.199063749983907
+    }
+  ],
+  "phase": "confirmation",
+  "result": {
+    "architecture": {
+      "checked": true,
+      "points": [
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "1",
+            "vocab": "5"
+          },
+          "float_bits": 32,
+          "point": {
+            "L": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "1",
+            "vocab": "5"
+          },
+          "float_bits": 32,
+          "point": {
+            "L": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "1",
+            "vocab": "5"
+          },
+          "float_bits": 32,
+          "point": {
+            "L": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        }
+      ],
+      "violations": []
+    },
+    "counterexample": null,
+    "evidence": "copy at L=4 from m=1500 examples: seed 0 accuracy 1.0000 (control 0.0000), seed 1 accuracy 1.0000 (control 0.0000), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"augment\": \"none\", \"batch_size\": 50, \"beta1\": 0.9, \"beta2\": 0.999, \"clip_norm\": 1.0, \"d\": 64, \"epochs\": 300, \"eps\": 1e-08, \"init\": \"gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0\", \"init_scale\": 1.0, \"loss\": \"next-symbol cross-entropy at the scored query positions, full backpropagation through time\", \"lr\": 0.005, \"lr_final\": 0.0003, \"model\": \"card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero\", \"optimizer\": \"adam\", \"retain_bias\": 1.0, \"stop_loss\": 0.005, \"stop_patience\": 5} applied to the true data and both controls; observed on the listed sizes: copy L=4 m=1500 seed=0, copy L=4 m=1500 seed=1, copy L=4 m=1500 seed=2",
+    "examples": 1500,
+    "recipe": {
+      "augment": "none",
+      "batch_size": 50,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "clip_norm": 1.0,
+      "d": 64,
+      "epochs": 300,
+      "eps": 1e-08,
+      "init": "gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0",
+      "init_scale": 1.0,
+      "loss": "next-symbol cross-entropy at the scored query positions, full backpropagation through time",
+      "lr": 0.005,
+      "lr_final": 0.0003,
+      "model": "card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero",
+      "optimizer": "adam",
+      "retain_bias": 1.0,
+      "stop_loss": 0.005,
+      "stop_patience": 5
+    },
+    "results": [
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 1,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.0,
+                "train_accuracy": 0.0
+              }
+            ]
+          },
+          "true": {
+            "count": 3,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.978908,
+                "train_accuracy": 0.5575
+              },
+              {
+                "epoch": 10.0,
+                "loss": 0.003321,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 13.0,
+                "loss": 0.002121,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 30,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.414018,
+                "train_accuracy": 0.254167
+              },
+              {
+                "epoch": 10.0,
+                "loss": 1.380733,
+                "train_accuracy": 0.282333
+              },
+              {
+                "epoch": 30.0,
+                "loss": 1.344552,
+                "train_accuracy": 0.339667
+              },
+              {
+                "epoch": 40.0,
+                "loss": 1.300116,
+                "train_accuracy": 0.383333
+              },
+              {
+                "epoch": 50.0,
+                "loss": 1.262641,
+                "train_accuracy": 0.407333
+              },
+              {
+                "epoch": 60.0,
+                "loss": 1.232786,
+                "train_accuracy": 0.4205
+              },
+              {
+                "epoch": 80.0,
+                "loss": 1.194156,
+                "train_accuracy": 0.437167
+              },
+              {
+                "epoch": 90.0,
+                "loss": 1.18142,
+                "train_accuracy": 0.445
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.170714,
+                "train_accuracy": 0.444667
+              },
+              {
+                "epoch": 110.0,
+                "loss": 1.164436,
+                "train_accuracy": 0.4495
+              },
+              {
+                "epoch": 130.0,
+                "loss": 1.152815,
+                "train_accuracy": 0.45
+              },
+              {
+                "epoch": 140.0,
+                "loss": 1.147546,
+                "train_accuracy": 0.450333
+              },
+              {
+                "epoch": 150.0,
+                "loss": 1.14392,
+                "train_accuracy": 0.454667
+              },
+              {
+                "epoch": 160.0,
+                "loss": 1.139437,
+                "train_accuracy": 0.456833
+              },
+              {
+                "epoch": 180.0,
+                "loss": 1.136282,
+                "train_accuracy": 0.453667
+              },
+              {
+                "epoch": 190.0,
+                "loss": 1.132203,
+                "train_accuracy": 0.4545
+              },
+              {
+                "epoch": 200.0,
+                "loss": 1.130219,
+                "train_accuracy": 0.457
+              },
+              {
+                "epoch": 210.0,
+                "loss": 1.127814,
+                "train_accuracy": 0.459333
+              },
+              {
+                "epoch": 230.0,
+                "loss": 1.124022,
+                "train_accuracy": 0.458167
+              },
+              {
+                "epoch": 240.0,
+                "loss": 1.122633,
+                "train_accuracy": 0.460333
+              },
+              {
+                "epoch": 250.0,
+                "loss": 1.121327,
+                "train_accuracy": 0.461333
+              },
+              {
+                "epoch": 260.0,
+                "loss": 1.120169,
+                "train_accuracy": 0.457167
+              },
+              {
+                "epoch": 280.0,
+                "loss": 1.118039,
+                "train_accuracy": 0.4595
+              },
+              {
+                "epoch": 290.0,
+                "loss": 1.117053,
+                "train_accuracy": 0.4605
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "none",
+          "batch_size": 50,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 300,
+          "eps": 1e-08,
+          "init": "gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0",
+          "init_scale": 1.0,
+          "loss": "next-symbol cross-entropy at the scored query positions, full backpropagation through time",
+          "lr": 0.005,
+          "lr_final": 0.0003,
+          "model": "card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero",
+          "optimizer": "adam",
+          "retain_bias": 1.0,
+          "stop_loss": 0.005,
+          "stop_patience": 5
+        },
+        "seed": 0,
+        "state_peak_words": 33792,
+        "wrong_control_accuracy": 0.004
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 1,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.0,
+                "train_accuracy": 0.0
+              }
+            ]
+          },
+          "true": {
+            "count": 3,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.948885,
+                "train_accuracy": 0.568833
+              },
+              {
+                "epoch": 10.0,
+                "loss": 0.002061,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 11.0,
+                "loss": 0.001752,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 30,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.424755,
+                "train_accuracy": 0.246833
+              },
+              {
+                "epoch": 10.0,
+                "loss": 1.382146,
+                "train_accuracy": 0.2805
+              },
+              {
+                "epoch": 30.0,
+                "loss": 1.325563,
+                "train_accuracy": 0.3555
+              },
+              {
+                "epoch": 40.0,
+                "loss": 1.27765,
+                "train_accuracy": 0.397167
+              },
+              {
+                "epoch": 50.0,
+                "loss": 1.240986,
+                "train_accuracy": 0.427833
+              },
+              {
+                "epoch": 60.0,
+                "loss": 1.210431,
+                "train_accuracy": 0.438167
+              },
+              {
+                "epoch": 80.0,
+                "loss": 1.175127,
+                "train_accuracy": 0.451167
+              },
+              {
+                "epoch": 90.0,
+                "loss": 1.163594,
+                "train_accuracy": 0.4525
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.154083,
+                "train_accuracy": 0.456333
+              },
+              {
+                "epoch": 110.0,
+                "loss": 1.147915,
+                "train_accuracy": 0.456833
+              },
+              {
+                "epoch": 130.0,
+                "loss": 1.138107,
+                "train_accuracy": 0.456333
+              },
+              {
+                "epoch": 140.0,
+                "loss": 1.132154,
+                "train_accuracy": 0.462167
+              },
+              {
+                "epoch": 150.0,
+                "loss": 1.129209,
+                "train_accuracy": 0.458333
+              },
+              {
+                "epoch": 160.0,
+                "loss": 1.125408,
+                "train_accuracy": 0.462167
+              },
+              {
+                "epoch": 180.0,
+                "loss": 1.120589,
+                "train_accuracy": 0.463
+              },
+              {
+                "epoch": 190.0,
+                "loss": 1.118214,
+                "train_accuracy": 0.462333
+              },
+              {
+                "epoch": 200.0,
+                "loss": 1.116032,
+                "train_accuracy": 0.459167
+              },
+              {
+                "epoch": 210.0,
+                "loss": 1.114465,
+                "train_accuracy": 0.461167
+              },
+              {
+                "epoch": 230.0,
+                "loss": 1.110704,
+                "train_accuracy": 0.4605
+              },
+              {
+                "epoch": 240.0,
+                "loss": 1.109608,
+                "train_accuracy": 0.461667
+              },
+              {
+                "epoch": 250.0,
+                "loss": 1.108431,
+                "train_accuracy": 0.463333
+              },
+              {
+                "epoch": 260.0,
+                "loss": 1.107469,
+                "train_accuracy": 0.464833
+              },
+              {
+                "epoch": 280.0,
+                "loss": 1.105314,
+                "train_accuracy": 0.463833
+              },
+              {
+                "epoch": 290.0,
+                "loss": 1.104736,
+                "train_accuracy": 0.464833
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "none",
+          "batch_size": 50,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 300,
+          "eps": 1e-08,
+          "init": "gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0",
+          "init_scale": 1.0,
+          "loss": "next-symbol cross-entropy at the scored query positions, full backpropagation through time",
+          "lr": 0.005,
+          "lr_final": 0.0003,
+          "model": "card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero",
+          "optimizer": "adam",
+          "retain_bias": 1.0,
+          "stop_loss": 0.005,
+          "stop_patience": 5
+        },
+        "seed": 1,
+        "state_peak_words": 33792,
+        "wrong_control_accuracy": 0.0
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 1,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.0,
+                "train_accuracy": 0.0
+              }
+            ]
+          },
+          "true": {
+            "count": 3,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.00038,
+                "train_accuracy": 0.554167
+              },
+              {
+                "epoch": 10.0,
+                "loss": 0.002507,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 11.0,
+                "loss": 0.002135,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 30,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.423668,
+                "train_accuracy": 0.247667
+              },
+              {
+                "epoch": 10.0,
+                "loss": 1.377598,
+                "train_accuracy": 0.294333
+              },
+              {
+                "epoch": 30.0,
+                "loss": 1.315479,
+                "train_accuracy": 0.37
+              },
+              {
+                "epoch": 40.0,
+                "loss": 1.267419,
+                "train_accuracy": 0.404833
+              },
+              {
+                "epoch": 50.0,
+                "loss": 1.231757,
+                "train_accuracy": 0.424
+              },
+              {
+                "epoch": 60.0,
+                "loss": 1.206044,
+                "train_accuracy": 0.438333
+              },
+              {
+                "epoch": 80.0,
+                "loss": 1.171879,
+                "train_accuracy": 0.450833
+              },
+              {
+                "epoch": 90.0,
+                "loss": 1.162737,
+                "train_accuracy": 0.452167
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.155069,
+                "train_accuracy": 0.459167
+              },
+              {
+                "epoch": 110.0,
+                "loss": 1.146815,
+                "train_accuracy": 0.455833
+              },
+              {
+                "epoch": 130.0,
+                "loss": 1.137075,
+                "train_accuracy": 0.4575
+              },
+              {
+                "epoch": 140.0,
+                "loss": 1.132951,
+                "train_accuracy": 0.463667
+              },
+              {
+                "epoch": 150.0,
+                "loss": 1.129399,
+                "train_accuracy": 0.462
+              },
+              {
+                "epoch": 160.0,
+                "loss": 1.12719,
+                "train_accuracy": 0.462833
+              },
+              {
+                "epoch": 180.0,
+                "loss": 1.121493,
+                "train_accuracy": 0.4635
+              },
+              {
+                "epoch": 190.0,
+                "loss": 1.119634,
+                "train_accuracy": 0.463833
+              },
+              {
+                "epoch": 200.0,
+                "loss": 1.117955,
+                "train_accuracy": 0.462167
+              },
+              {
+                "epoch": 210.0,
+                "loss": 1.116493,
+                "train_accuracy": 0.461167
+              },
+              {
+                "epoch": 230.0,
+                "loss": 1.113167,
+                "train_accuracy": 0.464667
+              },
+              {
+                "epoch": 240.0,
+                "loss": 1.11224,
+                "train_accuracy": 0.464167
+              },
+              {
+                "epoch": 250.0,
+                "loss": 1.111,
+                "train_accuracy": 0.464333
+              },
+              {
+                "epoch": 260.0,
+                "loss": 1.109863,
+                "train_accuracy": 0.464833
+              },
+              {
+                "epoch": 280.0,
+                "loss": 1.108104,
+                "train_accuracy": 0.464
+              },
+              {
+                "epoch": 290.0,
+                "loss": 1.107491,
+                "train_accuracy": 0.4675
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "none",
+          "batch_size": 50,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 300,
+          "eps": 1e-08,
+          "init": "gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0",
+          "init_scale": 1.0,
+          "loss": "next-symbol cross-entropy at the scored query positions, full backpropagation through time",
+          "lr": 0.005,
+          "lr_final": 0.0003,
+          "model": "card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero",
+          "optimizer": "adam",
+          "retain_bias": 1.0,
+          "stop_loss": 0.005,
+          "stop_patience": 5
+        },
+        "seed": 2,
+        "state_peak_words": 33792,
+        "wrong_control_accuracy": 0.002
+      }
+    ],
+    "size": 4,
+    "status": "discharged",
+    "task": "copy",
+    "threshold": 0.99,
+    "tier": "executed",
+    "wall_clock": {
+      "train_s": [
+        {
+          "empty": 0.0,
+          "seed": 0,
+          "true": 1.424,
+          "wrong": 19.048
+        },
+        {
+          "empty": 0.0,
+          "seed": 1,
+          "true": 0.768,
+          "wrong": 21.629
+        },
+        {
+          "empty": 0.0,
+          "seed": 2,
+          "true": 0.687,
+          "wrong": 23.174
+        }
+      ]
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "sha256": "cf38d4628ab6cf2d850316aa98fb64edaa946fc5da8433ecc337087da16911c9",
+  "source": "results/p4-protocols2-20261016/k2-copy-candidate1-source.py",
+  "spec": {
+    "examples": 1500,
+    "params": {
+      "D": 4
+    },
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "size": 4,
+    "task": "copy",
+    "test_count": 500,
+    "threshold": 0.99,
+    "widths": {
+      "d": "64",
+      "positions": "8",
+      "rounds": "1"
+    }
+  },
+  "started_utc": "2026-10-16T21:20:06Z",
+  "task": "k2-copy",
+  "wall_s": 68.01882579200901
+}

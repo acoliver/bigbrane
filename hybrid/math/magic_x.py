@@ -121,6 +121,7 @@ class _XRunner:
         self.lines = 0
         self.max_ops = 0
         self.max_lines = 0
+        self.touched = 0
 
     def __call__(self, prefix, lay):
         if self.fn is None:
@@ -130,13 +131,16 @@ class _XRunner:
             value = self.fn(list(prefix), dict(lay), self.counter)
         self.calls += 1
         self.lines += tracer.lines
+        self.touched += tracer.touched
         self.max_ops = max(self.max_ops, self.counter.total - before)
         self.max_lines = max(self.max_lines, tracer.lines)
         return _feature(value)
 
     def cost(self) -> dict:
         return {"calls": self.calls, "ops_total": self.counter.total, "ops_max_per_call": self.max_ops,
-                "lines_total": self.lines, "lines_max_per_call": self.max_lines}
+                "lines_total": self.lines, "lines_max_per_call": self.max_lines,
+                # review fix 2026-10-16: words touched by uncounted container and array work (cost.COSTED_WORK)
+                "touched_total": self.touched}
 
 
 def _rows(instances, lay, x):

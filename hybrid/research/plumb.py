@@ -277,8 +277,9 @@ async def plumb(*, source_run: Path, card_id: str, run_dir: Path, reason: str, c
     # Only verdicts recorded in this run: a copied card keeps its source verdicts in its status.
     recorded = {e["data"]["stage"] for e in ledger.iter_events("verdict") if e["data"]["card_id"] == card_id}
     verdicts = {s: final["status"]["verdicts"][s]["verdict"] for s in stages if s in recorded}
-    completed = (stopped is None and all(s in verdicts for s in stages)
-                 and (stages[-1] != "S6" or verdicts["S6"] == "pass"))
+    # Completed means the plumbing ran: every stage recorded a verdict. S6 records fail or undetermined when the
+    # card's claims are refuted or unshown (review fix 2026-10-16), which the summary's verdicts report.
+    completed = stopped is None and all(s in verdicts for s in stages)
     reason_text = "plumb_complete" if completed else (stopped or f"ended at {final['status']['stage']}")
     summary = {"run_id": run_dir.name, "run_dir": str(run_dir), "card_id": card_id, "reason": reason_text,
                "verdicts": verdicts, "stage": final["status"]["stage"], "completed": completed,

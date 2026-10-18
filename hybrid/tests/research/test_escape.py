@@ -118,6 +118,10 @@ def build_graveyard_run(run_dir: Path) -> Path:
                                                "fatal dimension_error (mechanism.update[0]): W times x_t"], call)
     for stage in ("S1", "S2", "S3", "S4", "S5"):
         store.set_verdict(ids["c"], stage, "pass", ["ok"], call)
+    # The graveyard labels an S6 card by its claims ledger: every claim supported, so the card finished.
+    store.put_artifact("claims_ledger", "c.json", json.dumps({"card_id": ids["c"], "claims": [
+        {"claim_id": "capability.1", "claim": "recall", "status": "supported", "decided_by": "analyst",
+         "evidence": "acc 0.99"}]}).encode(), card_id=ids["c"])
     store.set_verdict(ids["c"], "S6", "pass", ["claims ledger: 1 supported, 0 refuted, 0 untested"], call)
     store.set_verdict(ids["d"], "S1", "pass", ["ok"], call)
     store.set_verdict(ids["e"], "S1", "revise", ["revision 1 of 2", "fixable missing_definition"], call)

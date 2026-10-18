@@ -24,12 +24,12 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from hybrid.math import constructions, findings, spec_checks
+from hybrid.math import constructions, findings, runner, spec_checks
 from hybrid.math.runner import MathRunner
 from hybrid.research.ledger import Ledger
 from hybrid.research.stages import c_challenge, m_math
 from hybrid.research.stages import math_contracts as mc
-from hybrid.research.stages.common import Budget, StageContext, load_prompt, load_section
+from hybrid.research.stages.common import Budget, StageContext, StageError, load_prompt, load_section
 from hybrid.research.store import Store
 from hybrid.tests.research import math_fakes as mf
 from hybrid.tests.research.test_orchestrator_fakes import FakeLLM, orch_config
@@ -63,19 +63,25 @@ def piece_id(sid: str, oid: str, rec: dict | None = None) -> str:
 
 
 class FailingExecutor(mf.MathExecutor):
-    """The host executor, except that a job whose source is ``source`` stops with a timeout (an executor stop, not
-    a result)."""
+    """The host executor, except that a job whose source is ``source`` stops without a result. By default the stop is
+    the CPU cap's hard limit (decision CT: the job's own resource stop, not a result); ``hang=True`` stops it at the
+    wall-clock hang guard instead, which is an environment failure."""
 
-    def __init__(self, tmp_path, source: str):
+    def __init__(self, tmp_path, source: str, hang: bool = False):
         super().__init__(tmp_path)
-        self.source = source
+        self.source, self.hang = source, hang
 
     def run(self, job):
         staged = Path(job.input_dir) / "request.json"
         request = json.loads(staged.read_text()) if staged.is_file() else {}
         if request.get("source") == self.source:
             self.jobs.append(job)
-            return SimpleNamespace(status="timeout", detail="wall clock cap reached", exit_code=None, run_s=600.0,
+            if self.hang:
+                return SimpleNamespace(status="timeout", detail="wall clock cap reached", exit_code=None, run_s=5490.0,
+                                       stdout_path=str(self._empty(job, "stdout")),
+                                       stderr_path=str(self._empty(job, "stderr")))
+            return SimpleNamespace(status="candidate_error", detail="killed at the CPU hard limit",
+                                   exit_code=runner.CPU_HARD_LIMIT_EXIT, run_s=1830.0,
                                    stdout_path=str(self._empty(job, "stdout")),
                                    stderr_path=str(self._empty(job, "stderr")))
         return super().run(job)
@@ -314,6 +320,13 @@ def test_an_executor_failure_on_the_replay_is_unresolved_not_a_measured_failure(
     statuses = replay.statuses()
     assert statuses["P2.recall"] == "conditional" and statuses["P2.copy"] == "observed"
     assert "obligation_failed:P2.recall" not in replay.verdict()["kill_codes"]
+
+
+def test_a_hang_guard_stop_on_the_replay_is_an_environment_failure(tmp_path):
+    executor = FailingExecutor(tmp_path / "exec", FIX["no_max"]["O7.a"], hang=True)
+    replay = Replay(tmp_path, [finding(RECALL_TARGET, used_by=("O7",))], executor=executor)
+    with pytest.raises(StageError, match="environment failure"):
+        replay.run()
 
 
 def test_a_deviation_that_is_not_in_the_named_witness_is_rejected_for_it(tmp_path):

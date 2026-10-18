@@ -437,6 +437,11 @@ def nesting_script(hidden: str) -> tuple[dict, dict]:
     therefore stated in the card: its resources carry the contract (hidden width ``hidden``, 32-bit precision) and,
     for dyck, the recorded O7.a widths and state words."""
     card = copy.deepcopy(load_cards(("k1",))["k1"])
+    # The test rewrites the architecture contract and the dyck widths, so the recorded results of the card's own P4
+    # learners (decision P4P) no longer describe its experiments, and a unit test must not train them. This test is
+    # about P2.nesting and P1; the scripted prover's learners answer P4 as before the card carried protocols.
+    for entry in card["resources"]["learning"].values():
+        entry.pop("protocol", None)
     recorded = o7_spec()
     card["resources"]["architecture"] = {"hidden": hidden, "precision_bits": 32, "state_bits": None}
     card["resources"]["tasks"]["dyck"] = dict(card["resources"]["tasks"]["dyck"], **recorded["widths"],

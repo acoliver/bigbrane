@@ -64,6 +64,13 @@ def extract(run_dir: Path) -> dict:
     return {"source_run": view.run_id, "cards": cards}
 
 
+def recorded_candidates(keys: list[str]) -> list[dict]:
+    """Candidate records for the bare keys an earlier run stored (the title and excerpt were not kept then)."""
+    return [{"key": key, "source": key.split(":", 1)[0], "source_id": key.split(":", 1)[1],
+             "title": f"recorded paper {key}", "year": None, "url": "", "excerpt": "(not recorded)"}
+            for key in keys]
+
+
 def expected_codes(entry: dict) -> list[str]:
     """The Phase 7 code for a recorded card, from the plan's rule and the recorded critic text (not from the code under
     test): a verified linear-attention reduction is excluded, to the delta-rule family when the critic's own words
@@ -145,7 +152,8 @@ def replay(fixture: dict, work: Path) -> list[dict]:
         await llm_complete("prior_art", "query system", card_text, {"type": "object"})
         evidence = [dict(item, source="arxiv") for item in prior["evidence"]]
         return {"label": prior["label"], "evidence": evidence, "notes": prior["notes"] or "recorded",
-                "queries": prior["queries"] or [], "candidates": prior["candidates"] or ["arxiv:0000.00000"],
+                "queries": prior["queries"] or [],
+                "candidates": recorded_candidates(prior["candidates"] or ["arxiv:0000.00000"]),
                 "rejected_evidence": []}
 
     cfg = orch_config()

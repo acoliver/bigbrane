@@ -351,7 +351,9 @@ def test_stage_m_runs_the_conformance_audit_and_measures_the_premise(tmp_path):
 def test_a_failed_audit_keeps_the_premise_open_and_not_deferred(tmp_path):
     card = load_cards(("k1",))["k1"]
     wrong = FAKE_K1_EQUATIONS.replace('q = x @ params["Wq"]', 'q = x @ params["Wk"]')
-    h = Harness(tmp_path, fixer=fixer_with_conformance(card, equations=wrong))
+    # K1 without its P4 protocols: with them the verdict is the failed composition learner (decision P4K), and a failed
+    # check takes precedence over every unproven code. This test is about the open premise A1 after a failed audit.
+    h = Harness(tmp_path, fixer=fixer_with_conformance(card, equations=wrong), protocols=False)
     h.m()
     audit = next(e["data"] for e in h.ledger.iter_events("math_check") if e["data"]["purpose"] == "conformance")
     assert audit["status"] == "violated"

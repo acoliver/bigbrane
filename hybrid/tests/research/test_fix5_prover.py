@@ -180,7 +180,7 @@ def test_the_next_round_shows_the_best_attempt_with_full_source_seeds_controls_a
         return answer
 
     script["prover"] = prover
-    h = Harness(tmp_path, "k1", script=script)
+    h = Harness(tmp_path, "k1", script=script, protocols=False)
     h.m()
     second = [c["user"] for c in prover_calls(h) if '"best_attempt"' in c["user"]]
     item = next(i for u in second for i in cf._shown(u) if i["form"] == "learnability"
@@ -192,8 +192,9 @@ def test_the_next_round_shows_the_best_attempt_with_full_source_seeds_controls_a
     assert best["recipe"] == {"method": "fixed offset", "offset": 1}
     assert [s["seed"] for s in best["seeds"]] == [0, 1, 2]
     seed = best["seeds"][0]
-    assert {"accuracy", "empty_control_accuracy", "wrong_control_accuracy", "train_s"} <= set(seed)
+    assert {"accuracy", "empty_control_accuracy", "wrong_control_accuracy", "train_s", "train_cpu_s"} <= set(seed)
     assert set(seed["train_s"]) == {"true", "empty", "wrong"}       # read from the check's wall-clock record
+    assert set(seed["train_cpu_s"]) == {"true", "empty", "wrong"}   # decision CT: the CPU time the budget counts
     curve = seed["curve_true_data"]
     assert curve["count"] == 30 and len(curve["points"]) == pm.PROMPT_CURVE_POINTS
     assert curve["points"][0] == {"step": 0.0, "loss": 1.0} and curve["points"][-1]["step"] == 29.0
@@ -235,7 +236,7 @@ def copy_learner_attempts(h: Harness) -> list[dict]:
 
 
 def test_a_changed_recipe_after_every_seed_passed_is_refused_without_a_job(tmp_path):
-    h = Harness(tmp_path, "k1", script=wide_then(OTHER_RECIPE, None))
+    h = Harness(tmp_path, "k1", script=wide_then(OTHER_RECIPE, None), protocols=False)
     h.m()
     first, second = copy_learner_attempts(h)
     assert first["status"] == "violated"                       # every seed passed; the architecture survey did not
@@ -248,14 +249,14 @@ def test_a_changed_recipe_after_every_seed_passed_is_refused_without_a_job(tmp_p
 
 
 def test_the_same_recipe_with_a_fixed_model_runs(tmp_path):
-    h = Harness(tmp_path, "k1", script=wide_then(cf.COPY_LEARNER, None))
+    h = Harness(tmp_path, "k1", script=wide_then(cf.COPY_LEARNER, None), protocols=False)
     h.m()
     _, second = copy_learner_attempts(h)
     assert "refused" not in second and second["status"] == "discharged"
 
 
 def test_a_changed_recipe_with_a_reason_runs_and_the_reason_is_recorded(tmp_path):
-    h = Harness(tmp_path, "k1", script=wide_then(OTHER_RECIPE, "the survey needs a narrower model"))
+    h = Harness(tmp_path, "k1", script=wide_then(OTHER_RECIPE, "the survey needs a narrower model"), protocols=False)
     h.m()
     _, second = copy_learner_attempts(h)
     assert "refused" not in second and second["recipe_change_reason"] == "the survey needs a narrower model"

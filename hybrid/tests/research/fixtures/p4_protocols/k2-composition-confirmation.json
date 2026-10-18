@@ -1,0 +1,758 @@
+{
+  "architecture_contract": {
+    "hidden": "d",
+    "precision_bits": 32
+  },
+  "generator_test": [
+    20000,
+    20001,
+    20002
+  ],
+  "generator_train": [
+    10000,
+    10001,
+    10002
+  ],
+  "name": "k2-composition-confirmation",
+  "per_seed_wall": [
+    {
+      "seed": 0,
+      "total_s": 188.467
+    },
+    {
+      "seed": 1,
+      "total_s": 203.134
+    },
+    {
+      "seed": 2,
+      "total_s": 178.259
+    }
+  ],
+  "phase": "confirmation",
+  "result": {
+    "architecture": {
+      "checked": true,
+      "points": [
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "23",
+            "rounds": "1",
+            "vocab": "15"
+          },
+          "float_bits": 32,
+          "point": {
+            "T": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "23",
+            "rounds": "1",
+            "vocab": "15"
+          },
+          "float_bits": 32,
+          "point": {
+            "T": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "23",
+            "rounds": "1",
+            "vocab": "15"
+          },
+          "float_bits": 32,
+          "point": {
+            "T": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        }
+      ],
+      "violations": []
+    },
+    "counterexample": null,
+    "evidence": "composition at T=4 from m=3000 examples: seed 0 accuracy 0.9975 (control 0.0785), seed 1 accuracy 0.9960 (control 0.0770), seed 2 accuracy 1.0000 (control 0.0055); threshold 0.99; recipe {\"augment\": \"each epoch, re-shuffle the order of the g pairs, the f pairs and the queries (with their answers) inside every training instance\", \"batch_size\": 128, \"clip\": 1.0, \"d\": 64, \"emb_scale\": 0.5, \"epochs\": 300, \"init\": \"E~N(0,0.5^2); W~N(0,1/(2d)); O~N(0,1/d); biases 0 except retain bias 1\", \"loss\": \"next-symbol cross-entropy at query positions, full BPTT\", \"lr\": 0.004, \"lr_schedule\": \"cosine to 0\", \"optimizer\": \"adam(0.9,0.999,1e-8), global-norm clip 1.0\", \"retain_bias\": 1.0} applied to the true data and both controls; observed on the listed sizes: composition T=4 m=3000 seed=0, composition T=4 m=3000 seed=1, composition T=4 m=3000 seed=2",
+    "examples": 3000,
+    "recipe": {
+      "augment": "each epoch, re-shuffle the order of the g pairs, the f pairs and the queries (with their answers) inside every training instance",
+      "batch_size": 128,
+      "clip": 1.0,
+      "d": 64,
+      "emb_scale": 0.5,
+      "epochs": 300,
+      "init": "E~N(0,0.5^2); W~N(0,1/(2d)); O~N(0,1/d); biases 0 except retain bias 1",
+      "loss": "next-symbol cross-entropy at query positions, full BPTT",
+      "lr": 0.004,
+      "lr_schedule": "cosine to 0",
+      "optimizer": "adam(0.9,0.999,1e-8), global-norm clip 1.0",
+      "retain_bias": 1.0
+    },
+    "results": [
+      {
+        "accuracy": 0.9975,
+        "control_accuracy": 0.0785,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 13,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.492844,
+                "train_accuracy": 0.38725
+              },
+              {
+                "epoch": 25.0,
+                "loss": 0.656597,
+                "train_accuracy": 0.659917
+              },
+              {
+                "epoch": 50.0,
+                "loss": 0.644993,
+                "train_accuracy": 0.656417
+              },
+              {
+                "epoch": 75.0,
+                "loss": 0.310183,
+                "train_accuracy": 0.85025
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.155818,
+                "train_accuracy": 0.939083
+              },
+              {
+                "epoch": 125.0,
+                "loss": 0.075359,
+                "train_accuracy": 0.971583
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.032042,
+                "train_accuracy": 0.9925
+              },
+              {
+                "epoch": 175.0,
+                "loss": 0.018222,
+                "train_accuracy": 0.99725
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.007673,
+                "train_accuracy": 0.999833
+              },
+              {
+                "epoch": 225.0,
+                "loss": 0.005408,
+                "train_accuracy": 0.999917
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.004147,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 275.0,
+                "loss": 0.003935,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 299.0,
+                "loss": 0.003814,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 13,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.629007,
+                "train_accuracy": 0.241667
+              },
+              {
+                "epoch": 25.0,
+                "loss": 1.3891,
+                "train_accuracy": 0.247667
+              },
+              {
+                "epoch": 50.0,
+                "loss": 1.38931,
+                "train_accuracy": 0.2555
+              },
+              {
+                "epoch": 75.0,
+                "loss": 1.387376,
+                "train_accuracy": 0.250833
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.387127,
+                "train_accuracy": 0.25325
+              },
+              {
+                "epoch": 125.0,
+                "loss": 1.38709,
+                "train_accuracy": 0.255917
+              },
+              {
+                "epoch": 150.0,
+                "loss": 1.38563,
+                "train_accuracy": 0.262
+              },
+              {
+                "epoch": 175.0,
+                "loss": 1.383329,
+                "train_accuracy": 0.265417
+              },
+              {
+                "epoch": 200.0,
+                "loss": 1.382324,
+                "train_accuracy": 0.268
+              },
+              {
+                "epoch": 225.0,
+                "loss": 1.377181,
+                "train_accuracy": 0.27925
+              },
+              {
+                "epoch": 250.0,
+                "loss": 1.37486,
+                "train_accuracy": 0.284333
+              },
+              {
+                "epoch": 275.0,
+                "loss": 1.373551,
+                "train_accuracy": 0.2825
+              },
+              {
+                "epoch": 299.0,
+                "loss": 1.372858,
+                "train_accuracy": 0.28675
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0785,
+        "first_error": {
+          "expected": 8,
+          "instance": 209,
+          "position": 20,
+          "predicted": 10,
+          "tokens": [
+            12,
+            1,
+            5,
+            3,
+            6,
+            0,
+            5,
+            2,
+            7,
+            13,
+            6,
+            10,
+            5,
+            8,
+            4,
+            8,
+            7,
+            10,
+            14,
+            3,
+            1,
+            0,
+            2
+          ],
+          "tokens_total": 23
+        },
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "each epoch, re-shuffle the order of the g pairs, the f pairs and the queries (with their answers) inside every training instance",
+          "batch_size": 128,
+          "clip": 1.0,
+          "d": 64,
+          "emb_scale": 0.5,
+          "epochs": 300,
+          "init": "E~N(0,0.5^2); W~N(0,1/(2d)); O~N(0,1/d); biases 0 except retain bias 1",
+          "loss": "next-symbol cross-entropy at query positions, full BPTT",
+          "lr": 0.004,
+          "lr_schedule": "cosine to 0",
+          "optimizer": "adam(0.9,0.999,1e-8), global-norm clip 1.0",
+          "retain_bias": 1.0
+        },
+        "seed": 0,
+        "state_peak_words": 35072,
+        "wrong_control_accuracy": 0.2605
+      },
+      {
+        "accuracy": 0.996,
+        "control_accuracy": 0.077,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 13,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.556701,
+                "train_accuracy": 0.365
+              },
+              {
+                "epoch": 25.0,
+                "loss": 0.650069,
+                "train_accuracy": 0.662667
+              },
+              {
+                "epoch": 50.0,
+                "loss": 0.491021,
+                "train_accuracy": 0.7365
+              },
+              {
+                "epoch": 75.0,
+                "loss": 0.249222,
+                "train_accuracy": 0.889583
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.151124,
+                "train_accuracy": 0.937917
+              },
+              {
+                "epoch": 125.0,
+                "loss": 0.094274,
+                "train_accuracy": 0.964417
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.049935,
+                "train_accuracy": 0.98425
+              },
+              {
+                "epoch": 175.0,
+                "loss": 0.024844,
+                "train_accuracy": 0.9945
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.013599,
+                "train_accuracy": 0.998167
+              },
+              {
+                "epoch": 225.0,
+                "loss": 0.009837,
+                "train_accuracy": 0.999083
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.007713,
+                "train_accuracy": 0.999333
+              },
+              {
+                "epoch": 275.0,
+                "loss": 0.006889,
+                "train_accuracy": 0.999917
+              },
+              {
+                "epoch": 299.0,
+                "loss": 0.006886,
+                "train_accuracy": 0.99975
+              }
+            ]
+          },
+          "wrong": {
+            "count": 13,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.651735,
+                "train_accuracy": 0.245583
+              },
+              {
+                "epoch": 25.0,
+                "loss": 1.388534,
+                "train_accuracy": 0.251667
+              },
+              {
+                "epoch": 50.0,
+                "loss": 1.387215,
+                "train_accuracy": 0.251333
+              },
+              {
+                "epoch": 75.0,
+                "loss": 1.390042,
+                "train_accuracy": 0.25275
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.387846,
+                "train_accuracy": 0.257167
+              },
+              {
+                "epoch": 125.0,
+                "loss": 1.387087,
+                "train_accuracy": 0.252667
+              },
+              {
+                "epoch": 150.0,
+                "loss": 1.387394,
+                "train_accuracy": 0.256167
+              },
+              {
+                "epoch": 175.0,
+                "loss": 1.385364,
+                "train_accuracy": 0.264583
+              },
+              {
+                "epoch": 200.0,
+                "loss": 1.38508,
+                "train_accuracy": 0.265167
+              },
+              {
+                "epoch": 225.0,
+                "loss": 1.385394,
+                "train_accuracy": 0.260083
+              },
+              {
+                "epoch": 250.0,
+                "loss": 1.384486,
+                "train_accuracy": 0.260083
+              },
+              {
+                "epoch": 275.0,
+                "loss": 1.384605,
+                "train_accuracy": 0.260667
+              },
+              {
+                "epoch": 299.0,
+                "loss": 1.384099,
+                "train_accuracy": 0.264083
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.077,
+        "first_error": {
+          "expected": 11,
+          "instance": 59,
+          "position": 21,
+          "predicted": 10,
+          "tokens": [
+            12,
+            0,
+            6,
+            1,
+            7,
+            3,
+            7,
+            2,
+            5,
+            13,
+            7,
+            10,
+            5,
+            11,
+            6,
+            11,
+            4,
+            11,
+            14,
+            1,
+            2,
+            0,
+            3
+          ],
+          "tokens_total": 23
+        },
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "each epoch, re-shuffle the order of the g pairs, the f pairs and the queries (with their answers) inside every training instance",
+          "batch_size": 128,
+          "clip": 1.0,
+          "d": 64,
+          "emb_scale": 0.5,
+          "epochs": 300,
+          "init": "E~N(0,0.5^2); W~N(0,1/(2d)); O~N(0,1/d); biases 0 except retain bias 1",
+          "loss": "next-symbol cross-entropy at query positions, full BPTT",
+          "lr": 0.004,
+          "lr_schedule": "cosine to 0",
+          "optimizer": "adam(0.9,0.999,1e-8), global-norm clip 1.0",
+          "retain_bias": 1.0
+        },
+        "seed": 1,
+        "state_peak_words": 35072,
+        "wrong_control_accuracy": 0.2475
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0055,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 13,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.51451,
+                "train_accuracy": 0.426333
+              },
+              {
+                "epoch": 25.0,
+                "loss": 0.659512,
+                "train_accuracy": 0.65725
+              },
+              {
+                "epoch": 50.0,
+                "loss": 0.537342,
+                "train_accuracy": 0.688167
+              },
+              {
+                "epoch": 75.0,
+                "loss": 0.295687,
+                "train_accuracy": 0.8565
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.224106,
+                "train_accuracy": 0.87675
+              },
+              {
+                "epoch": 125.0,
+                "loss": 0.090592,
+                "train_accuracy": 0.969417
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.030319,
+                "train_accuracy": 0.995
+              },
+              {
+                "epoch": 175.0,
+                "loss": 0.012236,
+                "train_accuracy": 0.999083
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.006175,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 225.0,
+                "loss": 0.00434,
+                "train_accuracy": 0.999917
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.003584,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 275.0,
+                "loss": 0.003245,
+                "train_accuracy": 0.999917
+              },
+              {
+                "epoch": 299.0,
+                "loss": 0.003122,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 13,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 1.690558,
+                "train_accuracy": 0.239583
+              },
+              {
+                "epoch": 25.0,
+                "loss": 1.388095,
+                "train_accuracy": 0.25025
+              },
+              {
+                "epoch": 50.0,
+                "loss": 1.38913,
+                "train_accuracy": 0.2495
+              },
+              {
+                "epoch": 75.0,
+                "loss": 1.387527,
+                "train_accuracy": 0.243167
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.386843,
+                "train_accuracy": 0.253833
+              },
+              {
+                "epoch": 125.0,
+                "loss": 1.387063,
+                "train_accuracy": 0.258833
+              },
+              {
+                "epoch": 150.0,
+                "loss": 1.386205,
+                "train_accuracy": 0.25875
+              },
+              {
+                "epoch": 175.0,
+                "loss": 1.385007,
+                "train_accuracy": 0.26175
+              },
+              {
+                "epoch": 200.0,
+                "loss": 1.384624,
+                "train_accuracy": 0.27
+              },
+              {
+                "epoch": 225.0,
+                "loss": 1.382902,
+                "train_accuracy": 0.27875
+              },
+              {
+                "epoch": 250.0,
+                "loss": 1.382174,
+                "train_accuracy": 0.277917
+              },
+              {
+                "epoch": 275.0,
+                "loss": 1.38061,
+                "train_accuracy": 0.2835
+              },
+              {
+                "epoch": 299.0,
+                "loss": 1.380538,
+                "train_accuracy": 0.282667
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0055,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "each epoch, re-shuffle the order of the g pairs, the f pairs and the queries (with their answers) inside every training instance",
+          "batch_size": 128,
+          "clip": 1.0,
+          "d": 64,
+          "emb_scale": 0.5,
+          "epochs": 300,
+          "init": "E~N(0,0.5^2); W~N(0,1/(2d)); O~N(0,1/d); biases 0 except retain bias 1",
+          "loss": "next-symbol cross-entropy at query positions, full BPTT",
+          "lr": 0.004,
+          "lr_schedule": "cosine to 0",
+          "optimizer": "adam(0.9,0.999,1e-8), global-norm clip 1.0",
+          "retain_bias": 1.0
+        },
+        "seed": 2,
+        "state_peak_words": 35072,
+        "wrong_control_accuracy": 0.253
+      }
+    ],
+    "size": 4,
+    "status": "discharged",
+    "task": "composition",
+    "threshold": 0.99,
+    "tier": "executed",
+    "wall_clock": {
+      "train_cpu_s": [
+        {
+          "empty": 0.0,
+          "seed": 0,
+          "true": 90.774,
+          "wrong": 92.934
+        },
+        {
+          "empty": 0.0,
+          "seed": 1,
+          "true": 91.906,
+          "wrong": 100.725
+        },
+        {
+          "empty": 0.001,
+          "seed": 2,
+          "true": 88.359,
+          "wrong": 85.885
+        }
+      ],
+      "train_s": [
+        {
+          "empty": 0.001,
+          "seed": 0,
+          "true": 92.561,
+          "wrong": 95.905
+        },
+        {
+          "empty": 0.001,
+          "seed": 1,
+          "true": 94.588,
+          "wrong": 108.545
+        },
+        {
+          "empty": 0.001,
+          "seed": 2,
+          "true": 90.597,
+          "wrong": 87.661
+        }
+      ]
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "sha256": "37beb27be234fd101a66d51cfe818e9210eeb7e75cb017adfe85b85126925be8",
+  "source": "results/kd1-20261017/staging/hybrid/fixtures/calibration/protocols/k2-composition.py",
+  "spec": {
+    "examples": 3000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "size": 4,
+    "task": "composition",
+    "test_count": 500,
+    "threshold": 0.99,
+    "widths": {
+      "d": "64",
+      "positions": "23",
+      "rounds": "1"
+    }
+  },
+  "started_utc": "20261017T212718Z",
+  "wall_s": 1117.5
+}

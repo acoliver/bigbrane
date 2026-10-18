@@ -76,7 +76,7 @@ def test_classification_is_grounded_in_search_hits_and_rejects_invented_ids(tmp_
     assert result["rejected_evidence"] == [
         {"source": "arxiv", "source_id": "9999.99999", "relation": "same_mechanism"}
     ]
-    assert f"arxiv:{grounded_id()}" in result["candidates"]
+    assert f"arxiv:{grounded_id()}" in [c["key"] for c in result["candidates"]]
 
 
 def test_every_query_and_result_is_recorded_through_the_sink(tmp_path):
@@ -138,3 +138,87 @@ def test_a_model_call_without_parsed_output_stops_classification(tmp_path):
     llm = fake_llm(Completion(None))
     with pytest.raises(ValueError, match="no parsed JSON"):
         asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
+
+
+# ----- KD7: the model answers with the key it was shown as the source_id; candidates carry titles ---------------------
+
+
+def openalex_papers():
+    from hybrid.literature.sources import openalex
+
+    return openalex.parse_search(fixture_text("openalex_search.json"), "t")
+
+
+def classify_citing(tmp_path, *cited):
+    literature, _ = build(tmp_path)
+    llm = fake_llm(
+        Completion({"queries": QUERIES}),
+        Completion(
+            {
+                "label": "prior_art_undertested",
+                "evidence": [dict(source=s, source_id=i, relation="closest_prior_work") for s, i in cited],
+                "notes": "n",
+            }
+        ),
+    )
+    return asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
+
+
+def test_a_source_id_that_is_already_the_candidate_key_is_grounded(tmp_path):
+    paper = arxiv.parse_search(fixture_text("arxiv_search.xml"), "t")[0]
+    other = openalex_papers()[0]
+    result = classify_citing(
+        tmp_path, ("arxiv", f"arxiv:{paper.source_id}"), ("openalex", f"openalex:{other.source_id}")
+    )
+
+    assert result["rejected_evidence"] == []
+    assert [(e["source"], e["source_id"], e["title"]) for e in result["evidence"]] == [
+        ("arxiv", paper.source_id, paper.title),
+        ("openalex", other.source_id, other.title),
+    ]
+
+
+def test_the_plain_source_id_is_still_grounded(tmp_path):
+    paper = arxiv.parse_search(fixture_text("arxiv_search.xml"), "t")[0]
+    result = classify_citing(tmp_path, ("arxiv", paper.source_id))
+    assert [e["source_id"] for e in result["evidence"]] == [paper.source_id]
+
+
+def test_a_prefixed_citation_of_a_paper_the_searches_did_not_return_is_rejected(tmp_path):
+    paper = arxiv.parse_search(fixture_text("arxiv_search.xml"), "t")[0]
+    cited = [
+        ("arxiv", "arxiv:9999.99999"),                 # same source, not returned
+        ("arxiv", "arxiv:arxiv:" + paper.source_id),    # prefix repeated twice is not a key
+        ("s2", f"arxiv:{paper.source_id}"),             # a returned key, but of another source
+        ("openalex", f"arxiv:{paper.source_id}"),
+        ("s2", "s2:712c23c8bee6077b726a211dfb3fea42cd102e81"),
+    ]
+    result = classify_citing(tmp_path, *cited)
+
+    assert result["evidence"] == []
+    assert [(r["source"], r["source_id"]) for r in result["rejected_evidence"]] == cited
+
+
+def test_candidates_record_title_year_url_and_the_excerpt_the_classifier_saw(tmp_path):
+    literature, _ = build(tmp_path)
+    llm = fake_llm(
+        Completion({"queries": QUERIES}),
+        Completion({"label": "novel", "evidence": [], "notes": "none"}),
+    )
+    result = asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
+
+    paper = arxiv.parse_search(fixture_text("arxiv_search.xml"), "t")[0]
+    record = next(c for c in result["candidates"] if c["key"] == f"arxiv:{paper.source_id}")
+    assert record == {
+        "key": f"arxiv:{paper.source_id}",
+        "source": "arxiv",
+        "source_id": paper.source_id,
+        "title": paper.title,
+        "year": paper.year,
+        "url": paper.url,
+        "excerpt": (paper.abstract or "(no abstract)")[:600],
+    }
+    shown = llm.calls[1]["user"]
+    assert f"[{record['key']}] ({paper.year}) {paper.title}\n  {record['excerpt']}" in shown
+    keys = [c["key"] for c in result["candidates"]]
+    assert len(keys) == len(set(keys))

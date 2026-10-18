@@ -150,11 +150,14 @@ def test_an_invented_limit_is_fed_back_and_refused_at_freeze(tmp_path):
 
 
 def test_a_p3_resting_only_on_an_invented_limit_is_not_formalized(tmp_path):
-    answer = cf.fixer_output("k1", CARDS["k1"])
+    # K1 without its P4 protocols: with them the verdict is the failed composition learner (decision P4K), which takes
+    # precedence over an unproven P3 in the kill codes. This test is about the invented limit.
+    card = cf.without_protocols(CARDS["k1"])
+    answer = cf.fixer_output("k1", card)
     # Not K1's stated limit (task other, no size, update): a limit on copy from L = 128.
     answer["limits"] = [{"task": "copy", "size": 128, "resources": "an unseen bit", "why": "information",
                          "basis": dict(cf.LIMITS["k1"][0]["basis"])}]
-    h = Harness(tmp_path, "k1", fixer=answer)
+    h = Harness(tmp_path, "k1", fixer=answer, card=card)
     h.m()
     record = h.frozen()
     assert record["profile"]["limits"] == []

@@ -1,0 +1,91 @@
+{
+  "comparators": [
+    {
+      "base_family": "ssm",
+      "base_form": "Input-dependent diagonal linear state-space recurrence S_t = A_t S_{t-1} + B_t x_t, y_t = C_t S_t (selective SSM, Gu and Dao 2023, arXiv:2312.00752)",
+      "id": "selective_diag_ssm",
+      "limit_only": false,
+      "parameter_mapping": "A_t = diag(sigma(W_f x_t + b_f)); B_t = diag(1 - sigma(W_f x_t + b_f)) W_u; C_t = I; state S_t = h_t, initially 0",
+      "read": "y_t = I h_t",
+      "transformations": [],
+      "update": "f_t = sigma(W_f x_t + b_f); h_t = diag(f_t) h_{t-1} + diag(1 - f_t) W_u x_t"
+    },
+    {
+      "base_family": "ssm",
+      "base_form": "Mamba selective scan with ZOH discretization, A_bar = exp(Delta A), B_bar = (Delta A)^{-1}(exp(Delta A) - I) Delta B, state size N = 1 per channel (Gu and Dao 2023)",
+      "id": "mamba_zoh_n1",
+      "limit_only": false,
+      "parameter_mapping": "A = -1 per channel; B = 1; C = 1; Mamba in_proj = W_u; Delta projection = -W_f with bias -b_f, so exp(-Delta_t) = sigma(W_f x_t + b_f) = f_t",
+      "read": "y_t = h_t (C = 1 per channel)",
+      "transformations": [],
+      "update": "Delta_t = softplus(-(W_f x_t + b_f)); u_t = W_u x_t; h_t = exp(-Delta_t) ⊙ h_{t-1} + (1 - exp(-Delta_t)) ⊙ u_t"
+    }
+  ],
+  "confidence": 0.99,
+  "difference_if_any": "None. The update, readout and learning rule (backpropagation through time on W_f, b_f, W_u) are those of an input-dependent diagonal linear recurrence. Mamba's low-rank Delta projection is replaced by a full-rank W_f, which is a parameterization choice rather than a mechanism change. The card is a declared positive control and claims no difference.",
+  "family": "ssm",
+  "family_why": "h_t = diag(f_t) h_{t-1} + diag(1 - f_t) W_u x_t with y_t = h_t is the ssm form h_t = A_t h_{t-1} + B_t x_t, y_t = C_t h_t, with input-dependent diagonal A_t and C_t = I. It is exact with no repair.",
+  "mapping": "Card state h_t in R^d becomes the SSM state S_t (one state per channel). Card retain gate f_t = sigma(W_f x_t + b_f) becomes the input-dependent diagonal transition A_t = diag(f_t). The card write (1 - f_t) ⊙ (W_u x_t) becomes B_t x_t with B_t = diag(1 - f_t) W_u. The card identity read y_t = h_t becomes C_t = I. Then h_t = f_t ⊙ h_{t-1} + (1 - f_t) ⊙ u_t is literally S_t = A_t S_{t-1} + B_t x_t, y_t = C_t S_t, at every step for all parameters. The equality is exact at the card's own parameters, not a limit. The same recurrence is also exact Mamba ZOH discretization with state size N = 1 per channel, A = -1, B = 1, SSM input u_t = W_u x_t (the in_proj) and Delta_t = softplus(-(W_f x_t + b_f)). Since sigma(z) = exp(-softplus(-z)), A_bar = exp(-Delta_t) = f_t. Also B_bar = (Delta A)^{-1}(exp(Delta A) - 1) Delta B = 1 - f_t.",
+  "prior_art_delta": {
+    "adds_untested_element": false,
+    "element": "",
+    "why": "The card's recurrence h_t = f_t⊙h_{t-1} + (1-f_t)⊙u_t, with input-only gates f_t = σ(W_f x_t + b_f) and u_t = W_u x_t, is the input-dependent diagonal affine recurrence already published in Mamba (W4389326242, same_mechanism) and closely matched by the input-dependent forget-gated linear RNN in HGRN (2311.04823, closest_prior_work). The card states no change to the mechanism, no new learning rule, no capacity mechanism, and no new readout (identity read y_t = h_t). Its only proposed test is a deterministic identity check of the equations against a fixed parameter mapping, which is a diagnostic framing rather than a new mechanism. The toy values also check out: recomputing the two-step run gives h ≈ [-0.658729, 0.531010], matching the expected [-0.658729, 0.53101] to rounding."
+  },
+  "radical_enough": false,
+  "reduces_to": "ssm",
+  "reduction_check": {
+    "comparisons": [
+      {
+        "comparator": "input-dependent diagonal SSM with A_t=diag(sigma(Wf x+bf)), B_t=diag(1-f_t)Wu, C_t=I",
+        "counted": true,
+        "declared_id": "selective_diag_ssm",
+        "eligibility": "counted",
+        "family": "ssm",
+        "inputs_tested": 45,
+        "limit_only": false,
+        "max_abs_diff": 3.575724526312693e-16,
+        "reference": "Selective SSM, Gu and Dao 2023, arXiv:2312.00752",
+        "transformations": [],
+        "within_tolerance": true
+      },
+      {
+        "comparator": "Mamba ZOH selective scan, N=1 per channel, A=-1, B=1, C=1, Delta=softplus(-(Wf x+bf)), in_proj=Wu",
+        "counted": true,
+        "declared_id": "mamba_zoh_n1",
+        "eligibility": "counted",
+        "family": "ssm",
+        "inputs_tested": 45,
+        "limit_only": false,
+        "max_abs_diff": 1.6764308506899117e-15,
+        "reference": "Mamba ZOH discretization, Gu and Dao 2023, arXiv:2312.00752",
+        "transformations": [],
+        "within_tolerance": true
+      }
+    ],
+    "declared": [
+      {
+        "base_family": "ssm",
+        "eligibility": "counted",
+        "id": "selective_diag_ssm",
+        "limit_only": false,
+        "transformations": []
+      },
+      {
+        "base_family": "ssm",
+        "eligibility": "counted",
+        "id": "mamba_zoh_n1",
+        "limit_only": false,
+        "transformations": []
+      }
+    ],
+    "job_id": "job-abb211689f35",
+    "notes": "Outputs are divided by the largest absolute card output per sequence before differencing. Configurations: d in {2,4,8}, n in {1,8,32}, p=5, 5 random parameter and input draws each, float64.",
+    "outcome": "verified",
+    "reduces_to": "ssm",
+    "tolerance": 1e-06
+  },
+  "reduction_outcome": "verified",
+  "textbook_transplant": true,
+  "textbook_why": "This is the published selective/diagonal input-dependent SSM (Mamba, equivalently an HGRN/minGRU gated linear recurrence) with a sigmoid retain gate and a complementary write. The card changes nothing in the construction; it fixes parameters for an inspectable instance.",
+  "why": "The card's update is an input-dependent diagonal affine recurrence with an identity readout. That is exactly the selective SSM form h_t = A_t h_{t-1} + B_t x_t, y_t = C_t h_t, with A_t = diag(sigma(W_f x_t + b_f)), B_t = diag(1 - f_t) W_u and C_t = I. The match is exact with no repair. It also equals Mamba's ZOH discretization with A = -1 and Delta = softplus(-(W_f x + b_f)), and it equals the HGRN / minGRU-style gated linear RNN. The card itself states that it is a positive control with no novelty. No earlier outcome matches its signature, and it had no refinement dialogue. It falls squarely in the out-of-scope ssm family and is not radical."
+}

@@ -99,19 +99,22 @@ def _curve(curve: dict | None) -> dict | None:
     return shown
 
 
-def training_times(check: dict) -> dict:
-    """Per seed, the wall time of each training of a learnability check (kept apart from its results rows)."""
-    wall = (check.get("details") or {}).get(learnability.WALL_CLOCK_KEY) or {}
-    return {t.get("seed"): {k: v for k, v in t.items() if k != "seed"} for t in wall.get("train_s") or []}
+def training_times(check: dict, key: str = "train_s") -> dict:
+    """Per seed, the time of each training of a learnability check (kept apart from its results rows): ``train_s``
+    the wall seconds, ``train_cpu_s`` the process CPU seconds the budget counts (decision CT; absent in checks made
+    before it)."""
+    clock = (check.get("details") or {}).get(learnability.WALL_CLOCK_KEY) or {}
+    return {t.get("seed"): {k: v for k, v in t.items() if k != "seed"} for t in clock.get(key) or []}
 
 
-def seed_line(row: dict, train_s: dict | None = None) -> dict:
-    """One seed of an attempt as the prover reads it, with that seed's training times."""
+def seed_line(row: dict, train_s: dict | None = None, train_cpu_s: dict | None = None) -> dict:
+    """One seed of an attempt as the prover reads it, with that seed's training times (CPU, which the budget counts,
+    and wall)."""
     curves = row.get("curves") or {}
     return {"seed": row.get("seed"), "accuracy": row.get("accuracy"), "passed": row.get("passed"),
             "empty_control_accuracy": row.get("empty_control_accuracy"),
             "wrong_control_accuracy": row.get("wrong_control_accuracy"), "reason": row.get("reason"),
-            "train_s": train_s,
+            "train_cpu_s": train_cpu_s, "train_s": train_s,
             "curve_true_data": _curve(curves.get("true")),
             "curve_empty_control": _curve(curves.get("empty")),
             "curve_wrong_control": _curve(curves.get("wrong"))}
@@ -253,11 +256,12 @@ class BestAttempts:
                     "held": entry["score"][0], "sizes": [size_line(r) for r in rows_of(check)],
                     **({"architecture_violations": violations[:4]} if violations else {}),
                     "evidence": (check.get("evidence") or "")[:800], "source": entry["source"]}
-        times = training_times(check)
+        times, cpu_times = training_times(check), training_times(check, "train_cpu_s")
         return {"attempt": entry["attempt"], "status": check.get("status"), "decided": check.get("decided"),
                 "passed_every_seed": entry["score"][0],
                 "recipe": (check.get("details") or {}).get("recipe"),
-                "seeds": [seed_line(r, times.get(r.get("seed"))) for r in rows_of(check)],
+                "seeds": [seed_line(r, times.get(r.get("seed")), cpu_times.get(r.get("seed")))
+                          for r in rows_of(check)],
                 "evidence": (check.get("evidence") or "")[:800],
                 "source": entry["source"]}
 

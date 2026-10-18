@@ -9,8 +9,9 @@ from hybrid.research.inspect import inspect_run
 from hybrid.research.ledger import Ledger
 from hybrid.research.store import Store
 from hybrid.research.stages.s2_prior_art import BROADER_SEARCH_NOTE
-from hybrid.tests.research.test_orchestrator_fakes import (TEMPLATE, FakeBench, comparison_check, declaring, draft,
-                                                           make_orchestrator, orch_config, program)
+from hybrid.tests.research.test_orchestrator_fakes import (TEMPLATE, FakeBench, analyst_supports_every_claim,
+                                                           comparison_check, declaring, draft, make_orchestrator,
+                                                           orch_config, program)
 
 
 def run(orch):
@@ -43,7 +44,8 @@ def run_dir(tmp_path):
 # ----- full line --------------------------------------------------------------------------------
 
 def test_happy_path_reaches_s6_and_inspect_renders(run_dir, capsys):
-    orch, llm = make_orchestrator(run_dir)
+    # S6 passes only when every claim is supported (s6_verdict.ledger_verdict).
+    orch, llm = make_orchestrator(run_dir, script={"analyst": analyst_supports_every_claim})
     summary = run(orch)
     assert summary["reason"] == "complete"
     card = only_card(orch)
@@ -834,8 +836,9 @@ def test_resume_of_a_run_started_under_the_old_gate_applies_the_new_gate(run_dir
 def test_stage_error_leaves_card_in_place(run_dir):
     orch, llm = make_orchestrator(run_dir, fail={"formalizer": TransportError("down")})
     summary = run(orch)
-    assert summary["reason"] == "complete"
+    assert summary["reason"] == "stage_errors"   # KD6: not "complete"; --resume requeues the card
     card = only_card(orch)
+    assert summary["stage_errors"][0]["card_id"] == card["id"] and summary["stage_errors"][0]["stage"] == "S3"
     assert card["status"]["stage"] == "S2" and verdicts(card)["S2"] == "pass"
     errors = events(orch, "stage_error")
     assert errors[0]["stage"] == "S3" and "TransportError" in errors[0]["error"]

@@ -5,7 +5,8 @@ The fixture cards (fixtures/planted/, written by results/phase9-20261013-053108/
 cards: each carries a unique name for its one state object, and the fake model looks that name up to decide how the
 pipeline treats the card, as a planted card of its type should be treated:
 
-- T1: the archive classifier places it in an out-of-scope family (killed at G, excluded_family);
+- T1: the archive classifier flags an out-of-scope family at G (KD5: a flag, not a kill) and the reduction critic's
+  counted comparison confirms it (killed at P, excluded_family);
 - T2: its difference statement does not cite the recorded cause of the dead idea it varies (killed at P, R3);
 - T3: M passes with a code-testable premise A1, and the challenger's magic-X code reaches the claim (killed at C);
 - T4: the prover's constructions keep too little (killed at M, obligation_failed on the P2 slots);
@@ -137,7 +138,9 @@ def script(*, overrides: dict | None = None) -> dict:
         "arm_classifier": {"T1": lambda m, i, u: classification("linear_attention")},
         "salad_critic": {},
         "refine_challenger": {},
-        "reduction_critic": {"T5": critic(reduces_to="other_known", mapping="push(x) on openers, pop on closers",
+        "reduction_critic": {"T1": critic(reduces_to="linear_attention", mapping="S_t = S_{t-1} + v_t k_t^T",
+                                          confidence=0.9, why="An additive outer-product memory read by a query."),
+                             "T5": critic(reduces_to="other_known", mapping="push(x) on openers, pop on closers",
                                           confidence=0.9, why="A push and pop automaton from the textbook.")},
         "difference": {"T2": lambda m, i, u: statement(causes=False)(i, u)},
         "statement_fixer": {"T3": lambda m, i, u: fixer_for(m, key="k2", premise_on="capability.1"),

@@ -122,12 +122,14 @@ import math
 import re
 
 from hybrid.llm.errors import SchemaValidationError
-from hybrid.math import architecture, constructions, manifest, profile, spec_checks
+from hybrid.math import architecture, constructions, cost, manifest, profile, spec_checks
 from hybrid.math import findings as finding_checks
+from hybrid.math import runner as math_runner
 from hybrid.research import citations, families, mathrecords
 from hybrid.research.stages import m_math
 from hybrid.research.stages import match_adjudication as ma
 from hybrid.research.stages import math_contracts as mc
+from hybrid.research.stages import table_limit
 from hybrid.research.stages.common import StageContext, StageError, card_for_prompt, load_section
 from hybrid.research.stages.falsify import _normal, quote_in_card
 
@@ -173,7 +175,16 @@ def defines(source: str | None, name: str | None) -> bool:
 # ----- what the challenger reads ---------------------------------------------------------------------------------------
 
 def _check_view(check: dict) -> dict:
-    return {k: check.get(k) for k in ("form", "status", "decided", "evidence", "counterexample", "text")}
+    view = {k: check.get(k) for k in ("form", "status", "decided", "evidence", "counterexample", "text")}
+    if check.get("learner"):
+        # Decision P4P: the learner in `text` is the card's supplied protocol, used verbatim.
+        view["learner"] = check["learner"]
+    return view
+
+
+def card_supplied(check: dict | None) -> bool:
+    """Whether a stage M check ran a learner the card supplied (decision P4P)."""
+    return bool(check) and (check.get("learner") or {}).get("origin") == "card"
 
 
 def _dumps(value) -> str:
@@ -1183,14 +1194,19 @@ def bound_by(obligation: dict, statement: dict, anchor: dict, record: dict) -> s
 
 
 async def replay_conforming(ctx: StageContext, card_id: str, statement: dict, target: dict,
-                            original: str | None, precision_bits: int | None = None) -> dict:
+                            original: str | None, precision_bits: int | None = None,
+                            card_limits: list[dict] | None = None) -> dict:
     """The materiality record of one witness: the validated conforming variant run through the statement's own frozen
     check (m_math.run_check: the frozen spec and the frozen architecture contract, so ``audited_construction`` for a
     construction). ``outcome`` is ``immaterial`` (the variant holds), ``material`` (decided violated), ``unresolved``
     (no valid variant, or a check that decided nothing) or ``rejected`` (the deviation is not text of this witness).
     ``precision_bits`` is the frozen contract's float width: with it, an edit that only restores that precision is a
     valid variant (FIX-15); ``edit_kind`` records which rules the edit was held to, and a precision variant records
-    the wider float names it still has."""
+    the wider float names it still has. KD2: a cost replay that stops with an out-of-bounds index on a table the
+    card's limits name, at a length above the rows the card's own init built, hit the card's stated limit and not a
+    failure of the replay (table_limit.table_overrun). It is replayed again at the lengths inside the table, and
+    ``domain_limit`` records the table, its rows, the lengths inside and beyond it and the crash; every other
+    crash is ``unresolved`` as before."""
     record = {"statement_id": statement["id"], "form": statement["form"], "deviation": target["deviation"],
               "edits": target["edits"], "why": target["why"], "original_sha256": source_hash(original),
               "variant_sha256": None, "variant_source": None, "problems": [], "check": None,
@@ -1207,6 +1223,15 @@ async def replay_conforming(ctx: StageContext, card_id: str, statement: dict, ta
     if record["edit_kind"] == "precision":
         record["wider_precision_left"] = finding_checks.wider_precision_left(variant, precision_bits)
     check = await m_math.run_check(ctx, card_id, STAGE, statement, purpose="materiality", text=variant)
+    overrun = None
+    if statement["form"] == "cost":
+        spec = statement["spec"]
+        overrun = table_limit.table_overrun(check, card_limits or [], tuple(spec.get("ns") or cost.DEFAULT_NS),
+                                            {v for values in spec["sizes"].values() for v in values})
+    if overrun and len(overrun["inside_ns"]) >= 2:
+        record["domain_limit"] = dict(overrun, crash_artifact=check["artifact"], crash_evidence=check["evidence"])
+        check = await m_math.run_check(ctx, card_id, STAGE, statement, purpose="materiality", text=variant,
+                                       spec_override=dict(statement["spec"], ns=overrun["inside_ns"]))
     record["check"] = {"artifact": check["artifact"], "status": check["status"], "decided": check["decided"],
                        "evidence": check["evidence"], "job_ids": check["job_ids"],
                        "results": (check.get("details") or {}).get("results"),
@@ -1217,7 +1242,17 @@ async def replay_conforming(ctx: StageContext, card_id: str, statement: dict, ta
         outcome = "material"
     else:
         outcome = "unresolved"
-    return dict(record, outcome=outcome, evidence=check["evidence"] or "; ".join(check["reasons"]) or "no result")
+    evidence = check["evidence"] or "; ".join(check["reasons"]) or "no result"
+    if "domain_limit" in record:
+        evidence = f"{domain_limit_note(record['domain_limit'])}: {evidence}"
+    return dict(record, outcome=outcome, evidence=evidence)
+
+
+def domain_limit_note(limit: dict) -> str:
+    """What a replay that hit a card's stated table limit says, with the limit and the sizes named."""
+    beyond, inside = (", ".join(str(n) for n in ns) for ns in (limit["beyond_ns"], limit["inside_ns"]))
+    return (f"the card limits table {limit['table']} to {limit['rows']} rows, so the strict lookup has no row "
+            f"{limit['index']} and is undefined at n = {beyond}; replayed at n = {inside}, inside the table")
 
 
 def materiality_summary(item: dict) -> dict:
@@ -1230,7 +1265,8 @@ def materiality_summary(item: dict) -> dict:
     return {"statement_id": item.get("statement_id"), "parent": item["parent"],
             "materiality": {"outcome": replay.get("outcome"), "original_sha256": replay.get("original_sha256"),
                             "variant_sha256": replay.get("variant_sha256"), "artifact": check.get("artifact"),
-                            "status": check.get("status"), "decided": check.get("decided")} if replay else None}
+                            "status": check.get("status"), "decided": check.get("decided"),
+                            "domain_limit": replay.get("domain_limit")} if replay else None}
 
 
 async def settle_materiality(ctx: StageContext, card_id: str, finding: dict, item: dict, record: dict,
@@ -1277,12 +1313,20 @@ async def settle_materiality(ctx: StageContext, card_id: str, finding: dict, ite
             out.append(dict(piece, disposition="unresolved",
                             reason=f"{sid} is a {statement['form']} statement, which has no witness to replay"))
             continue
+        if card_supplied(checks.get(sid)):
+            # Decision P4P: the card's measured learning protocol is used verbatim; no variant replaces it.
+            out.append(dict(piece, disposition="out_of_scope",
+                            reason=f"{sid}'s learner is the card's supplied learning protocol (sha256 "
+                                   f"{checks[sid]['learner'].get('sha256')}), used verbatim (decision P4P): its "
+                                   "recipe, width and m are the card's, and no conforming variant replaces it"))
+            continue
         replay = await replay_conforming(ctx, card_id, statement, target, (checks.get(sid) or {}).get("text"),
-                                         precision_bits)
+                                         precision_bits, record.get("card_limits"))
         disposition = {"immaterial": "immaterial", "material": "violated", "unresolved": "unresolved",
                        "rejected": "rejected"}[replay["outcome"]]
         reason = {"immaterial": f"immaterial: the deviation is confirmed, and {sid} without it holds under its frozen "
-                                "check, so the claim keeps its evidence",
+                                "check" + (" inside the card's stated table limit" if replay.get("domain_limit") else "")
+                                + ", so the claim keeps its evidence",
                   "violated": f"material: {sid} without the deviation fails its frozen check",
                   "unresolved": f"unresolved: the deviation is confirmed, but its effect on {sid} is not established",
                   "rejected": f"the deviation is not in {sid}"}[disposition]
@@ -1748,6 +1792,9 @@ async def _library(ctx: StageContext, card_id: str, label: str, request: dict, p
         record = await asyncio.to_thread(ctx.math.check_library, request)
     except manifest.ManifestMismatch as exc:
         raise StageError(f"math check files differ from MANIFEST.json: {exc}") from exc
+    except math_runner.JobHangGuard as exc:
+        # Decision CT: the wall cap of a CPU-capped library job is a hang guard; its stop is the environment's failure.
+        raise StageError(f"{label}: {exc}") from exc
     printed = (record["runs"][0].get("printed") or {}) if record["runs"] else {}
     check = {"card_id": card_id, "stage": stage, "statement_id": label, "purpose": purpose, "form": request["kind"],
              "status": record["status"], "decided": record["decided"], "evidence": record["evidence"],

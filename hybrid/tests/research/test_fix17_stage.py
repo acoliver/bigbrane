@@ -164,11 +164,13 @@ def test_a_mechanism_limit_with_its_quote_is_accepted():
 
 
 def test_a_p3_resting_only_on_the_output_vocabulary_is_refused_at_freeze(tmp_path):
-    card = load_cards(("k1",))["k1"]
+    # K1 without its P4 protocols: with them the verdict is the failed composition learner (decision P4K), which takes
+    # precedence over an unproven P3 in the kill codes. This test is about the refused limit.
+    card = cf.without_protocols(load_cards(("k1",))["k1"])
     answer = cf.fixer_output("k1", card)
     answer["limits"] = limits_k1({"part": "output_vocabulary", "anchor": "mechanism.readout.readout",
                                   "quote": "over the V symbols"})
-    h = Harness(tmp_path, "k1", fixer=answer)
+    h = Harness(tmp_path, "k1", fixer=answer, card=card)
     h.m()
     retry = [c["user"] for c in h.llm.calls if c["prompt"] == "statement_fixer"]
     assert len(retry) == 2 and "follows from the output vocabulary" in retry[1]

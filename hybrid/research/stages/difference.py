@@ -5,12 +5,18 @@ transformer, state-space, linear-attention and delta-rule) and the known familie
 memories, exact-match caches). The reduction critic is asked, in a section appended to its user message
 (prompt_sections/family_exclusion.md) and two fields added to its schema in code, which family the card's core belongs
 to (`family`, `family_why`). A verified reduction into an out-of-scope family fails the card with
-`excluded_family:<id>` whatever its `difference_if_any` says: the `LEARNING_RULE:` prefix does not apply. The family is
-the critic's when it names an out-of-scope family; otherwise it comes from the families.toml `reduces_to` mapping of
-the critic's `reduces_to`, and when two families share that value (linear attention and the delta rule) the one whose
-`keywords` occur most often in the critic's mapping and argument is chosen (the first listed on a tie). So a renamed
-linear-attention variant that the critic reduces to `linear_attention` dies even when the critic, misled by the new
-names, answers `family: none`.
+`excluded_family:<id>` whatever its `difference_if_any` says: the `LEARNING_RULE:` prefix does not apply.
+KD4: the family is decided from the comparators the host counted (the ones that verified the reduction, each with the
+family its declaration stated), never from the critic's `family` label, which stays recorded as information. The
+families.toml `reduces_to` lists map a counted comparator's family to the out-of-scope families that contain it; a
+counted family in none of them (other_known, rnn) gives no excluded kill and the card takes the ordinary
+verified-reduction path. When two out-of-scope families share the counted family (linear attention and the delta rule
+both list `linear_attention`), the critic's `family` picks between them when it is one of the two, and otherwise the
+one whose `keywords` occur most often in the counted comparators and the critic's mapping and argument is chosen (the
+first listed on a tie). A reduction verified on the critic's confidence alone has no counted comparator, so the
+claimed `reduces_to` stands as the counted family. So a renamed linear-attention variant that the critic reduces to
+`linear_attention` dies even when the critic, misled by the new names, answers `family: none`, and a Minsky counter
+machine counted as other_known does not die because the critic also argued an uncounted ssm simulation.
 
 Difference statement (`s2.difference_statement`). Written by the proposer (the card's explorer role, prompt
 `difference`, schema schemas/difference.schema.json) after the other S2 gates pass, then checked:
@@ -54,6 +60,7 @@ LOOP = "send_back"
 WRITER_PROMPT = "difference"
 CHECK_PROMPT = "difference_check"
 R3_PREFIX = "r3"
+LISTED_LITERATURE = 25     # papers of the prior-art search shown to the writer and the checker, evidence included
 
 
 # ----- families ------------------------------------------------------------------------------------------------------
@@ -97,19 +104,32 @@ def critic_section(families: Families) -> str:
     return "\n\n" + "\n".join(lines)
 
 
-def excluded_reduction(critic: dict, reduction: str, families: Families,
-                       keywords: dict[str, tuple[str, ...]]) -> Family | None:
-    """The out-of-scope family a verified reduction falls in, or None (no verified reduction, or none of the
-    families matches)."""
+def excluded_reduction(critic: dict, reduction: str, families: Families, keywords: dict[str, tuple[str, ...]],
+                       counted: list[dict]) -> Family | None:
+    """The out-of-scope family a verified reduction falls in, or None (no verified reduction, or no counted comparator
+    in an out-of-scope family).
+
+    KD4: the family comes from the comparators the host counted (`counted`, from s2_prior_art.counted_comparisons: each
+    has the `family` its declaration stated and the `comparator` text), never from the critic's free `family` label.
+    The candidates are the out-of-scope families whose `reduces_to` lists a counted comparator's family, in the order
+    of families.toml, so any counted comparator in an out-of-scope family decides and a counted family outside every
+    one of them (other_known, rnn, ...) gives no kill whatever the critic says.
+
+    When several candidates share the counted family (linear attention and the delta rule both list
+    `linear_attention`), the critic's `family` picks between them when it is one of the candidates; the label cannot
+    add a family. Otherwise the candidate whose `keywords` occur most often in the counted comparators and the critic's
+    mapping and argument is chosen, the first listed on a tie."""
     if reduction != "verified":
         return None
-    named = critic.get("family")
-    if named and families.is_excluded(named):
-        return families.get(named)
-    candidates = [f for f in families.excluded if critic["reduces_to"] in f.reduces_to]
+    counted_families = {c["family"] for c in counted}
+    candidates = [f for f in families.excluded if counted_families.intersection(f.reduces_to)]
     if len(candidates) <= 1:
         return candidates[0] if candidates else None
-    text = " ".join([critic.get("mapping") or "", critic["why"], critic["difference_if_any"]]).lower()
+    named = next((f for f in candidates if f.id == critic.get("family")), None)
+    if named is not None:
+        return named
+    text = " ".join([*(f"{c.get('declared_id') or ''} {c['comparator']}".replace("_", " ") for c in counted),
+                     critic.get("mapping") or "", critic["why"], critic["difference_if_any"]]).lower()
     scored = [(keyword_hits(text, keywords.get(f.id, ())), -index, f) for index, f in enumerate(candidates)]
     return max(scored, key=lambda item: item[:2])[2]
 
@@ -130,27 +150,38 @@ def named_family(critic: dict, families: Families) -> Family | None:
 
 @dataclass
 class Requirements:
-    literature: dict[str, str]                 # accepted literature ref -> title
+    literature: dict[str, dict]                # accepted literature ref -> its listed paper (see literature_refs)
     outcomes: dict[str, dict]                  # record id -> match dict
     r3: list[dict]                             # {"record_id", "card_id", "exact", "jaccard", "causes": [{id, detail}]}
     family: Family | None
     need: int
     families: Families
+    searched: int = 0                          # papers the prior-art search returned, of which `literature` lists some
 
     def cause_ids(self) -> list[str]:
         return [cause["id"] for target in self.r3 for cause in target["causes"]]
 
 
-def literature_refs(record: dict, pa_result: dict) -> dict[str, str]:
-    """Source ids the prior-art search returned for this card (evidence ids, candidate ids with and without their
-    source prefix), each with a title when known."""
-    refs: dict[str, str] = {}
-    for candidate in pa_result.get("candidates", []):
-        refs[candidate] = ""
-        if ":" in candidate:
-            refs[candidate.split(":", 1)[1]] = ""
+def literature_refs(record: dict, pa_result: dict) -> dict[str, dict]:
+    """The papers of this card's prior-art search that the writer and the checker see and the host accepts as
+    `literature` refs. Each paper is a candidate record (key, source_id, title, year, excerpt) and is reachable under
+    both spellings a ref may take: the key `s2:712c...` and the bare source id.
+
+    The search returns about 80 papers, too many to show with their abstracts, so the listing is bounded to
+    LISTED_LITERATURE papers: first the evidence the classifier cited (with its relation), because the classifier
+    judged those closest, then the remaining candidates in the order the searches returned them. The prompt for the
+    writer and the one for the checker are built from this one listing."""
+    candidates = pa_result["candidates"]
+    by_source_id = {candidate["source_id"]: candidate for candidate in candidates}
+    listed: dict[str, dict] = {}
     for item in record["evidence"]:
-        refs[item["source_id"]] = item["title"]
+        candidate = by_source_id[item["source_id"]]
+        listed.setdefault(candidate["key"], dict(candidate, relation=item["relation"]))
+    for candidate in candidates:
+        listed.setdefault(candidate["key"], candidate)
+    refs: dict[str, dict] = {}
+    for entry in list(listed.values())[:LISTED_LITERATURE]:
+        refs[entry["key"]] = refs[entry["source_id"]] = entry
     return refs
 
 
@@ -165,7 +196,8 @@ def requirements(ctx: StageContext, record: dict, pa_result: dict, matches: list
                        "exact": match.exact, "jaccard": round(match.jaccard, 4),
                        "causes": [{"id": c["id"], "detail": c["detail"]} for c in match.stored.causes()]})
     need = min(2, len({ref.split(":", 1)[-1] for ref in literature}) + len(outcomes))
-    return Requirements(literature, outcomes, r3, named_family(critic, families), need, families)
+    return Requirements(literature, outcomes, r3, named_family(critic, families), need, families,
+                        len(pa_result["candidates"]))
 
 
 def resolves(card: dict, ref: str) -> bool:
@@ -191,9 +223,9 @@ def host_problems(statement: dict, card: dict, req: Requirements) -> dict[str, s
         elif kind == "family" and req.families.get(ref) is not None:
             families.add(ref)
         else:
-            problems[f"unknown_ref:{kind}:{ref}"] = (f"closest_prior names {kind} {ref!r}, which is not a source of "
-                                                    f"this card's prior-art search, one of its own-history records or "
-                                                    f"a family of families.toml")
+            problems[f"unknown_ref:{kind}:{ref}"] = (f"closest_prior names {kind} {ref!r}, which is not a listed "
+                                                    f"source of this card's prior-art search, one of its own-history "
+                                                    f"records or a family of families.toml")
     if len(counted) < req.need:
         problems["closest_prior:count"] = (f"{len(counted)} literature or outcome entries with receipts; at least "
                                            f"{req.need} are required")
@@ -241,11 +273,22 @@ def check_schema(cause_ids: list[str], family: Family | None) -> dict:
                            "required_difference": {"type": "string"}}}
 
 
+def literature_lines(req: Requirements) -> list[str]:
+    papers = {entry["key"]: entry for entry in req.literature.values()}.values()
+    lines = []
+    for paper in papers:
+        year = paper["year"] if paper["year"] is not None else "n.d."
+        relation = f" [cited by the prior-art search as {paper['relation']}]" if "relation" in paper else ""
+        lines.append(f"- {paper['key']} ({year}) {paper['title']}{relation}\n  {paper['excerpt']}")
+    return lines
+
+
 def context_block(record: dict, req: Requirements, critic: dict) -> str:
-    lit = [f"- {ref}: {title or '(title not recorded)'}" for ref, title in req.literature.items() if ":" not in ref]
-    lit += [f"- {ref}" for ref in req.literature if ":" in ref]
-    parts = ["PRIOR-ART SEARCH (cite literature entries by these source ids):\n"
-             + (f"label {record['label']}\n" + ("\n".join(lit) or "(no source returned)")),
+    papers = literature_lines(req)
+    shown = (f"{len(papers)} of the {req.searched} papers the search returned, the cited evidence first and then the "
+             f"others in search order")
+    parts = [f"PRIOR-ART SEARCH (cite literature entries by these source ids; {shown}):\n"
+             + (f"label {record['label']}\n" + ("\n".join(papers) or "(no source returned)")),
              "OWN HISTORY (outcome-store records; cite them by record id, and causes by cause id):\n"
              + ("\n".join(f"- {rid}: {m['card_id']} {m['title'][:80]} ({'exact' if m['exact_signature'] else 'near'}"
                           f" signature, Jaccard {m['jaccard']}), {m['outcome']} at {m['terminal_stage']}, kill codes "

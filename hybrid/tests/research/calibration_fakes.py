@@ -5,6 +5,17 @@ MathRunner staged, with the staged bbmath modules) inside the test process inste
 and caches the printed result by request, so the replay and later runs cost nothing. Lean and Z3 jobs are not
 needed by these fakes (P3 uses SymPy, answered by the scripted default of math_fakes).
 
+Decision P4P: calibration cards K1 and K2 supply measured learners for every P4 task, which train for minutes on
+m = 1200 to 4000 examples. The full check of such a learner (its exact source hash, on the same experiment: task,
+size, m, seeds, threshold, layout, widths evaluated at the size, architecture contract) is answered with the result the
+host measured for it on check seeds 0 to 2 (fixtures/p4_protocols, copied from results/p4-protocols-20261016 and
+results/p4-protocols2-20261016; the K1 composition learner's recorded verdict is violated, decision P4K). The
+research tests set the P4 test count to 40 (conftest.py SCRIPTED_PROTOCOL), so the test count is not compared: the
+measured result at 500 test instances stands in for it. The timing probe of such a learner is answered with the host's
+recorded seconds for one seed (the real probe trains the learner, and its projection against the runner's cap moves with
+the load of the machine), and the slow replay in test_p4p_protocols.py trains the recall learner through the same
+runner.
+
 The scripted roles write the eleven profile obligations for a calibration card, the prover answers with reference
 code from hybrid/math/references.py (unbounded constructions for a card that passes P2, capped ones for a card that
 fails it) and small learners that really learn from their examples.
@@ -12,6 +23,8 @@ fails it) and small learners that really learn from their examples.
 from __future__ import annotations
 
 import contextlib
+import copy
+import hashlib
 import importlib.util
 import io
 import json
@@ -19,6 +32,7 @@ import threading
 from pathlib import Path
 from types import SimpleNamespace
 
+from hybrid.math import learnability as learnability_check
 from hybrid.math import profile, references
 from hybrid.math.runner import CHECK_FILE
 from hybrid.research.mathrecords import formal_claims
@@ -27,6 +41,45 @@ from hybrid.tests.research import math_fakes as mf
 
 _CACHE: dict[str, str] = {}
 _JOB_LOCK = threading.Lock()
+P4_PROTOCOLS = Path(__file__).parent / "fixtures" / "p4_protocols"
+
+
+def experiment_key(spec: dict, architecture) -> str:
+    """A learnability experiment as the check runs it, without its test count: task, size, m, seeds, threshold, the
+    generator layout and the widths evaluated at the size, and the architecture contract. The layout is compared
+    without its echo of the given params: {"V": 16} and {"V": 16, "n_keys": 16} build the same recall layout."""
+    from hybrid.math import constructions
+    from hybrid.research.stages import card_resources
+    task, size = spec["task"], spec["size"]
+    name = constructions.SIZE_NAME[task]
+    widths = {key: card_resources.evaluate(value, {name: size}) for key, value in (spec.get("widths") or {}).items()}
+    if constructions.length_formula(task) is None:
+        # The host leaves widths.positions out for a task whose stream length varies per instance (dyck) and the
+        # harness uses the longest stream; a recorded request that wrote the longest length states the same experiment.
+        widths.pop("positions", None)
+    layout = {key: value for key, value in constructions.layout(task, size, spec.get("params")).items()
+              if key != "params"}
+    return json.dumps([task, size, spec["examples"], sorted(spec["seeds"]), spec.get("threshold"), layout, widths,
+                       architecture], sort_keys=True, default=str)
+
+
+def measured_protocols() -> dict[tuple[str, str], dict]:
+    """The recorded host results of the card-supplied learners, by (source sha256, experiment_key)."""
+    found = {}
+    for path in sorted(P4_PROTOCOLS.glob("*-confirmation.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        found[(record["sha256"], experiment_key(record["spec"], record["architecture_contract"]))] = record["result"]
+    return found
+
+
+def recorded_probe_walls() -> dict[tuple[str, str], float]:
+    """The seconds the host measured for one seed of each card-supplied learner (the first check seed, controls
+    included), by (source sha256, experiment_key without the architecture contract, which a probe does not carry)."""
+    found = {}
+    for path in sorted(P4_PROTOCOLS.glob("*-confirmation.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        found[(record["sha256"], experiment_key(record["spec"], None))] = record["per_seed_wall"][0]["total_s"]
+    return found
 
 
 class FastExecutor:
@@ -34,6 +87,36 @@ class FastExecutor:
         self.tmp_path = Path(tmp_path).resolve()
         self.tmp_path.mkdir(parents=True, exist_ok=True)
         self.jobs: list = []
+        # Jobs answered with a recorded protocol result (decision P4P).
+        self.measured: list = []
+        self._measured = measured_protocols()
+        self._walls = recorded_probe_walls()
+
+    def reach_threshold(self, task: str) -> None:
+        """Answer the recorded learners of ``task`` as if every seed had reached the threshold: a run in which the
+        card's own learner learns (the K1 composition learner recorded a failing seed, decision P4K)."""
+        for key, result in list(self._measured.items()):
+            if result["task"] == task and result["status"] != "discharged":
+                rows = [dict(row, accuracy=1.0, passed=True, reason=None, first_error=None) for row in result["results"]]
+                evidence = f"{task} at size {result['size']} from m={result['examples']} examples: every seed reaches the threshold (scripted)"
+                self._measured[key] = dict(result, status="discharged", counterexample=None, results=rows,
+                                           evidence=evidence)
+
+    @staticmethod
+    def _recorded_probe(spec: dict, wall_s: float) -> dict:
+        """A timing probe report whose projection of the full check is the recorded seconds per seed. The host
+        measured them single-threaded with nothing else running, where wall and process CPU time agree; decision CT
+        projects CPU seconds, so they stand in for the CPU phases."""
+        n = learnability_check.probe_examples(spec)
+        phases = {phase: 0.0 for phase in learnability_check.SCALED_PHASES + learnability_check.FIXED_PHASES}
+        phases["train"] = wall_s * n / spec["examples"]
+        timing = {"seed": spec["seeds"][0], "examples": n, "clock": "process_cpu", "total_cpu_s": wall_s,
+                  "phases_cpu": phases, "total_wall_s": wall_s, "phases_wall": dict(phases), "probe_accuracy": 0.0}
+        projected = learnability_check.projected_cpu_seconds(spec, timing)
+        return {"status": "unknown", "tier": "executed", "counterexample": None, "probe": True, "timing": timing,
+                "projected_cpu_s": round(projected, 3),
+                "evidence": (f"timing probe only, decides nothing: recorded host time of seed {timing['seed']}, "
+                             f"{wall_s:.1f} s; projected full check {projected:.1f} CPU s (scripted)")}
 
     def _answer(self, job, stdout: str):
         out, err = self.tmp_path / f"{job.job_id}.stdout", self.tmp_path / f"{job.job_id}.stderr"
@@ -53,6 +136,29 @@ class FastExecutor:
             return self._answer(job, json.dumps(mf.sympy_default(request), sort_keys=True) + "\n")
         if request["kind"] in ("z3", "predicate_agreement"):
             return self._answer(job, json.dumps(mf.z3_default(request), sort_keys=True) + "\n")
+        if request["kind"] == "learnability_probe":
+            sha = hashlib.sha256(request["source"].encode("utf-8")).hexdigest()
+            if sha in {recorded_sha for recorded_sha, _ in self._measured}:
+                # The probe of a card-supplied learner trains it for real, and its projection depends on how busy the
+                # machine is. The recorded host time of one seed stands in, so the verdict does not.
+                wall = self._walls.get((sha, experiment_key(request["spec"], None)))
+                if wall is None:
+                    raise AssertionError("no recorded timing for this card protocol learner on this experiment (a "
+                                         "unit test must not train it): "
+                                         + experiment_key(request["spec"], request.get("architecture")))
+                return self._answer(job, json.dumps(self._recorded_probe(request["spec"], wall)) + "\n")
+        if request["kind"] == "learnability":
+            sha = hashlib.sha256(request["source"].encode("utf-8")).hexdigest()
+            result = self._measured.get((sha, experiment_key(request["spec"], request.get("architecture"))))
+            if result is not None:
+                self.measured.append(job)
+                return self._answer(job, json.dumps(result, default=str, sort_keys=True) + "\n")
+            if sha in {recorded_sha for recorded_sha, _ in self._measured}:
+                # A card-supplied learner trains for minutes. A unit test must never run one: it either asks for an
+                # experiment that has a recorded result, or it uses a card copy without protocols.
+                raise AssertionError(
+                    "no recorded result for this card protocol learner on this experiment (a unit test must not "
+                    f"train it): {experiment_key(request['spec'], request.get('architecture'))}")
         # Stages call the executor through asyncio.to_thread, so cards in M and C at once run jobs on several threads;
         # redirect_stdout swaps the process-wide sys.stdout, so one job at a time.
         with _JOB_LOCK:
@@ -245,6 +351,29 @@ def learn(layout, examples, seed):
     return {"rule": best}
 '''
 
+# Decision P4K: K1's two-layer attention model does not reliably learn T=4 composition from the stated examples (a
+# measured result, not a pipeline output). This learner stands for a run that does not: it settles on the most frequent
+# answer, which a trained model that memorizes or keeps a frequency shortcut also does on unseen composition queries.
+SHORTCUT_COMPOSITION_LEARNER = '''
+RECIPE = {"method": "most frequent answer", "init": "none"}
+
+def init(layout, params):
+    return {"answer": params["answer"]}
+
+def update(state, token):
+    return state
+
+def predict(state):
+    return state["answer"]
+
+def learn(layout, examples, seed):
+    counts = {}
+    for ex in examples:
+        for pos, ans in ex["queries"]:
+            counts[ans] = counts.get(ans, 0) + 1
+    return {"answer": max(counts, key=lambda a: counts[a]) if counts else 0}
+'''
+
 LEARNERS = {"copy": COPY_LEARNER, "recall": RECALL_LEARNER, "dyck": DYCK_LEARNER, "composition": COMPOSITION_LEARNER}
 OPEN = {"copy": references.construction_source(references.COPY_BUFFER),
         "recall": references.construction_source(references.RECALL_TABLE),
@@ -317,6 +446,16 @@ def card_resources_of(card: dict | None, key: str | None = None) -> dict:
         return card["resources"]
     from hybrid.research.calibration import FIXTURES
     return json.loads((FIXTURES / f"{key if key in PASSES_P2 else 'k2'}.json").read_text())["resources"]
+
+
+def without_protocols(card: dict) -> dict:
+    """A copy of the card with the learning protocols of decision P4P removed, so stage M asks the prover for every
+    learner as it did before the calibration cards supplied theirs. For a test that uses a calibration card as the
+    vehicle for prover rounds, budgets, contracts, premises or tiers, and never checks the card's own learners."""
+    card = copy.deepcopy(card)
+    for entry in card["resources"]["learning"].values():
+        entry.pop("protocol", None)
+    return card
 
 
 def frozen(claim_id: str, statement: dict, card: dict | None = None, key: str | None = None) -> dict:
@@ -426,8 +565,13 @@ def _shown(user: str) -> list[dict]:
     return json.JSONDecoder().raw_decode(user.split("FROZEN STATEMENTS:\n", 1)[1])[0]
 
 
-def prover_output(key: str, *, passes_p2: bool | None = None) -> callable:
+def prover_output(key: str, *, passes_p2: bool | None = None, learns_composition: bool = True) -> callable:
+    """``learns_composition`` False gives the prover the shortcut learner for composition (decision P4K); the other
+    learners and every other test keep the learner that reaches the threshold."""
     passes = PASSES_P2[key] if passes_p2 is None else passes_p2
+    learners = dict(LEARNERS)
+    if not learns_composition:
+        learners["composition"] = SHORTCUT_COMPOSITION_LEARNER
     cost_source, _ = COST[key]
     sources = OPEN if passes else CAPPED
 
@@ -440,7 +584,7 @@ def prover_output(key: str, *, passes_p2: bool | None = None) -> callable:
             elif item["form"] == "construction":
                 source = sources[spec["task"]]
             elif item["form"] == "learnability":
-                source = LEARNERS[spec["task"]]
+                source = learners[spec["task"]]
             else:
                 raise AssertionError(f"no scripted source for {item['form']}")
             attempts.append({"statement_id": item["statement_id"], "proof": None, "source": source,
@@ -450,8 +594,10 @@ def prover_output(key: str, *, passes_p2: bool | None = None) -> callable:
     return answer
 
 
-def script(key: str, card: dict, *, passes_p2: bool | None = None, fixer=None) -> dict:
-    return {"statement_fixer": fixer or fixer_output(key, card), "prover": prover_output(key, passes_p2=passes_p2),
+def script(key: str, card: dict, *, passes_p2: bool | None = None, learns_composition: bool = True,
+           fixer=None) -> dict:
+    return {"statement_fixer": fixer or fixer_output(key, card),
+            "prover": prover_output(key, passes_p2=passes_p2, learns_composition=learns_composition),
             "challenger": mf.challenger_output(), "statement_backtranslate": mf.backtranslate_output,
             "statement_match": mf.match_output()}
 

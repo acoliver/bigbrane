@@ -1,0 +1,397 @@
+{
+  "architecture_contract": {
+    "hidden": "d",
+    "precision_bits": 64
+  },
+  "generator_control": [
+    30000,
+    30001,
+    30002
+  ],
+  "generator_test": [
+    20000,
+    20001,
+    20002
+  ],
+  "generator_train": [
+    10000,
+    10001,
+    10002
+  ],
+  "name": "k1-composition-confirmation",
+  "per_seed_wall": [
+    {
+      "seed": 0,
+      "total_s": 306.672
+    },
+    {
+      "seed": 1,
+      "total_s": 279.47
+    },
+    {
+      "seed": 2,
+      "total_s": 227.473
+    }
+  ],
+  "phase": "confirmation",
+  "result": {
+    "architecture": {
+      "checked": true,
+      "points": [
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "23",
+            "rounds": "2",
+            "vocab": "15"
+          },
+          "float_bits": 64,
+          "point": {
+            "T": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "23",
+            "rounds": "2",
+            "vocab": "15"
+          },
+          "float_bits": 64,
+          "point": {
+            "T": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "23",
+            "rounds": "2",
+            "vocab": "15"
+          },
+          "float_bits": 64,
+          "point": {
+            "T": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        }
+      ],
+      "violations": []
+    },
+    "counterexample": {
+      "accuracy": 0.7225,
+      "control_accuracy": 0.144,
+      "examples": 4000,
+      "first_error": {
+        "expected": 10,
+        "instance": 0,
+        "position": 20,
+        "predicted": 11,
+        "tokens": [
+          12,
+          2,
+          4,
+          0,
+          7,
+          3,
+          6,
+          1,
+          5,
+          13,
+          5,
+          9,
+          6,
+          11,
+          7,
+          10,
+          4,
+          10,
+          14,
+          1,
+          2,
+          0,
+          3
+        ],
+        "tokens_total": 23
+      },
+      "reason": "below_threshold",
+      "seed": 1,
+      "size": 4,
+      "task": "composition"
+    },
+    "evidence": "composition at T=4 from m=4000 examples: seed 0 accuracy 1.0000 (control 0.0505), seed 1 accuracy 0.7225 (control 0.1440), seed 2 accuracy 1.0000 (control 0.0695); threshold 0.99; recipe {\"batch_size\": 200, \"betas\": [0.9, 0.98], \"dtype\": \"float64\", \"epochs\": 260, \"eps\": 1e-08, \"grad_clip_norm\": 1.0, \"initialization\": \"Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)\", \"learning_rate\": 0.002, \"loss\": \"next-symbol cross-entropy at the query positions, back-propagated through both rounds\", \"optimizer\": \"AdamW\", \"schedule\": \"linear warmup then cosine decay to 0.05 of peak\", \"warmup_steps\": 300, \"weight_decay\": 0.05, \"width_d\": 64} applied to the true data and both controls; observed on the listed sizes: composition T=4 m=4000 seed=0, composition T=4 m=4000 seed=1, composition T=4 m=4000 seed=2",
+    "examples": 4000,
+    "recipe": {
+      "batch_size": 200,
+      "betas": [
+        0.9,
+        0.98
+      ],
+      "dtype": "float64",
+      "epochs": 260,
+      "eps": 1e-08,
+      "grad_clip_norm": 1.0,
+      "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+      "learning_rate": 0.002,
+      "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds",
+      "optimizer": "AdamW",
+      "schedule": "linear warmup then cosine decay to 0.05 of peak",
+      "warmup_steps": 300,
+      "weight_decay": 0.05,
+      "width_d": 64
+    },
+    "results": [
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0505,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 0,
+            "points": []
+          },
+          "wrong": {
+            "count": 0,
+            "points": []
+          }
+        },
+        "empty_control_accuracy": 0.0505,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "batch_size": 200,
+          "betas": [
+            0.9,
+            0.98
+          ],
+          "dtype": "float64",
+          "epochs": 260,
+          "eps": 1e-08,
+          "grad_clip_norm": 1.0,
+          "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+          "learning_rate": 0.002,
+          "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds",
+          "optimizer": "AdamW",
+          "schedule": "linear warmup then cosine decay to 0.05 of peak",
+          "warmup_steps": 300,
+          "weight_decay": 0.05,
+          "width_d": 64
+        },
+        "seed": 0,
+        "state_peak_words": 59010,
+        "wrong_control_accuracy": 0.255
+      },
+      {
+        "accuracy": 0.7225,
+        "control_accuracy": 0.144,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 0,
+            "points": []
+          },
+          "wrong": {
+            "count": 0,
+            "points": []
+          }
+        },
+        "empty_control_accuracy": 0.144,
+        "first_error": {
+          "expected": 10,
+          "instance": 0,
+          "position": 20,
+          "predicted": 11,
+          "tokens": [
+            12,
+            2,
+            4,
+            0,
+            7,
+            3,
+            6,
+            1,
+            5,
+            13,
+            5,
+            9,
+            6,
+            11,
+            7,
+            10,
+            4,
+            10,
+            14,
+            1,
+            2,
+            0,
+            3
+          ],
+          "tokens_total": 23
+        },
+        "passed": false,
+        "reason": "below_threshold",
+        "recipe": {
+          "batch_size": 200,
+          "betas": [
+            0.9,
+            0.98
+          ],
+          "dtype": "float64",
+          "epochs": 260,
+          "eps": 1e-08,
+          "grad_clip_norm": 1.0,
+          "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+          "learning_rate": 0.002,
+          "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds",
+          "optimizer": "AdamW",
+          "schedule": "linear warmup then cosine decay to 0.05 of peak",
+          "warmup_steps": 300,
+          "weight_decay": 0.05,
+          "width_d": 64
+        },
+        "seed": 1,
+        "state_peak_words": 59010,
+        "wrong_control_accuracy": 0.251
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0695,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 0,
+            "points": []
+          },
+          "wrong": {
+            "count": 0,
+            "points": []
+          }
+        },
+        "empty_control_accuracy": 0.0695,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "batch_size": 200,
+          "betas": [
+            0.9,
+            0.98
+          ],
+          "dtype": "float64",
+          "epochs": 260,
+          "eps": 1e-08,
+          "grad_clip_norm": 1.0,
+          "initialization": "Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)",
+          "learning_rate": 0.002,
+          "loss": "next-symbol cross-entropy at the query positions, back-propagated through both rounds",
+          "optimizer": "AdamW",
+          "schedule": "linear warmup then cosine decay to 0.05 of peak",
+          "warmup_steps": 300,
+          "weight_decay": 0.05,
+          "width_d": 64
+        },
+        "seed": 2,
+        "state_peak_words": 59010,
+        "wrong_control_accuracy": 0.2505
+      }
+    ],
+    "size": 4,
+    "status": "violated",
+    "task": "composition",
+    "threshold": 0.99,
+    "tier": "executed",
+    "wall_clock": {
+      "train_cpu_s": [
+        {
+          "empty": 0.0,
+          "seed": 0,
+          "true": 162.751,
+          "wrong": 128.689
+        },
+        {
+          "empty": 0.0,
+          "seed": 1,
+          "true": 129.989,
+          "wrong": 138.569
+        },
+        {
+          "empty": 0.0,
+          "seed": 2,
+          "true": 125.094,
+          "wrong": 96.424
+        }
+      ],
+      "train_s": [
+        {
+          "empty": 0.0,
+          "seed": 0,
+          "true": 174.68,
+          "wrong": 131.992
+        },
+        {
+          "empty": 0.0,
+          "seed": 1,
+          "true": 134.622,
+          "wrong": 144.848
+        },
+        {
+          "empty": 0.0,
+          "seed": 2,
+          "true": 128.825,
+          "wrong": 98.648
+        }
+      ]
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "sha256": "a81b9e4cc75f175a5ae6704519c87e2e02929f951c4ade9dd48f0299124dd1d2",
+  "source": "results/kd1-20261017/staging/hybrid/fixtures/calibration/protocols/k1-composition.py",
+  "spec": {
+    "examples": 4000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "size": 4,
+    "task": "composition",
+    "test_count": 500,
+    "threshold": 0.99,
+    "widths": {
+      "d": "64",
+      "positions": "5*T+3",
+      "rounds": "2"
+    }
+  },
+  "started_utc": "20261018T002028Z",
+  "task": "k1-composition",
+  "wall_s": 1476.3
+}

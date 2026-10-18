@@ -33,7 +33,9 @@ web_tools = ["exa_web_search", "direct_web_fetch"]
 kind = "openai_compat"
 base_url = "http://127.0.0.1:1234/v1"
 concurrency = 1
-timeout_s = 600
+# Decision LT: a reply may be 16000 tokens and Qwen generates 20 to 34 tokens/s here, so a full reply needs about
+# 800 s plus prefill. 600 s timed out calibration card-runs under load (20261017T022453Z k3-run1).
+timeout_s = 1200
 # Preflight (hybrid/localmodels.py): before a research run or plumbing check starts, every model the run routes to
 # this backend must be loaded in LM Studio (GET /api/v0/models) with loaded_context_length at least this. The Phase 3
 # live card failed when Qwen had been reloaded at 8192 tokens; qwen3.6-35b-a3b-mlx needs 131072.

@@ -3,7 +3,7 @@
 Each card becomes one line of about 250 characters: title, core idea, and its outcome, which is one of
 - reduced: S2 gave reduces_to_known; the known family and one sentence of the critic's argument;
 - died: the stage and verdict where the card's line ended, with the deciding reason;
-- finished: the card completed S6;
+- finished: the card completed S6 with every claim supported (a refuted or unshown claim makes it a death at S6);
 - alive: the card is still moving (alive at Sk).
 
 Reading is read-only and touches only files: ledger.jsonl (parsed line by line, without the ledger
@@ -79,7 +79,10 @@ def deciding_reason(reasons: list[str]) -> str:
     return text
 
 
-def outcome(card: dict, reduction: dict | None) -> tuple[str, str]:
+def outcome(card: dict, reduction: dict | None, claims: dict | None = None) -> tuple[str, str]:
+    """(kind, text) for the card's latest status. ``claims`` is the card's latest claims ledger, needed once the card
+    has an S6 verdict: an S6 pass recorded before the 2026-10-16 fix (S6 then always passed) is labelled by its
+    claims (s6_verdict.ledger_verdict), so a card with refuted or unshown claims is never shown as finished."""
     verdicts = card["status"]["verdicts"]
     stage = card["status"]["stage"]
     if verdicts.get("S2", {}).get("verdict") == "reduces_to_known":
@@ -92,6 +95,13 @@ def outcome(card: dict, reduction: dict | None) -> tuple[str, str]:
     if current["verdict"] in DEAD_VERDICTS:
         return "died", f"died at {stage} ({current['verdict']}): {deciding_reason(current['reasons'])}"
     if stage == "S6":
+        from hybrid.research.stages.s6_verdict import ledger_verdict  # stages import this module
+
+        if claims is None:
+            raise ValueError(f"{card['id']} has an S6 {current['verdict']} but no claims_ledger artifact")
+        derived, line = ledger_verdict(claims)
+        if derived != "pass":
+            return "died", f"died at S6 ({derived}): {line}"
         return "finished", f"finished S6: {current['reasons'][0]}"
     return "alive", f"alive at {stage}" + (" (revising)" if current["verdict"] == "revise" else "")
 
@@ -103,6 +113,7 @@ def graves(run_dir: Path) -> list[Grave]:
     order: dict[str, int] = {}
     latest: dict[str, str] = {}
     reductions: dict[str, str] = {}
+    ledgers: dict[str, str] = {}
     for index, event in enumerate(read_events(run_dir)):
         data = event["data"]
         if event["type"] == "card_version":
@@ -110,12 +121,16 @@ def graves(run_dir: Path) -> list[Grave]:
             latest[data["card_id"]] = data["path"]
         elif event["type"] == "artifact" and data["kind"] == "reduction_critic" and data.get("card_id"):
             reductions[data["card_id"]] = data["path"]
+        elif event["type"] == "artifact" and data["kind"] == "claims_ledger" and data.get("card_id"):
+            ledgers[data["card_id"]] = data["path"]
     out = []
     for card_id, path in latest.items():
         card = json.loads((run_dir / path).read_text(encoding="utf-8"))
         reduction_path = reductions.get(card_id)
         reduction = json.loads((run_dir / reduction_path).read_text(encoding="utf-8")) if reduction_path else None
-        kind, text = outcome(card, reduction)
+        ledger_path = ledgers.get(card_id)
+        claims = json.loads((run_dir / ledger_path).read_text(encoding="utf-8")) if ledger_path else None
+        kind, text = outcome(card, reduction, claims)
         out.append(Grave(card_id, card["title"], card.get("core_idea", ""), kind, text, order[card_id]))
     return sorted(out, key=lambda grave: grave.order)
 

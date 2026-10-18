@@ -25,9 +25,11 @@ Every card that passes its arm check is classified by the `arm_classifier` role 
 local Qwen in every routing table) onto the five archive axes, with the closest known family. A deterministic
 consistency check overrides an obvious contradiction (a card trained with backpropagation is not in a `none_fixed` or
 `local_hebbian` learning-rule cell). Gates, in order, each with its kill code: the arm check (`arm_structure:<arm>`),
-an out-of-scope family (`excluded_family:<id>`, families.toml), a closed archive cell (`not_radical:R1`), a known
+a closed archive cell (`not_radical:R1`), a known
 family without a real difference (`no_difference`), a mechanism signature already in the archive or the outcome store
-(`duplicate:<card>`), then the TF-IDF duplicate check and the lineage caps of S0 (Phase 8 BudgetBook). Every model
+(`duplicate:<card>`), then the TF-IDF duplicate check and the lineage caps of S0 (Phase 8 BudgetBook). A classifier
+placement in an out-of-scope family (families.toml) is not a gate (KD5): it rests on argument alone, so it is recorded
+as an `S0 family flag` reason and S2's counted comparison decides `excluded_family:<id>`. Every model
 call of the task (draft, formatter, classifier) is charged to the card's idea and lineage.
 
 Per-arm metrics. Each task records one `arm_draft` event: arm (or `op:<operator>`), outcome (admitted,
@@ -470,7 +472,9 @@ def classifier_schema(archive_cfg: ArchiveConfig, families: Families) -> dict:
 
 
 def families_block(families: Families) -> str:
-    lines = ["OUT OF SCOPE FAMILIES (a card whose core matches one of these, under any name, dies at generation):"]
+    lines = ["OUT OF SCOPE FAMILIES (a card whose core matches one of these, under any name, is flagged for the exact "
+             "reduction check at S2. Name it only when the card's own equations map to the form without a state that "
+             "grows with the input or a one-hot lift over reachable configurations):"]
     lines += [f"- {f.id}: {f.name}. Form: {f.form}" for f in families.excluded]
     lines.append("KNOWN FAMILIES (allowed only with a real difference that changes an equation of the form, not its "
                  "vocabulary, parameters or application):")
@@ -775,9 +779,9 @@ class Classified:
 
 async def classify_and_gate(ctx: StageContext, card: dict) -> Classified:
     """Classify a drafted card onto the archive axes (filling `commitments` and `archive_cell` on the card) and decide
-    the G gates in order: out-of-scope family, closed cell, known family without a real difference, signature
-    duplicate. Shared by generation and by the planted-card driver (hybrid/research/planted.py), whose cards enter
-    here in place of a draft."""
+    the G gates in order: closed cell, known family without a real difference, signature duplicate. An out-of-scope
+    family is a flag in the reasons, not a gate (KD5). Shared by generation and by the planted-card driver
+    (hybrid/research/planted.py), whose cards enter here in place of a draft."""
     gen: Generation = ctx.generation
     verdict = await ctx.call(CLASSIFIER_ROLE, load_prompt(CLASSIFIER_ROLE), classifier_user(card, gen),
                              classifier_schema(gen.archive_cfg, gen.families))
@@ -792,9 +796,13 @@ async def classify_and_gate(ctx: StageContext, card: dict) -> Classified:
     closed = closed_by(commitments, gen.families)
     duplicate = gen.archive.duplicate_of(card)
     gate = None
+    flag = None
     if gen.families.is_excluded(family):
-        gate = (f"excluded_family:{family}", f"the classifier places the core in {family}: {parsed['family_why']}")
-    elif closed is not None:
+        # KD5: the classifier's placement is an argument, not an executed check, and a lifted or growing state can
+        # make any mechanism look like an out-of-scope form (KD4). It is recorded and left to S2, whose counted
+        # comparison decides an exact reduction (`excluded_family:<id>` at S2).
+        flag = f"{family}: {parsed['family_why']}"
+    if closed is not None:
         gate = ("not_radical:R1", f"archive cell {key} is closed: it lies in the reference cells of the excluded "
                                   f"family {closed.id}, so no foundational commitment differs from it")
     elif gen.families.is_known(family) and parsed["difference_is_real"] is not True:
@@ -805,6 +813,8 @@ async def classify_and_gate(ctx: StageContext, card: dict) -> Classified:
                 f"mechanism signature equals that of {duplicate} (archive or outcome store)")
     reasons = [f"archive cell {key} ({'empty before this card' if card['archive_cell']['new_cell'] else 'visited'}); "
                f"closest family {family}"] + [f"consistency override: {line}" for line in overrides]
+    if flag is not None:
+        reasons.append(f"S0 family flag, unconfirmed by any executed check; S2's counted comparison decides: {flag}")
     return Classified(verdict.call_id, family, overrides, gate, reasons)
 
 

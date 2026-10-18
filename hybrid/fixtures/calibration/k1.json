@@ -126,25 +126,45 @@
         "size": 4,
         "examples": 3000,
         "d": "64",
-        "rounds": "2"
+        "rounds": "2",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k1-copy.py",
+          "sha256": "e264cfca5b7c15a156a233cdf0b1ae87c73c9b0b7233e4deaefb58f6a93dbc6a",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-copy-candidate1-source.py, decision P4P): it passed development seeds 101, 102 and 103, then check seeds 0, 1 and 2 at 1.0, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 3000."
+        }
       },
       "recall": {
         "size": 4,
         "examples": 3000,
         "d": "64",
-        "rounds": "2"
+        "rounds": "2",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k1-recall.py",
+          "sha256": "ead21867ef878030a7fa0488975fe713f35fb327c0ac54b28e5635521b0595ab",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-recall-candidate1-source.py, decision P4P): it passed development seeds 101, 102 and 103, then check seeds 0, 1 and 2 at 1.0, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 3000."
+        }
       },
       "dyck": {
         "size": 2,
         "examples": 1500,
         "d": "64",
-        "rounds": "2"
+        "rounds": "2",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k1-nesting.py",
+          "sha256": "760d56fa2728c06d8eb51cef0c683424ab286e0e23fe53dcdd8c77d68f41988e",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-dyck-candidate1-source.py, decision P4P): it passed development seeds 101, 102 and 103, then check seeds 0, 1 and 2 at 1.0, 1.0 and 1.0 under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 1500."
+        }
       },
       "composition": {
         "size": 4,
         "examples": 4000,
         "d": "64",
-        "rounds": "2"
+        "rounds": "2",
+        "protocol": {
+          "source": "hybrid/fixtures/calibration/protocols/k1-composition.py",
+          "sha256": "a81b9e4cc75f175a5ae6704519c87e2e02929f951c4ade9dd48f0299124dd1d2",
+          "provenance": "Measured learner from results/p4-protocols2-20261016 (k1-composition-r1-source.py, decisions P4P and P4K), the r1 learner from results/p4-k1-bimodal-20261016: it is the measured learner that does not reliably learn composition. Decision KD1 (results/kd1-20261017) rewrote it as an exact algebraic equivalent so its cost fits the 1440 CPU s admission in the pinned tools container: the products of the symbol and position tables with the address, probe and content weights are gathered by token, W_c and W_o are folded into one matrix, and the second round is evaluated at the query positions as a bilinear form (gradients equal to the previous code to 5.6e-16 in float64). A second KD1 step cut the epochs from 400 to 260 (batch 200, learning rate 0.002 and the rest of the recipe unchanged) so the probe projection stays inside the admission when other container jobs run at the same time; the epoch count was set from the cost target before any accuracy was seen. Measured with the real probe while three other CPU-heavy container jobs ran through the shared slots: live v5 alone 911.8, contended 930.9/964.4 (inflation 1.04); this learner alone 615.2, contended 612.5/750.9/770.2 (median 750.9, inflation 1.22). The container check projects 1179.9 CPU s. Under the unchanged learnability check (threshold 0.99, both controls, architecture survey) at d = 64, m = 4000 it passed 2 of 3 check seeds (seed 0 at 1, seed 1 at 0.7225, seed 2 at 1), so the expected verdict is violated."
+        }
       }
     },
     "why": "Two rounds at a fixed width for learning; for the hand-set tasks the width and rounds grow with the size as the capability claims state."

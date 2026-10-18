@@ -32,7 +32,8 @@ is ``invalid_environment``: it is no evidence about the stages and is never scor
 Verdict-level outcomes (fail, not shown from a held check) and every other stop stay valid. The rule
 (``stop_validity``): the stage error's cause is a hybrid/llm error recorded by class (``stop_error_kinds``, the cause's
 LLMError classes); TransportError, BackendError or GatewayUnavailable make the run invalid, OutputExhausted (the model
-spent its output cap) does not. Records made before FIX-22 have only the ``stopped`` text; there the class name the
+spent its output cap) does not. Decision CT: so does JobHangGuard, a CPU-capped math library job stopped by its
+wall-clock hang guard (hybrid/math/runner.py), which says the host starved the job, not how the check came out. Records made before FIX-22 have only the ``stopped`` text; there the class name the
 stages write (``<role>: <ErrorClass>: ``) decides, and only a stop with no class name is matched against
 ENVIRONMENT_PHRASES. Acceptance needs every card-run of the calibration valid. ``rerun_invalid`` (``calibrate
 --rerun-invalid <out dir>``) reruns each invalid card-run in a fresh run directory ``<card>-run<N>-rerun<M>`` under the
@@ -67,7 +68,7 @@ from hybrid.slots import VMUnavailable, job_slots_from_config, slot_line
 VALID = "valid"
 INVALID_ENVIRONMENT = "invalid_environment"
 # hybrid/llm error classes whose stage error is the environment's failure, and the one subclass that is the model's.
-ENVIRONMENT_ERRORS = ("TransportError", "BackendError", "GatewayUnavailable")
+ENVIRONMENT_ERRORS = ("TransportError", "BackendError", "GatewayUnavailable", "JobHangGuard")
 MODEL_ERRORS = ("OutputExhausted",)
 LLM_ERROR_NAMES = ("LLMError", "ConfigError", "BudgetExceeded", "TransportError", "OutputExhausted", "BackendError",
                    "ToolPolicyViolation", "SchemaValidationError", "GatewayUnavailable")
@@ -145,7 +146,9 @@ def anonymization_problems(card: dict, *, extra_terms: tuple[str, ...] = ()) -> 
 
 
 def load_cards(keys=CARD_KEYS, directory: Path = FIXTURES) -> dict[str, dict]:
-    """The calibration cards, each validated against the theory card schema and checked for anonymity."""
+    """The calibration cards, each validated against the theory card schema and checked for anonymity. Decision P4P:
+    every learning protocol a card supplies is read and its sha256 checked here, so a changed or missing learner
+    source stops the load (card_resources.ProtocolError) before any model call."""
     cards = {}
     for key in keys:
         card = json.loads((directory / f"{key}.json").read_text(encoding="utf-8"))
@@ -153,6 +156,10 @@ def load_cards(keys=CARD_KEYS, directory: Path = FIXTURES) -> dict[str, dict]:
         problems = anonymization_problems(card)
         if problems:
             raise ValueError(f"calibration card {key} is not anonymous: {problems}")
+        try:
+            card_resources.learning_protocols(card)
+        except card_resources.ProtocolError as exc:
+            raise card_resources.ProtocolError(f"calibration card {key}: {exc}") from exc
         cards[key] = card
     check_complete(cards)
     return cards
@@ -278,9 +285,13 @@ async def run_math_stages(ctx: StageContext, card_id: str) -> str | None:
 
 
 def error_kinds(cause: BaseException | None) -> list[str]:
-    """The hybrid/llm error classes of a stage error's cause, most specific first; empty for any other cause."""
+    """The hybrid/llm error classes of a stage error's cause, most specific first, or ["JobHangGuard"] for a math job
+    stopped by its hang guard (decision CT); empty for any other cause."""
     from hybrid.llm.errors import LLMError
+    from hybrid.math.runner import JobHangGuard
 
+    if isinstance(cause, JobHangGuard):
+        return [JobHangGuard.__name__]
     if not isinstance(cause, LLMError):
         return []
     return [klass.__name__ for klass in type(cause).__mro__ if isinstance(klass, type) and issubclass(klass, LLMError)]

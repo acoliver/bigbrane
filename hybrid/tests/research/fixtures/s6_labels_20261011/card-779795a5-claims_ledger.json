@@ -1,0 +1,136 @@
+{
+  "card_id": "card-779795a5",
+  "claims": [
+    {
+      "analyst_status": "refuted",
+      "claim": "complexity time_per_token: O(K^2 + V)",
+      "claim_id": "complexity.time_per_token",
+      "decided_by": "analyst",
+      "evidence": "Candidate scaling block (trusted run job-2b87681991a3): time_fit_tail slope 1.5904 (r2 0.9955) against claimed_exponent 1.0; verdict 'mismatch' (tolerance 0.5). The all-points fit gives slope 0.9952 (r2 0.913), but the card's tail-based test fails. Median per-prefix times at lengths 64/128/256/512/1024 are 1.68e-4, 3.59e-4, 3.29e-4, 1.13e-3, 2.98e-3 s, so the measured growth is at least linear in n. The bench does not vary K or V in the scaling run (fixed K=4, scaling task 'hmm'), so the K^2+V dependence itself is not measured. Baselines at n=1024 median: ssm 1.11e-2 s, linear_attention 1.24e-2 s, transformer 3.01e-2 s, gru 4.07e-2 s; the candidate is not faster per token than the sub-quadratic baselines.",
+      "rules": [],
+      "status": "refuted"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "complexity memory: O(K^2 + V)",
+      "claim_id": "complexity.memory",
+      "decided_by": "analyst",
+      "evidence": "Candidate memory_growth is 'flat' with memory_slope_tail -1.28e-15 (r2 1.0) over lengths 64 to 1024; peak_rss_delta is 2.62e6 bytes (about 2.5 MB) at every length. This supports n-independence of memory. The O(K^2+V) dependence on K and V is not measured: K is fixed at 4 in every scaling run, and V varies across tasks (6 to 25) without a memory-vs-V fit. The baselines show flat memory in n too (ngram 2.1e6 bytes; ssm about 2.5e7 bytes; linear_attention about 2.4e7 bytes), but these are not evidence about the candidate's K^2+V term.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "refuted",
+      "claim": "complexity total_sequence: O(n(K^2 + V))",
+      "claim_id": "complexity.total_sequence",
+      "decided_by": "analyst",
+      "evidence": "Same scaling block as complexity.time_per_token: time_fit_tail slope 1.5904 against claimed_exponent 1.0, verdict 'mismatch'. Only the all-points slope (0.9952) is near 1.0, and the card's stated test uses the tail. The K and V factors are not varied, so only the linear-in-n part is tested.",
+      "rules": [],
+      "status": "refuted"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "sample efficiency mechanism: Endpoint-normalized chart sewing followed by involution-preserving conjugation",
+      "claim_id": "sample_efficiency.mechanism",
+      "decided_by": "analyst",
+      "evidence": "No bench task isolates a mechanism. The candidate's accepted_one_shot_endpoints falsifier job (job-513356fe3bb4) returned status 'invalid' with problem 'non-finite values', so it produced no valid predictions. The falsifier's token-accuracy metric cannot test chart sewing or conjugation. Reference accuracies on that task, for context only: gru 0.547, transformer 0.484, linear_attention 0.297, ssm 0.180, ngram 0.000, uniform 0.015.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "sample efficiency prediction: In exact arithmetic, every accepted TEACH(p,q) yields F(p)=q and F(q)=p after one demonstration, without offline training on those endpoint bindings. At theta=1/4, TEACH((1,1),(2,3)) has maximum absolute float64 endpoint-coordinate error below 1e-10. The specified calibration query selects a continuation bias, not the endpoint constraints. (metric: Accepted demonstrations required for exact bidirectional binding; value: 1)",
+      "claim_id": "sample_efficiency.prediction",
+      "decided_by": "rule",
+      "decision_note": "no rule reached a decision (accepted_one_shot_endpoints rule 0: inconclusive)",
+      "evidence": "The accepted_one_shot_endpoints falsifier rule (sample_efficiency.prediction, accuracy >= 1 for candidate) was decided 'inconclusive' because the candidate job was invalid ('non-finite values', job-513356fe3bb4), so the rule did not give the claim a verdict. The task measures token accuracy, not float64 coordinate error or exact rational arithmetic (deviations state this). The task does test one-shot binding in both directions with 512 training episodes and 128 test episodes, but the candidate produced no valid predictions there. Reference: gru 0.547 and transformer 0.484 accuracy after one accepted binding, which means baselines did not reach perfect endpoint accuracy either.",
+      "rules": [
+        {
+          "conditions": [
+            {
+              "entrant": "candidate",
+              "group": null,
+              "holds": null,
+              "lhs": null,
+              "metric": "acc",
+              "minus": null,
+              "op": ">=",
+              "value": 1
+            }
+          ],
+          "if_met": "supported",
+          "outcome": "inconclusive",
+          "quote": "In exact arithmetic, every accepted TEACH(p,q) yields F(p)=q and F(q)=p after one demonstration, without offline training on those endpoint bindings. At theta=1/4, TEACH((1,1),(2,3)) has maximum absolute float64 endpoint-coordinate error below 1e-10. The specified calibration query selects a continuation bias, not the endpoint constraints.",
+          "reason": "the candidate produced no valid predictions on this task",
+          "rule_index": 0,
+          "task_id": "accepted_one_shot_endpoints"
+        }
+      ],
+      "status": "inconclusive"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "capability 1: task: One-shot reversible binding at theta=1/4: teach (1,1) paired with (2,3), then query both endpoints. prediction: Numerical outputs are exactly (2,3) and (1,1) in exact arithmetic. The toy's unrounded float64 results have maximum absolute coordinate error below 1e-10; its JSON display rounds them to six decimal places.",
+      "claim_id": "capability.1",
+      "decided_by": "analyst",
+      "evidence": "The bench does not run the specific toy task (TEACH((1,1),(2,3)) at theta=1/4) and does not measure float64 coordinate error. The only related task is the token-level accepted_one_shot_endpoints falsifier, where the candidate is invalid. The bench's trusted results contain no coordinate-valued outputs for this claim.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "capability 2: task: Protected compositional storage: accept up to K=4 demonstrations satisfying the admission conditions, then query all accepted endpoints. prediction: All 2m endpoint constraints remain exactly satisfied in exact arithmetic. Capacity is capped at eight protected endpoints. No claim covers rejected demonstrations, arbitrary coincident coordinates, numerically ill-conditioned episodes, or unbounded binding storage.",
+      "claim_id": "capability.2",
+      "decided_by": "analyst",
+      "evidence": "No bench task runs K=4 accepted episodes with multi-endpoint querying. The candidate's compose, fewshot, and recall tasks measure different behaviour, and the candidate has non-finite-value problems on compose length probes 2 and 4 and on vom length probe 2. The accepted_one_shot falsifier covers only a single accepted binding and that candidate run is invalid. Nothing in the trusted bench measures protected storage or the eight-endpoint capacity cap.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "capability 3: task: Unseen-coordinate reversible continuation after TEACH((1,1),(2,3)) at theta=1/4. prediction: QUERY((1,0)) returns (2.75,7.984375), and querying that result returns (1,0); the toy's unrounded float64 maximum coordinate error is below 1e-10. More generally F(F(x))=x for every real x in exact arithmetic, including inputs absent from context. This particular continuation is fixed by calibration and is not an independently held-out prediction. Accuracy against an arbitrary unknown involution is not claimed.",
+      "claim_id": "capability.3",
+      "decided_by": "analyst",
+      "evidence": "The bench has no unseen-coordinate continuation task with real-valued inputs, and no round-trip check F(F(x))=x. The vocabulary restriction to 64 token-coordinate pairs (accepted_one_shot_endpoints deviations) means real-valued coordinates such as (1,0) and (2.75,7.984375) are outside the measured domain. The candidate's involution property is not measured anywhere in the trusted bench results.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "falsifier 1: If the toy's unrounded float64 endpoint outputs differ from (2,3) and (1,1) by a maximum absolute coordinate error of at least 1e-10, its numerical one-shot binding claim is false.",
+      "claim_id": "falsifier.1",
+      "decided_by": "analyst",
+      "evidence": "The falsifier's condition (float64 coordinate error of at least 1e-10) is not observed or measured by any bench task. The falsifier task accepted_one_shot_endpoints measures endpoint-token accuracy only and explicitly excludes numerical coordinate error. The candidate job for that task is invalid, so no endpoint outputs were produced.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "falsifier 2: An exact rational-arithmetic implementation at theta=1/4 that, after any accepted episode of at most four demonstrations, changes a previous accepted endpoint binding refutes protected conjugate sewing. Acceptance must be checked using the stated exact inequalities.",
+      "claim_id": "falsifier.2",
+      "decided_by": "analyst",
+      "evidence": "No bench task implements exact rational arithmetic or checks whether previously accepted endpoints change after a later accepted demonstration. The candidate's accepted_one_shot_endpoints run is invalid, and its other tasks do not test protection of earlier bindings. The falsifier condition is not observed in the trusted bench.",
+      "rules": [],
+      "status": "untested"
+    },
+    {
+      "analyst_status": "untested",
+      "claim": "falsifier 3: If the toy's unrounded float64 unseen output differs from (2.75,7.984375), or its round trip differs from (1,0), by a maximum absolute coordinate error of at least 1e-10, the specified numerical continuation claim is false.",
+      "claim_id": "falsifier.3",
+      "decided_by": "analyst",
+      "evidence": "No bench task produces the unseen-coordinate continuation output or its round trip in float64. The accepted_one_shot_endpoints task uses a token vocabulary and does not measure coordinate error. The falsifier condition is therefore neither observed nor ruled out.",
+      "rules": [],
+      "status": "untested"
+    }
+  ],
+  "counts": {
+    "inconclusive": 1,
+    "refuted": 2,
+    "supported": 0,
+    "untested": 8
+  },
+  "falsified_by": [],
+  "falsifier_tasks": [
+    "accepted_one_shot_endpoints"
+  ]
+}

@@ -103,8 +103,9 @@ def test_math_mode_runs_m_and_c_in_place_of_s3_and_inspect_reports_them(run_dir,
     assert run(orch)["reason"] == "complete"
     card = only_card(orch)
     assert card["status"]["stage"] == "S6"
+    # The default analyst leaves most claims untested, so S6 is undetermined, not pass (review fix 2026-10-16).
     assert {s: v["verdict"] for s, v in card["status"]["verdicts"].items()} == {
-        s: "pass" for s in ("S0", "S1", "S2", "M", "C", "S4", "S5", "S6")}
+        **{s: "pass" for s in ("S0", "S1", "S2", "M", "C", "S4", "S5")}, "S6": "undetermined"}
     prompts = llm.prompts()
     assert not {"formalizer", "disprover", "obligation_checker", "feasibility_judge_a"} & set(prompts)
     # M reads each statement back and matches it before the freeze (FIX-19), so the first back-translation and

@@ -45,9 +45,11 @@ the reduction rule. This path applies when s2.difference_statement is off; cards
 so every exact match fails.
 
 Phase 7 (stages/difference.py; DISCOVERY-PIPELINE-PLAN.md sections 1.2, 1.3 and 8):
-- s2.family_exclusion: the reduction critic also names the card's family from hybrid/config/families.toml, and a
-  verified reduction into an out-of-scope family gives `reduces_to_known` with the gate reason
-  `gate: excluded_family:<id>: ...` (kill code excluded_family:<id>), whatever `difference_if_any` says.
+- s2.family_exclusion: the reduction critic also names the card's family from hybrid/config/families.toml (recorded,
+  and it picks between sibling families, see difference.excluded_reduction), and a verified reduction whose counted
+  comparator (`counted_comparisons`, KD4) is in an out-of-scope family gives `reduces_to_known` with the gate reason
+  `gate: excluded_family:<id>: ...` (kill code excluded_family:<id>), whatever `difference_if_any` says. The critic's
+  label alone never kills: a counted comparator in an in-scope family takes the ordinary verified-reduction path.
 - s2.difference_statement: after the other gates pass, the proposer writes a difference statement, the host and the
   challenger role check it (R3 against exact and near signature matches of dead ideas when outcomes.enforce_r3), and a
   failure gets one send-back (loop send_back) before the card is dropped with `gate: not_radical:R3: ...` or
@@ -274,6 +276,19 @@ def judge_comparisons(comparisons: list[dict], declared: list[dict],
                            + "; ".join(_comparison_line(c) for c in against)] + tail, judged
     return "unverified", [f"the check compared no declared comparator of {reduces_to} inside the family policy, so "
                           f"it does not verify the reduction"] + tail, judged
+
+
+def counted_comparisons(critic: dict, check_report: dict | None) -> list[dict]:
+    """KD4: the comparators that carried a verified reduction, for the excluded-family gate. Each has the `family` its
+    declaration stated (the report repeats it, report_problem), its `declared_id` and `comparator` text: the
+    comparisons of the host's report whose eligibility is `counted` and that are within the tolerance. A comparison
+    that was not counted (another family, unresolved, limit-only, undeclared) or that missed the tolerance never
+    decides. With no report (verified on the critic's confidence alone, see run_reduction_check) nothing was compared,
+    and the claimed `reduces_to` stands as the one counted family."""
+    if check_report is None:
+        return [{"declared_id": None, "family": critic["reduces_to"], "comparator": ""}]
+    return [{"declared_id": c["declared_id"], "family": c["family"], "comparator": c["comparator"]}
+            for c in check_report["comparisons"] if c["eligibility"] == "counted" and c["within_tolerance"]]
 
 
 def report_problem(printed: dict, declared: list[dict]) -> str | None:
@@ -539,11 +554,14 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
         ctx.verdict(card_id, "S2", "fail", reasons + ["gate: known_disproven fails"], calls)
         return None
     learning_rule_difference = critic["difference_if_any"].strip().startswith(LEARNING_RULE_MARK)
-    excluded = difference.excluded_reduction(critic, reduction, families, keywords) if exclusion else None
+    counted = counted_comparisons(critic, check_report) if reduction == "verified" else []
+    excluded = difference.excluded_reduction(critic, reduction, families, keywords, counted) if exclusion else None
     if excluded is not None:
+        ids = [c["declared_id"] for c in counted if c["declared_id"]]
+        note = f"; counted comparator{'s' if len(ids) > 1 else ''}: {', '.join(ids)}" if ids else ""
         ctx.verdict(card_id, "S2", "reduces_to_known",
                     reasons + [f"gate: excluded_family:{excluded.id}: the update rule reduces to {critic['reduces_to']} "
-                               f"(check {reduction}), which is in the out-of-scope family {excluded.name} "
+                               f"(check {reduction}{note}), which is in the out-of-scope family {excluded.name} "
                                f"(families.toml, decision D8); a LEARNING_RULE: difference does not apply: "
                                f"{(critic['mapping'] or '')[:500]}"], calls)
         if ctx.on_reduction is not None:

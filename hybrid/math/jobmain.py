@@ -16,16 +16,68 @@ against the card's frozen equations. audited_construction and cost also take the
 architecture contract (architecture.py); cost takes ``precision_bits``, the card's declared precision policy (FIX-20),
 and a conformance spec carries its own.
 Stdlib only at the top level; NumPy and SymPy are imported by the check modules.
+
+CPU cap (decision CT, 2026-10-17). Every request carries ``cpu_cap_s``, the job's budget in process CPU seconds
+(MathRunner, from Caps.cpu_s), and ``cpu_grace_s`` (runner.CPU_GRACE_S). Run as the job's command (``python3 /in/main.py``), the driver sets RLIMIT_CPU to it
+before running the check: at the soft limit the kernel sends SIGXCPU, whose handler raises CpuCapReached (a
+BaseException, so a check's or a learner's ``except Exception`` cannot absorb it), and the driver prints a status
+``unknown`` report with a ``cpu_cap`` record and exits 0. Linux repeats SIGXCPU every CPU second past the soft limit,
+and the hard limit, ``cpu_grace_s`` later, kills the process (exit 137 through the supervisor; MathRunner reads that
+as the same cap stop). The executor's wall cap is only a hang guard. The process CPU time counts from the start of
+the interpreter, so the cap covers the whole job. Called in-process (the test fakes run ``main()`` in the pytest
+process), the driver sets no limit. Learnability reports also carry ``job_clock``: at the end of the check, the
+process CPU seconds since the interpreter started, the wall seconds since this driver started, and the CPU cap.
 """
 import hashlib
 import json
+import math
+import resource
+import signal
 import sys
+import time
 from pathlib import Path
 
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 # File names the check modules compile submitted sources under (cost, learnability, construction, simulation).
 SOURCE_FILES = ("<candidate>", "<learner>", "<construction>", "<prover>", "<finding>")
+CLOCKED_KINDS = ("learnability", "learnability_probe")
+_WALL_START = time.monotonic()
+
+
+class CpuCapReached(BaseException):
+    """The job used its CPU budget (SIGXCPU at the RLIMIT_CPU soft limit)."""
+
+
+def _on_sigxcpu(signum, frame):
+    raise CpuCapReached()
+
+
+def cpu_used() -> float:
+    """CPU seconds of this process (every thread) and its waited-for children, as RLIMIT_CPU counts the process."""
+    children = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return time.process_time() + children.ru_utime + children.ru_stime
+
+
+def install_cpu_cap(cap_s: float, grace_s: int) -> None:
+    """RLIMIT_CPU soft limit at the cap (whole seconds, rounded up) and hard limit ``grace_s`` later."""
+    soft = max(1, math.ceil(cap_s))
+    signal.signal(signal.SIGXCPU, _on_sigxcpu)
+    resource.setrlimit(resource.RLIMIT_CPU, (soft, soft + grace_s))
+
+
+def job_clock(cap_s) -> dict:
+    return {"cpu_s": round(cpu_used(), 3), "wall_s": round(time.monotonic() - _WALL_START, 3), "cap_cpu_s": cap_s}
+
+
+def cap_report(request: dict) -> dict:
+    """The report of a job stopped at its CPU cap: status unknown, never a verdict."""
+    clock = job_clock(request.get("cpu_cap_s"))
+    return {"status": "unknown", "counterexample": None,
+            "evidence": (f"CPU cap reached: the {request.get('kind')} job used {clock['cpu_s']:.1f} s of process CPU "
+                         f"time against its cap of {request.get('cpu_cap_s')} s ({clock['wall_s']:.1f} s wall) and "
+                         "was stopped before it finished; status unknown, not a pass and not a counterexample"),
+            "cpu_cap": dict(clock, kind=request.get("kind"))}
 
 
 def emit(result):
@@ -94,15 +146,24 @@ def run(request):
     raise ValueError(f"unknown request kind {kind!r}")
 
 
-def main():
+def main(enforce_cpu_cap: bool = False):
     problems = verify_staged()
     if problems:
         emit({"status": "unknown", "evidence": "staged check files differ from the manifest: " + "; ".join(problems),
               "counterexample": None})
         return 2
     request = json.loads((HERE / "request.json").read_text(encoding="utf-8"))
+    if enforce_cpu_cap:
+        install_cpu_cap(request["cpu_cap_s"], request["cpu_grace_s"])
     try:
         result = run(request)
+        if isinstance(result, dict) and request["kind"] in CLOCKED_KINDS:
+            result = dict(result, job_clock=job_clock(request.get("cpu_cap_s")))
+    except CpuCapReached:
+        # Linux repeats SIGXCPU every CPU second past the soft limit; the report must not be interrupted by it.
+        signal.signal(signal.SIGXCPU, signal.SIG_IGN)
+        emit(cap_report(request))
+        return 0
     except Exception as exc:  # the contract reports any failure to run a check as unknown
         from bbmath import cost
         source = request.get("source") if isinstance(request.get("source"), str) else None
@@ -116,4 +177,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(enforce_cpu_cap=True))

@@ -26,8 +26,8 @@ as ``np``):
   empty list; ``learn`` may append points such as {"epoch": 10, "loss": 0.41, "train_accuracy": 0.83} to it. The
   harness records each training's points (true data and both controls, at most CURVE_SHOWN of them, evenly spaced)
   with the seed's result. The curve is the learner's own report, it decides nothing, and it is not module data of the
-  trained model (the architecture survey skips it). The wall time of each training is recorded apart from the
-  results, under ``wall_clock`` (see Result). It exists so
+  trained model (the architecture survey skips it). The CPU and wall time of each training are recorded apart from
+  the results, under ``wall_clock`` (see Result). It exists so
   the next prover round sees how its best recipe trained (results/phase4-20261013T073748Z/p4comp-diag/REPORT.md:
   the passing and the failing recipes differed in ways that only training curves showed).
 
@@ -45,26 +45,35 @@ unless its answer does not depend on the data. A control that raises counts as n
 Result: the obligation-check contract, tier ``executed`` (observed on the listed seeds and size, never proven), with
 per-seed accuracy, the control accuracy and the peak state words. Everything in the result except ``wall_clock`` is
 a function of the statement and the source, so two runs of the same check give equal results. ``wall_clock`` holds
-the measurements: ``{"train_s": [{"seed": s, "true": ..., "empty": ..., "wrong": ...}, ...]}``, the wall time in
-seconds of each training of each measured seed (the wrong-answer one includes making its data). It decides nothing
-and the replay does not compare it.
+the clock measurements: ``{"train_cpu_s": [{"seed": s, "true": ..., "empty": ..., "wrong": ...}, ...], "train_s":
+[...]}``, the process CPU seconds and the wall seconds of each training of each measured seed (the wrong-answer one
+includes making its data). It decides nothing and the replay does not compare it.
+
+Clocks (decision CT, 2026-10-17). Every phase is timed in process CPU seconds (``cpu_seconds``: time.process_time,
+which counts every thread of the process, plus any waited-for children), and in wall seconds for information only. The
+budget of a check is CPU time, so neither the probe's projection nor the cap depends on how busy the host is: in the
+2026-10-17 calibration (runs/calibration-math-20261017T030854Z/k2-run1) the wall-clock probe of K2's recall and
+composition learners projected 3341 s and 3623 s at a host load of 25 to 65, where the same kind of job projected
+1007 s on 2026-10-15 and passed.
 
 Timing probe (``timing_probe``, request kind ``learnability_probe``). The whole check, every seed with both controls,
-runs in one job under the runner's wall cap. In the 2026-10-13 calibration (card k1) one such job ran out of its
+runs in one job under the runner's CPU cap. In the 2026-10-13 calibration (card k1) one such job ran out of its
 1800 s after 1800 s with no output: 1000 full-batch epochs on m=3000, six substantive trainings in all
 (results/phase4-20261013T073748Z/p4-timing/REPORT.md). Before a full job the runner therefore runs this probe: the
 first listed seed only, on min(m, PROBE_EXAMPLES) examples, with the learner's own full schedule and both controls,
-each phase timed. ``projected_seconds`` scales the phases that grow with m (generating the training data, the true
-and the wrong-answer training) by m over the probe's example count, keeps the others (test data, the empty-data
-training, the nine test passes) and multiplies by the number of seeds. Linear scaling in m is an assumption: it
-holds for full-batch and one-pass training, and a learner whose cost grows faster than m is underestimated. The probe
-prints status ``unknown`` and decides nothing; its accuracy on the smaller sample is diagnostic only.
+each phase timed. ``projected_cpu_seconds`` scales the CPU time of the phases that grow with m (generating the
+training data, the true and the wrong-answer training) by m over the probe's example count, keeps the others (test
+data, the empty-data training, the nine test passes) and multiplies by the number of seeds. Linear scaling in m is an
+assumption: it holds for full-batch and one-pass training, and a learner whose cost grows faster than m is
+underestimated. The probe prints status ``unknown`` and decides nothing; its accuracy on the smaller sample is
+diagnostic only.
 """
 from __future__ import annotations
 
 import ast
 import json
 import random
+import resource
 import time
 
 import numpy as np
@@ -81,12 +90,12 @@ TRAIN_SEED_BASE = 10_000
 TEST_SEED_BASE = 20_000
 CONTROL_SEED_BASE = 30_000
 NAMES = ("learn", "init", "update", "predict")
-# The one result field that holds wall-clock measurements; nothing else in a result depends on the clock.
+# The one result field that holds clock measurements (CPU and wall); nothing else in a result depends on a clock.
 WALL_CLOCK_KEY = "wall_clock"
-# Training phases of one seed, by the name its wall time is reported under.
+# Training phases of one seed, by the name its times are reported under.
 TRAINING_PHASES = {"true": "train", "empty": "train_empty", "wrong": "train_wrong"}
-# Timing probe: examples it trains on, and the share of the wall cap a projected full check may use (the rest is the
-# margin for the projection's error and for the tools VM).
+# Timing probe: examples it trains on, and the share of the CPU cap a projected full check may use (the rest is the
+# margin for the projection's error).
 PROBE_EXAMPLES = 300
 PROBE_FIT = 0.8
 # Phases of one seed, in the order they run; the first three grow with the number of training examples.
@@ -300,16 +309,40 @@ def _accuracy(learner: dict, lay: dict, params, instances, task: str) -> tuple[f
     return accuracy, peak, first_error
 
 
-def _timed(timings: dict, phase: str, fn, *args):
-    """``fn(*args)``, adding its wall time to ``timings[phase]`` whether or not it raises."""
-    start = time.perf_counter()
-    try:
-        return fn(*args)
-    finally:
-        timings[phase] = timings.get(phase, 0.0) + time.perf_counter() - start
+def cpu_seconds() -> float:
+    """CPU seconds this process has used (all its threads) plus those of its waited-for children."""
+    children = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return time.process_time() + children.ru_utime + children.ru_stime
 
 
-def _control(learner: dict, lay: dict, examples: list[dict], seed: int, test, task: str, timings: dict,
+# The clocks PhaseClock reads, looked up at each call so a test can substitute a fake clock.
+_cpu_now = cpu_seconds
+_wall_now = time.perf_counter
+
+
+class PhaseClock:
+    """Process CPU seconds per phase (``cpu``, what projections and caps use) and wall seconds per phase (``wall``,
+    information only)."""
+
+    def __init__(self):
+        self.cpu: dict[str, float] = {}
+        self.wall: dict[str, float] = {}
+
+    def timed(self, phase: str, fn, *args):
+        """``fn(*args)``, adding its CPU and wall time to ``phase`` whether or not it raises."""
+        cpu, wall = _cpu_now(), _wall_now()
+        try:
+            return fn(*args)
+        finally:
+            self.cpu[phase] = self.cpu.get(phase, 0.0) + _cpu_now() - cpu
+            self.wall[phase] = self.wall.get(phase, 0.0) + _wall_now() - wall
+
+
+def _timed(clock: PhaseClock, phase: str, fn, *args):
+    return clock.timed(phase, fn, *args)
+
+
+def _control(learner: dict, lay: dict, examples: list[dict], seed: int, test, task: str, timings: PhaseClock,
              name: str, curves: dict | None = None) -> float:
     """Test accuracy after training on control data; a learner that raises on it scores 0. The training's CURVE is
     put in ``curves[name]``."""
@@ -348,7 +381,7 @@ class LearnerFailed(Exception):
                           + (f"; raised at {where}" if where else ""))[:2000])
 
 
-def _one_seed(learner: dict, lay: dict, spec: dict, seed: int, m: int, timings: dict, inspect=None) -> dict:
+def _one_seed(learner: dict, lay: dict, spec: dict, seed: int, m: int, timings: PhaseClock, inspect=None) -> dict:
     """Train on m examples and on both controls for one seed, test each, and time every phase into ``timings``.
     The full check and the timing probe run exactly this. ``inspect(learned, train)``, when given, is called on the
     model trained on the true examples (FIX-4: the architecture survey)."""
@@ -391,13 +424,13 @@ def _one_seed(learner: dict, lay: dict, spec: dict, seed: int, m: int, timings: 
             "control_accuracy": round(control, 6),
             "empty_control_accuracy": round(empty, 6), "wrong_control_accuracy": round(wrong, 6),
             "passed": passed, "state_peak_words": peak, "first_error": error, "reason": reason,
-            # Diagnostics only (FIX-5): the learner's own CURVE points. The wall times go to WALL_CLOCK_KEY.
+            # Diagnostics only (FIX-5): the learner's own CURVE points. The clock times go to WALL_CLOCK_KEY.
             "curves": curves}
 
 
-def training_seconds(seed: int, timings: dict) -> dict:
-    """The wall time of each training of one seed, from that seed's own ``timings``."""
-    return {"seed": seed, **{name: round(timings.get(phase, 0.0), 3) for name, phase in TRAINING_PHASES.items()}}
+def training_seconds(seed: int, times: dict) -> dict:
+    """The time of each training of one seed, from that seed's own per-phase ``times`` (PhaseClock.cpu or .wall)."""
+    return {"seed": seed, **{name: round(times.get(phase, 0.0), 3) for name, phase in TRAINING_PHASES.items()}}
 
 
 def _prepare(spec: dict, source: str) -> tuple[dict | None, dict | None]:
@@ -439,19 +472,20 @@ def run_learnability(spec: dict, source: str, architecture_contract: dict | None
     m, threshold = spec["examples"], spec.get("threshold", DEFAULT_THRESHOLD)
     lay = constructions.layout(task, size, spec.get("params"))
     results, failed = [], None
-    wall_clock: dict = {"train_s": []}
+    wall_clock: dict = {"train_cpu_s": [], "train_s": []}
     points: list[dict] = []
     inspect = (_survey_hook(architecture_contract, spec, lay, learner, points)
                if architecture_contract is not None and spec.get("widths") else None)
     for seed in spec["seeds"]:
-        timings: dict = {}
+        timings = PhaseClock()
         try:
             results.append(_one_seed(learner, lay, spec, seed, m, timings, inspect))
         except LearnerFailed as exc:
             return {"status": "unknown", "tier": tiers.EXECUTED, "counterexample": None, "prover_fault": True,
                     "evidence": str(exc), "crash": {"seed": seed, "phase": exc.phase, "raised_at": exc.raised_at},
                     "results": results, WALL_CLOCK_KEY: wall_clock}
-        wall_clock["train_s"].append(training_seconds(seed, timings))
+        wall_clock["train_cpu_s"].append(training_seconds(seed, timings.cpu))
+        wall_clock["train_s"].append(training_seconds(seed, timings.wall))
         if not results[-1]["passed"] and failed is None:
             failed = results[-1]
     listed = [f"{task} {constructions.SIZE_NAME[task]}={size} m={m} seed={r['seed']}" for r in results]
@@ -488,46 +522,53 @@ def probe_examples(spec: dict, examples: int = PROBE_EXAMPLES) -> int:
 
 
 def timing_probe(spec: dict, source: str, examples: int = PROBE_EXAMPLES) -> dict:
-    """Time one seed of the check on min(m, ``examples``) examples, both controls included. Never decides: the
-    status is always unknown, and a learner that is refused or crashes is reported as in the full check."""
+    """Time one seed of the check on min(m, ``examples``) examples, both controls included, in process CPU seconds
+    (``phases_cpu``, ``total_cpu_s``) and, for information, wall seconds (``phases_wall``, ``total_wall_s``). Never
+    decides: the status is always unknown, and a learner that is refused or crashes is reported as in the full
+    check."""
     learner, stop = _prepare(spec, source)
     if stop is not None:
         return dict(stop, probe=True, evidence="timing probe: " + stop["evidence"])
     n, seed = probe_examples(spec, examples), spec["seeds"][0]
     lay = constructions.layout(spec["task"], spec["size"], spec.get("params"))
-    timings: dict = {}
-    start = time.perf_counter()
+    timings = PhaseClock()
+    start_cpu, start_wall = _cpu_now(), _wall_now()
     try:
         row = _one_seed(learner, lay, spec, seed, n, timings)
     except LearnerFailed as exc:
         return {"status": "unknown", "tier": tiers.EXECUTED, "counterexample": None, "prover_fault": True,
                 "probe": True, "evidence": f"timing probe on {n} examples: {exc}"[:2000],
                 "crash": {"seed": seed, "phase": exc.phase, "raised_at": exc.raised_at}}
-    timing = {"seed": seed, "examples": n, "total_s": round(time.perf_counter() - start, 6),
-              "phases": {phase: round(timings.get(phase, 0.0), 6) for phase in SCALED_PHASES + FIXED_PHASES},
+    phases = SCALED_PHASES + FIXED_PHASES
+    timing = {"seed": seed, "examples": n, "clock": "process_cpu",
+              "total_cpu_s": round(_cpu_now() - start_cpu, 6),
+              "phases_cpu": {phase: round(timings.cpu.get(phase, 0.0), 6) for phase in phases},
+              "total_wall_s": round(_wall_now() - start_wall, 6),
+              "phases_wall": {phase: round(timings.wall.get(phase, 0.0), 6) for phase in phases},
               "probe_accuracy": row["accuracy"]}
-    projected = projected_seconds(spec, timing)
+    projected = projected_cpu_seconds(spec, timing)
     return {"status": "unknown", "tier": tiers.EXECUTED, "counterexample": None, "probe": True, "timing": timing,
-            "projected_s": round(projected, 3),
+            "projected_cpu_s": round(projected, 3),
             "evidence": (f"timing probe only, decides nothing: seed {seed} on {n} of m={spec['examples']} examples "
-                         f"took {timing['total_s']:.2f} s; projected full check {projected:.1f} s for "
-                         f"{len(spec['seeds'])} seeds ({timing_line(timing)}; accuracy {row['accuracy']:.4f} at "
-                         f"{n} examples is diagnostic only)")}
+                         f"used {timing['total_cpu_s']:.2f} CPU s ({timing['total_wall_s']:.2f} s wall); projected "
+                         f"full check {projected:.1f} CPU s for {len(spec['seeds'])} seeds ({timing_line(timing)}; "
+                         f"accuracy {row['accuracy']:.4f} at {n} examples is diagnostic only)")}
 
 
-def projected_seconds(spec: dict, timing: dict, overhead_s: float = 0.0) -> float:
-    """Projected wall time of the full check from a probe's phases: the phases that grow with the training data
-    scaled by m over the probe's examples, the others as measured, per seed, plus the job's fixed overhead."""
-    phases, scale = timing["phases"], spec["examples"] / timing["examples"]
+def projected_cpu_seconds(spec: dict, timing: dict, overhead_cpu_s: float = 0.0) -> float:
+    """Projected process CPU time of the full check from a probe's CPU phases: the phases that grow with the training
+    data scaled by m over the probe's examples, the others as measured, per seed, plus the job's fixed CPU overhead
+    (interpreter start, imports, the staged-file hashes). Wall time never enters it."""
+    phases, scale = timing["phases_cpu"], spec["examples"] / timing["examples"]
     per_seed = (sum(phases.get(p, 0.0) for p in SCALED_PHASES) * scale
                 + sum(phases.get(p, 0.0) for p in FIXED_PHASES))
-    return overhead_s + len(spec["seeds"]) * per_seed
+    return overhead_cpu_s + len(spec["seeds"]) * per_seed
 
 
 def timing_line(timing: dict) -> str:
-    phases = timing["phases"]
+    phases = timing["phases_cpu"]
     tests = sum(phases.get(p, 0.0) for p in ("test", "test_empty", "test_wrong"))
-    return (f"training on true answers {phases.get('train', 0.0):.2f} s, wrong-answer control "
+    return (f"CPU time: training on true answers {phases.get('train', 0.0):.2f} s, wrong-answer control "
             f"{phases.get('train_wrong', 0.0):.2f} s, empty control {phases.get('train_empty', 0.0):.4f} s, "
             f"three test passes {tests:.2f} s, data "
             f"{phases.get('generate_train', 0.0) + phases.get('generate_test', 0.0):.2f} s")
@@ -555,23 +596,26 @@ def task_contract(spec: dict) -> str:
             "on no examples and on these token sequences with answers replaced by random ids from that range.")
 
 
-def budget_text(wall_s: float, memory_mb: int, cpus: float, seeds: int = 3) -> str:
-    """What one learnability check may spend, for the statement fixer and the prover; the caps are the runner's."""
-    fit = PROBE_FIT * wall_s
+def budget_text(cpu_s: float, wall_s: float, memory_mb: int, cpus: float, seeds: int = 3) -> str:
+    """What one learnability check may spend, for the statement fixer and the prover; the caps are the runner's
+    (``cpu_s`` the job's CPU cap, ``wall_s`` its wall-clock hang guard)."""
+    fit = PROBE_FIT * cpu_s
     per_training = fit / (TRAININGS_ON_M * seeds)
-    return (f"LEARNABILITY BUDGET (the runner's caps). A learnability check is one job of at most {wall_s:.0f} s wall "
-            f"clock, {memory_mb} MB of memory and {cpus:g} CPU, with NumPy and BLAS pinned to one thread; a deciding "
-            "run is replayed in a second job under the same cap. Inside that one job, for every seed, the harness "
+    return (f"LEARNABILITY BUDGET (the runner's caps). A learnability check is one job of at most {cpu_s:.0f} s of "
+            f"process CPU time, {memory_mb} MB of memory and {cpus:g} CPU, with NumPy and BLAS pinned to one thread; "
+            "the CPU time is measured inside the job, so a busy host does not count against it, and a wall-clock "
+            f"guard of {wall_s:.0f} s only catches a job that hangs. A deciding run is replayed in a second job "
+            "under the same cap. Inside that one job, for every seed, the harness "
             "trains the learner three times and tests each result on the test instances: on the m true examples, "
             "on no examples (control) and on the same m token sequences with random answers (control). With "
             f"{seeds} seeds that is {TRAININGS_ON_M * seeds} trainings on m examples, {seeds} on none and "
             f"{3 * seeds} test passes. Before the full job a timing probe, which decides nothing and never "
             f"discharges a statement, runs one seed on min(m, {PROBE_EXAMPLES}) examples with the full training "
-            "schedule and both controls, and projects the full check assuming training cost linear in m. A "
-            f"projection above {fit:.0f} s ({PROBE_FIT:.0%} of the cap) is refused without running the full job, "
-            "and a full job that hits the cap is stopped; either leaves the statement unknown as a resource failure, "
-            f"not a pass and not a counterexample. One training on m examples therefore has about {per_training:.0f} "
-            "s on one core. Scale for comparison, measured in the 2026-10-13 calibration: a two-layer width-64 "
+            "schedule and both controls, and projects the CPU time of the full check assuming training cost linear "
+            f"in m. A projection above {fit:.0f} CPU s ({PROBE_FIT:.0%} of the cap) is refused without running the "
+            "full job, and a full job that reaches the CPU cap is stopped; either leaves the statement unknown as a "
+            "resource failure, not a pass and not a counterexample. One training on m examples therefore has about "
+            f"{per_training:.0f} s of CPU time on one core. Scale for comparison, measured in the 2026-10-13 calibration: a two-layer width-64 "
             "attention model trained full-batch on m=3000 length-8 sequences cost about 0.29 s per epoch with "
             "unoptimized np.einsum gradients and about 0.12 s with optimized contractions, so 1000 epochs took about "
             "290 s per training and the job ran out of its cap.")

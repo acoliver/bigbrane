@@ -152,6 +152,7 @@ class ExecResult:
     stderr: str
     run_s: float
     out_dir: Path | None = None   # the job's output directory (files the job wrote under /out)
+    exit_code: int | None = None  # the receipt's exit code (MathRunner reads the CPU hard limit's SIGKILL from it)
 
     @property
     def ok(self) -> bool:
@@ -346,6 +347,9 @@ def draft_schema(*, escape: bool = False, transplant: bool = True) -> dict:
     papers, so they have no transplant to name (and revisions of their cards keep it out).
     """
     schema = copy.deepcopy(load_schema("theory_card"))
+    # Decision P4P: a learning protocol is operator data for calibration cards; an explorer draft never states one.
+    schema["$defs"]["learning_resources"]["properties"].pop("protocol", None)
+    schema["$defs"].pop("learning_protocol", None)
     schema.pop("$id", None)
     schema["title"] = "Theory card draft (explorer output)"
     for name in ORCHESTRATOR_FIELDS + GENERATION_FIELDS + STAGE_FIELDS:

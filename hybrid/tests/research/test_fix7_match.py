@@ -482,7 +482,7 @@ def test_the_p4_slot_text_says_one_selected_size_and_k3s_case_passes():
 
 
 class SimpleCaps:
-    wall_s, memory_mb, cpus = 1800, 4096, 1
+    wall_s, memory_mb, cpus, cpu_s = 1800, 4096, 1, 1800
 
 
 def test_the_fixer_is_told_about_mechanism_definitions():

@@ -10,7 +10,8 @@ from hybrid.research.outcome_records import RunView, build_record
 from hybrid.research.outcomes import OutcomeStore
 from hybrid.tests.research.builders import make_card
 from hybrid.tests.research.outcome_fixtures import build_run
-from hybrid.tests.research.test_orchestrator_fakes import draft, make_orchestrator, orch_config
+from hybrid.tests.research.test_orchestrator_fakes import (analyst_supports_every_claim, draft, make_orchestrator,
+                                                           orch_config)
 
 EARLIER_RUN = "run-20260901T000000Z"
 CRITIC = {"reduces_to": "other_known", "mapping": "S = sum v exp(i theta)", "confidence": 0.9,
@@ -68,7 +69,8 @@ def test_switch_off_leaves_prompts_and_records_unchanged(run_dir, tmp_path):
 
 
 def test_switch_on_shows_dead_ideas_to_s0_and_own_history_to_s2_and_records_the_outcome(run_dir, store):
-    orch, llm = make_orchestrator(run_dir, cfg=enabled(store))
+    # every claim supported, so S6 passes and the card's record is finished (s6_verdict.ledger_verdict)
+    orch, llm = make_orchestrator(run_dir, cfg=enabled(store), script={"analyst": analyst_supports_every_claim})
     summary = run(orch)
     assert summary["reason"] == "complete"
     dead = store.current()[0]

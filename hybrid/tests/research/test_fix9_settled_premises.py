@@ -244,7 +244,9 @@ def run_k1(tmp_path, *, equations: str = FAKE_K1_EQUATIONS) -> Harness:
     # magic-X for A2; the recorded statement-match reading that A1 implies P1, and the same reading of A2.
     script["challenger"] = mf.challenger_output(magic_x=[copy.deepcopy(FIXTURE["challenger_magic_x"][0])])
     script["statement_match"] = mf.match_output(implies={"A1": ["P1"], "A2": ["P1"]})
-    h = Harness(tmp_path, script=script)
+    # Without the card's P4 protocols: with them K1 fails M on the composition learner (decision P4K) and the failed
+    # check takes precedence over the unproven codes these tests read; they are about the settlement of A1 and A2.
+    h = Harness(tmp_path, script=script, protocols=False)
     h.m()
     h.c()
     return h

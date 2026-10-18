@@ -1,0 +1,528 @@
+{
+  "architecture_contract": {
+    "hidden": "d",
+    "precision_bits": 64
+  },
+  "generator_control": [
+    30000,
+    30001,
+    30002
+  ],
+  "generator_test": [
+    20000,
+    20001,
+    20002
+  ],
+  "generator_train": [
+    10000,
+    10001,
+    10002
+  ],
+  "name": "k1-recall-candidate1-confirmation",
+  "per_seed_wall": [
+    {
+      "seed": 0,
+      "total_s": 61.64025283290539
+    },
+    {
+      "seed": 1,
+      "total_s": 67.46109304204583
+    },
+    {
+      "seed": 2,
+      "total_s": 70.99713954189792
+    }
+  ],
+  "phase": "confirmation",
+  "result": {
+    "architecture": {
+      "checked": true,
+      "points": [
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "13",
+            "rounds": "2",
+            "vocab": "33"
+          },
+          "float_bits": 64,
+          "point": {
+            "K": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "13",
+            "rounds": "2",
+            "vocab": "33"
+          },
+          "float_bits": 64,
+          "point": {
+            "K": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 15,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "13",
+            "rounds": "2",
+            "vocab": "33"
+          },
+          "float_bits": 64,
+          "point": {
+            "K": 4
+          },
+          "violations": [],
+          "widest_axis": 64
+        }
+      ],
+      "violations": []
+    },
+    "counterexample": null,
+    "evidence": "recall at K=4 from m=3000 examples: seed 0 accuracy 1.0000 (control 0.0285), seed 1 accuracy 1.0000 (control 0.0195), seed 2 accuracy 1.0000 (control 0.0315); threshold 0.99; recipe {\"batch_size\": 100, \"beta1\": 0.9, \"beta2\": 0.98, \"clip_norm\": 1.0, \"d\": 64, \"epochs\": 300, \"eps\": 1e-08, \"init\": \"gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)\", \"loss\": \"next-symbol cross-entropy at query positions, through both rounds\", \"lr\": 0.003, \"min_lr_frac\": 0.05, \"optimizer\": \"adamw\", \"rounds\": 2, \"schedule\": \"cosine\", \"warmup_steps\": 300, \"weight_decay\": 0.01} applied to the true data and both controls; observed on the listed sizes: recall K=4 m=3000 seed=0, recall K=4 m=3000 seed=1, recall K=4 m=3000 seed=2",
+    "examples": 3000,
+    "recipe": {
+      "batch_size": 100,
+      "beta1": 0.9,
+      "beta2": 0.98,
+      "clip_norm": 1.0,
+      "d": 64,
+      "epochs": 300,
+      "eps": 1e-08,
+      "init": "gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)",
+      "loss": "next-symbol cross-entropy at query positions, through both rounds",
+      "lr": 0.003,
+      "min_lr_frac": 0.05,
+      "optimizer": "adamw",
+      "rounds": 2,
+      "schedule": "cosine",
+      "warmup_steps": 300,
+      "weight_decay": 0.01
+    },
+    "results": [
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0285,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 50.0,
+                "loss": 2e-06,
+                "lr": 0.002868,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.0,
+                "lr": 0.002375,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.0,
+                "lr": 0.001652,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.0,
+                "lr": 0.000908,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.0,
+                "lr": 0.000354,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 300.0,
+                "loss": 0.0,
+                "lr": 0.00015,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 50.0,
+                "loss": 1.725285,
+                "lr": 0.002868,
+                "train_accuracy": 0.436333
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.171109,
+                "lr": 0.002375,
+                "train_accuracy": 0.611333
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.738826,
+                "lr": 0.001652,
+                "train_accuracy": 0.750083
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.32803,
+                "lr": 0.000908,
+                "train_accuracy": 0.901917
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.080532,
+                "lr": 0.000354,
+                "train_accuracy": 0.992333
+              },
+              {
+                "epoch": 300.0,
+                "loss": 0.020907,
+                "lr": 0.00015,
+                "train_accuracy": 0.99975
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0285,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "batch_size": 100,
+          "beta1": 0.9,
+          "beta2": 0.98,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 300,
+          "eps": 1e-08,
+          "init": "gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)",
+          "loss": "next-symbol cross-entropy at query positions, through both rounds",
+          "lr": 0.003,
+          "min_lr_frac": 0.05,
+          "optimizer": "adamw",
+          "rounds": 2,
+          "schedule": "cosine",
+          "warmup_steps": 300,
+          "weight_decay": 0.01
+        },
+        "seed": 0,
+        "state_peak_words": 57602,
+        "wrong_control_accuracy": 0.0685
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0195,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 50.0,
+                "loss": 0.0,
+                "lr": 0.002868,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.0,
+                "lr": 0.002375,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.0,
+                "lr": 0.001652,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.0,
+                "lr": 0.000908,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.0,
+                "lr": 0.000354,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 300.0,
+                "loss": 0.0,
+                "lr": 0.00015,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 50.0,
+                "loss": 1.719172,
+                "lr": 0.002868,
+                "train_accuracy": 0.441917
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.189693,
+                "lr": 0.002375,
+                "train_accuracy": 0.60325
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.733657,
+                "lr": 0.001652,
+                "train_accuracy": 0.758083
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.332819,
+                "lr": 0.000908,
+                "train_accuracy": 0.903083
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.083987,
+                "lr": 0.000354,
+                "train_accuracy": 0.991667
+              },
+              {
+                "epoch": 300.0,
+                "loss": 0.022538,
+                "lr": 0.00015,
+                "train_accuracy": 0.999583
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0195,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "batch_size": 100,
+          "beta1": 0.9,
+          "beta2": 0.98,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 300,
+          "eps": 1e-08,
+          "init": "gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)",
+          "loss": "next-symbol cross-entropy at query positions, through both rounds",
+          "lr": 0.003,
+          "min_lr_frac": 0.05,
+          "optimizer": "adamw",
+          "rounds": 2,
+          "schedule": "cosine",
+          "warmup_steps": 300,
+          "weight_decay": 0.01
+        },
+        "seed": 1,
+        "state_peak_words": 57602,
+        "wrong_control_accuracy": 0.0555
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0315,
+        "curves": {
+          "empty": {
+            "count": 0,
+            "points": []
+          },
+          "true": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 50.0,
+                "loss": 6e-06,
+                "lr": 0.002868,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.0,
+                "lr": 0.002375,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.0,
+                "lr": 0.001652,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.0,
+                "lr": 0.000908,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.0,
+                "lr": 0.000354,
+                "train_accuracy": 1.0
+              },
+              {
+                "epoch": 300.0,
+                "loss": 0.0,
+                "lr": 0.00015,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 6,
+            "points": [
+              {
+                "epoch": 50.0,
+                "loss": 1.748199,
+                "lr": 0.002868,
+                "train_accuracy": 0.426083
+              },
+              {
+                "epoch": 100.0,
+                "loss": 1.205856,
+                "lr": 0.002375,
+                "train_accuracy": 0.594833
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.756905,
+                "lr": 0.001652,
+                "train_accuracy": 0.750083
+              },
+              {
+                "epoch": 200.0,
+                "loss": 0.357468,
+                "lr": 0.000908,
+                "train_accuracy": 0.889583
+              },
+              {
+                "epoch": 250.0,
+                "loss": 0.10118,
+                "lr": 0.000354,
+                "train_accuracy": 0.98875
+              },
+              {
+                "epoch": 300.0,
+                "loss": 0.032884,
+                "lr": 0.00015,
+                "train_accuracy": 0.999333
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0315,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "batch_size": 100,
+          "beta1": 0.9,
+          "beta2": 0.98,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 300,
+          "eps": 1e-08,
+          "init": "gaussian: E,P std 0.5; Wa,Wc,Wp,Wo,O std 1/sqrt(d); U std 0.5/sqrt(d); V std sqrt(2/d)",
+          "loss": "next-symbol cross-entropy at query positions, through both rounds",
+          "lr": 0.003,
+          "min_lr_frac": 0.05,
+          "optimizer": "adamw",
+          "rounds": 2,
+          "schedule": "cosine",
+          "warmup_steps": 300,
+          "weight_decay": 0.01
+        },
+        "seed": 2,
+        "state_peak_words": 57602,
+        "wrong_control_accuracy": 0.072
+      }
+    ],
+    "size": 4,
+    "status": "discharged",
+    "task": "recall",
+    "threshold": 0.99,
+    "tier": "executed",
+    "wall_clock": {
+      "train_s": [
+        {
+          "empty": 0.0,
+          "seed": 0,
+          "true": 30.627,
+          "wrong": 30.373
+        },
+        {
+          "empty": 0.0,
+          "seed": 1,
+          "true": 32.405,
+          "wrong": 34.3
+        },
+        {
+          "empty": 0.0,
+          "seed": 2,
+          "true": 37.577,
+          "wrong": 32.656
+        }
+      ]
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "sha256": "ead21867ef878030a7fa0488975fe713f35fb327c0ac54b28e5635521b0595ab",
+  "source": "results/p4-protocols2-20261016/k1-recall-candidate1-source.py",
+  "spec": {
+    "examples": 3000,
+    "params": {
+      "V": 16,
+      "n_keys": 16
+    },
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "size": 4,
+    "task": "recall",
+    "test_count": 500,
+    "threshold": 0.99,
+    "widths": {
+      "d": "64",
+      "positions": "13",
+      "rounds": "2"
+    }
+  },
+  "started_utc": "2026-10-16T21:19:27Z",
+  "task": "k1-recall",
+  "wall_s": 200.10675479203928
+}

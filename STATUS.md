@@ -1,3 +1,17 @@
+# Current status, 2026-10-18
+
+**No idea survived the old-bar probe.** The completed probe (07:27Z) killed P 4/4, C 8/8, and L 7 at S2; one additional L card failed its toy check. Three P kills were KD8 universal-template restatements, so these outcomes do not show that every candidate was a repeat. See `results/s2-probe-20261018/SCORE.txt`, its ledgers, and driver log. No survivors.
+
+An independent audit of five candidates that passed the proposed r2-bar rules classified four as **INCREMENTAL** and one, `card-8154d3b4`, as **NOVEL AS FAR AS FOUND**. Its masked nonlinear tensor redistribution is a novelty lead only. The search is incomplete, separation from excluded families is unproven, and usefulness is unknown. The audit also found prior-art searches missed cross-field antecedents. See `results/flip-audit-20261018/AUDIT.md`.
+
+The `milestone-8154d3b4` run aborted at M after prover backend timeouts; C did not finish. This is neither a theory failure nor a milestone success. See `runs/milestone-8154d3b4/ledger.jsonl`. No investigator result was available when this status was updated.
+
+The KD8+PA2 implementation through `fa08b93` is in the sibling `r2-bar` worktree and is not integrated or fully verified here. Retrieval and suite evaluation remain pending. KD8 remains open until that evidence is reviewed. Track the defects at [KD8](https://github.com/acoliver/bigbrane/issues/2) and [PA2](https://github.com/acoliver/bigbrane/issues/3).
+
+The historical sections below preserve their original measurements. Their claims that novelty checks work and that all affected cards die on merits are provisional in light of the later probe and independent audit.
+
+---
+
 # Bigbrane status, 2026-10-16
 
 Bigbrane is an automated research lab for sequence learners outside the transformer and state-space families. The target is a learner that gets language-level skills from roughly a child's amount of input at well under quadratic compute. The system can run end to end, but it cannot yet tell good ideas from bad ones reliably, and no discovered model has beaten the baselines.
@@ -31,6 +45,7 @@ Bigbrane is an automated research lab for sequence learners outside the transfor
   - K1 composition: 0.565 to 0.62 accuracy against a 0.99 threshold, in all three runs;
   - K2 recall: 0.82 to 0.99 across seeds;
   - K2 composition: 0.66 to 0.998 across seeds.
+- Rescored with profile and target included (scripts/score_calibration.py uses the acceptance items): 20261015T200147Z, reported as 83/84, is 101/108, and every K1 and K2 run fails the profile. 20261016T051933Z is 99/108.
 - The system's own report records "profile: expected pass, got fail" for these runs. Its acceptance rule is the right one; my tracked score was the misleading part.
 - An outside review on 2026-10-16 pointed this out. I stopped the run in progress (20261016T141847Z), since another full run cannot fix it.
 
@@ -43,19 +58,38 @@ Bigbrane is an automated research lab for sequence learners outside the transfor
 6. **Bench reliability.** The same seed and settings gave both near-perfect and chance results on one configuration. The fixed bench has not been run.
 7. **Speed.** GPT and local-model calls run one at a time; a full calibration takes about 8 hours.
 
+## Stopping rule (decision SR, 2026-10-17)
+
+Gate work stops after one passing calibration. The 30-idea live batch runs next, without waiting for the planted test or the bench sweep, and is judged by what survives and why things die. If new preconditions start appearing before the batch, that is the floundering this rule exists to stop.
+
 ## Where it is going
 
-In order. Each step gates the next.
-
-1. Diagnose P4 on K1 and K2 directly: train the recipes outside the pipeline, find which input varies between passing and failing seeds, and fix where that input comes from.
-2. Make the tracked calibration score the system's own acceptance rule, profile and target included, and close items 3 and 5 above.
-3. Run one clean calibration and accept it only at full agreement.
-4. Build a positive control: at least one planted card that is new by construction and should survive. Then run the planted test.
-5. Run the bench acceptance sweep.
-6. Run the live batch of 30 ideas.
+1. Done on branch p4-diagnosis (PR #1): P4 fixed at its source (card-supplied learners, decisions P4P, P4W, P4K), CPU-time admission (CT), full-rule scoring, cost and S6 fixes.
+2. Done: the last calibration (20261017T045735Z, one round under SR3) matched 27 of 29 items; every cell verdict was right. The two misses and an earlier defect are in KNOWN-DEFECTS.md and are flagged when they appear in batch kills.
+3. Now: the 30-idea live batch `discovery-live-20261017` (launched 2026-10-17 06:57Z, commit e40246c), judged by what survives and why things die (plan section 14).
+4. Alongside the batch, never gating it: the novelty probe (results/novelty-probe-20261017) and re-validating calibration learners inside the pinned container (KD1).
+5. Any survivor goes to the bench against tuned baselines on equal data and compute.
 
 The real measure of progress is a surviving idea that beats tuned baselines on equal data and compute. Nothing has done that yet.
 
+## Novelty gate probe (2026-10-17)
+
+Eight published mechanisms outside the excluded families (pushdown and queue automata, counter machine, inside algorithm, Earley, Viterbi, SEQUITUR, Rule 110) went through S2 alone. All eight reduced to their right sources with exact executed checks. Two disguised excluded mechanisms (a gated diagonal recurrence and a delta-rule memory) were both killed as excluded. One false out-of-scope kill: the counter machine was labelled `excluded_family:ssm` because the gate took the family from the critic's free label, not the comparator the host counted (KD4, being fixed). So the gate finds prior art correctly; its one error came from a lifted-state argument. Scorer and full write-up: results/novelty-probe-20261017/ (score_probe.py, RESULT.md).
+
+## Batch pause (2026-10-17 08:51Z)
+
+The laptop lid was closed at 08:51Z. On AC power with no external display, macOS clamshell sleep overrides `caffeinate`, so the machine only wakes for about 45 s every 15 minutes. The batch `discovery-live-20261017` is still alive but advances only in those windows, and model calls in flight at sleep fail in transit (they fall back and retry). It resumes at normal speed when the lid is opened or an external display is attached. At the pause: about 320 model calls, 30 cards drafted, 19 S2 verdicts, none past S2.
+
+## Batch discovery-live-20261017 result (2026-10-17)
+
+No idea survived: 0 of 28 cards that left R passed S2, so nothing reached the math checks or the bench. The run finished cleanly (40 cards, every kill coded, no budget kills, hashes intact, 18 new archive cells), but failed the radicality targets: 0% S2 pass (target 40%) and a 78% repeat rate (target 30%). Most cards were known mechanisms in new notation. At least 3 kills came from gate defects (KD4 and KD7) and 3 more are suspect (KD5); all 11 affected cards were re-checked on the fixed code and none passed, each now dying on a reduction, a radicality judgment or a specific error in the card (results/defect-recheck-20261017/RESULT.md). Five cards were left unscored by transport errors during clamshell sleep under a `complete` stop (KD6) and were finished by a resume. Full score: results/discovery-live-20261017/SCORE.md.
+
+## Calibration defects KD1 and KD2 fixed and checked (2026-10-18)
+
+The math calibration now matches its expected table for k1 and k2, one run each: k2 in calibration-math-20261017T233205Z (every cell, profile and target) and k1 in calibration-math-20261018T011654Z (every cell, and the expected `obligation_failed:P4.composition` kill code). The previous calibration missed 2 of 29 items. Both came from defects:
+- KD1: the calibration learners were sized on the Mac, and the container's matrix math is 12 to 17 times slower, so they were refused before running. All three were rewritten. The K1 composition learner also needed margin for the CPU-time inflation when several container jobs run (1180 CPU s projected during a live calibration, 1440 admitted).
+- KD2: a stage C replay that read past the card's own 256-row table was left as an open premise. It is now replayed inside the table and decided (decision KD2).
+In the k1 run the challenger did not raise the table deviation, so the KD2 path is covered by its replay test (built from the saved crash) but not yet by a live occurrence. Acceptance still needs 3 runs per card on k1 to k4.
 ## Layout
 
 | Path | Contents |
@@ -75,3 +109,5 @@ The real measure of progress is a surviving idea that beats tuned baselines on e
 Run records (`runs/`, `results/`), caches, virtual environments and local state are kept out of the repo. Sealed answers for the planted test live outside the workspace.
 
 Run the tests with `.venv-hybrid/bin/python -m pytest hybrid/tests -q -p no:cacheprovider --ignore=hybrid/tests/test_probes.py`. They need Python 3.12 with numpy, torch (CPU), sympy, httpx, jsonschema and jinja2, plus Podman for the executor and bench tests.
+- (05:3x) FINDING: K1 composition is EXPECTED to fail (expected.json k1 profile fail, kill code obligation_failed:P4.composition, decision P4K: fixed protocol passes 1 of 12 seeds at m=4000; test_p4p_protocols pins RECORDED_STATUS violated and "passed 2 of 3 check seeds"). So the brief's "pass all dev seeds" does not apply to K1 composition: a learner that passes would flip the verdict. Goal there = same bimodal behaviour at <= 1440 projected CPU s, check verdict still violated. Never touch expected.json.
+- K1 composition v2 learner = float32 (1.85x cheaper in container) + exact-math tables: A,C,P projections of h0=E[X]+P as (E@W)[X]+(P@W) and the three backward projection matmuls plus dh0 as OH.T-reduced V=15 row tables (cand/k1c-v2.py; tools/gradeq.py: grads equal to old f32 within 2e-7). Removes 9 of ~24 N-row matmuls. Recipe otherwise unchanged (400 epochs, b200, lr .002). Host search running: search-k1comp-g.log (seeds 101-106).

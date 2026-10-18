@@ -25,8 +25,11 @@ Kill-code mapping, by the stage where the card's line ended:
 - S3: `infeasible:disproof`, `obligation_failed:<obligation>` (a replayed check violation), `infeasible:judges`,
   `undetermined:S3`.
 - M and C: the kill codes in the stage's `math_verdict` artifact.
-- S4 fail `construct_failed`; S5 fail `bench_failed`; S6 `falsified:<task>` when a pre-registered rule found a
-  card falsifier fired, otherwise the card finished.
+- S4 fail `construct_failed`; S5 fail `bench_failed`; S6 from its claims ledger (s6_verdict.ledger_verdict, review
+  fix 2026-10-16): `falsified:<task>` when a pre-registered rule found a card falsifier fired, `falsified:<claim id>`
+  when the analyst found one fired, `predictions_missed` for a refuted card claim, `undetermined:S6` when nothing was
+  refuted but a claim is inconclusive or untested; the card finished only when every claim is supported. An S6 pass
+  recorded before the fix (S6 then always passed) is read through its ledger, so a backfill labels it by its claims.
 A card whose latest verdict is a pass (or S1 revise) has not ended: its record is `open`, with no kill code.
 
 Causes (FIX-10). Each kill code's cause carries its own deciding explanation, bounded at CAUSE_CHARS with an explicit
@@ -60,6 +63,7 @@ from hybrid.research import graveyard, lineage
 from hybrid.research.graveyard import clip, deciding_reason, reduction_summary
 from hybrid.research.outcomes import OutcomeStore, check_kill_code, kill_family
 from hybrid.research.signature import card_signature
+from hybrid.research.stages import s6_verdict
 from hybrid.research.stages.s3_feasibility import disproof_reason
 
 DETAIL_CHARS = 600
@@ -234,20 +238,18 @@ def _classify_stage(view: RunView, card: dict) -> tuple[str, str | None, Death |
     if stop is not None:
         return "dead", stage, _single(stop["kill_code"], clip(_stop_text(stop), DETAIL_CHARS), (), _stop_text(stop))
     if stage == "S6":
-        if verdict != "pass":
-            raise ValueError(f"{view.run_id}/{card['id']}: S6 {verdict} without a terminal loop stop")
-        claims = view.latest_artifact(card["id"], "claims_ledger")
-        fired = (claims[0].get("falsified_by") or []) if claims else []
-        if fired:
-            falsified = [r for r in reasons if "falsified" in r]
-            explanations = {}
-            for f in fired:
-                code = f"falsified:{_slug(f['task_id'])}"
-                own = [r for r in falsified if f["task_id"] in r] or falsified or [full]
-                explanations[code] = bounded("; ".join(own))
-            return "dead", stage, Death(sorted(explanations), clip("; ".join(falsified) or detail, DETAIL_CHARS),
-                                        STAGE_EVIDENCE["S6"], explanations)
-        return "finished", stage, None
+        found = view.latest_artifact(card["id"], "claims_ledger")
+        if found is None:
+            raise ValueError(f"{view.run_id}/{card['id']}: S6 {verdict} without a terminal loop stop or a claims "
+                             "ledger")
+        derived, line = s6_verdict.ledger_verdict(found[0])
+        # Before the 2026-10-16 fix S6 recorded pass whatever its claims said; such a verdict is read through its
+        # ledger, so a backfill labels it by its claims. A verdict of the fixed rule must agree with the ledger.
+        if verdict != "pass" and verdict != derived:
+            raise ValueError(f"{view.run_id}/{card['id']}: S6 {verdict} disagrees with its claims ledger ({line})")
+        if derived == "pass":
+            return "finished", stage, None
+        return "dead", stage, _s6_death(found[0], reasons, line, full)
     if verdict in OPEN_VERDICTS:
         return "open", stage, None
     if stage == "S0":
@@ -416,6 +418,32 @@ def _s3_death(view: RunView, card: dict, verdict: str, reasons: list[str], detai
         disproofs = [_full_disproof(view, card["id"], r) for r in reasons if r.startswith("confirmed disproof")]
         return _single("infeasible:disproof", detail, kinds, "; ".join(disproofs) or full)
     return _single("infeasible:judges", detail, kinds, full)
+
+
+def _s6_death(ledger: dict, reasons: list[str], line: str, full: str) -> Death:
+    """The codes of a card whose claims ledger did not pass (s6_verdict.ledger_verdict): `falsified:<task>` for each
+    falsifier a pre-registered rule found fired, `falsified:<claim id>` for one the analyst found fired, and
+    `predictions_missed` for refuted card claims; `undetermined:S6` when nothing was refuted but a claim was not
+    shown."""
+    explanations: dict[str, str] = {}
+    fired = ledger.get("falsified_by") or []
+    falsified = [r for r in reasons if "falsified" in r]
+    for f in fired:
+        own = [r for r in falsified if f["task_id"] in r] or falsified or [full]
+        explanations[f"falsified:{_slug(f['task_id'])}"] = bounded("; ".join(own))
+    by_rule = {f["claim_id"] for f in fired}
+    refuted = [c for c in ledger["claims"] if c["status"] == "refuted" and c["claim_id"] not in by_rule]
+    for claim in refuted:
+        if claim["claim_id"].startswith("falsifier."):
+            explanations[f"falsified:{_slug(claim['claim_id'])}"] = bounded(s6_verdict.claim_line(claim))
+    missed = [c for c in refuted if not c["claim_id"].startswith("falsifier.")]
+    if missed:
+        explanations["predictions_missed"] = bounded("; ".join(s6_verdict.claim_line(c) for c in missed))
+    if not explanations:
+        unshown = [c for c in ledger["claims"] if c["status"] in s6_verdict.UNSHOWN]
+        explanations["undetermined:S6"] = bounded("; ".join([line] + [s6_verdict.claim_line(c) for c in unshown]))
+    detail = "; ".join(falsified) if fired else line
+    return Death(sorted(explanations), clip(detail, DETAIL_CHARS), STAGE_EVIDENCE["S6"], explanations)
 
 
 def _legacy_disproof_reason(attack: dict) -> str:

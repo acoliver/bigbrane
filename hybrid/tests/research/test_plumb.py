@@ -84,7 +84,9 @@ def all_events(run_dir):
 
 def test_override_event_is_first_and_complete(source_run, run_dir):
     summary = do_plumb(source_run, run_dir, routing={"table": "gateway_claude_local"})
-    assert summary["completed"] and summary["verdicts"] == {"S4": "pass", "S5": "pass", "S6": "pass"}
+    # The default analyst leaves 7 of 9 claims untested, so S6 is undetermined (s6_verdict.ledger_verdict); the
+    # plumbing still completed.
+    assert summary["completed"] and summary["verdicts"] == {"S4": "pass", "S5": "pass", "S6": "undetermined"}
     events = all_events(run_dir)
     first = events[0]
     assert (first["seq"], first["type"], first["actor"]) == (1, "operator_override", "operator")
@@ -109,7 +111,7 @@ def test_stages_run_in_order_and_only_s4_to_s6_get_verdict_events(source_run, ru
     started = [e["data"]["stage"] for e in events if e["type"] == "stage_start"]
     assert started == ["S4", "S5", "S6"]
     recorded = [(e["data"]["stage"], e["data"]["verdict"]) for e in events if e["type"] == "verdict"]
-    assert recorded == [("S4", "pass"), ("S5", "pass"), ("S6", "pass")]
+    assert recorded == [("S4", "pass"), ("S5", "pass"), ("S6", "undetermined")]
     assert events[-1]["type"] == "run_end" and events[-1]["data"]["reason"] == "plumb_complete"
     assert not any(e["type"] in ("queued", "card_created", "mutation_requested", "escape_requested")
                    for e in events)
@@ -126,7 +128,7 @@ def test_card_is_copied_with_its_history_and_the_source_file_verbatim(source_run
     final = store.get_card(CARD)
     assert final["status"]["stage"] == "S6"
     assert {s: v["verdict"] for s, v in final["status"]["verdicts"].items()} == {
-        "S0": "pass", "S1": "pass", "S2": "reduces_to_known", "S4": "pass", "S5": "pass", "S6": "pass"}
+        "S0": "pass", "S1": "pass", "S2": "reduces_to_known", "S4": "pass", "S5": "pass", "S6": "undetermined"}
     artifacts = {(e["data"]["kind"], e["data"]["name"]): e["data"] for e in all_events(run_dir)
                  if e["type"] == "artifact"}
     copied = artifacts[("plumb_source", f"{CARD}-source-v4.json")]
@@ -238,7 +240,7 @@ def test_command_runs_the_chain_with_injected_dependencies(source_run, run_dir, 
     out = capsys.readouterr().out
     assert code == 0
     assert out.startswith("PLUMBING CHECK (operator override): " + STATEMENT)
-    assert json.loads(out[out.index("{"):])["verdicts"] == {"S4": "pass", "S5": "pass", "S6": "pass"}
+    assert json.loads(out[out.index("{"):])["verdicts"] == {"S4": "pass", "S5": "pass", "S6": "undetermined"}
     first = next(iter(Ledger(run_dir).iter_events()))
     assert first["type"] == "operator_override"
     assert first["data"]["routing"]["table"] == "llxprt"

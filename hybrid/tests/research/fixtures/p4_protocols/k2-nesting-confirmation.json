@@ -1,0 +1,664 @@
+{
+  "architecture_contract": {
+    "hidden": "d",
+    "precision_bits": 32
+  },
+  "generator_control": [
+    30000,
+    30001,
+    30002
+  ],
+  "generator_test": [
+    20000,
+    20001,
+    20002
+  ],
+  "generator_train": [
+    10000,
+    10001,
+    10002
+  ],
+  "name": "k2-dyck-candidate1-confirmation",
+  "per_seed_wall": [
+    {
+      "seed": 0,
+      "total_s": 12.170275375014171
+    },
+    {
+      "seed": 1,
+      "total_s": 12.158665082999505
+    },
+    {
+      "seed": 2,
+      "total_s": 12.627409916021861
+    }
+  ],
+  "phase": "confirmation",
+  "result": {
+    "architecture": {
+      "checked": true,
+      "points": [
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "1",
+            "vocab": "4"
+          },
+          "float_bits": 32,
+          "point": {
+            "depth": 2
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "1",
+            "vocab": "4"
+          },
+          "float_bits": 32,
+          "point": {
+            "depth": 2
+          },
+          "violations": [],
+          "widest_axis": 64
+        },
+        {
+          "arrays": 14,
+          "dimensions": {
+            "bound": "64",
+            "d": "64",
+            "hidden": "64",
+            "positions": "8",
+            "rounds": "1",
+            "vocab": "4"
+          },
+          "float_bits": 32,
+          "point": {
+            "depth": 2
+          },
+          "violations": [],
+          "widest_axis": 64
+        }
+      ],
+      "violations": []
+    },
+    "counterexample": null,
+    "evidence": "dyck at depth=2 from m=1200 examples: seed 0 accuracy 1.0000 (control 0.0000), seed 1 accuracy 1.0000 (control 0.0000), seed 2 accuracy 1.0000 (control 0.0000); threshold 0.99; recipe {\"augment\": \"none\", \"batch_size\": 50, \"beta1\": 0.9, \"beta2\": 0.999, \"clip_norm\": 1.0, \"d\": 64, \"epochs\": 200, \"eps\": 1e-08, \"init\": \"gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0\", \"init_scale\": 1.0, \"loss\": \"next-symbol cross-entropy at the scored query positions (padded streams masked), full backpropagation through time\", \"lr\": 0.005, \"lr_final\": 0.0003, \"model\": \"card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero\", \"optimizer\": \"adam\", \"retain_bias\": 1.0, \"stop_loss\": 0.005, \"stop_patience\": 5} applied to the true data and both controls; observed on the listed sizes: dyck depth=2 m=1200 seed=0, dyck depth=2 m=1200 seed=1, dyck depth=2 m=1200 seed=2",
+    "examples": 1200,
+    "recipe": {
+      "augment": "none",
+      "batch_size": 50,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "clip_norm": 1.0,
+      "d": 64,
+      "epochs": 200,
+      "eps": 1e-08,
+      "init": "gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0",
+      "init_scale": 1.0,
+      "loss": "next-symbol cross-entropy at the scored query positions (padded streams masked), full backpropagation through time",
+      "lr": 0.005,
+      "lr_final": 0.0003,
+      "model": "card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero",
+      "optimizer": "adam",
+      "retain_bias": 1.0,
+      "stop_loss": 0.005,
+      "stop_patience": 5
+    },
+    "results": [
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 1,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.0,
+                "train_accuracy": 0.0
+              }
+            ]
+          },
+          "true": {
+            "count": 2,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.263343,
+                "train_accuracy": 0.934762
+              },
+              {
+                "epoch": 6.0,
+                "loss": 0.0006,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 20,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.778605,
+                "train_accuracy": 0.495595
+              },
+              {
+                "epoch": 10.0,
+                "loss": 0.694022,
+                "train_accuracy": 0.504524
+              },
+              {
+                "epoch": 20.0,
+                "loss": 0.693189,
+                "train_accuracy": 0.513095
+              },
+              {
+                "epoch": 30.0,
+                "loss": 0.693212,
+                "train_accuracy": 0.518214
+              },
+              {
+                "epoch": 40.0,
+                "loss": 0.693337,
+                "train_accuracy": 0.511071
+              },
+              {
+                "epoch": 50.0,
+                "loss": 0.692526,
+                "train_accuracy": 0.514286
+              },
+              {
+                "epoch": 60.0,
+                "loss": 0.692282,
+                "train_accuracy": 0.517143
+              },
+              {
+                "epoch": 70.0,
+                "loss": 0.691951,
+                "train_accuracy": 0.52119
+              },
+              {
+                "epoch": 80.0,
+                "loss": 0.691832,
+                "train_accuracy": 0.520833
+              },
+              {
+                "epoch": 90.0,
+                "loss": 0.692038,
+                "train_accuracy": 0.522024
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.691901,
+                "train_accuracy": 0.523095
+              },
+              {
+                "epoch": 110.0,
+                "loss": 0.691599,
+                "train_accuracy": 0.52
+              },
+              {
+                "epoch": 120.0,
+                "loss": 0.691973,
+                "train_accuracy": 0.51869
+              },
+              {
+                "epoch": 130.0,
+                "loss": 0.69141,
+                "train_accuracy": 0.521905
+              },
+              {
+                "epoch": 140.0,
+                "loss": 0.691516,
+                "train_accuracy": 0.52131
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.691496,
+                "train_accuracy": 0.525
+              },
+              {
+                "epoch": 160.0,
+                "loss": 0.691304,
+                "train_accuracy": 0.526548
+              },
+              {
+                "epoch": 170.0,
+                "loss": 0.691359,
+                "train_accuracy": 0.522381
+              },
+              {
+                "epoch": 180.0,
+                "loss": 0.69121,
+                "train_accuracy": 0.524286
+              },
+              {
+                "epoch": 190.0,
+                "loss": 0.691127,
+                "train_accuracy": 0.524286
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "none",
+          "batch_size": 50,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 200,
+          "eps": 1e-08,
+          "init": "gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0",
+          "init_scale": 1.0,
+          "loss": "next-symbol cross-entropy at the scored query positions (padded streams masked), full backpropagation through time",
+          "lr": 0.005,
+          "lr_final": 0.0003,
+          "model": "card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero",
+          "optimizer": "adam",
+          "retain_bias": 1.0,
+          "stop_loss": 0.005,
+          "stop_patience": 5
+        },
+        "seed": 0,
+        "state_peak_words": 33664,
+        "wrong_control_accuracy": 0.0
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 1,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.0,
+                "train_accuracy": 0.0
+              }
+            ]
+          },
+          "true": {
+            "count": 2,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.269231,
+                "train_accuracy": 0.931786
+              },
+              {
+                "epoch": 5.0,
+                "loss": 0.000515,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 20,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.788422,
+                "train_accuracy": 0.490476
+              },
+              {
+                "epoch": 10.0,
+                "loss": 0.69578,
+                "train_accuracy": 0.508452
+              },
+              {
+                "epoch": 20.0,
+                "loss": 0.695338,
+                "train_accuracy": 0.505
+              },
+              {
+                "epoch": 30.0,
+                "loss": 0.692625,
+                "train_accuracy": 0.514643
+              },
+              {
+                "epoch": 40.0,
+                "loss": 0.692325,
+                "train_accuracy": 0.520595
+              },
+              {
+                "epoch": 50.0,
+                "loss": 0.69221,
+                "train_accuracy": 0.517619
+              },
+              {
+                "epoch": 60.0,
+                "loss": 0.694092,
+                "train_accuracy": 0.514286
+              },
+              {
+                "epoch": 70.0,
+                "loss": 0.692052,
+                "train_accuracy": 0.512738
+              },
+              {
+                "epoch": 80.0,
+                "loss": 0.691535,
+                "train_accuracy": 0.520238
+              },
+              {
+                "epoch": 90.0,
+                "loss": 0.691379,
+                "train_accuracy": 0.526429
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.6913,
+                "train_accuracy": 0.525
+              },
+              {
+                "epoch": 110.0,
+                "loss": 0.691095,
+                "train_accuracy": 0.523571
+              },
+              {
+                "epoch": 120.0,
+                "loss": 0.691384,
+                "train_accuracy": 0.524762
+              },
+              {
+                "epoch": 130.0,
+                "loss": 0.691183,
+                "train_accuracy": 0.52369
+              },
+              {
+                "epoch": 140.0,
+                "loss": 0.690949,
+                "train_accuracy": 0.528214
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.690964,
+                "train_accuracy": 0.524762
+              },
+              {
+                "epoch": 160.0,
+                "loss": 0.691236,
+                "train_accuracy": 0.528333
+              },
+              {
+                "epoch": 170.0,
+                "loss": 0.690925,
+                "train_accuracy": 0.523452
+              },
+              {
+                "epoch": 180.0,
+                "loss": 0.690985,
+                "train_accuracy": 0.528571
+              },
+              {
+                "epoch": 190.0,
+                "loss": 0.690904,
+                "train_accuracy": 0.524643
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.078,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "none",
+          "batch_size": 50,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 200,
+          "eps": 1e-08,
+          "init": "gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0",
+          "init_scale": 1.0,
+          "loss": "next-symbol cross-entropy at the scored query positions (padded streams masked), full backpropagation through time",
+          "lr": 0.005,
+          "lr_final": 0.0003,
+          "model": "card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero",
+          "optimizer": "adam",
+          "retain_bias": 1.0,
+          "stop_loss": 0.005,
+          "stop_patience": 5
+        },
+        "seed": 1,
+        "state_peak_words": 33664,
+        "wrong_control_accuracy": 0.0
+      },
+      {
+        "accuracy": 1.0,
+        "control_accuracy": 0.0,
+        "curves": {
+          "empty": {
+            "count": 1,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.0,
+                "train_accuracy": 0.0
+              }
+            ]
+          },
+          "true": {
+            "count": 2,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.300021,
+                "train_accuracy": 0.922857
+              },
+              {
+                "epoch": 6.0,
+                "loss": 0.000637,
+                "train_accuracy": 1.0
+              }
+            ]
+          },
+          "wrong": {
+            "count": 20,
+            "points": [
+              {
+                "epoch": 0.0,
+                "loss": 0.782877,
+                "train_accuracy": 0.495952
+              },
+              {
+                "epoch": 10.0,
+                "loss": 0.695985,
+                "train_accuracy": 0.496786
+              },
+              {
+                "epoch": 20.0,
+                "loss": 0.694092,
+                "train_accuracy": 0.51131
+              },
+              {
+                "epoch": 30.0,
+                "loss": 0.693961,
+                "train_accuracy": 0.511429
+              },
+              {
+                "epoch": 40.0,
+                "loss": 0.69332,
+                "train_accuracy": 0.51
+              },
+              {
+                "epoch": 50.0,
+                "loss": 0.693837,
+                "train_accuracy": 0.509286
+              },
+              {
+                "epoch": 60.0,
+                "loss": 0.6926,
+                "train_accuracy": 0.51619
+              },
+              {
+                "epoch": 70.0,
+                "loss": 0.692677,
+                "train_accuracy": 0.517381
+              },
+              {
+                "epoch": 80.0,
+                "loss": 0.692544,
+                "train_accuracy": 0.515119
+              },
+              {
+                "epoch": 90.0,
+                "loss": 0.69252,
+                "train_accuracy": 0.509286
+              },
+              {
+                "epoch": 100.0,
+                "loss": 0.69183,
+                "train_accuracy": 0.520952
+              },
+              {
+                "epoch": 110.0,
+                "loss": 0.692527,
+                "train_accuracy": 0.518929
+              },
+              {
+                "epoch": 120.0,
+                "loss": 0.6914,
+                "train_accuracy": 0.528571
+              },
+              {
+                "epoch": 130.0,
+                "loss": 0.691432,
+                "train_accuracy": 0.520476
+              },
+              {
+                "epoch": 140.0,
+                "loss": 0.691579,
+                "train_accuracy": 0.522738
+              },
+              {
+                "epoch": 150.0,
+                "loss": 0.691454,
+                "train_accuracy": 0.5275
+              },
+              {
+                "epoch": 160.0,
+                "loss": 0.691932,
+                "train_accuracy": 0.52119
+              },
+              {
+                "epoch": 170.0,
+                "loss": 0.691242,
+                "train_accuracy": 0.5275
+              },
+              {
+                "epoch": 180.0,
+                "loss": 0.691107,
+                "train_accuracy": 0.52869
+              },
+              {
+                "epoch": 190.0,
+                "loss": 0.691163,
+                "train_accuracy": 0.525238
+              }
+            ]
+          }
+        },
+        "empty_control_accuracy": 0.0,
+        "first_error": null,
+        "passed": true,
+        "reason": null,
+        "recipe": {
+          "augment": "none",
+          "batch_size": 50,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "clip_norm": 1.0,
+          "d": 64,
+          "epochs": 200,
+          "eps": 1e-08,
+          "init": "gate matrices normal(0, 1/sqrt(2d)), E normal(0,1), O normal(0,1/sqrt(d)), offsets 0 except retain offset 1.0",
+          "init_scale": 1.0,
+          "loss": "next-symbol cross-entropy at the scored query positions (padded streams masked), full backpropagation through time",
+          "lr": 0.005,
+          "lr_final": 0.0003,
+          "model": "card store: sigmoid retain/admit/release switches and tanh candidate on [y_prev; e_t], readout y O, d=64, s and y start at zero",
+          "optimizer": "adam",
+          "retain_bias": 1.0,
+          "stop_loss": 0.005,
+          "stop_patience": 5
+        },
+        "seed": 2,
+        "state_peak_words": 33664,
+        "wrong_control_accuracy": 0.0
+      }
+    ],
+    "size": 2,
+    "status": "discharged",
+    "task": "dyck",
+    "threshold": 0.99,
+    "tier": "executed",
+    "wall_clock": {
+      "train_s": [
+        {
+          "empty": 0.002,
+          "seed": 0,
+          "true": 0.418,
+          "wrong": 11.211
+        },
+        {
+          "empty": 0.0,
+          "seed": 1,
+          "true": 0.298,
+          "wrong": 11.436
+        },
+        {
+          "empty": 0.0,
+          "seed": 2,
+          "true": 0.317,
+          "wrong": 11.837
+        }
+      ]
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "sha256": "1ff702d960a4610dfdf1ed06e05abb3d96b9aff0ff8824ae0094910e027e4b63",
+  "source": "results/p4-protocols2-20261016/k2-dyck-candidate1-source.py",
+  "spec": {
+    "examples": 1200,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "size": 2,
+    "task": "dyck",
+    "test_count": 500,
+    "threshold": 0.99,
+    "widths": {
+      "d": "64",
+      "positions": "8",
+      "rounds": "1"
+    }
+  },
+  "started_utc": "2026-10-16T21:21:47Z",
+  "task": "k2-dyck",
+  "wall_s": 36.97972987499088
+}

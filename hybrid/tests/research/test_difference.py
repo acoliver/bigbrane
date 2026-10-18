@@ -10,7 +10,8 @@ from hybrid.research.outcomes import OutcomeStore, check_kill_code
 from hybrid.research.stages import difference
 from hybrid.tests.research.builders import make_card
 from hybrid.tests.research.outcome_fixtures import build_run
-from hybrid.tests.research.test_orchestrator_fakes import declaring, defaults, draft, make_orchestrator, orch_config
+from hybrid.tests.research.test_orchestrator_fakes import (analyst_supports_every_claim, declaring, defaults, draft,
+                                                           make_orchestrator, orch_config)
 
 EARLIER_RUN = "run-20260901T000000Z"
 DEAD_CRITIC = {"reduces_to": "other_known", "mapping": "S = sum v exp(i theta)", "confidence": 0.9,
@@ -330,8 +331,10 @@ def test_a_delta_rule_reduction_is_named_as_such_by_its_keywords(run_dir, empty)
     assert mine(empty, run_dir)[card_of(orch)["id"]]["kill_codes"] == ["excluded_family:delta_rule"]
 
 
-def test_the_critics_family_wins_for_a_verified_reduction(run_dir, empty):
-    ssm = critic(reduces_to="other_known", family="ssm", mapping="h_t = a h_{t-1} + b x_t", radical_enough=False,
+def test_the_counted_comparators_family_decides_for_a_verified_reduction(run_dir, empty):
+    """KD4: the comparator the host counted is in ssm; the critic's family label is not what kills (see
+    test_kd4_counted_family.py for the counted-in-scope case)."""
+    ssm = critic(reduces_to="ssm", family="none", mapping="h_t = a h_{t-1} + b x_t", radical_enough=False,
                  why="A diagonal linear recurrence.")
     orch, _ = make_orchestrator(run_dir, cfg=config(empty), script=script(statement(), checker(), reduction_critic=ssm))
     run(orch)
@@ -340,14 +343,16 @@ def test_the_critics_family_wins_for_a_verified_reduction(run_dir, empty):
 
 def test_an_excluded_family_needs_a_verified_reduction():
     families, keywords = difference._families("hybrid/config/families.toml", "hybrid/config/archive.toml")
-    assert difference.excluded_reduction(RENAMED_LA, "refuted", families, keywords) is None
-    assert difference.excluded_reduction(RENAMED_LA, "unverified", families, keywords) is None
-    assert difference.excluded_reduction(RENAMED_LA, "verified", families, keywords).id == "linear_attention"
+    la = [{"declared_id": "known", "family": "linear_attention", "comparator": "textbook form"}]
+    assert difference.excluded_reduction(RENAMED_LA, "refuted", families, keywords, la) is None
+    assert difference.excluded_reduction(RENAMED_LA, "unverified", families, keywords, la) is None
+    assert difference.excluded_reduction(RENAMED_LA, "verified", families, keywords, la).id == "linear_attention"
     hop = critic(reduces_to="hopfield_or_kernel_memory", family="none")
-    assert difference.excluded_reduction(hop, "verified", families, keywords) is None
+    hopfield = [{"declared_id": "known", "family": "hopfield_or_kernel_memory", "comparator": "textbook form"}]
+    assert difference.excluded_reduction(hop, "verified", families, keywords, hopfield) is None
     # "rls" inside another word does not count as the delta rule
     worlds = dict(RENAMED_LA, why="Holographic worlds and girls", mapping="outer product")
-    assert difference.excluded_reduction(worlds, "verified", families, keywords).id == "linear_attention"
+    assert difference.excluded_reduction(worlds, "verified", families, keywords, la).id == "linear_attention"
 
 
 # ----- known families: Hopfield ----------------------------------------------------------------------------------------
@@ -413,7 +418,9 @@ def test_a_full_phase7_line_from_s0_through_r_and_s2_to_s6_and_resume(run_dir, s
 
     cfg = config(store)
     cfg["refine"]["enabled"] = True
-    s = script(statement(), checker(), refine_challenger=asks([question()], []), refine_proposer=proposer())
+    # every claim supported, so S6 passes and the record is finished (s6_verdict.ledger_verdict)
+    s = script(statement(), checker(), refine_challenger=asks([question()], []), refine_proposer=proposer(),
+               analyst=analyst_supports_every_claim)
     first = dict(cfg, budgets=dict(cfg["budgets"], max_calls=7))   # explorer, critic, 3 R calls, prior art, critic
     orch, llm = make_orchestrator(run_dir, cfg=first, script=s)
     run(orch)

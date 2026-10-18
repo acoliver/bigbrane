@@ -1,0 +1,26 @@
+{
+  "call_id": "call-56a487ad4499",
+  "card_id": "card-c5524960",
+  "model": "qwen3.6-35b-a3b-mlx",
+  "parsed": {
+    "difference_is_real": true,
+    "difference_why": "The SSM form h_t = A_t h_{t-1} + B_t x_t is strictly linear in the state and operates on real vectors. This card replaces the linear recurrence with a nonlinear, quantized merge function g(a,b) over discrete codes and uses a binary-counter tree schedule instead of a token-driven step, fundamentally altering the state transition equation.",
+    "evidence": {
+      "learning_rule": "End-to-end gradient descent on next-token log loss. Each argmin snap uses the straight-through estimator",
+      "objective": "L = sum_t -log P(x_{t+1} | s_t) + ...",
+      "structure_source": "The merge schedule is a binary counter with cached prefix folds, not a scan of linear operators.",
+      "substrate": "F_t is a list of integer triples (level, code index, prefix code)... Entry i is (ell_i, c_i, p_i): a segment of 2^ell_i consecutive tokens, its code index c_i in [0, M)",
+      "unit": "Token embedding. V is the vocabulary size and d the code width."
+    },
+    "family": "ssm",
+    "family_why": "The mechanism maintains a compressed state of the input prefix and predicts the next token, structurally aligning with sequential state-space models that compress history into a fixed-size representation for autoregressive generation.",
+    "learning_rule": "gradient_backprop",
+    "objective": "next_unit",
+    "structure_source": "builtin_prior",
+    "substrate": "automaton_grammar",
+    "unit": "subword_token"
+  },
+  "recorded_gate": "excluded_family:ssm",
+  "role": "arm_classifier",
+  "source": "runs/discovery-live-20261017/llm/calls/call-56a487ad4499.json"
+}
