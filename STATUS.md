@@ -1,3 +1,17 @@
+# Current status, 2026-10-18
+
+**No idea survived the old-bar probe.** The completed probe (07:27Z) killed P 4/4, C 8/8, and L 7 at S2; one additional L card failed its toy check. Three P kills were KD8 universal-template restatements, so these outcomes do not show that every candidate was a repeat. See `results/s2-probe-20261018/SCORE.txt`, its ledgers, and driver log. No survivors.
+
+An independent audit of five candidates that passed the proposed r2-bar rules classified four as **INCREMENTAL** and one, `card-8154d3b4`, as **NOVEL AS FAR AS FOUND**. Its masked nonlinear tensor redistribution is a novelty lead only. The search is incomplete, separation from excluded families is unproven, and usefulness is unknown. The audit also found prior-art searches missed cross-field antecedents. See `results/flip-audit-20261018/AUDIT.md`.
+
+The `milestone-8154d3b4` run aborted at M after prover backend timeouts; C did not finish. This is neither a theory failure nor a milestone success. See `runs/milestone-8154d3b4/ledger.jsonl`. No investigator result was available when this status was updated.
+
+The KD8+PA2 implementation through `fa08b93` is in the sibling `r2-bar` worktree and is not integrated or fully verified here. Retrieval and suite evaluation remain pending. KD8 remains open until that evidence is reviewed. Track the defects at [KD8](https://github.com/acoliver/bigbrane/issues/2) and [PA2](https://github.com/acoliver/bigbrane/issues/3).
+
+The historical sections below preserve their original measurements. Their claims that novelty checks work and that all affected cards die on merits are provisional in light of the later probe and independent audit.
+
+---
+
 # Bigbrane status, 2026-10-16
 
 Bigbrane is an automated research lab for sequence learners outside the transformer and state-space families. The target is a learner that gets language-level skills from roughly a child's amount of input at well under quadratic compute. The system can run end to end, but it cannot yet tell good ideas from bad ones reliably, and no discovered model has beaten the baselines.
