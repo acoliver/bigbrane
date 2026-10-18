@@ -1,0 +1,223 @@
+{
+  "results": {
+    "combined": {
+      "exit": 1,
+      "counts": {
+        "passed": 1839,
+        "skipped": 3,
+        "failed": 2
+      },
+      "junit_testcases": 1844,
+      "suite_attributes": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "2",
+          "skipped": "3",
+          "tests": "1847",
+          "time": "727.924",
+          "timestamp": "2026-10-18T19:36:12.681824-03:00",
+          "hostname": "Andrews-MacBook-Pro.local"
+        }
+      ],
+      "failures": [
+        "hybrid.tests.research.test_phase7_replay::test_every_s2_death_gets_its_expected_phase7_code",
+        "hybrid.tests.research.test_phase7_replay::test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      ],
+      "subsets": {
+        "hybrid.tests.literature.test_seed": {
+          "tests": 7,
+          "failed": 0,
+          "skipped": 0
+        },
+        "hybrid.tests.literature.test_seed_provenance": {
+          "tests": 29,
+          "failed": 0,
+          "skipped": 0
+        },
+        "hybrid.tests.research.test_remaining_historical_evidence": {
+          "tests": 24,
+          "failed": 0,
+          "skipped": 0
+        },
+        "results-wt.transport-measurement.test_measure.MeasurementTests": {
+          "tests": 7,
+          "failed": 0,
+          "skipped": 0
+        }
+      },
+      "junit_local_path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/combined-junit.xml",
+      "junit_sha256": "c469dcb2aa51f2d67a06225efee95b61add1170803c6adc7a4daec0308c38f5e",
+      "rows_sha256": "259ec1b33cfaed911dfdd2f7034159bee4351eaf9a0f58b5cdd06bf8f025f72b",
+      "exact_code_matches": 7,
+      "required_exact_codes": 19
+    },
+    "isolated": {
+      "exit": 1,
+      "counts": {
+        "passed": 420,
+        "skipped": 1,
+        "failed": 3
+      },
+      "junit_testcases": 424,
+      "suite_attributes": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "3",
+          "skipped": "1",
+          "tests": "427",
+          "time": "40.025",
+          "timestamp": "2026-10-18T19:36:46.932767-03:00",
+          "hostname": "Andrews-MacBook-Pro.local"
+        }
+      ],
+      "failures": [
+        "hybrid.tests.research.test_review_gate_evidence::test_accepted_excerpt_gaps_scope_the_final_persisted_card",
+        "hybrid.tests.research.test_phase7_replay::test_every_s2_death_gets_its_expected_phase7_code",
+        "hybrid.tests.research.test_phase7_replay::test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      ],
+      "subsets": {
+        "hybrid.tests.literature.test_seed": {
+          "tests": 7,
+          "failed": 0,
+          "skipped": 0
+        },
+        "hybrid.tests.literature.test_seed_provenance": {
+          "tests": 29,
+          "failed": 0,
+          "skipped": 0
+        },
+        "hybrid.tests.research.test_remaining_historical_evidence": {
+          "tests": 24,
+          "failed": 0,
+          "skipped": 0
+        },
+        "results-wt.transport-measurement.test_measure.MeasurementTests": {
+          "tests": 7,
+          "failed": 0,
+          "skipped": 0
+        }
+      },
+      "junit_local_path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-junit.xml",
+      "junit_sha256": "97b060f697ee323bdb942b4bff25837f5b1ac0bd6660ea4518ba761a8584c0a5",
+      "rows_sha256": "259ec1b33cfaed911dfdd2f7034159bee4351eaf9a0f58b5cdd06bf8f025f72b",
+      "exact_code_matches": 7,
+      "required_exact_codes": 19
+    }
+  },
+  "commands": {
+    "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+    "combined_cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+    "combined_runner": "#!/bin/bash\nset -u\nROOT=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2\nOUT=\"$ROOT/results-wt/evidence-recovery/remaining-checkpoint-verification\"\ncd \"$ROOT\" || exit 90\nexport BIGBRANE_LIVE=0\nexport TMPDIR=\"$OUT/tmp\"\nexport PYTHONPATH=\"$ROOT/results-wt/evidence-recovery/remaining-network-guard:$ROOT:$ROOT/results-wt/evidence-recovery:$ROOT/results-wt/transport-measurement\"\nexport NEXT_ROWS_OUTPUT=\"$OUT/phase7-rows.json\"\ndate -u +%FT%TZ > \"$OUT/started-at\"\nprintf 'running\\n' > \"$OUT/status\"\n/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python -m pytest -c \"$ROOT/pyproject.toml\" --confcutdir=\"$ROOT\" hybrid/tests/research hybrid/tests/literature results-wt/kd8/tools/tests/test_evidence_tools.py results-wt/retrieval-diagnosis/test_diagnose.py results-wt/transport-measurement/test_measure.py -p next_results --basetemp=\"$OUT/pytest\" --junitxml=\"$OUT/combined-junit.xml\" -q > \"$OUT/combined.log\" 2>&1\ncode=$?\nprintf '%s\\n' \"$code\" > \"$OUT/combined.exit\"\ndate -u +%FT%TZ > \"$OUT/finished-at\"\nprintf 'finished exit=%s\\n' \"$code\" > \"$OUT/status\"\nexit \"$code\"\n",
+    "isolated_cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-package",
+    "isolated_command": [
+      "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+      "-c",
+      "import sys,pytest,socket,json\nfrom pathlib import Path\nimport hybrid.literature.seed as seed\nimport hybrid.literature.client as client\nimport measure\nroot=Path.cwd().resolve()\nfor module in (seed,client,measure):\n assert Path(module.__file__).resolve().is_relative_to(root),module.__file__\nprint(json.dumps({'imports':{m.__name__:m.__file__ for m in (seed,client,measure)}}),flush=True)\nfor call in (lambda:socket.getaddrinfo('example.org',443),lambda:socket.socket().connect(('127.0.0.1',9))):\n try:call()\n except RuntimeError as exc:assert 'network prohibited' in str(exc)\n else:raise AssertionError('network guard absent')\nexists=Path.exists\nprefix='/Volumes/XS1000/acoliver/projects/bigbrane/runs/'\nPath.exists=lambda p: False if str(p).startswith(prefix) else exists(p)\nraise SystemExit(pytest.main(sys.argv[1:]))\n",
+      "-c",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-package/pyproject.toml",
+      "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-package",
+      "-q",
+      "-p",
+      "next_results",
+      "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/pytest-isolated",
+      "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-junit.xml",
+      "hybrid/tests/literature",
+      "hybrid/tests/research/test_remaining_historical_evidence.py",
+      "hybrid/tests/research/test_next_historical_references.py",
+      "hybrid/tests/research/test_historical_binding.py",
+      "hybrid/tests/research/test_historical_references.py",
+      "hybrid/tests/research/test_reference_replays.py",
+      "hybrid/tests/research/test_review_gate_evidence.py",
+      "hybrid/tests/research/test_phase7_replay.py",
+      "results-wt/kd8/tools/tests/test_evidence_tools.py",
+      "results-wt/retrieval-diagnosis/test_diagnose.py",
+      "results-wt/transport-measurement/test_measure.py"
+    ],
+    "isolated_environment": {
+      "BIGBRANE_LIVE": "0",
+      "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-package/results-wt/seed-provenance/offline:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-package:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-package/results-wt/evidence-recovery:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-package/results-wt/transport-measurement",
+      "TMPDIR": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/tmp",
+      "NEXT_ROWS_OUTPUT": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/remaining-checkpoint-verification/isolated-phase7-rows.json"
+    },
+    "isolated_absent": [
+      "hybrid/literature/cache",
+      "results-wt/evidence-recovery/remaining-full-capture.json",
+      "results-wt/evidence-recovery/next-full-capture.json",
+      "results-wt/evidence-recovery/remaining-sources",
+      "results-wt/evidence-recovery/sources",
+      "runs"
+    ],
+    "isolation_limit": "Optional absolute original-run receipt existence checks are masked absent, matching a source export without those original runs. Imports are proven inside the selected package.",
+    "processes": {
+      "combined": "65734",
+      "isolated": "67316"
+    },
+    "monitor_pid": "68695",
+    "heartbeat_seconds": 60,
+    "launch_tool_timeout_seconds": 30,
+    "monitor_tool_timeout_seconds": 100,
+    "launch_timeout_scope": "Nohup processes are independent of the launch tool timeout. Both completed; no resume is required.",
+    "started_at": "2026-10-18T22:36:12Z",
+    "finished_at": "2026-10-18T22:48:23Z"
+  },
+  "pinned_source": {
+    "files": 966,
+    "sha256": "416a2c1233fbad77ea14ba08e50391130b764ac807cda7041c3ca8e55a707d64",
+    "all_unchanged": true
+  },
+  "reauthenticated_seed_sha256": "25c11dd6cdb8de9c7f5179b8b9998bd8d34ce36a415a9dd406551758585ee3f9",
+  "originals": {
+    "main_clean_at": "82580a6630c4b5c9155f00d603f96682d5818e7c",
+    "main_transport_originals_unchanged": 44,
+    "saved_input_hashes_verified": 274,
+    "seed_original_hashes_verified": 75,
+    "protected_files_verified": 62,
+    "frozen": {
+      "hybrid/tests/literature/test_seed.py": "435a6e98d633e9dd9a9cb26b17afcaaf552a14b43a3b26c523c75df8411e4b50",
+      "hybrid/literature/seed_reading_list.toml": "a72d06d7d1e49531c59cfd89b3ca9a18d3477430fe5a23ad85b6a131949cce3f"
+    },
+    "fixture_checksum_targets_tracked_and_matching": 65,
+    "actual_configured_credentials_absent": true,
+    "raw_receipt_bodies_caches_logs_and_junit_not_staged": true,
+    "pinned_runtime_modules": {
+      "hybrid.literature.seed": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/seed.py",
+      "hybrid.literature.client": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/client.py",
+      "measure": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/transport-measurement/measure.py"
+    },
+    "seed_projection_bytes": 204726,
+    "seed_projection_rows": 59,
+    "seed_hits": 109,
+    "transport_counts": {
+      "attempts": 13,
+      "http_requests": 13,
+      "http_responses": 13,
+      "source_receipts": 12,
+      "redirects": 0,
+      "pacer_wait_s": 0.7298350830096751,
+      "retry_wait_s": 5.000308125047013,
+      "retry_delay_s": 5.0,
+      "operations": 12,
+      "outcomes": {
+        "network": 12
+      },
+      "terminals": {
+        "success": 12
+      },
+      "statuses": {
+        "200": 12,
+        "429": 1
+      }
+    },
+    "ledger_events": 36,
+    "registered_matches": 0,
+    "local_full_captures": {
+      "results-wt/evidence-recovery/remaining-full-capture.json": "bf2e241a876301a3c4eed6184423f2ddd9b728b481230c4a7044d8cd29754aa4",
+      "results-wt/evidence-recovery/next-full-capture.json": "dbea0629f6d64f0b780e380f2b7d834706ecb7b753404be72003ae34d500e770"
+    },
+    "selected_file_count": 55,
+    "selected_bytes": 1043091
+  },
+  "review": "Latest work unreviewed. No independent review was run after the two completed cycles. No new theory or operation was admitted."
+}

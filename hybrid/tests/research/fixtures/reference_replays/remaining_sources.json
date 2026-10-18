@@ -1,0 +1,128 @@
+{
+  "capture_sha256": "bf2e241a876301a3c4eed6184423f2ddd9b728b481230c4a7044d8cd29754aa4",
+  "invocation": {
+    "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+    "pythonhashseed": "0",
+    "numpy": "2.5.3",
+    "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2"
+  },
+  "cards": {
+    "card-2c5dd003": {
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 5.551115123125783e-16, \"notes\": \"200 random (T,pi0,B0,x) trials; compared p_t, h_t, s_t each step and final readout. Online-EM toy p_next=[0.0555, 0.4342, 0.5103] credit_c=[0.0, 0.115, 0.885]\"}\n",
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/remaining-card-2c5dd003.py",
+        "sha256": "7d0c9ff42929553e880bb868745b3e40e423580fa112a6253ca29e97b3b24787",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-aba523e180a2/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-aba523e180a2.json",
+        "artifact_sha256": "6289e765a7bc3cc6e77b3decd9f73ae4f026dfc816ec3be935ce596012023f6b",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 8739,
+            "card_id": "card-2c5dd003",
+            "kind": "executor",
+            "name": "job-aba523e180a2.json",
+            "path": "artifacts/executor/job-aba523e180a2.json",
+            "sha256": "6289e765a7bc3cc6e77b3decd9f73ae4f026dfc816ec3be935ce596012023f6b"
+          },
+          "hash": "f1ab5d08937d5f9c0030e6626e8d440adfd608e7fc963f1cf87867d40cd13819",
+          "prev_hash": "c8ad3c375247ba81703730eed6f555bf7442a4c48e4a9a7775145bca66586640",
+          "seq": 1434,
+          "ts": "2026-10-10T20:15:56.415790+00:00",
+          "type": "artifact"
+        },
+        "specimen": {
+          "card_sha256": "651fcee33e95b10e7373e5f39d654d42f81567c2f30dfa6896c3dc5d881ef7a6",
+          "critic_sha256": "779124a7bcef7a7b30f660765c2c844793b7a9c807de8cbe0f7522be59ab09e7"
+        },
+        "observer_sha256": "1dcb265d72a04644389797031377a66637e8c68c54270ef2b7420fa84fd47eb0",
+        "capture_insertions": [],
+        "method": "observer-only sys.settrace of complete untouched original program",
+        "draws_sha256": "b545f5fcd3817872f3eb105fae83ac2592ec11a55391122e7036f66040250abb",
+        "trace_sha256": "588e4b6508b1af62bd2d2dc65eb2f9baa70f503c149a94883dd8f7d23aecae0a",
+        "soft_contracts_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "isotope_draws_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "draw_limit": "Original process hash seed and raw historical draws were not saved. Reexecution uses PYTHONHASHSEED=0. These three programs use seeded NumPy generators and no set-to-list random sampling; traces are source reexecution, not recovered historical bytes."
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 5.551115123125783e-16, \"notes\": \"200 random (T,pi0,B0,x) trials; compared p_t, h_t, s_t each step and final readout. Online-EM toy p_next=[0.0555, 0.4342, 0.5103] credit_c=[0.0, 0.115, 0.885]\"}\n"
+    },
+    "card-6fc7efec": {
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 2.7755575615628914e-17, \"notes\": \"card shift/contract vs RNTN tensor T from mapping; 3 calibration sets, 258 expr steps, plus soft messages\"}\n",
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/remaining-card-6fc7efec.py",
+        "sha256": "98f659795d12d0dc4d9afc285edf726523b7196c2465d78fe0efe156a034c3a4",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-aa979071293d/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-aa979071293d.json",
+        "artifact_sha256": "aa98ce5626ec49a7f1b072ba35293dba5f95b04cde0653155f72d292d72329db",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 12099,
+            "card_id": "card-6fc7efec",
+            "kind": "executor",
+            "name": "job-aa979071293d.json",
+            "path": "artifacts/executor/job-aa979071293d.json",
+            "sha256": "aa98ce5626ec49a7f1b072ba35293dba5f95b04cde0653155f72d292d72329db"
+          },
+          "hash": "4844a0eb479c5bf3983cd4184a9250a8d83117069aef5a88722162e98b6d1408",
+          "prev_hash": "e524130d90f1e41994b758ec50014c36666e1327abf8f71fd9b62ae1381b3a80",
+          "seq": 613,
+          "ts": "2026-10-10T18:54:56.270030+00:00",
+          "type": "artifact"
+        },
+        "specimen": {
+          "card_sha256": "b710644fae22cfa68c92eccf1a4edceb19376cf1d0ff5acd565db3024d4a3cf9",
+          "critic_sha256": "306afea48523e3abdcc6fab4d9cfea06c6319ea9be43fc52c95d0957b671cda8"
+        },
+        "observer_sha256": "1dcb265d72a04644389797031377a66637e8c68c54270ef2b7420fa84fd47eb0",
+        "capture_insertions": [],
+        "method": "observer-only sys.settrace of complete untouched original program",
+        "draws_sha256": "9fd4b7daf1283976957bc75aad5572e6a2be9324ab5e88c01e93024af4c8f999",
+        "trace_sha256": "9a00ed39515e8b7d92007ceaa80384e313ee3df1b0e85675fee1a8fc6dab7a48",
+        "soft_contracts_sha256": "60ec782a023c7b8304fff82313a0da09e3cbcf21e78b48a6ef61170347f0df26",
+        "isotope_draws_sha256": "f9a584f99cb515780ef251abcb3da8507a00b80dc3cf0cc1a92499f4263d6731",
+        "draw_limit": "Original process hash seed and raw historical draws were not saved. Reexecution uses PYTHONHASHSEED=0. These three programs use seeded NumPy generators and no set-to-list random sampling; traces are source reexecution, not recovered historical bytes."
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"card shift/contract vs RNTN tensor T from mapping; 3 calibration sets, 258 expr steps, plus soft messages\"}\n"
+    },
+    "card-dc69816b": {
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"card vs incremental NGE/Find-S+default-hierarchy over 601 scenarios; writes=8405 consolidations=525; event-sequence mismatches=0; toy preds card=[3, 1, 5] known=[3, 1, 5]; lifted 2^N delta-rule repair (subset-sum read) max diff=11.3, differs in 362/601 scenarios\"}\n",
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/remaining-card-dc69816b.py",
+        "sha256": "2e1b11e58538c5b230d1ef80bd11402d4d5313d97c0dd323e52e374d3ef26678",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-c092a49e826f/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-c092a49e826f.json",
+        "artifact_sha256": "62cc2bbc8c9d9b7355007d905ce32fe33de48a36d7a56799f5d8599d0933d0b0",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 14139,
+            "card_id": "card-dc69816b",
+            "kind": "executor",
+            "name": "job-c092a49e826f.json",
+            "path": "artifacts/executor/job-c092a49e826f.json",
+            "sha256": "62cc2bbc8c9d9b7355007d905ce32fe33de48a36d7a56799f5d8599d0933d0b0"
+          },
+          "hash": "d011e0850052586f727d66955ad65a1eee7c2a0852bce46e427656ba96ff08ff",
+          "prev_hash": "4248cc259566132d313130fed29d4ab34cd221f8be3e890279d88b9f83a7eae6",
+          "seq": 1149,
+          "ts": "2026-10-10T19:52:01.103440+00:00",
+          "type": "artifact"
+        },
+        "specimen": {
+          "card_sha256": "d383d943921d800e1da53658acd2af0df5fad329b804f314623dbc7062aa87ba",
+          "critic_sha256": "854bab8073b5290e8a9eab328bb03a8e18df1a5a010fb09bbe5788d51539857e"
+        },
+        "observer_sha256": "1dcb265d72a04644389797031377a66637e8c68c54270ef2b7420fa84fd47eb0",
+        "capture_insertions": [],
+        "method": "observer-only sys.settrace of complete untouched original program",
+        "draws_sha256": "be1a78608f45ced3bb9aa50374a5f3dce97f055b3b4602364456a21289aa7e4f",
+        "trace_sha256": "8b4f571c0ad62b3d2ad0545fb76452861c301fec7268e2b1c3255bfb618c72ef",
+        "soft_contracts_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "isotope_draws_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "draw_limit": "Original process hash seed and raw historical draws were not saved. Reexecution uses PYTHONHASHSEED=0. These three programs use seeded NumPy generators and no set-to-list random sampling; traces are source reexecution, not recovered historical bytes."
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"card vs incremental NGE/Find-S+default-hierarchy over 601 scenarios; writes=8405 consolidations=525; event-sequence mismatches=0; toy preds card=[3, 1, 5] known=[3, 1, 5]; lifted 2^N delta-rule repair (subset-sum read) max diff=11.3, differs in 362/601 scenarios\"}\n"
+    }
+  }
+}

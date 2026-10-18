@@ -1,0 +1,1147 @@
+[
+  {
+    "card_id": "card-3485a13f",
+    "source": "arxiv",
+    "query": "exact match key value cache induction head copying",
+    "transport": [
+      {
+        "source": "arxiv",
+        "request_id": "ba7fc895c3a753453f84e4ffa99a67f35d228ac02d08e558a0ee840867932763",
+        "endpoint": "https://export.arxiv.org",
+        "operation": "search_with_receipt",
+        "association_id": "c8b2f1f2dcf5ad14f55bccffc75b558acf0ba180c1e976c43cd436d0d276e250",
+        "call_id": "a5f910f15b224385a5019fa907418e77",
+        "started_at": "2026-10-18T22:23:11+00:00",
+        "started_s": 749508.276917541,
+        "duration_s": 0.5195422089891508,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:11+00:00",
+            "started_s": 749508.280397291,
+            "pacer_wait_s": 0.0034107499523088336,
+            "duration_s": 0.5156357920495793,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://export.arxiv.org",
+                "started_s": 749508.280635166,
+                "duration_s": 0.5152097920654342,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": []
+  },
+  {
+    "card_id": "card-3485a13f",
+    "source": "openalex",
+    "query": "exact match key value cache induction head copying",
+    "transport": [
+      {
+        "source": "openalex",
+        "request_id": "d6bdc94ef7ceddf3b5844175fda133d9f45c99a67b336cba10a835c22d76621f",
+        "endpoint": "https://api.openalex.org",
+        "operation": "search_with_receipt",
+        "association_id": "c8b2f1f2dcf5ad14f55bccffc75b558acf0ba180c1e976c43cd436d0d276e250",
+        "call_id": "aa0e9a20ccfe42ea96202c479c465cb0",
+        "started_at": "2026-10-18T22:23:12+00:00",
+        "started_s": 749509.062017416,
+        "duration_s": 1.0079507089685649,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:12+00:00",
+            "started_s": 749509.066803166,
+            "pacer_wait_s": 0.004698915989138186,
+            "duration_s": 1.002507625031285,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.openalex.org",
+                "started_s": 749509.067057083,
+                "duration_s": 0.8550968329655007,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "openalex",
+        "source_id": "W4416615487",
+        "title": "Improving Model Representation and Reducing KV Cache via Skip Connections with First Value Heads",
+        "year": 2025,
+        "abstract": "Transformer models have driven breakthroughs across various language tasks by their strong capability to learn rich contextual representations. Scaling them to improve representation, however, often demands substantial memory and compute costs, such as the Key-Value (KV) cache used during auto-regressive decoding. Skip connections offer a promising way to improve representation without bloating resource usage, yet most prior works either improve expressivity while leaving KV costs unchanged, or reduce memory at the cost of weaker representation. In this work, we propose SkipV1Former, a Transformer variant that uses skip connections from the first layer's Value heads to strengthen model representation and reduce KV cache. Specifically, from the second block onward, each layer reuses half of its Value heads from the very first layer, while computing the other half as usual-cutting Value projections and V cache by nearly 50 \\%. Theoretically, we show that routing uncompressed first-layer Values into deeper layers restores information lost to compression and accelerates the model's implicit mesa-optimization-a key pattern of Transformer in auto-regressive tasks. Empirically, across different model scales, SkipV1Former delivers consistent reductions of approximately 25 \\% in KV cache while improving perplexity relative to standard Multi-Head Attention (MHA) Transformers and some advanced variants. Moreover, we propose a recipe for uptraining existing MHA Transformer checkpoints to SkipV1Former with only 10-15\\% additional compute. Finally, SkipV1Former can seamlessly combine advanced methods like Group-Query Attention and Multi-Latent Attention to achieve further KV cache savings and performance improvement. When combined with YOCO, it cuts KV cache size by nearly 50 \\% while still improving performance.",
+        "arxiv_id": null,
+        "doi": "10.52202/085713-4729"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W7133362630",
+        "title": "Understanding the Physics of Key-Value Cache Compression for LLMs through Attention Dynamics",
+        "year": 2026,
+        "abstract": "As context windows in LLMs scale to 100K+ tokens, the key-value (KV) cache becomes the dominant memory bottleneck, with recent methods claiming 80-90% savings and minimal benchmark degradation. We argue these evaluations miss a structural issue: attention is not just storage but routing, and retaining KV pairs does not guarantee semantic accessibility. We propose a physics-inspired view of KV compression as a controlled perturbation of token-level routing, distinguishing retention, accessibility, and utilization. Using synthetic tasks probing multi-entity tracking, disambiguation, coreference, and multi-hop reasoning, we find that moderate compression degrades internal representations with little accuracy loss, revealing redundancy; all models exhibit a sharp hallucination safety cliff near 90% compression, correlated with spikes in Global Eviction Ratio (GER), suggesting a phase transition in semantic reachability; and architectures differ in routing dynamics, with LLaMA showing early consensus and late diversification, and Qwen showing funnel-like late convergence, leading to distinct resilience profiles. Beyond erasure, we identify representational rigidity, where excessive head-level consensus collapses routing flexibility despite token survival. These results suggest sparse token-route structures govern compression tolerance, reframing KV compression as a structural probe of attention geometry and linking long-context scalability to sparsity and the lottery ticket hypothesis in self-attention.",
+        "arxiv_id": "2603.01426",
+        "doi": "10.48550/arxiv.2603.01426"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W4404340302",
+        "title": "Not All Heads Matter: A Head-Level KV Cache Compression Method with Integrated Retrieval and Reasoning",
+        "year": 2024,
+        "abstract": "Key-Value (KV) caching is a common technique to enhance the computational efficiency of Large Language Models (LLMs), but its memory overhead grows rapidly with input length. Prior work has shown that not all tokens are equally important for text generation, proposing layer-level KV cache compression to selectively retain key information. Recognizing the distinct roles of attention heads in generation, we propose HeadKV, a head-level KV cache compression method, and HeadKV-R2, which leverages a novel contextual reasoning ability estimation for compression. Our approach operates at the level of individual heads, estimating their importance for contextual QA tasks that require both retrieval and reasoning capabilities. Extensive experiments across diverse benchmarks (LongBench, LooGLE), model architectures (e.g., Llama-3-8B-Instruct, Mistral-7B-Instruct), and long-context abilities tests demonstrate that our head-level KV cache compression significantly outperforms strong baselines, particularly in low-resource settings (KV size = 64 & 128). Notably, our method retains just 1.5% of the KV cache while achieving 97% of the performance of the full KV cache on the contextual question answering benchmark. Codes are available at https://github.com/FYYFU/HeadKV",
+        "arxiv_id": "2410.19258",
+        "doi": "10.48550/arxiv.2410.19258"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W7214128231",
+        "title": "Latest Exact Match Attention",
+        "year": 2026,
+        "abstract": "We introduce latest exact match attention (LEMA), an attention variant for transformers where queries and keys are binarized and each query attends only to the latest exactly matching key. We prove that LEMA transformers with chain of thought can simulate word-RAMs, as was recently shown for the less restrictive rightmost hard attention. In contrast to prior hard attention variants, the restriction to exact matches enables an efficient converse direction: word-RAMs can simulate LEMA transformers at a cost per token independent of the context length. Together, these results yield a close correspondence between the two computational models in terms of both compute and memory. Beyond the theory, we propose a training method for LEMA transformers that handles their non-differentiable operations with a straight-through estimator for the binarization and a soft attention surrogate annealed towards LEMA. On a synthetic associative recall task, LEMA models trained this way use their growing state to store and recall a large number of associations, outperforming gated DeltaNet (GDN) with its fixed state size. As a first scaling test, we train LEMA language models with up to 834 million parameters. They match softmax transformers of around half their size in loss and, on repeated rare phrases and a needle-retrieval task, remain behind softmax transformers but recall across longer distances than GDN models of comparable size. Finally, we implement dictionary-based inference for LEMA transformers and show constant generation speed comparable to GDN despite their growing state, with the dictionaries residing in main memory rather than VRAM. Code is available at https://github.com/moritzbroe/latest_exact_match_attention.",
+        "arxiv_id": "2609.25802",
+        "doi": "10.48550/arxiv.2609.25802"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W2981332691",
+        "title": "Verification of OS-level cache management",
+        "year": 2018,
+        "abstract": "Recently, the complexity of safety-critical cyber-physical systems has spiked due to an increasing demand for performance, impacting both software and hardware layers. The timing behavior of complex systems, however, is harder to analyze. Real-time hardware resource management aims at mitigating this problem, but the proposed solutions often involve OS-level modifications. In this sense, software verification is key to build trust and allow such techniques to be broadly adopted. This paper specifically focuses on CPU cache management, demonstrating that OS-level hardware management logic can be verified at the source code level in a modular way, ie, without verifying the entire OS.",
+        "arxiv_id": null,
+        "doi": null
+      },
+      {
+        "source": "openalex",
+        "source_id": "W7167257601",
+        "title": "The risk of KV cache compression",
+        "year": 2026,
+        "abstract": "Transformer inference on long sequences is expensive because softmax attention repeatedly reads from a large KV cache. The prevalent approach to this bottleneck is KV cache compression, which replaces the full cache with a compact summary. Despite its practical importance, the design of such summaries is largely driven by empirical experimentation. On the theoretical side, existing results show that KV cache compression can be impossible in the worst case, but offer little systematic guidance for designing algorithms in regimes where accurate compression is possible. We bridge this gap by characterizing the minimax risk of KV cache compression in terms of the intrinsic compressibility of a cache, revealing when and how accurate compression is possible. These results yield novel design principles for KV cache compression under causal masking that map efficiently to prefill and autoregressive decoding while achieving minimax-optimal risk. We instantiate these principles in a practical algorithm and report promising performance on LongBench in targeted experiments. Overall, our results provide a principled avenue for practical KV cache compression with theoretical guarantees.",
+        "arxiv_id": "2607.01520",
+        "doi": "10.48550/arxiv.2607.01520"
+      }
+    ]
+  },
+  {
+    "card_id": "card-3485a13f",
+    "source": "s2",
+    "query": "exact match key value cache induction head copying",
+    "transport": [
+      {
+        "source": "s2",
+        "request_id": "ca7b0d213318234b5e072a71a5faced97757ed875c1aa28242f08182dab1a641",
+        "endpoint": "https://api.semanticscholar.org",
+        "operation": "search_with_receipt",
+        "association_id": "c8b2f1f2dcf5ad14f55bccffc75b558acf0ba180c1e976c43cd436d0d276e250",
+        "call_id": "a9d5f7229d7a4209b3a0cb2f455485d1",
+        "started_at": "2026-10-18T22:23:13+00:00",
+        "started_s": 749510.0717505,
+        "duration_s": 1.0101857909467071,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:13+00:00",
+            "started_s": 749510.073113,
+            "pacer_wait_s": 0.001291166990995407,
+            "duration_s": 1.0084972500335425,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.semanticscholar.org",
+                "started_s": 749510.073245208,
+                "duration_s": 1.008155292016454,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "s2",
+        "source_id": "987db28d690bb277289c0472809dba523e438619",
+        "title": "A JoLT for the KV cache: Near-Lossless KV Cache Compression via Joint Rank-bit Allocation",
+        "year": 2026,
+        "abstract": "The key-value (KV) cache is the dominant memory bottleneck in long-context language model inference. Existing compression methods apply low-rank factorization or quantization independently, without jointly allocating rank and precision under a shared storage budget. We introduce JoLT, a training-free compressor that treats grouped prefill caches as fourth-order tensors and applies partial Tucker decomposition along the token and feature modes, the two axes that carry low-rank structure, while leaving the head and layer modes intact. A rotated low-bit quantizer captures the truncation residual, and a single Lagrangian dual allocates per-group Tucker ranks and residual bit-widths under a global byte constraint. FlashJoLT replaces the exact token-mode SVD with a randomized approximation that matches JoLT within the free zone at a fraction of the compression cost, and a fused Triton decode kernel evaluates attention directly over the stored factors without materializing dense KV tensors. Across five models from four architecture families, covering multi-head attention, grouped-query attention, and mixture-of-experts architecture, JoLT achieves 2 - 3x compression with less than 0.2% perplexity degradation, without retraining. On RULER at 64K context with LLaMA-3.1-8B, retrieval accuracy remains near-lossless through 3x and declines by only 0.90 and 2.40pp at 4x and 5x, respectively. JoLT demonstrates that tensor-aware low-rank decomposition and quantized residuals, unified under a single storage budget, achieve near-lossless KV-cache compression across diverse model architectures without retraining.",
+        "arxiv_id": "2607.12550",
+        "doi": null
+      },
+      {
+        "source": "s2",
+        "source_id": "dbc9f876b920b233a2ce9d99a060fdc776e3e228",
+        "title": "Fractal KV-Cache Archives: Lossless Symbolic Storage with In-Place Retrieval for Long-Context LLM Inference",
+        "year": 2026,
+        "abstract": "The key-value (KV) cache dominates the memory cost of long-context autoregressive inference, and a growing body of work compresses it through quantization, eviction, or offloading. We study a complementary question: once a position's KV state has been quantized to codebook indices, how should the resulting symbol stream be stored, and can the storage layer do more than store? A family of contractive iterated-map codes that serialize a symbol sequence into a sequence of low-dimensional real vectors is revisited, and it is shown that they form a natural archive format for a quantized KV cache with the following features. The method provides exactly the access pattern a growing cache requires. It is lossless, it runs in linear time, and supports O(1) random access and O(1) amortized append. A controlled study of the quantizer feeding this archive is conducted on GPT-2 with 1024-token contexts. Keeping a small exact window (4 attention sinks plus 32 recent tokens) and archiving the rest, per-head residual vector quantization reduces the archived cache by 36-54x relative to an fp16 cache at a perplexity cost of 11-15%, and we quantify a sharp key/value asymmetry - quantizing keys is roughly 4x more damaging than quantizing values, consistent with prior low-bit KV work - and use it to allocate bits in a hybrid scheme. Finally, we show the archive is simultaneously a search index: approximate substring queries execute directly on the stored vectors, and matched context is decoded from the matched vector without ever materializing the surrounding text. We further characterize the archive's operating range: truncating stored points yields a lossy regime whose distortion we localize, and probability-weighting the maps recovers arithmetic coding, exposing a trade-off between rate efficiency, random access, and memory. We release all code; every number reproduces on a laptop CPU.",
+        "arxiv_id": "2607.07144",
+        "doi": "10.5281/zenodo.21237993"
+      },
+      {
+        "source": "s2",
+        "source_id": "d4e1e2e1f322265e2363d78961b2a6dc42cd2e29",
+        "title": "Shift-Accumulate Attention: Multiplier-Free Query--Key Products for Transformer Decoding",
+        "year": 2026,
+        "abstract": "Power-of-two (PoT) quantisation turns a multiplication into a bit shift, so far only for the post-softmax attention--value product. The earlier and larger product, S=QK^T, has not been reformulated the same way. We quantise the key cache to a signed power-of-two fixed-point code, so that every scalar multiplication in QK^T becomes a sign flip, a bit shift and an integer accumulation. A fixed-point head-room F>= e_max turns every shift index r=F-e into a non-negative left shift, making the accumulation exact in integer arithmetic. We add a sub-power mantissa extension that halves the score error for one extra shift-add, a shift-exact online softmax whose running maximum lives in an integer log2 domain so that every rescaling is itself an exact shift, and a log-quantised AV product. Fused CUDA kernels in a 1.1B Llama decoder on an RTX 4090: at B=8, T=32k the 4-bit kernel is 4.60x faster than FP16 scaled dot-product attention with a 2.5x smaller KV cache, and batched decoding crosses over at B=64 to 1.22x FP16 throughput at 11.02 against 13.77 GB peak memory. A matched INT8 multiply--accumulate kernel on the same tiling reaches 5.29x: on a GPU with a hardware 4-way INT8 dot product, shift-accumulate is not faster than the MAC it replaces. An iso-storage control--an 8-bit shift code of exactly one byte per key, run through the identical kernel--prices the arithmetic substitution alone at 2.02x at comparable accuracy. The advantage of the PoT representation is therefore its density and the removal of the multiplier, not raw GPU throughput. A sweep over exponent width, mantissa levels, granularity and rounding gives the design lesson: nearest-PoT relative error is scale-free, so extra exponent bits buy nothing (eps_S=0.1302 at 3, 4 and 5 bits) and accuracy must come from mantissa terms.",
+        "arxiv_id": "2609.09208",
+        "doi": null
+      },
+      {
+        "source": "s2",
+        "source_id": "f60a94ef96cf8c6648e947543b982a1b810d9fe2",
+        "title": "Top-K Retrieval with Fixed-Size Linear-Attention Completion: Backbone- and KV-Format-Preserving Attention for KV-Cache Read Reduction",
+        "year": 2026,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": "10.48550/arXiv.2604.05438"
+      },
+      {
+        "source": "s2",
+        "source_id": "f89b49fbc25506d69d744c8f899e5bd8d1df4279",
+        "title": "Dual-Cache Latent Space Communication between Heterogeneous Language Models",
+        "year": 2026,
+        "abstract": "Multi-agent LLM systems split work across models, so answering often requires knowledge that sits in another agent's context: a Sharer has encoded information that a Receiver needs to complete its task. They usually communicate by exchanging text, which puts autoregressive decoding on the critical path and reduces the exchange to a discrete message written without sight of the receiver's state. Recent latent protocols instead translate the sharer's key-value (KV) cache into the receiver's: C2C supports heterogeneous models but requires both to read the same input, while LCF-X removes this shared-context requirement through position-free sharer-cache pooling. Three restrictions remain: LCF-X compresses the sharer alone, supplies the same layer-local summary to every receiver position with no joint cross-layer memory to retrieve from, and assumes matched layer count and KV geometry. We introduce XKV, which lifts all three: learned-query attention pools both caches; self-attention over receiver-aligned layer tokens, with a learned layer map reconciling different depths, mixes the pooled summaries into a compact joint memory; and a shared position decoder lets every raw receiver cache position retrieve its own per-head-gated residual in the receiver's native KV geometry. Both models stay frozen and may differ in family, depth, KV-head count, head dimension, and tokenizer; only the translator is trained. Across 45 dataset-model-pair settings (six heterogeneous and three same-model ordered pairings, five datasets), XKV attains the highest macro score and best average rank, improving on LCF-X on every dataset (by 4.6 exact-match and 4.2 F1 points on ROPES) and surpassing text communication on four of the five, while training 76% fewer parameters and translating a cache pair 10.3x faster (5.8 vs. 59.9 ms); end to end, XKV is 26% faster than LCF-X and 6.8x faster than text communication.",
+        "arxiv_id": "2608.20617",
+        "doi": null
+      },
+      {
+        "source": "s2",
+        "source_id": "8575792b33256c6411692e8b360e47978a6e035c",
+        "title": "Runtime-Certified Bounded-Error Quantized Attention",
+        "year": 2026,
+        "abstract": "KV cache quantization reduces the memory cost of long-context LLM inference, but introduces approximation error that is typically validated only empirically. Existing systems rely on average-case robustness, with no mechanism to detect or recover from failures at runtime. We present a tiered KV cache architecture that enables runtime-certified attention: INT8 keys and INT4 values are stored in GPU memory, while FP16 originals are retained in system RAM for deterministic fallback. A two-term error decomposition yields per-head, per-step bounds on (i) attention distribution distortion from key quantization and (ii) value reconstruction error. These bounds are computed online and used to drive adaptive precision selection and a multi-stage fallback ladder, which guarantees recovery to the exact dense attention output when required. Across PG-19, NIAH, and RULER benchmarks on LLaMA~3.1-8B with contexts up to 128K, the system matches dense FP16 KV quality within noise for language modelling and retrieval tasks, while recovering catastrophic failures observed in naive INT8/INT4 baselines. Value-sensitive tasks at short context expose a controlled trade-off between compression and fidelity, which can be eliminated via tighter value tolerances or FP16-value fallback. The certification is local (per-head, per-step) and does not guarantee end-to-end model correctness, but ensures that each attention computation is either bounded relative to an FP16 reference or exactly recovered via fallback. This reframes KV cache quantization as a runtime-verified computation rather than a fixed approximation. The goal is not raw speedups, but enabling safe deployment of aggressive KV compression under strict quality constraints.",
+        "arxiv_id": "2605.20868",
+        "doi": "10.48550/arXiv.2605.20868"
+      }
+    ]
+  },
+  {
+    "card_id": "card-f5ee7edb",
+    "source": "arxiv",
+    "query": "successor automaton learning from positive examples",
+    "transport": [
+      {
+        "source": "arxiv",
+        "request_id": "4dd55e04154603bf6496318e78a0ccd3d8fd73416ce828b6811c26409620a9cf",
+        "endpoint": "https://export.arxiv.org",
+        "operation": "search_with_receipt",
+        "association_id": "1322705b4452867b65b886a6c8d054e14bf1a2ef4642b703ecc7bb9f0888ac17",
+        "call_id": "9ffb049b4e8c4c1fa6b5af1e12c20383",
+        "started_at": "2026-10-18T22:23:14+00:00",
+        "started_s": 749511.21024275,
+        "duration_s": 0.4216519580222666,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:14+00:00",
+            "started_s": 749511.302185541,
+            "pacer_wait_s": 0.09188116597943008,
+            "duration_s": 0.3294175839982927,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://export.arxiv.org",
+                "started_s": 749511.302341791,
+                "duration_s": 0.3290822090348229,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": []
+  },
+  {
+    "card_id": "card-f5ee7edb",
+    "source": "openalex",
+    "query": "successor automaton learning from positive examples",
+    "transport": [
+      {
+        "source": "openalex",
+        "request_id": "b3bbe4d00bbf950c65391a090d6c15c25e56f6ea6431d4cf1f6ca4ac25e30dde",
+        "endpoint": "https://api.openalex.org",
+        "operation": "search_with_receipt",
+        "association_id": "1322705b4452867b65b886a6c8d054e14bf1a2ef4642b703ecc7bb9f0888ac17",
+        "call_id": "70d83ad98df148d19a93e6f493cb4788",
+        "started_at": "2026-10-18T22:23:14+00:00",
+        "started_s": 749511.635015125,
+        "duration_s": 0.8589281250024214,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:14+00:00",
+            "started_s": 749511.635564916,
+            "pacer_wait_s": 0.0004445409867912531,
+            "duration_s": 0.8579040420008823,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.openalex.org",
+                "started_s": 749511.635725791,
+                "duration_s": 0.7167601250112057,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "openalex",
+        "source_id": "W1594044668",
+        "title": "Predicate invention and learning from positive examples only",
+        "year": 1998,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": "10.1007/bfb0026693"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W2014556729",
+        "title": "Learning deterministic even linear languages from positive examples",
+        "year": 1997,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": "10.1016/s0304-3975(97)00016-9"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W4394946694",
+        "title": "Review of Automaton Learning Algorithms with Polynomial Complexity -- Completely Solved Examples",
+        "year": 2024,
+        "abstract": "Automaton learning is a domain in which the target system is inferred by the automaton learning algorithm in the form of an automaton, by synthesizing a finite number of inputs and their corresponding outputs. Automaton learning makes use of a Minimally Adequate Teacher (MAT). The learner learns the target system by posing membership queries to the MAT. In this chapter, I have provided completely solved examples of automaton learning algorithms. According to the best of my knowledge these are not available in any other source.",
+        "arxiv_id": "2404.11096",
+        "doi": "10.48550/arxiv.2404.11096"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W2921626126",
+        "title": "Learning via automaton minimization and matrix factorization",
+        "year": 2016,
+        "abstract": "This thesis focuses on weighted-automaton learning and minimization, matrix factorization, and the relationships between these areas. The first part of the thesis studies minimization and learning of weighted automata with weights in a field, focusing on tree automata as representations of distributions over trees. We give a minimization algorithm that runs in polynomial time assuming unit-cost arithmetic, and show that a polynomial bound in the Turing model would require a breakthrough in the complexity of polynomial identity testing. We also improve the complexity of minimizing weighted word automata. Secondly, we look at learning minimal weighted automata in both active and passive learning frameworks, analysing both the computational and query complexity. For active learning, we give a new algorithm for learning weighted tree automata in Angluin's exact learning model that efficiently processes DAG counterexamples, and show a complexity lower bound in terms of polynomial identity testing. For passive learning, we characterise the complexity of finding a minimal weighted automaton that is consistent with a set of observations. The second part of the thesis studies nonnegative matrix factorization (NMF), a powerful dimension-reduction and feature-extraction technique with numerous applications in machine learning and other scientific disciplines. Despite being an important technique in practice, there are a number of open questions about the theory of NMF---especially about its complexity and the existence of good heuristics. We answer a major open problem posed in 1993 by Cohen and Rothblum: the nonnegative ranks over the rationals and over the reals differ. We first tackle a variant of the problem, restricted NMF, which has applications in topic modelling and a geometric interpretation as the nested polytope problem. Lastly we show that NMF is polynomial-time reducible to automaton minimization, and then use our results on NMF to answer old open problems on minimizing labelled Markov chains and probabilistic automata.",
+        "arxiv_id": null,
+        "doi": "10.5287/ora-bp9gxydeo"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W4401147307",
+        "title": "Constructing Deterministic Parity Automata from Positive and Negative Examples",
+        "year": 2024,
+        "abstract": "We present a polynomial time algorithm that constructs a deterministic parity automaton (DPA) from a given set of positive and negative ultimately periodic example words. We show that this algorithm is complete for the class of $\\omega$-regular languages, that is, it can learn a DPA for each regular $\\omega$-language. For use in the algorithm, we give a definition of a DPA, that we call the precise DPA of a language, and show that it can be constructed from the syntactic family of right congruences for that language (introduced by Maler and Staiger in 1997). Depending on the structure of the language, the precise DPA can be of exponential size compared to a minimal DPA, but it can also be a minimal DPA. The upper bound that we obtain on the number of examples required for our algorithm to find a DPA for $L$ is therefore exponential in the size of a minimal DPA, in general. However we identify two parameters of regular $\\omega$-languages such that fixing these parameters makes the bound polynomial.",
+        "arxiv_id": null,
+        "doi": "10.46298/theoretics.24.17"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W4416184944",
+        "title": "Learning DFAs from Positive Examples Only via Word Counting",
+        "year": 2025,
+        "abstract": "Learning finite automata from positive examples has recently gained attention as a powerful approach for understanding, explaining, analyzing, and verifying black-box systems. The motivation for focusing solely on positive examples arises from the practical limitation that we can only observe what a system is capable of (positive examples) but not what it cannot do (negative examples). Unlike the classical problem of passive DFA learning with both positive and negative examples, which has been known to be NP-complete since the 1970s, the topic of learning DFAs exclusively from positive examples remains poorly understood. This paper introduces a novel perspective on this problem by leveraging the concept of counting the number of accepted words up to a carefully determined length. Our contributions are twofold. First, we prove that computing the minimal number of words up to this length accepted by DFAs of a given size that accept all positive examples is NP-complete, establishing that learning from positive examples alone is computationally demanding. Second, we propose a new learning algorithm with a better asymptotic runtime that the best-known bound for existing algorithms. While our experimental evaluation reveals that this algorithm under-performs state-of-the-art methods, it demonstrates significant potential as a preprocessing step to enhance existing approaches.",
+        "arxiv_id": "2511.08431",
+        "doi": "10.48550/arxiv.2511.08431"
+      }
+    ]
+  },
+  {
+    "card_id": "card-f5ee7edb",
+    "source": "s2",
+    "query": "successor automaton learning from positive examples",
+    "transport": [
+      {
+        "source": "s2",
+        "request_id": "7f8c4b523bc7e55abd73576f73da2ceb98f6ffbed308bd19ccb3d75b33e21849",
+        "endpoint": "https://api.semanticscholar.org",
+        "operation": "search_with_receipt",
+        "association_id": "1322705b4452867b65b886a6c8d054e14bf1a2ef4642b703ecc7bb9f0888ac17",
+        "call_id": "58003a76c2c3415eaeb19bd1a8641b45",
+        "started_at": "2026-10-18T22:23:15+00:00",
+        "started_s": 749512.496122541,
+        "duration_s": 7.227073333924636,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 2,
+        "http_request_count": 2,
+        "http_response_count": 2,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:15+00:00",
+            "started_s": 749512.496506791,
+            "pacer_wait_s": 0.00031525001395493746,
+            "duration_s": 0.6933397919638082,
+            "http_status": 429,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.semanticscholar.org",
+                "started_s": 749512.496618541,
+                "duration_s": 0.6931052500149235,
+                "http_status": 429
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 5.0,
+            "retry_wait_s": 5.000308125047013,
+            "terminal": "retry",
+            "error_type": "HTTPStatus",
+            "http_request_count": 1,
+            "http_response_count": 1
+          },
+          {
+            "ordinal": 2,
+            "started_at": "2026-10-18T22:23:21+00:00",
+            "started_s": 749518.190918125,
+            "pacer_wait_s": 0.000748916994780302,
+            "duration_s": 1.5312664160737768,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.semanticscholar.org",
+                "started_s": 749518.19108,
+                "duration_s": 1.5306609160033986,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "s2",
+        "source_id": "9a15e07e18ea5b91ce37e523b599d4651dac0995",
+        "title": "Predicate Invention and Learning from Positive Examples Only",
+        "year": 1998,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": "10.1007/BFb0026693"
+      },
+      {
+        "source": "s2",
+        "source_id": "4b28b81d5993bded2232cfa03e8b1861266128f8",
+        "title": "Learning from Positive and Negative Examples: New Proof for Binary Alphabets",
+        "year": 2022,
+        "abstract": "One of the most fundamental problems in computational learning theory is the the problem of learning a finite automaton $A$ consistent with a finite set $P$ of positive examples and with a finite set $N$ of negative examples. By consistency, we mean that $A$ accepts all strings in $P$ and rejects all strings in $N$. It is well known that this problem is NP-complete. In the literature, it is stated that this NP-hardness holds even in the case of a binary alphabet. As a standard reference for this theorem, the work of Gold from 1978 is either cited or adapted. But as a crucial detail, the work of Gold actually considered Mealy machines and not deterministic finite state automata (DFAs) as they are considered nowadays. As Mealy automata are equipped with an output function, they can be more compact than DFAs which accept the same language. We show that the adaptions of Gold's construction for Mealy machines stated in the literature have some issues and give a new construction for DFAs with a binary alphabet ourselves.",
+        "arxiv_id": "2206.10025",
+        "doi": "10.48550/arXiv.2206.10025"
+      },
+      {
+        "source": "s2",
+        "source_id": "305113adc2189c97e1fa9dd01523056e789f8fff",
+        "title": "Phonocardiogram Classification by Learning From Positive and Unlabeled Examples",
+        "year": 2024,
+        "abstract": "The advent of deep learning has rekindled research in computer-aided auscultation for the classification of phonocardiogram (PCG) signals. Deep-learning techniques require a large labeled dataset for training. However, labeling large datasets is a formidable task. To create the large labeled dataset, the labeled PCG signal records are segmented cycle-wise, and the labels of the records are passed on to all the cycles of the record. Although this label inheritance may be appropriate for segments of the normal PCG signals, it may be inappropriate for abnormal PCGs and, therefore, may result in the wrong labeling of cycles of abnormal PCG signals. To address this issue, we propose positive unlabeled (PU) learning based on a two-step technique deep-learning model for the classification of PCG signals where PCG segments of normal records are considered positive exemplars and PCG segments of abnormal records are considered unlabeled. To attain the final results, a voting method is employed using a differential evolution (DE) algorithm and majority voting. The system was evaluated using a dataset from the 2016 Physionet/Computing in Cardiology Challenge. The proposed system achieved exceptional record classification performance with a score of about 0.95. Regardless of an imbalanced dataset, the method achieved balanced specificity and sensitivity values of about 0.94 and 0.95, respectively. Additionally, the proposed system outperformed existing human PCG binary classification systems. In conclusion, utilizing PU learning and convolutional neural network (CNN) techniques for diagnosing heart sounds can lead to effective and efficient classification.",
+        "arxiv_id": null,
+        "doi": "10.1109/TIM.2024.3372221"
+      },
+      {
+        "source": "s2",
+        "source_id": "7a540e1b546139bc21472bafbecf24632d94f5f8",
+        "title": "Learning Properties in LTL ∩ ACTL from Positive Examples Only",
+        "year": 2020,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": "10.34727/2020/isbn.978-3-85448-042-6_17"
+      },
+      {
+        "source": "s2",
+        "source_id": "30b18ddf13d2a5a7307dcdedeb7004c712b8a1e6",
+        "title": "High-level preferences as positive examples in contrastive learning for multi-interest sequential recommendation",
+        "year": 2024,
+        "abstract": "The sequential recommendation task based on the multi-interest framework aims to model multiple interests of users from different aspects to predict their future interactions. However, researchers rarely consider the differences in features between the interests generated by the model. In extreme cases, all interest capsules have the same meaning, leading to the failure of modeling users with multiple interests. To address this issue, we propose the High-level Preferences as positive examples in Contrastive Learning for multi-interest Sequence Recommendation framework (HPCL4SR), which uses contrastive learning to distinguish differences in interests based on user item interaction information. In order to find high-quality comparative examples, this paper introduces the category information to construct a global graph, learning the association between categories for high-level preference interest of users. Then, a multi-layer perceptron is used to adaptively fuse the low-level preference interest features of the user’s items and the high-level preference interest features of the categories. Finally, user multi-interest contrastive samples are obtained through item sequence information and corresponding categories, which are fed into contrastive learning to optimize model parameters and generate multi-interest representations that are more in line with the user sequence. In addition, when modeling the user’s item sequence information, in order to increase the differentiation between item representations, the category of the item is used to supervise the learning process. Extensive experiments on three real datasets demonstrate that our method outperforms existing multi-interest recommendation models.",
+        "arxiv_id": null,
+        "doi": "10.1007/s11280-024-01263-6"
+      },
+      {
+        "source": "s2",
+        "source_id": "c808bfe1c4f731f1af925cd547f22322e2682bcb",
+        "title": "Learning Pairwise Disjoint Simple Languages from Positive Examples",
+        "year": 2017,
+        "abstract": "A classical problem in grammatical inference is to identify a deterministic finite automaton (DFA) from a set of positive and negative examples. In this paper, we address the related - yet seemingly novel - problem of identifying a set of DFAs from examples that belong to different unknown simple regular languages. We propose two methods based on compression for clustering the observed positive examples. We apply our methods to a set of print jobs submitted to large industrial printers.",
+        "arxiv_id": "1706.01663",
+        "doi": null
+      }
+    ]
+  },
+  {
+    "card_id": "card-a4f684fb",
+    "source": "arxiv",
+    "query": "permutation automata group-structured state transitions",
+    "transport": [
+      {
+        "source": "arxiv",
+        "request_id": "19745cd5c88130f2b4a8e58617688c182c7aee59d0ae4c05b28b2a931d602b2f",
+        "endpoint": "https://export.arxiv.org",
+        "operation": "search_with_receipt",
+        "association_id": "bbec48499a57395574e94f2c6606abcd7f356dace1f5c4ec0011941029bb13b4",
+        "call_id": "0ea75e1d6d9b4d6ebf578028e0a34117",
+        "started_at": "2026-10-18T22:23:22+00:00",
+        "started_s": 749519.725038958,
+        "duration_s": 0.4199718750314787,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:22+00:00",
+            "started_s": 749519.725492541,
+            "pacer_wait_s": 0.0003951659891754389,
+            "duration_s": 0.4191461249720305,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://export.arxiv.org",
+                "started_s": 749519.72561725,
+                "duration_s": 0.41879025008529425,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "arxiv",
+        "source_id": "2107.04683",
+        "title": "Decomposing Permutation Automata",
+        "year": 2021,
+        "abstract": "A deterministic finite automaton (DFA) is composite if its language can be decomposed into an intersection of languages of smaller DFAs. Otherwise, A is prime. This notion of primality was introduced by Kupferman and Mosheiff in 2013, and while they proved that we can decide whether a DFA is composite, the precise complexity of this problem is still open, with a doubly-exponential gap between the upper and lower bounds. In this work, we focus on permutation DFAs, i.e., those for which the transition monoid is a group. We provide an NP algorithm to decide whether a permutation DFA is composite, and show that the difficulty of this problem comes from the number of non-accepting states of the instance: we give a fixed-parameter tractable algorithm with the number of rejecting states as the parameter. Moreover, we investigate the class of commutative permutation DFAs. Their structural properties allow us to decide compositionality in NLOGSPACE, and even in LOGSPACE if the alphabet size is fixed. Despite this low complexity, we show that complex behaviors still arise in this class: we provide a family of composite DFAs each requiring polynomially many factors with respect to its size. We also consider the variant of the problem that asks whether a DFA is k-factor composite, that is, decomposable into k smaller DFAs, for some given integer k. We show that, for commutative permutation DFAs, restricting the number of factors makes the decision computationally harder, and yields a problem with tight bounds: it is NP-complete. Finally, we show that in general, this problem is in PSPACE, and it is in LOGSPACE for DFAs with a singleton alphabet.",
+        "arxiv_id": "2107.04683",
+        "doi": null
+      },
+      {
+        "source": "arxiv",
+        "source_id": "1205.0682",
+        "title": "Groups Synchronizing a Transformation of Non-Uniform Kernel",
+        "year": 2012,
+        "abstract": "This paper concerns the general problem of classifying the finite deterministic automata that admit a synchronizing (or reset) word. (For our purposes it is irrelevant if the automata has initial or final states.) Our departure point is the study of the transition semigroup associated to the automaton, taking advantage of the enormous and very deep progresses made during the last decades on the theory of permutation groups, their geometry and their combinatorial structure. Let $X$ be a finite set. We say that a primitive group $G$ on $X$ is {\\em synchronizing} if $G$ together with any non-invertible map on $X$ generates a constant map. It is known (by some recent results proved by P. M. Neumann) that for some primitive groups $G$ and for some singular transformations $t$ of uniform kernel (that is, all blocks have the same number of elements), the semigroup $< G,t>$ does not generate a constant map. Therefore the following concept is very natural: a primitive group $G$ on $X$ is said to be {\\em almost synchronizing} if $G$ together with any map of non-uniform kernel generates a constant map. In this paper we use two different methods to provide several infinite families of groups that are not synchronizing, but are almost synchronizing. The paper ends with a number of problems on synchronization likely to attract the attention of experts in computer science, combinatorics and geometry, groups and semigroups, linear algebra and matrix theory.",
+        "arxiv_id": "1205.0682",
+        "doi": null
+      }
+    ]
+  },
+  {
+    "card_id": "card-a4f684fb",
+    "source": "openalex",
+    "query": "permutation automata group-structured state transitions",
+    "transport": [
+      {
+        "source": "openalex",
+        "request_id": "30830eeec194f4b16c398cb2fa5e83d9ae17a0d913fcd7495ed22e417023de88",
+        "endpoint": "https://api.openalex.org",
+        "operation": "search_with_receipt",
+        "association_id": "bbec48499a57395574e94f2c6606abcd7f356dace1f5c4ec0011941029bb13b4",
+        "call_id": "26292c10108b4dfab9c9a0850a96398b",
+        "started_at": "2026-10-18T22:23:23+00:00",
+        "started_s": 749520.1467425,
+        "duration_s": 0.615222749998793,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:23+00:00",
+            "started_s": 749520.147115833,
+            "pacer_wait_s": 0.00031804200261831284,
+            "duration_s": 0.6143649170408025,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.openalex.org",
+                "started_s": 749520.147238958,
+                "duration_s": 0.47232020797673613,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "openalex",
+        "source_id": "W2169341714",
+        "title": "Theory and applications of cellular automata in cryptography",
+        "year": 1994,
+        "abstract": "This paper deals with the theory and application of Cellular Automata (CA) for a class of block ciphers and stream ciphers. Based on CA state transitions certain fundamental transformations are defined which are block ciphering functions of the proposed enciphering scheme, These fundamental transformations are found to generate the simple (alternating) group of even permutations which in turn is a subgroup of the permutation group, These functions are implemented with a class of programmable cellular automata (PCA) built around rules 51, 153, and 195. Further, high quality pseudorandom pattern generators built around rule 90 and 150 programmable cellular automata with a rule selector (i.e., combining function) has been proposed as running key generators in stream ciphers, Both the schemes provide better security against different types of attacks. With a simple, regular, modular and cascadable structure of CA, hardware implementation of such schemes idealy suit VLSI implementation.>",
+        "arxiv_id": null,
+        "doi": "10.1109/12.338094"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W3194887545",
+        "title": "Decomposing Permutation Automata",
+        "year": 2021,
+        "abstract": "A deterministic finite automaton (DFA) 𝒜 is composite if its language L(𝒜) can be decomposed into an intersection ⋂_{i = 1}^k L(𝒜_i) of languages of smaller DFAs. Otherwise, 𝒜 is prime. This notion of primality was introduced by Kupferman and Mosheiff in 2013, and while they proved that we can decide whether a DFA is composite, the precise complexity of this problem is still open, with a doubly-exponential gap between the upper and lower bounds. In this work, we focus on permutation DFAs, i.e., those for which the transition monoid is a group. We provide an NP algorithm to decide whether a permutation DFA is composite, and show that the difficulty of this problem comes from the number of non-accepting states of the instance: we give a fixed-parameter tractable algorithm with the number of rejecting states as the parameter. Moreover, we investigate the class of commutative permutation DFAs. Their structural properties allow us to decide compositionality in NL, and even in LOGSPACE if the alphabet size is fixed. Despite this low complexity, we show that complex behaviors still arise in this class: we provide a family of composite DFAs each requiring polynomially many factors with respect to its size. We also consider the variant of the problem that asks whether a DFA is k-factor composite, that is, decomposable into k smaller DFAs, for some given integer k ∈ ℕ. We show that, for commutative permutation DFAs, restricting the number of factors makes the decision computationally harder, and yields a problem with tight bounds: it is NP-complete. Finally, we show that in general, this problem is in PSPACE, and it is in LOGSPACE for DFAs with a singleton alphabet.",
+        "arxiv_id": "2107.04683",
+        "doi": "10.4230/lipics.concur.2021.18"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W4249002680",
+        "title": "Automata groups",
+        "year": 2017,
+        "abstract": "In contrast to the previous chapters, where the languages we dealt with were languages over a symmetric generating set for a group, we will now use automata to define group elements. The basic idea, which dates back at least to Alěshin [3], is that certain mappings from A * to itself can be described by automata with output capabilities, so called Mealy machines. The real starting point for a systematic study of such groups was the discovery of the first groups of intermediate growth in this class of groups by Grigorchuk [114] and Gupta and Sidki [129]. These groups naturally act on homogeneous rooted trees and many of them reflect the self-similar structure of the tree (see 9.3.13), which often allows for inductive arguments. The realisation of iterated monodromy groups of partial self-coverings of orbispaces as automata groups by Nekrashevych [201] has given the subject another boost. This strongly links dynamical systems of post-critically finite rational functions and their Julia sets to contracting self-similar automata groups and their limit dynamical systems; see Section 9.3.16. Their study from a more automata theoretic point of view is a more recent development; see Sections 9.4 and 9.6. Introducing permutational transducers Finite state transducers A finite state transducer is a finite state automaton with an output function. So besides the input alphabet A there is now also an output alphabet B whose letters will be written to an auxiliary write-only output-tape. Also, each transition must now specify a finite, possibly empty, output string over B that will be written to the output-tape when the transition is made. We shall abbreviate finite state transducer and its plural by fst. An fst simply translates strings over A into strings over B . As such, it does not accept input words, and so there is no need for accepting states. However, it may sometimes be useful to allow accepting states in order to validate the input and/or output; see 9.1.4.",
+        "arxiv_id": null,
+        "doi": "10.1017/9781316588246.010"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W4293325636",
+        "title": "On the Accepting State Complexity of Operations on Permutation Automata",
+        "year": 2022,
+        "abstract": "We investigate the accepting state complexity of deterministic finite automata for regular languages obtained by applying one of the following operations to languages accepted by permutation automata: union, quotient, complement, difference, intersection, Kleene star, Kleene plus, and reversal. The paper thus joins the study of accepting state complexity of regularity preserving language operations which was initiated by the work [J. Dassow: On the number of accepting states of finite automata, J. Autom., Lang. Comb., 21, 2016]. We show that for almost all of the operations, except for reversal and quotient, there is no difference in the accepting state complexity for permutation automata compared to deterministic finite automata in general. For both reversal and quotient we prove that certain accepting state complexities cannot be obtained; these number are called \"magic\" in the literature. Moreover, we solve the left open accepting state complexity problem for the intersection of unary languages accepted by permutation automata and deterministic finite automata in general.",
+        "arxiv_id": null,
+        "doi": "10.4204/eptcs.367.12"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W2022557081",
+        "title": "Induced permutation automata and coverings of strongly connected automata",
+        "year": 1999,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": "10.1016/s0166-218x(98)00150-4"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W2621395058",
+        "title": "The Evolution Homomorphism and Permutation Actions on Group Generated Cellular Automata",
+        "year": 2004,
+        "abstract": "In this paper cellular automata generated over group alphabets are examined. For abelian groups and numerous local update rules, time evolution is additive and properties such as reversibility of systems can be examined using algebraic techniques. In particular, a necessary and sufficient condition for the reversibility of a finite one-dimensional cellular automata generated over a finite cyclic group using a 2-rule is provided. Finally, evolutions that respect permutations of the cellular configurations are introduced and examined.",
+        "arxiv_id": null,
+        "doi": "10.25088/complexsystems.15.2.121"
+      }
+    ]
+  },
+  {
+    "card_id": "card-a4f684fb",
+    "source": "s2",
+    "query": "permutation automata group-structured state transitions",
+    "transport": [
+      {
+        "source": "s2",
+        "request_id": "adb13dbc47819c5b57861b284b859d566fb84c8dd36d15baa7035094463db427",
+        "endpoint": "https://api.semanticscholar.org",
+        "operation": "search_with_receipt",
+        "association_id": "bbec48499a57395574e94f2c6606abcd7f356dace1f5c4ec0011941029bb13b4",
+        "call_id": "c6de69006d104813940b5e2e8fcea2e1",
+        "started_at": "2026-10-18T22:23:23+00:00",
+        "started_s": 749520.765619875,
+        "duration_s": 1.3358696249779314,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:23+00:00",
+            "started_s": 749520.766101625,
+            "pacer_wait_s": 0.00041258404962718487,
+            "duration_s": 1.3347910000011325,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.semanticscholar.org",
+                "started_s": 749520.766423541,
+                "duration_s": 1.334295916953124,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "s2",
+        "source_id": "cf43129fb9b8db4e8924b25ffd0d823c8dbc943b",
+        "title": "A quadratic upper bound on the reset thresholds of synchronizing automata containing a transitive permutation group",
+        "year": 2024,
+        "abstract": "For any synchronizing $n$-state deterministic automaton, \\v{C}ern\\'{y} conjectures the existence of a synchronizing word of length at most $(n-1)^2$. We prove that there exists a synchronizing word of length at most $2n^2 - 7n + 7$ for every synchronizing $n$-state deterministic automaton that satisfies the following two properties: 1. The image of the action of each letter contains at least $n-1$ states; 2. The actions of bijective letters generate a transitive permutation group on the state set.",
+        "arxiv_id": "2407.08135",
+        "doi": "10.48550/arXiv.2407.08135"
+      },
+      {
+        "source": "s2",
+        "source_id": "e3740f834f623e5b1c027b313e63e945f203005a",
+        "title": "Sweeping permutation automata",
+        "year": 2023,
+        "abstract": "This paper introduces sweeping permutation automata, which move over an input string in alternating left-to-right and right-to-left sweeps and have a bijective transition function. It is proved that these automata recognize the same family of languages as the classical one-way permutation automata (Thierrin, “Permutation automata”, Mathematical Systems Theory, 1968). The proof is constructive: an n-state two-way permutation automaton is transformed to a one-way permutation automaton with at most \\documentclass[12pt]{minimal} \\usepackage{amsmath} \\usepackage{wasysym} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage{mathrsfs} \\usepackage{upgreek} \\setlength{\\oddsidemargin}{-69pt} \\begin{document}$$F(n)=\\max _{k+\\ell =n, m \\leqslant \\ell } k \\cdot { \\ell \\atopwithdelims ()m} \\cdot {k - 1 \\atopwithdelims ()\\ell - m} \\cdot (\\ell - m)!$$\\end{document} states (here the maximum is over all partitions of n into k states with transitions to the right and \\documentclass[12pt]{minimal} \\usepackage{amsmath} \\usepackage{wasysym} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage{mathrsfs} \\usepackage{upgreek} \\setlength{\\oddsidemargin}{-69pt} \\begin{document}$$\\ell$$\\end{document} states with transitions to the left, where m states have no transitions on the left end-marker). This number of states is proved to be necessary in the worst case, and its growth rate is estimated as \\documentclass[12pt]{minimal} \\usepackage{amsmath} \\usepackage{wasysym} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage{mathrsfs} \\usepackage{upgreek} \\setlength{\\oddsidemargin}{-69pt} \\begin{document}$$F(n) = n^{\\frac{n}{2} - \\frac{1 + \\ln 2}{2}\\frac{n}{\\ln n}(1 + o(1))}$$\\end{document}.",
+        "arxiv_id": "2309.08723",
+        "doi": "10.1007/s00236-025-00519-6"
+      },
+      {
+        "source": "s2",
+        "source_id": "7977afea1fc3e99de58e64c2b6d38eddb580aabf",
+        "title": "State Complexity of Projection on Languages Recognized by Permutation Automata and Commuting Letters",
+        "year": 2021,
+        "abstract": "The projected language of a general deterministic automaton with $n$ states is recognizable by a deterministic automaton with $2^{n-1} + 2^{n-m} - 1$ states, where $m$ denotes the number of states incident to unobservable non-loop transitions, and this bound is best possible. Here, we derive the tight bound $2^{n - \\lceil \\frac{m}{2} \\rceil} - 1$ for permutation automata. For a state-partition automaton with $n$ states (also called automata with the observer property) the projected language is recognizable with $n$ states. Up to now, these, and finite languages projected onto unary languages, were the only classes of automata known to possess this property. We show that this is also true for commutative automata and we find commutative automata that are not state-partition automata.",
+        "arxiv_id": "2108.06976",
+        "doi": "10.1007/978-3-030-81508-0_16"
+      },
+      {
+        "source": "s2",
+        "source_id": "69b2542204a190c93e58d8c10ae9a8f9b359050b",
+        "title": "Discrete-Time Dynamical Systems on Structured State Spaces: State-Transition Laws in Finite-Dimensional Lie Algebras",
+        "year": 2025,
+        "abstract": "The present paper elaborates on the development of a theory of discrete-time dynamical systems on finite-dimensional structured state spaces. Dynamical systems on structured state spaces possess well-known applications to solving differential equations in physics, and it was shown that discrete-time systems on finite- (albeit high-) dimensional structured state spaces possess solid applications to structured signal processing and nonlinear system identification, modeling and control. With reference to the state-space representation of dynamical systems, the present contribution tackles the core system-theoretic problem of determining suitable laws to express a system’s state transition. In particular, the present contribution aims at formulating a fairly general class of state-transition laws over the Lie algebra associated to a Lie group and at extending some properties of classical dynamical systems to process Lie-algebra-valued state signals.",
+        "arxiv_id": null,
+        "doi": "10.3390/sym17030463"
+      },
+      {
+        "source": "s2",
+        "source_id": "7ccd7b516da0ac5d45177eea2fb113280c37e76f",
+        "title": "Enhanced secure image encryption scheme based on a novel cellular automata controlled CML and dual-state transformation permutation",
+        "year": 2026,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": "10.1007/s11071-025-11944-0"
+      },
+      {
+        "source": "s2",
+        "source_id": "ba7d2126093968a055e8de70b623d2d3470c6b49",
+        "title": "Structured Sparse Transition Matrices to Enable State Tracking in State-Space Models",
+        "year": 2025,
+        "abstract": "Modern state-space models (SSMs) often utilize transition matrices which enable efficient computation but pose restrictions on the model's expressivity, as measured in terms of the ability to emulate finite-state automata (FSA). While unstructured transition matrices are optimal in terms of expressivity, they come at a prohibitively high compute and memory cost even for moderate state sizes. We propose a structured sparse parametrization of transition matrices in SSMs that enables FSA state tracking with optimal state size and depth, while keeping the computational cost of the recurrence comparable to that of diagonal SSMs. Our method, PD-SSM, parametrizes the transition matrix as the product of a column one-hot matrix ($P$) and a complex-valued diagonal matrix ($D$). Consequently, the computational cost of parallel scans scales linearly with the state size. Theoretically, the model is BIBO-stable and can emulate any $N$-state FSA with one layer of dimension $N$ and a linear readout of size $N \\times N$, significantly improving on all current structured SSM guarantees. Experimentally, the model significantly outperforms a wide collection of modern SSM variants on various FSA state tracking tasks. On multiclass time-series classification, the performance is comparable to that of neural controlled differential equations, a paradigm explicitly built for time-series analysis. Finally, we integrate PD-SSM into a hybrid Transformer-SSM architecture and demonstrate that the model can effectively track the states of a complex FSA in which transitions are encoded as a set of variable-length English sentences. The code is available at https://github.com/IBM/expressive-sparse-state-space-model",
+        "arxiv_id": "2509.22284",
+        "doi": "10.48550/arXiv.2509.22284"
+      }
+    ]
+  },
+  {
+    "card_id": "card-89248ee5",
+    "source": "arxiv",
+    "query": "sparse distributed memory hard location activation Kanerva",
+    "transport": [
+      {
+        "source": "arxiv",
+        "request_id": "de4fcf4d059ec6e28cab23da742493b20bb94402fc96bb575fafdc46335f2656",
+        "endpoint": "https://export.arxiv.org",
+        "operation": "search_with_receipt",
+        "association_id": "db0ee97f491634c907a5151f3ea45c8dcc752488dca743b39ac61923a753e9d2",
+        "call_id": "c77163d03d81450ba7d14ba4c28421d9",
+        "started_at": "2026-10-18T22:23:25+00:00",
+        "started_s": 749522.103334291,
+        "duration_s": 1.0574073339812458,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:25+00:00",
+            "started_s": 749522.728580583,
+            "pacer_wait_s": 0.6251936670159921,
+            "duration_s": 0.4317071669502184,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://export.arxiv.org",
+                "started_s": 749522.728733458,
+                "duration_s": 0.43126891704741865,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": []
+  },
+  {
+    "card_id": "card-89248ee5",
+    "source": "openalex",
+    "query": "sparse distributed memory hard location activation Kanerva",
+    "transport": [
+      {
+        "source": "openalex",
+        "request_id": "286dc245d47b847b8fc36f1262f757313b236e77b676e5d606f5b63d966d0fef",
+        "endpoint": "https://api.openalex.org",
+        "operation": "search_with_receipt",
+        "association_id": "db0ee97f491634c907a5151f3ea45c8dcc752488dca743b39ac61923a753e9d2",
+        "call_id": "042ab08206e74fc79fefd22f22263687",
+        "started_at": "2026-10-18T22:23:26+00:00",
+        "started_s": 749523.162579208,
+        "duration_s": 0.8432021249318495,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:26+00:00",
+            "started_s": 749523.163029,
+            "pacer_wait_s": 0.0003788750618696213,
+            "duration_s": 0.8422725829295814,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.openalex.org",
+                "started_s": 749523.163158958,
+                "duration_s": 0.7015180829912424,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "openalex",
+        "source_id": "W1525999779",
+        "title": "Sparse distributed memory and related models",
+        "year": 1993,
+        "abstract": "Described here is sparse distributed memory (SDM) as a neural-net associative memory. It is characterized by two weight matrices and by a large internal dimension - the number of hidden units is much larger than the number of input or output units. The first matrix, A, is fixed and possibly random, and the second matrix, C, is modifiable. The SDM is compared and contrasted to (1) computer memory, (2) correlation-matrix memory, (3) feet-forward artificial neural network, (4) cortex of the cerebellum, (5) Marr and Albus models of the cerebellum, and (6) Albus' cerebellar model arithmetic computer (CMAC). Several variations of the basic SDM design are discussed: the selected-coordinate and hyperplane designs of Jaeckel, the pseudorandom associative neural memory of Hassoun, and SDM with real-valued input variables by Prager and Fallside. SDM research conducted mainly at the Research Institute for Advanced Computer Science (RIACS) in 1986-1991 is highlighted.",
+        "arxiv_id": null,
+        "doi": null
+      },
+      {
+        "source": "openalex",
+        "source_id": "W203260150",
+        "title": "An alternative design for a sparse distributed memory",
+        "year": 1989,
+        "abstract": "A new design for a Sparse Distributed Memory, called the selected-coordinate design, is described. As in the original design, there are a large number of memory locations, each of which may be activated by many different addresses (binary vectors) in a very large address space. Each memory location is defined by specifying ten selected coordinates (bit positions in the address vectors) and a set of corresponding assigned values, consisting of one bit for each selected coordinate. A memory location is activated by an address if, for all ten of the locations's selected coordinates, the corresponding bits in the address vector match the respective assigned value bits, regardless of the other bits in the address vector. Some comparative memory capacity and signal-to-noise ratio estimates for the both the new and original designs are given. A few possible hardware embodiments of the new design are described.",
+        "arxiv_id": null,
+        "doi": null
+      },
+      {
+        "source": "openalex",
+        "source_id": "W1527068730",
+        "title": "A class of designs for a sparse distributed memory",
+        "year": 1989,
+        "abstract": "A general class of designs for a space distributed memory (SDM) is described. The author shows that Kanerva's original design and the selected-coordinate design are related, and that there is a series of possible intermediate designs between those two designs. In each such design, the set of addresses that activate a memory location is a sphere in the address space. We can also have hybrid designs, in which the memory locations may be a mixture of those found in the other designs. In some applications, the bits of the read and write addresses that will actually be used might be mostly zeros; that is, the addresses might lie on or near z hyperplane in the address space. The author describes a hyperplane design which is adapted to this situation and compares it to an adaptation of Kanerva's design. To study the performance of these designs, he computes the expected number of memory locations activated by both of two addresses.",
+        "arxiv_id": null,
+        "doi": null
+      },
+      {
+        "source": "openalex",
+        "source_id": "W4360103626",
+        "title": "Sparse Distributed Memory is a Continual Learner",
+        "year": 2023,
+        "abstract": "Continual learning is a problem for artificial neural networks that their biological counterparts are adept at solving. Building on work using Sparse Distributed Memory (SDM) to connect a core neural circuit with the powerful Transformer model, we create a modified Multi-Layered Perceptron (MLP) that is a strong continual learner. We find that every component of our MLP variant translated from biology is necessary for continual learning. Our solution is also free from any memory replay or task information, and introduces novel methods to train sparse networks that may be broadly applicable.",
+        "arxiv_id": "2303.11934",
+        "doi": "10.48550/arxiv.2303.11934"
+      },
+      {
+        "source": "openalex",
+        "source_id": "W13660921",
+        "title": "An empirical investigation of sparse distributed memory using discrete speech recognition",
+        "year": 1990,
+        "abstract": "An experimental investigation of Sparse Disn-ibuted Memory (SDM) (Kanerva, 1988) is presented. SDM is an associative memory which can be thought of as a 3-layer Artificial Neural Network. It uses massive parallelism, associates very large patterns, and is trained rapidly. The theory of SDM was developed for uncorrelated bit _. In this paper the behavior of SDM is examined when the constraint of random input is violated and the memory is presented with highly-correlated dam for classification tasks.Experiments from the domain of discrete-word speech recognition are used. These experiments lead, in a step-by-step manner, to factors which improve the memory's ability to recall and to generalize. It is shown that generaliTAtion can be enhanced with appropriate appLication of: (1) the form of encoding of class labels, (2) the placement of hard locations within the memory, (3) the activation rule of hard locations, and (4) the write rule used to modify the memory. Comparisons are made between SDM, a class-mean model, and the Nearest Neighbor rule.]:or single-talker digit recognition a form of SDM, called the Selected Coordinate Design, attains 99.3 % correct generalization.",
+        "arxiv_id": null,
+        "doi": null
+      },
+      {
+        "source": "openalex",
+        "source_id": "W2101082242",
+        "title": "Statistical Prediction with Kanerva's Sparse Distributed Memory",
+        "year": 1988,
+        "abstract": "A new viewpoint of the processing performed by Kanerva's sparse distributed memory (SDM) is presented. In conditions of near- or over-capacity, where the associative-memory behavior of the model breaks down, the processing performed by the model can be interpreted as that of a statistical predictor. Mathematical results are presented which serve as the framework for a new statistical viewpoint of sparse distributed memory and for which the standard formulation of SDM is a special case. This viewpoint suggests possible enhancements to the SDM model, including a procedure for improving the predictiveness of the system based on Holland's work with genetic algorithms, and a method for improving the capacity of SDM even when used as an associative memory.",
+        "arxiv_id": null,
+        "doi": null
+      }
+    ]
+  },
+  {
+    "card_id": "card-89248ee5",
+    "source": "s2",
+    "query": "sparse distributed memory hard location activation Kanerva",
+    "transport": [
+      {
+        "source": "s2",
+        "request_id": "d7d8574a94a471d21a375273b80647b749f2b5894ed35a45da542fa86ef242f4",
+        "endpoint": "https://api.semanticscholar.org",
+        "operation": "search_with_receipt",
+        "association_id": "db0ee97f491634c907a5151f3ea45c8dcc752488dca743b39ac61923a753e9d2",
+        "call_id": "2a1f7c6b57ef4a328759a9e5dcf2e982",
+        "started_at": "2026-10-18T22:23:27+00:00",
+        "started_s": 749524.009038208,
+        "duration_s": 0.880999416927807,
+        "outcome": "network",
+        "terminal": "success",
+        "error_type": null,
+        "attempt_count": 1,
+        "http_request_count": 1,
+        "http_response_count": 1,
+        "cooldown_remaining_s": 0.0,
+        "attempts": [
+          {
+            "ordinal": 1,
+            "started_at": "2026-10-18T22:23:27+00:00",
+            "started_s": 749524.009447958,
+            "pacer_wait_s": 0.00034604198299348354,
+            "duration_s": 0.8792606249917299,
+            "http_status": 200,
+            "exchanges": [
+              {
+                "ordinal": 1,
+                "endpoint": "https://api.semanticscholar.org",
+                "started_s": 749524.009567958,
+                "duration_s": 0.8789953750092536,
+                "http_status": 200
+              }
+            ],
+            "redirect_chain": [],
+            "retry_after_kind": "absent",
+            "retry_after_s": null,
+            "retry_delay_s": 0.0,
+            "retry_wait_s": 0.0,
+            "terminal": "success",
+            "error_type": null,
+            "http_request_count": 1,
+            "http_response_count": 1
+          }
+        ]
+      }
+    ],
+    "errors": {},
+    "papers": [
+      {
+        "source": "s2",
+        "source_id": "38678deea9e2a4aedaec94a9ded57251945490ae",
+        "title": "Efficient packing of patterns in sparse distributed memory by selective weighting of input bits",
+        "year": 1991,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": null
+      },
+      {
+        "source": "s2",
+        "source_id": "e80d940955a13a259135c1ae640ebe0e4550e8d2",
+        "title": "Networks based on Kanerva's sparse distributed memory: results showing their strengths and limitations and a new algorithm to design the location matching layer",
+        "year": 1993,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": "10.1109/ICNN.1993.298701"
+      },
+      {
+        "source": "s2",
+        "source_id": "f1feb244cdb04ca23f2d1f9939154c358ea482a3",
+        "title": "Distillation-Guided Structural Transfer for Continual Learning Beyond Sparse Distributed Memory",
+        "year": 2025,
+        "abstract": "Sparse neural systems are gaining traction for efficient continual learning due to their modularity and low interference. Architectures like Sparse Distributed Memory Multi-Layer Perceptrons (SDMLP) construct task-specific subnetworks via Top-K activation and have shown resilience against catastrophic forgetting. However, their rigid modularity poses two fundamental challenges: (1) the isolation of sparse subnetworks severely limits cross-task knowledge reuse; and (2) increased sparsity reduces interference but often degrades performance due to constrained feature sharing.We propose Selective Subnetwork Distillation (SSD), a structurally guided continual learning framework that treats distillation not as a regularizer, but as a topology-aligned information conduit. By identifying neurons with high activation frequency, SSD selectively distills knowledge within previous Top-K subnetworks and output logits—without requiring replay or task labels—preserving both sparsity and functional specialization.Unlike conventional distillation, SSD operates under hard modular constraints and enables structural realignment without altering the sparse architecture.While our method is validated on SDMLP, its structure-aligned mechanism has the potential to generalize to other sparse networks as a plug-in module for promoting representation sharing.Comprehensive experiments on Split CIFAR-10, CIFAR-100, and MNIST demonstrate that SSD improves accuracy, retention, and manifold coverage, offering a structurally grounded solution to sparse continual learning.",
+        "arxiv_id": "2512.15267",
+        "doi": "10.48550/arXiv.2512.15267"
+      },
+      {
+        "source": "s2",
+        "source_id": "6ec7fb1a659cb96d9c95a49ffaf90b2af637f6c1",
+        "title": "Sparse distributed memory: Principles and operation",
+        "year": 1989,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": null
+      },
+      {
+        "source": "s2",
+        "source_id": "edd967ce7483e6985c747ed73769f34cc08dda93",
+        "title": "Sparse distributed memory prototype: principles and operation",
+        "year": 1989,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": null
+      },
+      {
+        "source": "s2",
+        "source_id": "8bf523f1c4ccc5715a3c44c6abe5a0520aed9b75",
+        "title": "Sparse, distributed memory prototpe: principles of operation",
+        "year": 1988,
+        "abstract": null,
+        "arxiv_id": null,
+        "doi": null
+      }
+    ]
+  }
+]

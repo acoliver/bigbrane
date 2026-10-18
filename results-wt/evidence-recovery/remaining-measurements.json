@@ -1,0 +1,83 @@
+{
+  "capture_counts": {
+    "card-2c5dd003": {
+      "episodes": 201,
+      "tokens": 2404,
+      "soft_contracts": 0,
+      "isotope_draws": 0
+    },
+    "card-6fc7efec": {
+      "episodes": 1,
+      "tokens": 330,
+      "soft_contracts": 60,
+      "isotope_draws": 3
+    },
+    "card-dc69816b": {
+      "episodes": 601,
+      "tokens": 12008,
+      "soft_contracts": 0,
+      "isotope_draws": 0
+    }
+  },
+  "hmm": {
+    "prefixes": 2203,
+    "different_paid_count_prefixes": 2001,
+    "episodes_with_differences": 201,
+    "max_count_difference": 1.9393429759373326,
+    "lag_one_identity_max_difference": 5.551115123125783e-16,
+    "first_difference": {
+      "episode": 0,
+      "prefix_length": 3,
+      "max_count_difference": 0.025583069178645557,
+      "card_counts": [
+        [
+          0.3292286500474724,
+          0.35703624120702454,
+          0.0
+        ],
+        [
+          0.39105523059523717,
+          0.054531645591368215,
+          0.0
+        ],
+        [
+          0.09260527835281733,
+          0.4280685688272025,
+          0.0
+        ],
+        [
+          0.1871108410044731,
+          0.16036354437440462,
+          0.0
+        ]
+      ],
+      "all_history_revised_counts": [
+        [
+          0.3292286500474725,
+          0.3826193103856701,
+          0.0
+        ],
+        [
+          0.39105523059523717,
+          0.047276794292322795,
+          0.0
+        ],
+        [
+          0.09260527835281734,
+          0.4206106864239788,
+          0.0
+        ],
+        [
+          0.18711084100447312,
+          0.14949320889802836,
+          0.0
+        ]
+      ]
+    },
+    "scope": "Observed adaptive parameter path held identical only to isolate smoothing scope; no full-estimator match claimed"
+  },
+  "nge": {
+    "original_consolidations": 525,
+    "original_writes": 8405
+  }
+}

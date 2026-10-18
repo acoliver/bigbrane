@@ -1,0 +1,249 @@
+[
+  {
+    "expected_callback_card_id": "card-3485a13f",
+    "original_receipt": {
+      "actor": "literature",
+      "data": {
+        "card_id": "card-3485a13f",
+        "errors": {
+          "arxiv": "skipped: source is cooling down after rate limiting"
+        },
+        "limit": 6,
+        "local_index": {
+          "complete": true,
+          "path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/data/arxiv-index/arxiv.sqlite",
+          "record_count": 1419455,
+          "snapshot_date": "2026-10-11",
+          "status": "ok"
+        },
+        "per_source_ids": {
+          "arxiv": [],
+          "arxiv_local": [
+            "2511.05743",
+            "2509.22947",
+            "2609.15545",
+            "2504.03022",
+            "2602.23179",
+            "2609.28029"
+          ],
+          "openalex": [
+            "W4416615487",
+            "W7133362630",
+            "W4404340302",
+            "W7214128231",
+            "W2981332691",
+            "W7167257601"
+          ],
+          "s2": [
+            "987db28d690bb277289c0472809dba523e438619",
+            "dbc9f876b920b233a2ce9d99a060fdc776e3e228",
+            "d4e1e2e1f322265e2363d78961b2a6dc42cd2e29",
+            "f60a94ef96cf8c6648e947543b982a1b810d9fe2",
+            "f89b49fbc25506d69d744c8f899e5bd8d1df4279",
+            "8575792b33256c6411692e8b360e47978a6e035c"
+          ]
+        },
+        "query": "exact match key value cache induction head copying",
+        "result_count": 18,
+        "sources": [
+          "arxiv_local",
+          "arxiv",
+          "openalex",
+          "s2"
+        ],
+        "ts": "2026-10-18T07:17:38+00:00"
+      },
+      "hash": "e6c863578b79bd59de073deb2d392aa0152fb9497d194e14160fbf78a9ce75aa",
+      "prev_hash": "efadba2f7190ad81ecb9a0e6b0df292b3a15853f23da1a5802a74ba7a3a8a3da",
+      "seq": 319,
+      "ts": "2026-10-18T07:17:41.470238+00:00",
+      "type": "literature_search"
+    },
+    "original_receipt_sha256": "a5053f14ea1fee8fbbe295ded2f54799b3e61d42e65b896043b504e41d9b36ba"
+  },
+  {
+    "expected_callback_card_id": "card-f5ee7edb",
+    "original_receipt": {
+      "actor": "literature",
+      "data": {
+        "card_id": "card-f5ee7edb",
+        "errors": {
+          "arxiv": "HTTP 429 after 4 attempts"
+        },
+        "limit": 6,
+        "local_index": {
+          "complete": true,
+          "path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/data/arxiv-index/arxiv.sqlite",
+          "record_count": 1419455,
+          "snapshot_date": "2026-10-11",
+          "status": "ok"
+        },
+        "per_source_ids": {
+          "arxiv": [],
+          "arxiv_local": [
+            "1706.01663",
+            "2607.11953",
+            "2404.11096",
+            "2608.04334",
+            "2103.02650",
+            "1210.2452"
+          ],
+          "openalex": [
+            "W1594044668",
+            "W2014556729",
+            "W4394946694",
+            "W2921626126",
+            "W4401147307",
+            "W4416184944"
+          ],
+          "s2": [
+            "9a15e07e18ea5b91ce37e523b599d4651dac0995",
+            "4b28b81d5993bded2232cfa03e8b1861266128f8",
+            "305113adc2189c97e1fa9dd01523056e789f8fff",
+            "7a540e1b546139bc21472bafbecf24632d94f5f8",
+            "30b18ddf13d2a5a7307dcdedeb7004c712b8a1e6",
+            "c808bfe1c4f731f1af925cd547f22322e2682bcb"
+          ]
+        },
+        "query": "successor automaton learning from positive examples",
+        "result_count": 15,
+        "sources": [
+          "arxiv_local",
+          "arxiv",
+          "openalex",
+          "s2"
+        ],
+        "ts": "2026-10-18T07:16:06+00:00"
+      },
+      "hash": "046395f362140b1dc357256cf65e7d839bed33c86e2b1e58805d420c14dce796",
+      "prev_hash": "f101a2b0cc1ff36eb907b1198813d829b393c74591bfc82e81774989a5ec35fe",
+      "seq": 196,
+      "ts": "2026-10-18T07:16:46.532220+00:00",
+      "type": "literature_search"
+    },
+    "original_receipt_sha256": "a881a9c5fa5335db99fb4b52975d836a1f4c70e2f25528de1ca5169b730bf3e6"
+  },
+  {
+    "expected_callback_card_id": "card-a4f684fb",
+    "original_receipt": {
+      "actor": "literature",
+      "data": {
+        "card_id": "card-a4f684fb",
+        "errors": {},
+        "limit": 6,
+        "local_index": {
+          "complete": true,
+          "path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/data/arxiv-index/arxiv.sqlite",
+          "record_count": 1419455,
+          "snapshot_date": "2026-10-11",
+          "status": "ok"
+        },
+        "per_source_ids": {
+          "arxiv": [
+            "2107.04683",
+            "1205.0682"
+          ],
+          "arxiv_local": [
+            "2107.04683",
+            "2407.08135",
+            "2409.19172",
+            "2605.10852",
+            "2007.09104",
+            "1805.02154"
+          ],
+          "openalex": [
+            "W2169341714",
+            "W3194887545",
+            "W4249002680",
+            "W4293325636",
+            "W2022557081",
+            "W2621395058"
+          ],
+          "s2": [
+            "cf43129fb9b8db4e8924b25ffd0d823c8dbc943b",
+            "e3740f834f623e5b1c027b313e63e945f203005a",
+            "7977afea1fc3e99de58e64c2b6d38eddb580aabf",
+            "69b2542204a190c93e58d8c10ae9a8f9b359050b",
+            "7ccd7b516da0ac5d45177eea2fb113280c37e76f",
+            "ba7d2126093968a055e8de70b623d2d3470c6b49"
+          ]
+        },
+        "query": "permutation automata group-structured state transitions",
+        "result_count": 17,
+        "sources": [
+          "arxiv_local",
+          "arxiv",
+          "openalex",
+          "s2"
+        ],
+        "ts": "2026-10-18T07:08:50+00:00"
+      },
+      "hash": "4901d54e02047541586d864a5c464f8b90bf06abf7a415ff2c6213b00de7a94b",
+      "prev_hash": "6c43fc27fc3360d3c16afd05eb874757a03e9458c47c22394f5faf4396d04aae",
+      "seq": 105,
+      "ts": "2026-10-18T07:08:54.617919+00:00",
+      "type": "literature_search"
+    },
+    "original_receipt_sha256": "a43abbd94a9ba7d89bdc606cd7bf7a1133646f943209c7d4f427a37f5cdafe80"
+  },
+  {
+    "expected_callback_card_id": "card-89248ee5",
+    "original_receipt": {
+      "actor": "literature",
+      "data": {
+        "card_id": "card-89248ee5",
+        "errors": {},
+        "limit": 6,
+        "local_index": {
+          "complete": true,
+          "path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/data/arxiv-index/arxiv.sqlite",
+          "record_count": 1419455,
+          "snapshot_date": "2026-10-11",
+          "status": "ok"
+        },
+        "per_source_ids": {
+          "arxiv": [],
+          "arxiv_local": [
+            "1207.5774",
+            "1804.01756",
+            "2002.02385",
+            "1510.06342",
+            "2111.05498",
+            "2103.03905"
+          ],
+          "openalex": [
+            "W1525999779",
+            "W203260150",
+            "W1527068730",
+            "W4360103626",
+            "W13660921",
+            "W2101082242"
+          ],
+          "s2": [
+            "38678deea9e2a4aedaec94a9ded57251945490ae",
+            "e80d940955a13a259135c1ae640ebe0e4550e8d2",
+            "f1feb244cdb04ca23f2d1f9939154c358ea482a3",
+            "6ec7fb1a659cb96d9c95a49ffaf90b2af637f6c1",
+            "edd967ce7483e6985c747ed73769f34cc08dda93",
+            "8bf523f1c4ccc5715a3c44c6abe5a0520aed9b75"
+          ]
+        },
+        "query": "sparse distributed memory hard location activation Kanerva",
+        "result_count": 18,
+        "sources": [
+          "arxiv_local",
+          "arxiv",
+          "openalex",
+          "s2"
+        ],
+        "ts": "2026-10-18T07:13:08+00:00"
+      },
+      "hash": "8fc507466f782561867e4ea9e70578cccbea7ace314ece75dc334c6f5854e1e2",
+      "prev_hash": "13341e1c82714b520f9488eb25d40cd690ea22deba8cff0fd15cac309f66024f",
+      "seq": 249,
+      "ts": "2026-10-18T07:13:20.413580+00:00",
+      "type": "literature_search"
+    },
+    "original_receipt_sha256": "a7340f08524071b80ebd517d77a9a873d330f80e6cb2d590deece35ff3369b5f"
+  }
+]

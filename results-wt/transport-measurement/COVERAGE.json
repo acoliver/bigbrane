@@ -1,0 +1,315 @@
+{
+  "diagnostic": true,
+  "acceptance_input": false,
+  "matcher_path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/kd8/tools/extract_live.py",
+  "matcher_sha256": "89bab38771e10bcf1526ce2e40badac97a7773b870274fbe1c2f5f5023467a02",
+  "matcher_policy": "Existing exact arXiv ID or normalized full-title predicate, diagnostic only.",
+  "cards": [
+    {
+      "card_id": "card-3485a13f",
+      "query": "exact match key value cache induction head copying",
+      "query_sha256": "c8b2f1f2dcf5ad14f55bccffc75b558acf0ba180c1e976c43cd436d0d276e250",
+      "registered_work_count": 3,
+      "fresh_registered_match_count": 0,
+      "historical_local_only": {
+        "count": 6,
+        "ids": [
+          "2511.05743",
+          "2509.22947",
+          "2609.15545",
+          "2504.03022",
+          "2602.23179",
+          "2609.28029"
+        ],
+        "fresh_local_measured": false
+      },
+      "source_outcomes": {
+        "arxiv": {
+          "original_count": 0,
+          "original_error": "skipped: source is cooling down after rate limiting",
+          "fresh_count": 0,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Hwang": [],
+            "Srinivas": [],
+            "Silver": []
+          },
+          "same_returned_id_order": true
+        },
+        "openalex": {
+          "original_count": 6,
+          "original_error": null,
+          "fresh_count": 6,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Hwang": [],
+            "Srinivas": [],
+            "Silver": []
+          },
+          "same_returned_id_order": true
+        },
+        "s2": {
+          "original_count": 6,
+          "original_error": null,
+          "fresh_count": 6,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Hwang": [],
+            "Srinivas": [],
+            "Silver": []
+          },
+          "same_returned_id_order": true
+        }
+      },
+      "transport": {
+        "source_receipts": 3,
+        "attempts": 3,
+        "http_requests": 3,
+        "http_responses": 3
+      },
+      "statuses": {
+        "200": 3
+      }
+    },
+    {
+      "card_id": "card-f5ee7edb",
+      "query": "successor automaton learning from positive examples",
+      "query_sha256": "1322705b4452867b65b886a6c8d054e14bf1a2ef4642b703ecc7bb9f0888ac17",
+      "registered_work_count": 2,
+      "fresh_registered_match_count": 0,
+      "historical_local_only": {
+        "count": 6,
+        "ids": [
+          "1706.01663",
+          "2607.11953",
+          "2404.11096",
+          "2608.04334",
+          "2103.02650",
+          "1210.2452"
+        ],
+        "fresh_local_measured": false
+      },
+      "source_outcomes": {
+        "arxiv": {
+          "original_count": 0,
+          "original_error": "HTTP 429 after 4 attempts",
+          "fresh_count": 0,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Rendle": [],
+            "Rossi": []
+          },
+          "same_returned_id_order": true
+        },
+        "openalex": {
+          "original_count": 6,
+          "original_error": null,
+          "fresh_count": 6,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Rendle": [],
+            "Rossi": []
+          },
+          "same_returned_id_order": true
+        },
+        "s2": {
+          "original_count": 6,
+          "original_error": null,
+          "fresh_count": 6,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Rendle": [],
+            "Rossi": []
+          },
+          "same_returned_id_order": true
+        }
+      },
+      "transport": {
+        "source_receipts": 3,
+        "attempts": 4,
+        "http_requests": 4,
+        "http_responses": 4
+      },
+      "statuses": {
+        "200": 3,
+        "429": 1
+      }
+    },
+    {
+      "card_id": "card-a4f684fb",
+      "query": "permutation automata group-structured state transitions",
+      "query_sha256": "bbec48499a57395574e94f2c6606abcd7f356dace1f5c4ec0011941029bb13b4",
+      "registered_work_count": 2,
+      "fresh_registered_match_count": 0,
+      "historical_local_only": {
+        "count": 6,
+        "ids": [
+          "2107.04683",
+          "2407.08135",
+          "2409.19172",
+          "2605.10852",
+          "2007.09104",
+          "1805.02154"
+        ],
+        "fresh_local_measured": false
+      },
+      "source_outcomes": {
+        "arxiv": {
+          "original_count": 2,
+          "original_error": null,
+          "fresh_count": 2,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "SciPy QAP 2-opt": [],
+            "Rehn": []
+          },
+          "same_returned_id_order": true
+        },
+        "openalex": {
+          "original_count": 6,
+          "original_error": null,
+          "fresh_count": 6,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "SciPy QAP 2-opt": [],
+            "Rehn": []
+          },
+          "same_returned_id_order": true
+        },
+        "s2": {
+          "original_count": 6,
+          "original_error": null,
+          "fresh_count": 6,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "SciPy QAP 2-opt": [],
+            "Rehn": []
+          },
+          "same_returned_id_order": true
+        }
+      },
+      "transport": {
+        "source_receipts": 3,
+        "attempts": 3,
+        "http_requests": 3,
+        "http_responses": 3
+      },
+      "statuses": {
+        "200": 3
+      }
+    },
+    {
+      "card_id": "card-89248ee5",
+      "query": "sparse distributed memory hard location activation Kanerva",
+      "query_sha256": "db0ee97f491634c907a5151f3ea45c8dcc752488dca743b39ac61923a753e9d2",
+      "registered_work_count": 4,
+      "fresh_registered_match_count": 0,
+      "historical_local_only": {
+        "count": 6,
+        "ids": [
+          "1207.5774",
+          "1804.01756",
+          "2002.02385",
+          "1510.06342",
+          "2111.05498",
+          "2103.03905"
+        ],
+        "fresh_local_measured": false
+      },
+      "source_outcomes": {
+        "arxiv": {
+          "original_count": 0,
+          "original_error": null,
+          "fresh_count": 0,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Jiang": [],
+            "Zhou": [],
+            "Sacramento": [],
+            "Stoklosa": []
+          },
+          "same_returned_id_order": true
+        },
+        "openalex": {
+          "original_count": 6,
+          "original_error": null,
+          "fresh_count": 6,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Jiang": [],
+            "Zhou": [],
+            "Sacramento": [],
+            "Stoklosa": []
+          },
+          "same_returned_id_order": true
+        },
+        "s2": {
+          "original_count": 6,
+          "original_error": null,
+          "fresh_count": 6,
+          "fresh_errors": {},
+          "fresh_registered_matches": {
+            "Jiang": [],
+            "Zhou": [],
+            "Sacramento": [],
+            "Stoklosa": []
+          },
+          "same_returned_id_order": true
+        }
+      },
+      "transport": {
+        "source_receipts": 3,
+        "attempts": 3,
+        "http_requests": 3,
+        "http_responses": 3
+      },
+      "statuses": {
+        "200": 3
+      }
+    }
+  ],
+  "pacing": {
+    "arxiv": {
+      "attempts": 4,
+      "observed_start_gaps_s": [
+        3.0217882500728592,
+        8.423306999960914,
+        3.0030880420235917
+      ],
+      "minimum_observed_gap_s": 3.0030880420235917,
+      "configured_interval_s": 3.0,
+      "all_own_gaps_meet_interval": true
+    },
+    "openalex": {
+      "attempts": 4,
+      "observed_start_gaps_s": [
+        2.5687617500079796,
+        8.51155091705732,
+        3.01591316703707
+      ],
+      "minimum_observed_gap_s": 2.5687617500079796,
+      "configured_interval_s": 0.1,
+      "all_own_gaps_meet_interval": true
+    },
+    "s2": {
+      "attempts": 5,
+      "observed_start_gaps_s": [
+        2.4233937909593806,
+        5.6944113339995965,
+        2.575183500070125,
+        3.2433463329216465
+      ],
+      "minimum_observed_gap_s": 2.4233937909593806,
+      "configured_interval_s": 1.1,
+      "all_own_gaps_meet_interval": true
+    }
+  },
+  "registered_matches": 0,
+  "registered_works": 11,
+  "original_pa2": {
+    "status": "FAIL",
+    "retrieved_cards": 2,
+    "cards": 4,
+    "required": 3
+  }
+}

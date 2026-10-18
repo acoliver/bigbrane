@@ -1,0 +1,289 @@
+{
+  "created_at": "2026-10-18T22:20:50.827362+00:00",
+  "diagnostic": true,
+  "acceptance_input": false,
+  "selection_rule": "First saved initial literature_search per card in original ledger order. No semantic selection.",
+  "main_revision": "82580a6630c4b5c9155f00d603f96682d5818e7c",
+  "runtime_revision": "e0e2c5a5a5b8d2541428ae978c226a7f8f8f9b77",
+  "runtime_root": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "client": "hybrid.literature.client.Literature.search_with_receipt",
+  "operation_order": "card order below, then arxiv/openalex/s2; one single-source search per operation",
+  "source_operations": 12,
+  "sources": [
+    "arxiv",
+    "openalex",
+    "s2"
+  ],
+  "local_policy": "No fresh local calls. Historical local counts retained separately from network measurements.",
+  "cache_root": "/Volumes/XS1000/acoliver/projects/bigbrane/results-wt/transport-measurement/raw-cache",
+  "pacer_slots": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/var/slots",
+  "min_interval_s": {
+    "arxiv": 3.0,
+    "openalex": 0.1,
+    "s2": 1.1
+  },
+  "max_retries": 3,
+  "max_attempts": 4,
+  "http_timeout_s": 30.0,
+  "follow_redirects": true,
+  "base_backoff_s": 5.0,
+  "max_backoff_s": 120.0,
+  "cooldown_s": 600.0,
+  "retry_after_policy": "Existing transport unchanged, including numeric cap and HTTP-date exponential fallback.",
+  "configured_key_present": {
+    "arxiv": false,
+    "openalex": true,
+    "s2": true
+  },
+  "contact_configured": false,
+  "no_extra_retries": true,
+  "no_fallback_keys": true,
+  "max_run_wall_s": 1600,
+  "implementation_sha256": {
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/__init__.py": "f98dc94ddb93836eed8a91bea1874f89436ea3d32114816c091ce6661edaec09",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/__main__.py": "1105b07932a248daa7db1082a7ed3cc1d3d9f0bd2d5d9547c6939cc8a6bf4264",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/arxiv_index.py": "99613fb7601c22789b025cf9c8f666f849454a3dbfd5358488759e1235ae2fce",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/build_seed.py": "f0e5887f0b7a5aa174f07e956398011b87591cea4f70857381cd3e118b9c3c9d",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache.py": "4bee5110092a2130aa4091d100359e378865ea2afd985f5114620247fbd32638",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/client.py": "db0504e69ffb9e0766c6d93f09aa277d34084480e4105ba6960c9b448c6b78cc",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/events.py": "947244c1bd2ccd811da03b7474bf2bd2f4fb9728f988d23d93851bdcf87b4c01",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/harvest.py": "51bcb070d00738646dddc7f02a51a91eea9f085a5eaae2754870b4fb8d3d187e",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/key_report.py": "57da2c32f4f72e764a5e8220d6976923489493d4be644c99e0d71fe1cdb5e232",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/keys.py": "8f17d432ef3c1e212bbb2995ec38a14d66e6e411f6215706bdd9579dc2a38736",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/oai.py": "0b363fbac3c2008e59b9eb0a35f8e9d9f81a099f45175c5ea62b7ef6a2a0f81e",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/paper.py": "654f6f1a53487266fa6dad34c9293a9fac327ea99595567716f2a44fd2195b46",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/prior_art.py": "2b13584e76fdb18f27cd61cb0441f94d94aa2a00d9b916a488f8818b6cabecff",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/provenance.py": "6d2e825eb2996fbdf290491caee74b03be514e03e4d09ccc656535acfed75532",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sampling.py": "9051a5909a0b036a328b5c15937f8074d06e8f28ac6e880c664d71ea3d5fe208",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/schemas.py": "3ee2cc18e7d6cbb05b38e095b2859f00eba14bfd95d6d9d996d21049cf5115be",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/seed.py": "4e813b672ffea7a9eab83889797f58cc2e9adea2f3987bbd16fe9df12dfa42e2",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/transport.py": "147e2d890fd4817d5ea59d7f9f799acca2e851a9452a82be6f80f57c1278422e",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/__init__.py": "7f527bbca917c9c32e8a9a5709d13f6655654d58ce6454ef5bf77d4af25d503c",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/arxiv.py": "be20d9f3f0ceb52b2b2317ea0f18f4256f031c171390ffc3374a9411f6d61c11",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/arxiv_local.py": "4ac218dfa0e9892c76175885a445ab1d0eed5b0365027393509e2ea4b7795135",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/openalex.py": "a7ea5c2023bc1515ac289dd87c0ecda37ed0d4f5f3e58d4622ed419e7889a256",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/semantic_scholar.py": "6f0f9608a3d64bda886d87e7a2edfb37a07cd832abeaf666e3a2d1adec74e7e1",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/research/ledger.py": "73360afda31d4c42759efd06826304ac3656b54eb755527243d4be504a9a48d1",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/research/stages/s2_prior_art.py": "d3fea735f0605d764b7f4690e586b1160b1267bb630205cc8e9358448b8d8490",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/slots.py": "5cf0cfca1a5bb871defd748d4589512fca7ecee545c286bf3144cd855e15670b"
+  },
+  "tool_sha256": {
+    "measure.py": "e126bffa580b7c660fe23f5ba61d01344a4209555244d6a757701963caff852d",
+    "test_measure.py": "652e90508c356be0209be3c5b9b1721abb5f378a85bd8e202deeb20ffc2e4356"
+  },
+  "cards": [
+    {
+      "card_id": "card-3485a13f",
+      "query": "exact match key value cache induction head copying",
+      "query_sha256": "c8b2f1f2dcf5ad14f55bccffc75b558acf0ba180c1e976c43cd436d0d276e250",
+      "limit": 6,
+      "original_ledger": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/kd8/runs/flipA/ledger.jsonl",
+      "original_ledger_sha256": "ca5f75d59a335961a0e439a179c0f742133acab1f41f152c8af992966c9b1c3d",
+      "original_receipt_seq": 319,
+      "original_receipt_sha256": "a5053f14ea1fee8fbbe295ded2f54799b3e61d42e65b896043b504e41d9b36ba",
+      "original_event_hash": "e6c863578b79bd59de073deb2d392aa0152fb9497d194e14160fbf78a9ce75aa",
+      "proposal_seq": 308,
+      "original_errors": {
+        "arxiv": "skipped: source is cooling down after rate limiting"
+      },
+      "original_counts": {
+        "arxiv": 0,
+        "arxiv_local": 6,
+        "openalex": 6,
+        "s2": 6
+      },
+      "requests": {
+        "arxiv": {
+          "endpoint": "https://export.arxiv.org",
+          "public_url": "https://export.arxiv.org/api/query",
+          "public_params": {
+            "search_query": "all:exact AND all:match AND all:key AND all:value AND all:cache AND all:induction AND all:head AND all:copying",
+            "start": "0",
+            "max_results": "6",
+            "sortBy": "relevance"
+          },
+          "request_id": "ba7fc895c3a753453f84e4ffa99a67f35d228ac02d08e558a0ee840867932763"
+        },
+        "openalex": {
+          "endpoint": "https://api.openalex.org",
+          "public_url": "https://api.openalex.org/works",
+          "public_params": {
+            "search": "exact match key value cache induction head copying",
+            "per-page": "6",
+            "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+          },
+          "request_id": "d6bdc94ef7ceddf3b5844175fda133d9f45c99a67b336cba10a835c22d76621f"
+        },
+        "s2": {
+          "endpoint": "https://api.semanticscholar.org",
+          "public_url": "https://api.semanticscholar.org/graph/v1/paper/search",
+          "public_params": {
+            "query": "exact match key value cache induction head copying",
+            "limit": "6",
+            "fields": "paperId,externalIds,url,title,abstract,year,authors,venue,citationCount"
+          },
+          "request_id": "ca7b0d213318234b5e072a71a5faced97757ed875c1aa28242f08182dab1a641"
+        }
+      }
+    },
+    {
+      "card_id": "card-f5ee7edb",
+      "query": "successor automaton learning from positive examples",
+      "query_sha256": "1322705b4452867b65b886a6c8d054e14bf1a2ef4642b703ecc7bb9f0888ac17",
+      "limit": 6,
+      "original_ledger": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/kd8/runs/flipA/ledger.jsonl",
+      "original_ledger_sha256": "ca5f75d59a335961a0e439a179c0f742133acab1f41f152c8af992966c9b1c3d",
+      "original_receipt_seq": 196,
+      "original_receipt_sha256": "a881a9c5fa5335db99fb4b52975d836a1f4c70e2f25528de1ca5169b730bf3e6",
+      "original_event_hash": "046395f362140b1dc357256cf65e7d839bed33c86e2b1e58805d420c14dce796",
+      "proposal_seq": 177,
+      "original_errors": {
+        "arxiv": "HTTP 429 after 4 attempts"
+      },
+      "original_counts": {
+        "arxiv": 0,
+        "arxiv_local": 6,
+        "openalex": 6,
+        "s2": 6
+      },
+      "requests": {
+        "arxiv": {
+          "endpoint": "https://export.arxiv.org",
+          "public_url": "https://export.arxiv.org/api/query",
+          "public_params": {
+            "search_query": "all:successor AND all:automaton AND all:learning AND all:from AND all:positive AND all:examples",
+            "start": "0",
+            "max_results": "6",
+            "sortBy": "relevance"
+          },
+          "request_id": "4dd55e04154603bf6496318e78a0ccd3d8fd73416ce828b6811c26409620a9cf"
+        },
+        "openalex": {
+          "endpoint": "https://api.openalex.org",
+          "public_url": "https://api.openalex.org/works",
+          "public_params": {
+            "search": "successor automaton learning from positive examples",
+            "per-page": "6",
+            "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+          },
+          "request_id": "b3bbe4d00bbf950c65391a090d6c15c25e56f6ea6431d4cf1f6ca4ac25e30dde"
+        },
+        "s2": {
+          "endpoint": "https://api.semanticscholar.org",
+          "public_url": "https://api.semanticscholar.org/graph/v1/paper/search",
+          "public_params": {
+            "query": "successor automaton learning from positive examples",
+            "limit": "6",
+            "fields": "paperId,externalIds,url,title,abstract,year,authors,venue,citationCount"
+          },
+          "request_id": "7f8c4b523bc7e55abd73576f73da2ceb98f6ffbed308bd19ccb3d75b33e21849"
+        }
+      }
+    },
+    {
+      "card_id": "card-a4f684fb",
+      "query": "permutation automata group-structured state transitions",
+      "query_sha256": "bbec48499a57395574e94f2c6606abcd7f356dace1f5c4ec0011941029bb13b4",
+      "limit": 6,
+      "original_ledger": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/kd8/runs/flipB/ledger.jsonl",
+      "original_ledger_sha256": "561f947eaef2e563ea656111afc8fac3023e061a964cdd4acc5312e437c033c1",
+      "original_receipt_seq": 105,
+      "original_receipt_sha256": "a43abbd94a9ba7d89bdc606cd7bf7a1133646f943209c7d4f427a37f5cdafe80",
+      "original_event_hash": "4901d54e02047541586d864a5c464f8b90bf06abf7a415ff2c6213b00de7a94b",
+      "proposal_seq": 98,
+      "original_errors": {},
+      "original_counts": {
+        "arxiv": 2,
+        "arxiv_local": 6,
+        "openalex": 6,
+        "s2": 6
+      },
+      "requests": {
+        "arxiv": {
+          "endpoint": "https://export.arxiv.org",
+          "public_url": "https://export.arxiv.org/api/query",
+          "public_params": {
+            "search_query": "all:permutation AND all:automata AND all:group AND all:structured AND all:state AND all:transitions",
+            "start": "0",
+            "max_results": "6",
+            "sortBy": "relevance"
+          },
+          "request_id": "19745cd5c88130f2b4a8e58617688c182c7aee59d0ae4c05b28b2a931d602b2f"
+        },
+        "openalex": {
+          "endpoint": "https://api.openalex.org",
+          "public_url": "https://api.openalex.org/works",
+          "public_params": {
+            "search": "permutation automata group-structured state transitions",
+            "per-page": "6",
+            "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+          },
+          "request_id": "30830eeec194f4b16c398cb2fa5e83d9ae17a0d913fcd7495ed22e417023de88"
+        },
+        "s2": {
+          "endpoint": "https://api.semanticscholar.org",
+          "public_url": "https://api.semanticscholar.org/graph/v1/paper/search",
+          "public_params": {
+            "query": "permutation automata group-structured state transitions",
+            "limit": "6",
+            "fields": "paperId,externalIds,url,title,abstract,year,authors,venue,citationCount"
+          },
+          "request_id": "adb13dbc47819c5b57861b284b859d566fb84c8dd36d15baa7035094463db427"
+        }
+      }
+    },
+    {
+      "card_id": "card-89248ee5",
+      "query": "sparse distributed memory hard location activation Kanerva",
+      "query_sha256": "db0ee97f491634c907a5151f3ea45c8dcc752488dca743b39ac61923a753e9d2",
+      "limit": 6,
+      "original_ledger": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/kd8/runs/flipB/ledger.jsonl",
+      "original_ledger_sha256": "561f947eaef2e563ea656111afc8fac3023e061a964cdd4acc5312e437c033c1",
+      "original_receipt_seq": 249,
+      "original_receipt_sha256": "a7340f08524071b80ebd517d77a9a873d330f80e6cb2d590deece35ff3369b5f",
+      "original_event_hash": "8fc507466f782561867e4ea9e70578cccbea7ace314ece75dc334c6f5854e1e2",
+      "proposal_seq": 237,
+      "original_errors": {},
+      "original_counts": {
+        "arxiv": 0,
+        "arxiv_local": 6,
+        "openalex": 6,
+        "s2": 6
+      },
+      "requests": {
+        "arxiv": {
+          "endpoint": "https://export.arxiv.org",
+          "public_url": "https://export.arxiv.org/api/query",
+          "public_params": {
+            "search_query": "all:sparse AND all:distributed AND all:memory AND all:hard AND all:location AND all:activation AND all:Kanerva",
+            "start": "0",
+            "max_results": "6",
+            "sortBy": "relevance"
+          },
+          "request_id": "de4fcf4d059ec6e28cab23da742493b20bb94402fc96bb575fafdc46335f2656"
+        },
+        "openalex": {
+          "endpoint": "https://api.openalex.org",
+          "public_url": "https://api.openalex.org/works",
+          "public_params": {
+            "search": "sparse distributed memory hard location activation Kanerva",
+            "per-page": "6",
+            "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+          },
+          "request_id": "286dc245d47b847b8fc36f1262f757313b236e77b676e5d606f5b63d966d0fef"
+        },
+        "s2": {
+          "endpoint": "https://api.semanticscholar.org",
+          "public_url": "https://api.semanticscholar.org/graph/v1/paper/search",
+          "public_params": {
+            "query": "sparse distributed memory hard location activation Kanerva",
+            "limit": "6",
+            "fields": "paperId,externalIds,url,title,abstract,year,authors,venue,citationCount"
+          },
+          "request_id": "d7d8574a94a471d21a375273b80647b749f2b5894ed35a45da542fa86ef242f4"
+        }
+      }
+    }
+  ],
+  "fixture_sha256": "4b5874f955a921b473c7927c10f06baaeb7348e92022d9990ef37fffb146de67"
+}

@@ -1,17 +1,21 @@
 """Lens registry, the seed reading list (TOML), and the search build log."""
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
+from urllib.parse import urlsplit
 
 from hybrid.literature.paper import Paper, paper_from_dict, paper_to_dict
 
 HERE = Path(__file__).resolve().parent
 SEED_PATH = HERE / "seed_reading_list.toml"
 BUILD_LOG_PATH = HERE / "cache" / "seed_build_log.jsonl"
+SEED_PROVENANCE_PATH = HERE / "seed_provenance.json"
 
 KNOWN_ALTERNATIVES_LENS = "known_llm_alternatives_to_avoid_reinventing"
 
@@ -142,18 +146,167 @@ def search_row(lens: str, receipt: Any) -> dict[str, Any]:
     }
 
 
-def read_build_log(path: Path = BUILD_LOG_PATH) -> list[dict[str, Any]]:
-    if not Path(path).exists():
-        return []
-    return [json.loads(line) for line in Path(path).read_text(encoding="utf-8").splitlines() if line]
+def iter_build_log(path: Path) -> Iterator[dict[str, Any]]:
+    with Path(path).open(encoding="utf-8") as handle:
+        for line in handle:
+            if line.strip():
+                yield json.loads(line)
+
+
+def read_build_log(path: Path | None = None) -> list[dict[str, Any]]:
+    """Shipped seed history by default; an explicit path reads a raw JSONL search log."""
+    if path is None:
+        return read_seed_provenance()
+    return list(iter_build_log(path))
 
 
 def cached_search_papers(lens: str, path: Path = BUILD_LOG_PATH) -> list[Paper]:
     """Raw search hits recorded for this lens. These are the cached search results for the lens."""
     papers = []
-    for row in read_build_log(path):
+    for row in iter_build_log(path):
         if row["lens"] != lens:
             continue
         for found in row["per_source"].values():
             papers.extend(paper_from_dict(item) for item in found)
     return papers
+
+
+
+def _json_bytes(value: Any) -> bytes:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def _digest(value: Any) -> str:
+    return hashlib.sha256(_json_bytes(value)).hexdigest()
+
+
+def _expected(entries: Iterable[SeedEntry]) -> dict[tuple[str, str, str], dict[str, Any]]:
+    return {(e.lens, e.paper.source, e.paper.source_id): paper_to_dict(e.paper) for e in entries}
+
+
+def _validate_request(source: str, row: dict[str, Any], receipt: dict[str, Any]) -> None:
+    from hybrid.literature import sources
+    from hybrid.literature.cache import request_key
+
+    request = sources.MODULES[source].search_request(row["query"], row["limit"])
+    actual, expected = urlsplit(receipt["url"]), urlsplit(request.url)
+    # Original arXiv receipts used HTTP. Validate the recorded endpoint, not a new fetch.
+    if (actual.scheme not in {"http", "https"} or actual.netloc != expected.netloc
+            or actual.path != expected.path or actual.query or actual.fragment
+            or receipt["params"] != request.params or receipt["source"] != source
+            or receipt["status"] != 200):
+        raise ValueError("source receipt request mismatch")
+    if receipt["request_sha256"] != request_key(source, receipt["url"], receipt["params"]):
+        raise ValueError("source receipt request hash mismatch")
+
+
+def compile_seed_provenance(
+    entries: Iterable[SeedEntry], log_path: Path, cache_root: Path,
+    *, receipt_paths: dict[tuple[str, str, str], Path] | None = None,
+) -> dict[str, Any]:
+    """Project original hits after re-parsing their actual HTTP receipts, without network I/O.
+
+    Memory holds one raw row/response plus the latest hit for each selected seed key.
+    Explicit receipt paths allow recovery from recorded historical request identities.
+    """
+    from hybrid.literature import sources
+    from hybrid.literature.cache import request_key
+
+    expected = _expected(entries)
+    selected: dict[tuple[str, str, str], tuple[int, dict, str, dict, dict]] = {}
+    log_hash = hashlib.sha256()
+    log_bytes = 0
+    row_count = 0
+    with Path(log_path).open("rb") as handle:
+        for number, line in enumerate(handle, 1):
+            log_hash.update(line)
+            log_bytes += len(line)
+            if not line.strip():
+                continue
+            row_count += 1
+            row = json.loads(line)
+            for source, found in row["per_source"].items():
+                picked = [item for item in found if (row["lens"], source, item["source_id"]) in expected]
+                if not picked:
+                    continue
+                if source not in row["sources"] or source in row["errors"]:
+                    raise ValueError("selected source was not a successful search")
+                module = sources.MODULES[source]
+                request = module.search_request(row["query"], row["limit"])
+                key = request_key(source, request.url, request.params)
+                path = (Path(cache_root) / source / f"{key}.json" if receipt_paths is None
+                        else Path(receipt_paths[(row["lens"], row["query"], source)]))
+                raw = path.read_bytes()
+                envelope = json.loads(raw)
+                receipt = {field: envelope[field] for field in ("source", "url", "params", "status", "fetched_at")}
+                receipt.update(
+                    request_sha256=request_key(source, envelope["url"], envelope["params"]),
+                    cache_sha256=hashlib.sha256(raw).hexdigest(),
+                    cache_bytes=len(raw),
+                    body_sha256=hashlib.sha256(envelope["body"].encode("utf-8")).hexdigest(),
+                )
+                _validate_request(source, row, receipt)
+                if path.stem != receipt["request_sha256"]:
+                    raise ValueError("source cache filename hash mismatch")
+                parsed = {p.source_id: paper_to_dict(p) for p in module.parse_search(envelope["body"], envelope["fetched_at"])}
+                metadata = {field: row[field] for field in ("lens", "query", "ts", "sources", "limit", "errors")}
+                for item in picked:
+                    if parsed.get(item["source_id"]) != item or item["source"] != source:
+                        raise ValueError("logged hit does not match original source receipt")
+                    selected[(row["lens"], source, item["source_id"])] = (
+                        number, metadata, hashlib.sha256(line).hexdigest(), receipt, item,
+                    )
+    actual = {key: value[4] for key, value in selected.items()}
+    if actual != expected:
+        raise ValueError(f"seed metadata unsupported by original receipts: {sorted(k for k in expected if actual.get(k) != expected[k])}")
+    grouped: dict[int, dict[str, Any]] = {}
+    for key, (number, metadata, row_hash, receipt, item) in sorted(selected.items()):
+        row = grouped.setdefault(number, {**metadata, "per_source": {}, "origin": {
+            "line": number, "row_sha256": row_hash, "receipts": {},
+        }})
+        row["per_source"].setdefault(key[1], []).append(item)
+        row["origin"]["receipts"][key[1]] = receipt
+    payload = {"format": "bigbrane-seed-provenance-v1", "log_sha256": log_hash.hexdigest(),
+               "log_bytes": log_bytes, "log_rows": row_count,
+               "rows": [grouped[n] for n in sorted(grouped)]}
+    return {"payload_sha256": _digest(payload), "payload": payload}
+
+
+def write_seed_provenance(document: dict[str, Any], path: Path = SEED_PROVENANCE_PATH) -> None:
+    path = Path(path)
+    pending = path.with_suffix(path.suffix + ".new")
+    pending.write_bytes(_json_bytes(document) + b"\n")
+    os.replace(pending, path)
+
+
+def read_seed_provenance(
+    path: Path = SEED_PROVENANCE_PATH, seed_path: Path = SEED_PATH,
+) -> list[dict[str, Any]]:
+    """Validate the shipped projection, never the ignored build-machine cache.
+
+    Hashes preserve receipt identity, not publisher signatures. Re-authentication of
+    raw bytes is performed by compile_seed_provenance when generating the artifact.
+    """
+    document = json.loads(Path(path).read_bytes())
+    payload = document["payload"]
+    if document["payload_sha256"] != _digest(payload):
+        raise ValueError("seed provenance checksum mismatch")
+    if payload["format"] != "bigbrane-seed-provenance-v1":
+        raise ValueError("unknown seed provenance format")
+    expected = _expected(load_seed(seed_path))
+    actual = {}
+    for row in payload["rows"]:
+        check_lens(row["lens"])
+        for source, found in row["per_source"].items():
+            receipt = row["origin"]["receipts"][source]
+            _validate_request(source, row, receipt)
+            if source not in row["sources"] or source in row["errors"]:
+                raise ValueError("selected source was not a successful search")
+            for item in found:
+                key = (row["lens"], source, item["source_id"])
+                if item["source"] != source or item["fetched_at"] != receipt["fetched_at"] or key in actual:
+                    raise ValueError("seed provenance source identity mismatch")
+                actual[key] = item
+    if actual != expected:
+        raise ValueError("seed provenance does not match seed metadata")
+    return payload["rows"]
