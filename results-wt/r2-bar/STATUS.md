@@ -37,3 +37,9 @@ Budget about 350 calls.
   workspace index (gitignored) so the literature search matches the earlier runs.
 - unit tests: fakes updated, hybrid/tests/research/test_known_work.py added (14 pass); full research suite run in logs/tests-2.log
 - tools/finish.sh waits for the 12 runs, runs tools/score.py and commits SCORE.md; REPORT.md is written from it
+- Step: session started; reading state, rerunning suites
+- Step: classified failures. Stale fixtures (critic fakes without known_work_sources, textbook_transplant default True, test asserting textbook 'does not decide the gate') updated to the new contract; env-only failures (results/, runs/ absent from worktree) pending
+- Step: phase7_replay fixture's radical_enough read as known_work fields (phase7_replay.py); 4 replay tests pass
+- Step: tools/flips.py extracts per-flip artifacts to logs/flips.md
+- Step: research suite final run started (logs/tests-10-research-final.log); other suites (literature, llm, gateway, bench, math, top-level): 1827 passed + 4 env failures that pass once the worktree has .venv-hybrid and the seed build log (31 passed)
+- Step: score.py rewritten (intent dead/alive plus code); flips.py done; writing REPORT.md next

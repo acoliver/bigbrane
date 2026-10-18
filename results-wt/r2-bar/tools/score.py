@@ -55,16 +55,44 @@ for cid, (run, e) in sorted(results.items()):
     lines.append(f"| {cid} | {run} | {e['verdict']} | {classify(e)} | {BEFORE.get(cid, 'probe')} | "
                  f"{gate_line(e).replace('|', '/')} |")
 done = {c: classify(e) for c, (_, e) in results.items()}
-r1 = [(c, done.get(c, "NOT RUN")) for c in PROBE_PUBLISHED + PROBE_CONTROLS]
-ok1 = all(d == "reduces_to_known" for c, d in r1 if c in PROBE_PUBLISHED) and \
-    all(d == "excluded_family" for c, d in r1 if c in PROBE_CONTROLS)
-r2 = [(c, done.get(c, "NOT RUN")) for c in COUNTED_BEFORE]
-ok2 = all(d in ("reduces_to_known", "excluded_family") for _, d in r2)
+DEAD_VERDICTS = ("fail", "reduces_to_known")
+
+
+def is_dead(cid):
+    return cid in results and results[cid][1]["verdict"] in DEAD_VERDICTS
+
+
+def rule_lines(cards, named_gate):
+    """Each card: dead or alive (the intent of the rule) and the code it died with; whether it died at the gate the rule named."""
+    rows = []
+    for cid in cards:
+        if cid not in results:
+            rows.append(f"- {cid}: NOT RUN")
+            continue
+        status = "dead" if is_dead(cid) else "ALIVE"
+        gate = "named gate" if done[cid] in named_gate else "other gate"
+        rows.append(f"- {cid}: {status}, code {done[cid]} ({gate})")
+    return rows
+
+
+pub_gate, ctl_gate = ("reduces_to_known",), ("excluded_family",)
+cnt_gate = ("reduces_to_known", "excluded_family")
+r1_cards = PROBE_PUBLISHED + PROBE_CONTROLS
+r1_dead = all(is_dead(c) for c in r1_cards)
+r1_named = sum(done.get(c) in pub_gate for c in PROBE_PUBLISHED) + sum(done.get(c) in ctl_gate for c in PROBE_CONTROLS)
+r2_dead = all(is_dead(c) for c in COUNTED_BEFORE)
+r2_named = sum(done.get(c) in cnt_gate for c in COUNTED_BEFORE)
 flips = [c for c, d in done.items() if d == "pass"]
-lines += ["", f"## Rule 1 (novelty probe guard): {'PASS' if ok1 else 'FAIL or incomplete'}", ""]
-lines += [f"- {c}: {d}" for c, d in r1]
-lines += ["", f"## Rule 2 (counted reductions stay dead): {'PASS' if ok2 else 'FAIL or incomplete'}", ""]
-lines += [f"- {c}: {d}" for c, d in r2]
+lines += ["", f"## Rule 1 (novelty probe guard), intent: every published mechanism and both controls stay dead: "
+          f"{'MET' if r1_dead else 'NOT MET'}",
+          "", f"{sum(is_dead(c) for c in r1_cards)} of {len(r1_cards)} dead; {r1_named} of {len(r1_cards)} died at the "
+          f"gate the rule named (reduces_to_known for the 8 published, excluded_family for the 2 controls).", ""]
+lines += rule_lines(PROBE_PUBLISHED, pub_gate) + rule_lines(PROBE_CONTROLS, ctl_gate)
+lines += ["", f"## Rule 2 (counted reductions stay dead), intent: each stays dead: {'MET' if r2_dead else 'NOT MET'}",
+          "", f"{sum(is_dead(c) for c in COUNTED_BEFORE)} of {len(COUNTED_BEFORE)} dead; {r2_named} of "
+          f"{len(COUNTED_BEFORE)} died at the reduction gate itself (reduces_to_known or excluded_family); the rest "
+          f"died at another gate (no_difference, R3, R2), still dead.", ""]
+lines += rule_lines(COUNTED_BEFORE, cnt_gate)
 lines += ["", f"## Rule 3 (flips to pass): {', '.join(flips) or 'none'}", ""]
 (ROOT / "SCORE.md").write_text("\n".join(lines) + "\n")
 print("\n".join(lines))

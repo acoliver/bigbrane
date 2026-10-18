@@ -36,27 +36,31 @@ Card to base:
 | card-ebf0e99d | batch8 | fail | no_difference | R2 | gate: no_difference: difference statement rejected: The claimed change in update[0] is exactly the standard token-bucket equation with candidate evaluations substituted for traffic, so it is a different application of an unchanged known form rather than an equation-level difference.; The statement that a correctly predicted token spends zero compute is false |
 | card-f5ee7edb | batch8 | pass | pass | R2 | prior art: prior_art_undertested. The closest found work is higher-order motif link prediction (1902.06679, 1906.05059), which scores edges using two-path and higher-order motif statistics, a family related to the proposed connected-witness term Q. Long Sequence Hopfield Memory (W4379958458) uses He |
 
-## Rule 1 (novelty probe guard): FAIL or incomplete
+## Rule 1 (novelty probe guard), intent: every published mechanism and both controls stay dead: MET
 
-- card-17100001: reduces_to_known
-- card-17100002: reduces_to_known
-- card-17100003: reduces_to_known
-- card-17100004: reduces_to_known
-- card-17100005: reduces_to_known
-- card-17100006: reduces_to_known
-- card-17100007: prior_art
-- card-17100008: reduces_to_known
-- card-17100009: excluded_family
-- card-1710000a: excluded_family
+10 of 10 dead; 9 of 10 died at the gate the rule named (reduces_to_known for the 8 published, excluded_family for the 2 controls).
 
-## Rule 2 (counted reductions stay dead): FAIL or incomplete
+- card-17100001: dead, code reduces_to_known (named gate)
+- card-17100002: dead, code reduces_to_known (named gate)
+- card-17100003: dead, code reduces_to_known (named gate)
+- card-17100004: dead, code reduces_to_known (named gate)
+- card-17100005: dead, code reduces_to_known (named gate)
+- card-17100006: dead, code reduces_to_known (named gate)
+- card-17100007: dead, code prior_art (other gate)
+- card-17100008: dead, code reduces_to_known (named gate)
+- card-17100009: dead, code excluded_family (named gate)
+- card-1710000a: dead, code excluded_family (named gate)
 
-- card-76ee768c: reduces_to_known
-- card-440f0204: no_difference
-- card-62785c10: R3
-- card-83bd879a: reduces_to_known
-- card-97baae43: reduces_to_known
-- card-d6dfeac2: R2
+## Rule 2 (counted reductions stay dead), intent: each stays dead: MET
+
+6 of 6 dead; 3 of 6 died at the reduction gate itself (reduces_to_known or excluded_family); the rest died at another gate (no_difference, R3, R2), still dead.
+
+- card-76ee768c: dead, code reduces_to_known (named gate)
+- card-440f0204: dead, code no_difference (other gate)
+- card-62785c10: dead, code R3 (other gate)
+- card-83bd879a: dead, code reduces_to_known (named gate)
+- card-97baae43: dead, code reduces_to_known (named gate)
+- card-d6dfeac2: dead, code R2 (other gate)
 
 ## Rule 3 (flips to pass): card-3485a13f, card-f5ee7edb, card-8154d3b4, card-a4f684fb, card-89248ee5
 
