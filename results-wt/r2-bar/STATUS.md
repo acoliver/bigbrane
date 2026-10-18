@@ -22,11 +22,11 @@ Budget about 350 calls.
 ## Steps
 
 - [x] audit and DECISIONS rows read
-- [ ] code: A + C (critic prompt, schema, host evidence rule)
-- [ ] code: D (difference gate)
+- [x] code: A + C (critic prompt, schema, host evidence rule) e4a50d9
+- [x] code: D (difference gate) e4a50d9
 - [ ] unit tests
-- [ ] DECISIONS rows
-- [ ] replay launched
+- [x] DECISIONS rows R2A, R2C, R2D
+- [x] replay launched (12 live_check runs)
 - [ ] replay scored
 - [ ] REPORT.md
 
@@ -35,3 +35,5 @@ Budget about 350 calls.
 - Replay launched (4 nohup groups: recheck, batch8, probeA, probeB) via results-wt/r2-bar/tools/run_replay.sh;
   logs in results-wt/r2-bar/logs, runs in results-wt/r2-bar/runs. data/arxiv-index is a symlink to the main
   workspace index (gitignored) so the literature search matches the earlier runs.
+- unit tests: fakes updated, hybrid/tests/research/test_known_work.py added (14 pass); full research suite run in logs/tests-2.log
+- tools/finish.sh waits for the 12 runs, runs tools/score.py and commits SCORE.md; REPORT.md is written from it
