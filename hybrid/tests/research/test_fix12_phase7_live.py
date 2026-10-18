@@ -116,7 +116,8 @@ BIMAP_HARD = {"id": "hard_bimap", "base_family": "other_known",
               "base_form": "bidirectional map (bimap) insert with inverse uniqueness, as a capped exact-match cache",
               "update": "map[i] := j, delete other keys of j and other values of i; skip when both are owned",
               "read": "p(v) = 1 for the value bound to q, leftover mass over unowned values",
-              "transformations": [], "parameter_mapping": BIMAP_MAP, "limit_only": True}
+              "transformations": [], "parameter_mapping": BIMAP_MAP, "limit_only": True,
+              "components": [{"role": "update", "name": "bimap insert", "origin": "published", "cite": "Guava BiMap"}]}
 BIMAP_WEIGHTED = dict(BIMAP_HARD, id="weighted_bimap", limit_only=False,
                       update="insert with entry weight rho_ij, conflicting entries deleted, min-weight eviction",
                       transformations=[transform("gate", "per-entry confidence weight rho_ij on insert")])

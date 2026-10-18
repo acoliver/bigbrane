@@ -93,7 +93,23 @@
             }
           },
           "parameter_mapping": {"type": "string", "minLength": 1},
-          "limit_only": {"type": "boolean"}
+          "limit_only": {"type": "boolean"},
+          "components": {
+            "description": "KD8: the comparator's own parts, each a published component or the card's. Required in practice for families rnn, lstm_gru and other_known (the host does not count a comparator without them).",
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["role", "name", "origin", "cite"],
+              "properties": {
+                "role": {"enum": ["activation", "transition", "update", "readout", "input_map"]},
+                "name": {"type": "string", "minLength": 1},
+                "origin": {"enum": ["published", "card"]},
+                "cite": {"type": "string"}
+              }
+            }
+          }
         }
       }
     }

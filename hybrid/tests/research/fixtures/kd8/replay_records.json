@@ -1,0 +1,1150 @@
+[
+ {
+  "card": "card-8f2e71cf",
+  "source": "bigbrane/results/s2-probe-20261018/runs/s2-P/artifacts/reduction_critic/card-8f2e71cf-v7-43bcd2.json",
+  "reduces_to": "rnn",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "fixed_quadratic_rnn"
+  ],
+  "new_outcome": "unverified",
+  "new_counted": [],
+  "restated": {
+   "fixed_quadratic_rnn": "its activation 'H^2/tr(H^2) matrix square, normalized' is the card's own"
+  },
+  "comparators": [
+   {
+    "base_family": "rnn",
+    "base_form": "Elman RNN h_t = f(W h_{t-1} + U x_t), readout g(h_t) (Elman 1990), with fixed hand-set weights and a fixed activation f",
+    "id": "fixed_quadratic_rnn",
+    "limit_only": false,
+    "parameter_mapping": "h = vec(G); W = identity; U one-hot rows = vec(P_0), vec(P_1); f = normalized matrix square; g = d^d det; h_0 = vec(I/d)",
+    "read": "p_t(1) = d^d det(G_t), p_t(0) = 1 - p_t(1)",
+    "transformations": [],
+    "update": "H_t = I*G_{t-1} + P_{x_t} (W = I, U = embedding table {e e^T, J/d}); G_t = f(H_t) with f(H) = H^2 / tr(H^2)",
+    "components": [
+     {
+      "role": "activation",
+      "name": "H^2/tr(H^2) matrix square, normalized",
+      "origin": "card",
+      "cite": ""
+     },
+     {
+      "role": "readout",
+      "name": "d^d det(G)",
+      "origin": "card",
+      "cite": ""
+     },
+     {
+      "role": "input_map",
+      "name": "one-hot embedding table",
+      "origin": "card",
+      "cite": ""
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "Input-driven affine state-space recurrence s_t = A_{x_t} s_{t-1} + b_{x_t} (card's D9 ablation, equivalent to H/tr(H) normalization)",
+    "id": "affine_ssm_ablation",
+    "limit_only": false,
+    "parameter_mapping": "state s = vec(G); A_x = I/2; b_x = vec(P_x)/2; readout d^d det on the reshaped state, which at d=2 is affine in (alpha, beta, alpha^2+beta^2)",
+    "read": "p_t(1) = d^d det(G_t)",
+    "transformations": [
+     {
+      "type": "normalizer",
+      "what": "divides H_t = G_{t-1} + P_{x_t} by tr(H_t) = 2, which keeps the trace at one"
+     }
+    ],
+    "update": "G_t = (G_{t-1} + P_{x_t}) / 2, i.e. A_x = I/2, b_x = P_x/2",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Input-driven affine state-space recurrence s_t = A_{x_t} s_{t-1} + b_{x_t}",
+      "origin": "published",
+      "cite": "Input-driven affine state-space recurrence s_t = A_{x_t} s_{t-1} + b_{x_t} (card's D9 ablation, equivalent to H/tr(H) normalization)"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "fixed_quadratic_rnn",
+    "comparator": "Elman RNN with W=I, one-hot embedding table {vec(e e^T), vec(J/d)}, fixed activation f(z)=vec(M^2/tr(M^2)), readout d^d det",
+    "family": "rnn",
+    "inputs_tested": 40,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Elman RNN h_t = f(W h_{t-1} + U x_t) (Elman 1990)"
+   },
+   {
+    "declared_id": "affine_ssm_ablation",
+    "comparator": "input-driven affine SSM s_t = s_{t-1}/2 + vec(P_x)/2 (trace normalizer H/tr(H)), readout d^d det",
+    "family": "ssm",
+    "inputs_tested": 40,
+    "max_abs_diff": 0.5245302978976439,
+    "limit_only": false,
+    "transformations": [
+     "normalizer"
+    ],
+    "reference": "affine token-conditioned state-space recurrence s_t = A_x s_{t-1} + b_x (card D9 ablation)"
+   }
+  ]
+ },
+ {
+  "card": "card-136a1e9b",
+  "source": "bigbrane/results/s2-probe-20261018/runs/s2-P/artifacts/reduction_critic/card-136a1e9b-v7-ca3ca3.json",
+  "reduces_to": "rnn",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "elman_rnn_identity_w",
+   "rnn_diff_sum_basis"
+  ],
+  "new_outcome": "unverified",
+  "new_counted": [],
+  "restated": {
+   "elman_rnn_identity_w": "its activation 'u - sigma E_kappa(u) pulse-equilibrate-withdraw map' is the card's own",
+   "rnn_diff_sum_basis": "its activation 'E_kappa(S,D) closed form in rotated basis' is the card's own"
+  },
+  "comparators": [
+   {
+    "base_family": "rnn",
+    "base_form": "Elman RNN h_t = f(W h_{t-1} + U e_{v_t}), y_t = g(h_t), with fixed weights and a fixed activation (Elman 1990)",
+    "id": "elman_rnn_identity_w",
+    "limit_only": false,
+    "parameter_mapping": "hidden state h_t <- x_t = (a_t, b_t); W <- I_2; U <- pulse table w (V x 2); activation f <- pulse-equilibrate-withdraw map with constants (kappa, sigma); readout g <- harvest sigma * E_kappa",
+    "read": "y_t = sigma * E_kappa(u_t); equivalently, for sigma = 1, y_t = g(x_t) = a_t * b_t / kappa",
+    "transformations": [],
+    "update": "u_t = I x_{t-1} + w^T e_{v_t}; x_t = f(u_t) = u_t - sigma * E_kappa(u_t) * (1,1), with E_kappa(u) = 2 u_A u_B / (u_A + u_B + kappa + sqrt((u_A - u_B)^2 + 2 kappa (u_A + u_B) + kappa^2))",
+    "components": [
+     {
+      "role": "activation",
+      "name": "u - sigma E_kappa(u) pulse-equilibrate-withdraw map",
+      "origin": "card",
+      "cite": ""
+     },
+     {
+      "role": "readout",
+      "name": "sigma E_kappa(u)",
+      "origin": "card",
+      "cite": ""
+     }
+    ]
+   },
+   {
+    "base_family": "rnn",
+    "base_form": "Elman RNN with a fixed activation, written in a rotated basis (Elman 1990)",
+    "id": "rnn_diff_sum_basis",
+    "limit_only": false,
+    "parameter_mapping": "d <- b - a; s <- a + b; per-token input (beta_v - alpha_v, p_v = alpha_v + beta_v) <- rotated pulse table; kappa and sigma unchanged",
+    "read": "y_t = sigma * E_kappa(s_{t-1} + p_{v_t}, d_t)",
+    "transformations": [
+     {
+      "type": "change_of_basis",
+      "what": "invertible linear map (a, b) -> (d, s) = (b - a, a + b) applied to the state and to the pulse embeddings"
+     }
+    ],
+    "update": "d_t = d_{t-1} + (beta_{v_t} - alpha_{v_t}); s_t = s_{t-1} + p_{v_t} - 2 sigma E_kappa(s_{t-1} + p_{v_t}, d_t), where E_kappa(S, D) = (S + kappa - sqrt(D^2 + 2 kappa S + kappa^2)) / 2",
+    "components": [
+     {
+      "role": "activation",
+      "name": "E_kappa(S,D) closed form in rotated basis",
+      "origin": "card",
+      "cite": ""
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "Linear state-space recurrence S_t = A S_{t-1} + B x_t with A = I (pure accumulator / degenerate LRU)",
+    "id": "ssm_accumulator_limit",
+    "limit_only": true,
+    "parameter_mapping": "A <- I_2; B <- pulse table w; harvest -> 0 as kappa -> infinity, so the withdrawal term vanishes",
+    "read": "y_t = sigma * u_A u_B / kappa, the leading term of E_kappa as kappa -> infinity, which tends to 0",
+    "transformations": [],
+    "update": "x_t = x_{t-1} + w_{v_t}",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Linear state-space recurrence S_t = A S_{t-1} + B x_t",
+      "origin": "published",
+      "cite": "Linear state-space recurrence S_t = A S_{t-1} + B x_t with A = I (pure accumulator / degenerate LRU)"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "elman_rnn_identity_w",
+    "comparator": "fixed-weight Elman RNN, W=I_2, U=pulse table, activation u - sigma*E_kappa(u)(1,1), read sigma*E_kappa(u_t)",
+    "family": "rnn",
+    "inputs_tested": 30,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Elman RNN (Elman 1990)"
+   },
+   {
+    "declared_id": "rnn_diff_sum_basis",
+    "comparator": "Elman RNN in rotated basis (d,s)=(b-a,a+b) with E_kappa(S,D)=(S+kappa-sqrt(D^2+2kappa S+kappa^2))/2",
+    "family": "rnn",
+    "inputs_tested": 30,
+    "max_abs_diff": 8.881784197001252e-16,
+    "limit_only": false,
+    "transformations": [
+     "change_of_basis"
+    ],
+    "reference": "Elman RNN (Elman 1990), rotated basis"
+   },
+   {
+    "declared_id": "ssm_accumulator_limit",
+    "comparator": "linear accumulator x_t = x_{t-1} + w_v with read sigma*u_A*u_B/kappa, at finite kappa",
+    "family": "ssm",
+    "inputs_tested": 30,
+    "max_abs_diff": 268.4855089238337,
+    "limit_only": true,
+    "transformations": [],
+    "reference": "linear SSM with A=I (degenerate LRU)"
+   }
+  ]
+ },
+ {
+  "card": "card-383bd914",
+  "source": "bigbrane/results/s2-probe-20261018/runs/s2-P/artifacts/reduction_critic/card-383bd914-v7-ed1a97.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "block_sequential_ca_moore"
+  ],
+  "new_outcome": "unverified",
+  "new_counted": [],
+  "restated": {
+   "block_sequential_ca_moore": "its base form 'Moore machine' is a universal class, not a published mechanism"
+  },
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "Moore machine (Hopcroft and Ullman) whose transition is an asynchronous cellular automaton step under a synchronous or block-sequential update schedule (block-sequential CA, cf. 2312.15078; Demongeot et al.), with schedule chosen per input symbol",
+    "id": "block_sequential_ca_moore",
+    "limit_only": false,
+    "parameter_mapping": "Q = F_3^d gets the card's z; q_0 = all ones; local rule f(l,c,r) = c + l*r mod 3; schedule blocks {all cells} for token 0, ({even},{odd}) for token 1, empty for token 2; lambda reads cell 1; scratch u = the intermediate configuration of the block-sequential sweep",
+    "read": "y_t = z_1 (output map lambda(z) = z_1, emitted as a one-hot distribution p_a = 1{a = z_1})",
+    "transformations": [],
+    "update": "if x_t=0: z_i <- z_i + z_{i-1} z_{i+1} mod 3 for all i simultaneously; if x_t=1: first for even i, u_i = z_i + z_{i-1} z_{i+1} mod 3 (odd copied), then for odd i, z_i <- u_i + u_{i-1} u_{i+1} mod 3 (even copied from u); if x_t=2: z unchanged",
+    "components": [
+     {
+      "role": "transition",
+      "name": "block-sequential sweep of the rule c + l*r mod 3",
+      "origin": "card",
+      "cite": ""
+     },
+     {
+      "role": "readout",
+      "name": "output map z_1",
+      "origin": "card",
+      "cite": ""
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "block_sequential_ca_moore",
+    "comparator": "Moore machine with block-sequential CA transition (synchronous for token 0, even-then-odd blocks for token 1, identity for token 2), local rule c+l*r mod 3, output one-hot of cell 1",
+    "family": "other_known",
+    "inputs_tested": 300,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Moore machine (Hopcroft and Ullman) with block-sequential cellular automaton schedules (cf. arXiv 2312.15078; Demongeot et al.)"
+   }
+  ]
+ },
+ {
+  "card": "card-ea50345f",
+  "source": "bigbrane/results/s2-probe-20261018/runs/s2-P/artifacts/reduction_critic/card-ea50345f-v7-867406.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "jeffrey_ipf_step"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "jeffrey_ipf_step"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "Jeffrey's rule of conditioning on the partition {A, not A}, which is the I-projection onto {q: q(A)=mu} and one IPF scaling step (Jeffrey 1965; Csiszar 1975; Kullback 1959). The token chooses the constraint index.",
+    "id": "jeffrey_ipf_step",
+    "limit_only": false,
+    "parameter_mapping": "IPF table q -> p; constraint indicator 1_{A_v} -> M[v,:]; constraint target -> mu[v]; constraint schedule -> token stream x_t; label variable -> lab",
+    "read": "y_t[u] = sum_i M[x_t,i][lab[i]=u] p_t[i] / sum_i M[x_t,i] p_t[i]  (conditional label marginal given A_{x_t})",
+    "transformations": [],
+    "update": "s_t = sum_i M[x_t,i] p_{t-1}[i]; c_t = sum_i (1-M[x_t,i]) p_{t-1}[i]; p_t[i] = p_{t-1}[i] * (M[x_t,i] mu[x_t]/s_t + (1-M[x_t,i]) (1-mu[x_t])/c_t)",
+    "components": [
+     {
+      "role": "update",
+      "name": "Jeffrey's rule as one IPF scaling step",
+      "origin": "published",
+      "cite": "Jeffrey 1965; Kullback 1959; Csiszar 1975"
+     },
+     {
+      "role": "readout",
+      "name": "conditional label marginal given the observed cell",
+      "origin": "published",
+      "cite": "Bayesian conditioning"
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "Input-dependent diagonal linear recurrence h_t = A_{x_t} h_{t-1} (selective diagonal SSM with B = 0, as in the Mamba-style diagonal A_t)",
+    "id": "diag_ssm_block_norm",
+    "limit_only": false,
+    "parameter_mapping": "Diagonal A_{x_t} entries -> mu[x_t] where M[x_t,:]=1 and 1-mu[x_t] elsewhere; state h -> p; readout C_{x_t} -> masked label scatter from M and lab; h_0 -> uniform 1/d",
+    "read": "y_t[u] = sum_i C_{x_t}[u,i] p_t[i] / sum_i M[x_t,i] p_t[i], with C_{x_t}[u,i] = M[x_t,i][lab[i]=u]",
+    "transformations": [
+     {
+      "type": "normalizer",
+      "what": "Per-group L1 normalization of the state. Entries inside A_{x_t} are divided by their masked sum s_t and entries outside by their masked sum c_t, both computed from the comparator's own state."
+     },
+     {
+      "type": "sparsity",
+      "what": "The input token's fixed mask M[x_t,:] selects the normalizer groups and the readout support."
+     },
+     {
+      "type": "gate",
+      "what": "Input-only diagonal gate A_{x_t} = diag(mu[x_t] on A_{x_t}, 1-mu[x_t] off A_{x_t})."
+     },
+     {
+      "type": "normalizer",
+      "what": "The read is divided by the masked read mass sum_i M[x_t,i] p_t[i]."
+     }
+    ],
+    "update": "g_t = N_{x_t}(p_{t-1}) with g_t[i] = p_{t-1}[i] / (M[x_t,i] s_t + (1-M[x_t,i]) c_t), where s_t and c_t are the masked sums of p_{t-1}; p_t = diag(mu[x_t] M[x_t,:] + (1-mu[x_t])(1-M[x_t,:])) g_t",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Input-dependent diagonal linear recurrence h_t = A_{x_t} h_{t-1}",
+      "origin": "published",
+      "cite": "Input-dependent diagonal linear recurrence h_t = A_{x_t} h_{t-1} (selective diagonal SSM with B = 0, as in the Mamba-style diagonal A_t)"
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "Input-only diagonal multiplicative recurrence with global renormalization (Hedge / specialist exponential weights, Bayes filtering), which is the card's own D6 comparator",
+    "id": "hedge_global_norm",
+    "limit_only": false,
+    "parameter_mapping": "Same D_{x_t} as in diag_ssm_block_norm. This is the plain published form, declared beside the repair. It is expected to differ from the card, because its updates commute (order_gap 0).",
+    "read": "y_t[u] = sum_i M[x_t,i][lab[i]=u] p_t[i] / sum_i M[x_t,i] p_t[i]",
+    "transformations": [
+     {
+      "type": "normalizer",
+      "what": "Global L1 renormalization of the state."
+     },
+     {
+      "type": "normalizer",
+      "what": "The read is divided by the masked read mass."
+     }
+    ],
+    "update": "p_t = D_{x_t} p_{t-1} / sum(D_{x_t} p_{t-1}), with D_{x_t} = diag(mu[x_t] M[x_t,:] + (1-mu[x_t])(1-M[x_t,:]))",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Input-only diagonal multiplicative recurrence",
+      "origin": "published",
+      "cite": "Input-only diagonal multiplicative recurrence with global renormalization (Hedge / specialist exponential weights, Bayes filtering), which is the card's own D6 comparator"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "jeffrey_ipf_step",
+    "comparator": "Jeffrey's rule / I-projection / one IPF scaling step, token-selected constraint, conditional label readout",
+    "family": "other_known",
+    "inputs_tested": 50,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Jeffrey 1965; Kullback 1959; Csiszar 1975 (I-divergence geometry, IPF)"
+   },
+   {
+    "declared_id": "diag_ssm_block_norm",
+    "comparator": "input-only diagonal recurrence with per-group L1 normalizer over input-masked groups, masked normalized read",
+    "family": "ssm",
+    "inputs_tested": 50,
+    "max_abs_diff": 2.220446049250313e-16,
+    "limit_only": false,
+    "transformations": [
+     "normalizer",
+     "sparsity",
+     "gate",
+     "normalizer"
+    ],
+    "reference": "selective diagonal SSM h_t = A_{x_t} h_{t-1} (Mamba, Gu and Dao 2023) with declared repairs"
+   },
+   {
+    "declared_id": "hedge_global_norm",
+    "comparator": "diagonal multiplicative recurrence with global renormalization (Hedge / Bayes filter), masked normalized read",
+    "family": "ssm",
+    "inputs_tested": 50,
+    "max_abs_diff": 0.8685856002403578,
+    "limit_only": false,
+    "transformations": [
+     "normalizer",
+     "normalizer"
+    ],
+    "reference": "Freund and Schapire 1997 Hedge; Freund, Schapire, Singer, Warmuth 1997 specialists; Bayes filtering"
+   }
+  ]
+ },
+ {
+  "card": "card-17100001",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100001/artifacts/reduction_critic/card-17100001-v3-c536e5.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "dpda_dyck2_textbook",
+   "hard_stack_rnn"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "dpda_dyck2_textbook",
+   "hard_stack_rnn"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "Deterministic pushdown automaton for Dyck-2 (Ginsburg and Greibach 1966, Information and Control 9:620-648; Hopcroft and Ullman, Introduction to Automata Theory, ch. 10), accepting by final state with empty stack",
+    "id": "dpda_dyck2_textbook",
+    "limit_only": false,
+    "parameter_mapping": "Card q -> DPDA control state (live = accepting control, dead = sink); card z -> DPDA stack over Gamma={(,[}, with eps as the empty stack; card delta -> DPDA transition function; match = {) -> (, ] -> [}.",
+    "read": "y_t = 1[q_t = live and z_t = eps]",
+    "transformations": [],
+    "update": "if q_{t-1}=live and x_t in {(,[}: z_t = z_{t-1}\u00b7x_t, q_t=live; if q_{t-1}=live and x_t in {),]} and top(z_{t-1}) = match(x_t): z_t = pop(z_{t-1}), q_t=live; if q_{t-1}=live and (z_{t-1}=eps or top(z_{t-1}) != match(x_t)): q_t=dead, z_t=z_{t-1}; if q_{t-1}=dead: q_t=dead, z_t=z_{t-1}",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Deterministic pushdown automaton for Dyck-2",
+      "origin": "published",
+      "cite": "Deterministic pushdown automaton for Dyck-2 (Ginsburg and Greibach 1966, Information and Control 9:620-648; Hopcroft and Ullman, Introduction to Automata Theory, ch. 10), accepting by final state with"
+     }
+    ]
+   },
+   {
+    "base_family": "other_known",
+    "base_form": "Stack-augmented RNN with push/pop/no-op actions (Joulin and Mikolov 2015, Inferring Algorithmic Patterns with Stack-Augmented RNNs; Grefenstette et al. 2015 neural stack), taken with one-hot hard actions",
+    "id": "hard_stack_rnn",
+    "limit_only": true,
+    "parameter_mapping": "The controller weights W are set so that the action equals the card's delta: push on openers, pop on a matching closer given top(z), kill on a mismatch or underflow. The soft action probabilities go to one-hot in the hard-action limit.",
+    "read": "y_t = 1[q_t = live and z_t = eps]",
+    "transformations": [],
+    "update": "a_t = argmax softmax(W [h_{t-1}; x_t; top(z_{t-1})]) in {push(x_t), pop, kill}; z_t = apply(a_t, z_{t-1}); q_t = dead if a_t = kill or q_{t-1} = dead, else live",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Stack-augmented RNN",
+      "origin": "published",
+      "cite": "Stack-augmented RNN with push/pop/no-op actions (Joulin and Mikolov 2015, Inferring Algorithmic Patterns with Stack-Augmented RNNs; Grefenstette et al. 2015 neural stack), taken with one-hot hard acti"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "dpda_dyck2_textbook",
+    "comparator": "Textbook DPDA for Dyck-2, accept by final state with empty stack",
+    "family": "other_known",
+    "inputs_tested": 1532,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Ginsburg and Greibach 1966, Information and Control 9:620-648; Hopcroft and Ullman ch. 10"
+   },
+   {
+    "declared_id": "hard_stack_rnn",
+    "comparator": "Stack-augmented RNN with one-hot (argmax) push/pop/kill actions",
+    "family": "other_known",
+    "inputs_tested": 1532,
+    "max_abs_diff": 0.0,
+    "limit_only": true,
+    "transformations": [],
+    "reference": "Joulin and Mikolov 2015; Grefenstette et al. 2015"
+   }
+  ]
+ },
+ {
+  "card": "card-17100002",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100002/artifacts/reduction_critic/card-17100002-v3-e25478.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "queue_automaton"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "queue_automaton"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "Real-time deterministic one-queue automaton (Baeten and Luttik 2025, arXiv:2502.08345; Post machine) for the copy language w#w",
+    "id": "queue_automaton",
+    "limit_only": false,
+    "parameter_mapping": "q_t gives the control state, Q_t the queue, delta the transition function; there are no learned parameters",
+    "read": "y_t = 1[q_t = compare and Q_t = epsilon]",
+    "transformations": [],
+    "update": "store: Q_t = Q_{t-1}\u00b7x_t for x_t in {a,b}; x_t=#: q_t=compare; compare: if Q_{t-1} nonempty and front(Q_{t-1})=x_t then Q_t = tail(Q_{t-1}) else q_t=dead; a second #: q_t=dead",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Real-time deterministic one-queue automaton",
+      "origin": "published",
+      "cite": "Real-time deterministic one-queue automaton (Baeten and Luttik 2025, arXiv:2502.08345; Post machine) for the copy language w#w"
+     }
+    ]
+   },
+   {
+    "base_family": "transformer_variant",
+    "base_form": "Hard (argmax) attention over a growing KV cache with exact-match positional keys (content-addressed table / hard-attention transformer, e.g. P\u00e9rez et al. 2019 Turing-completeness constructions)",
+    "id": "positional_exact_match_cache",
+    "limit_only": false,
+    "parameter_mapping": "Q_t corresponds to the cache entries with keys j_t+1..n_t; front(Q) is the value at key j_t+1; dequeue is j increment; Q_t = epsilon is j_t = n_t; q_t = dead is d_t = 1; q_t = compare is p_t = 1",
+    "read": "r_t = v_i with k_i = j_t (hard top-1); y_t = 1[p_t = 1 and not d_t and j_t = n_t]",
+    "transformations": [
+     {
+      "type": "sparsity",
+      "what": "hard top-1 (exact key match) read instead of softmax weights"
+     },
+     {
+      "type": "feature_map",
+      "what": "keys and queries are input-derived position counters (rank among a/b tokens before #, and steps since #)"
+     },
+     {
+      "type": "lifted_state",
+      "what": "KV cache stores every pre-# token, so the state grows with n"
+     },
+     {
+      "type": "other",
+      "what": "finite controller: phase bit and absorbing mismatch flag that ANDs per-step equality of the retrieved value with x_t"
+     }
+    ],
+    "update": "store phase: n_t = n_{t-1}+1, append (k=n_t, v=x_t); x_t=#: p_t = 1 (phase bit), j_t = 0; compare phase: j_t = j_{t-1}+1, d_t = d_{t-1} OR [j_t > n_t] OR [v_{k=j_t} != x_t] OR [x_t=#]",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Hard",
+      "origin": "published",
+      "cite": "Hard (argmax) attention over a growing KV cache with exact-match positional keys (content-addressed table / hard-attention transformer, e.g. P\u00e9rez et al. 2019 Turing-completeness constructions)"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "queue_automaton",
+    "comparator": "Real-time deterministic one-queue automaton for the copy language w#w",
+    "family": "other_known",
+    "inputs_tested": 610,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Baeten and Luttik (2025), The Queue Automaton Revisited, arXiv:2502.08345; Post machine"
+   },
+   {
+    "declared_id": "positional_exact_match_cache",
+    "comparator": "Hard top-1 attention over a growing KV cache with exact-match positional keys plus phase bit and absorbing mismatch flag",
+    "family": "transformer_variant",
+    "inputs_tested": 610,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [
+     "sparsity",
+     "feature_map",
+     "lifted_state",
+     "other"
+    ],
+    "reference": "Hard-attention transformer constructions, e.g. Perez et al. 2019"
+   }
+  ]
+ },
+ {
+  "card": "card-17100003",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100003/artifacts/reduction_critic/card-17100003-v3-2a8aac.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "minsky_two_counter"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "minsky_two_counter"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "Minsky (1967) two-counter machine with INC/DEC and zero-test branches, as a one-way deterministic acceptor",
+    "id": "minsky_two_counter",
+    "limit_only": false,
+    "parameter_mapping": "card q -> finite control state; card c1, c2 -> counters 1, 2; card delta -> machine program; card y_t -> acceptance at halt",
+    "read": "y_t = 1[q_t = c and c1_t = 0 and c2_t = 0]",
+    "transformations": [],
+    "update": "(q_t, c1_t, c2_t) = delta(q_{t-1}, c1_{t-1}, c2_{t-1}, x_t). a in phase a: c1+=1. b in phase a/b with c1>0: c1-=1, c2+=1, q=b. c in phase b/c with c1=0 and c2>0: c2-=1, q=c. Otherwise q=dead with counters fixed.",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Minsky",
+      "origin": "published",
+      "cite": "Minsky (1967) two-counter machine with INC/DEC and zero-test branches, as a one-way deterministic acceptor"
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "Input-dependent linear recurrence h_t = A(x_t) h_{t-1}, y_t = C h_t (SSM family form with non-diagonal input-dependent A_t)",
+    "id": "onehot_lifted_input_dep_ssm",
+    "limit_only": false,
+    "parameter_mapping": "card delta(., x) -> 0/1 transition matrix M(x) for x in {a,b,c}; card acceptance predicate -> linear read vector C indicating configuration (c,0,0); card initial (0,0,a) -> h_0 = e_(a,0,0)",
+    "read": "y_t = C h_t, C = e_(c,0,0)^T",
+    "transformations": [
+     {
+      "type": "lifted_state",
+      "what": "Replace the integer counters and phase with a one-hot vector over all reachable configurations (dimension 4(n+1)^2 + 1, growing with n). Every zero-tested branch then becomes a fixed linear transition chosen by the input token."
+     }
+    ],
+    "update": "h_t = M(x_t) h_{t-1}, h_0 = e_(a,0,0). Here h is one-hot over {a,b,c} x [0,n]^2 plus {dead}, and M(x) e_(q,c1,c2) = e_delta(q,c1,c2,x), with e_dead fixed by every M(x).",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Input-dependent linear recurrence h_t = A",
+      "origin": "published",
+      "cite": "Input-dependent linear recurrence h_t = A(x_t) h_{t-1}, y_t = C h_t (SSM family form with non-diagonal input-dependent A_t)"
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "Input-conditioned affine update on the card's own counter coordinates without state tests (the card's named closest comparator)",
+    "id": "blind_affine_counter",
+    "limit_only": false,
+    "parameter_mapping": "card c1, c2 -> affine state coordinates; card phase q and zero tests have no image (expected to fail the 0/1/2 zero-test witness and the aabbbcc rejection)",
+    "read": "y_t = w0 + w1 c1_t + w2 c2_t",
+    "transformations": [],
+    "update": "c1_t = c1_{t-1} + [x_t=a] - [x_t=b]; c2_t = c2_{t-1} + [x_t=b] - [x_t=c]",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Input-conditioned affine update on the card's own counter coordinates without state tests",
+      "origin": "published",
+      "cite": "Input-conditioned affine update on the card's own counter coordinates without state tests (the card's named closest comparator)"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "minsky_two_counter",
+    "comparator": "Minsky two-counter machine program (INC/DEC/JZ/JNZ) as one-way acceptor",
+    "family": "other_known",
+    "inputs_tested": 305,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Minsky (1967), Computation: Finite and Infinite Machines, ch. 14"
+   },
+   {
+    "declared_id": "onehot_lifted_input_dep_ssm",
+    "comparator": "one-hot lifted input-dependent linear recurrence h_t = M(x_t) h_{t-1}, y_t = C h_t",
+    "family": "ssm",
+    "inputs_tested": 305,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [
+     "lifted_state"
+    ],
+    "reference": "input-dependent linear recurrence (SSM form); one-hot configuration lift of a counter automaton"
+   },
+   {
+    "declared_id": "blind_affine_counter",
+    "comparator": "blind input-conditioned affine counters with affine read w=(1,-1,-1)",
+    "family": "ssm",
+    "inputs_tested": 305,
+    "max_abs_diff": 8.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "card closest comparator: affine update without state-tested branch"
+   }
+  ]
+ },
+ {
+  "card": "card-17100004",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100004/artifacts/reduction_critic/card-17100004-v3-f95a45.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "inside_algorithm_pcfg"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "inside_algorithm_pcfg"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "Inside algorithm for CNF stochastic context-free grammars (Baker 1979; Lari and Young 1990, Computer Speech and Language 4:35-56); equivalently sum-product semiring CKY (Goodman 1999).",
+    "id": "inside_algorithm_pcfg",
+    "limit_only": false,
+    "parameter_mapping": "e_A(x) -> lexical rule probability p(A->x); p(A->BC) -> binary rule probability p(A->BC); I[A,i,j] -> inside probability beta_A(i,j); S -> start symbol; toy: p(S->SS)=.4, p(S->a)=.6.",
+    "read": "y_t = I[S,0,t]",
+    "transformations": [],
+    "update": "I[A,i,i+1]=e_A(x_i); for j=t and span length increasing: I[A,i,j]=sum_{A->BC} p(A->BC) sum_{k=i+1}^{j-1} I[B,i,k] I[C,k,j]; earlier entries kept.",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Inside algorithm for CNF stochastic context-free grammars",
+      "origin": "published",
+      "cite": "Inside algorithm for CNF stochastic context-free grammars (Baker 1979; Lari and Young 1990, Computer Speech and Language 4:35-56); equivalently sum-product semiring CKY (Goodman 1999)."
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "inside_algorithm_pcfg",
+    "comparator": "Batch Inside algorithm (sum-product CKY) recomputed from scratch on each prefix, explicit rule list",
+    "family": "other_known",
+    "inputs_tested": 6,
+    "max_abs_diff": 3.2713490735704434e-18,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Inside algorithm for CNF PCFGs, Baker 1979; Lari and Young 1990, Computer Speech and Language 4:35-56; Goodman 1999 semiring parsing"
+   }
+  ]
+ },
+ {
+  "card": "card-17100005",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100005/artifacts/reduction_critic/card-17100005-v3-5f4e1d.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "earley_1970"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "earley_1970"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "Earley (1970), 'An efficient context-free parsing algorithm', CACM 13(2), doi:10.1145/362007.362035: recognizer with Predictor, Scanner and Completer over state sets S_0..S_n, with a dummy start state.",
+    "id": "earley_1970",
+    "limit_only": false,
+    "parameter_mapping": "The grammar G (Z->S, S->SS|a) is Earley's grammar; chart C[j] is state set S_j; an item (A,rhs,dot,origin) is an Earley state with dot position and pointer to its origin set; Z->S is Earley's augmented start production; the input x_j is the j-th input symbol.",
+    "read": "y_t = 1[(Z->S.,0) in C[t]]",
+    "transformations": [],
+    "update": "For each j: saturate C[j] to its least fixed point under Predict ((A->alpha.B beta,i) in C[j] => (B->.gamma,j) in C[j]) and Complete ((B->gamma.,i) in C[j], (A->alpha.B beta,k) in C[i] => (A->alpha B.beta,k) in C[j]). Then Scan ((A->alpha.a beta,i) in C[j], x_j=a => (A->alpha a.beta,i) in C[j+1]). C[0] is initialized with (Z->.S,0).",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Earley",
+      "origin": "published",
+      "cite": "Earley (1970), 'An efficient context-free parsing algorithm', CACM 13(2), doi:10.1145/362007.362035: recognizer with Predictor, Scanner and Completer over state sets S_0..S_n, with a dummy start state"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "earley_1970",
+    "comparator": "Earley worklist recognizer (Predictor/Scanner/Completer over state sets, dummy start state), per-prefix acceptance bit",
+    "family": "other_known",
+    "inputs_tested": 1202,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Earley (1970), An efficient context-free parsing algorithm, CACM 13(2), doi:10.1145/362007.362035"
+   }
+  ]
+ },
+ {
+  "card": "card-17100006",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100006/artifacts/reduction_critic/card-17100006-v3-e4b45e.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "viterbi_published"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "viterbi_published"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "Viterbi algorithm (Viterbi 1967; Rabiner 1989 HMM tutorial), score recursion delta_t(j)=b_j(o_t) max_i delta_{t-1}(i) a_ij",
+    "id": "viterbi_published",
+    "limit_only": false,
+    "parameter_mapping": "pi->pi_j, A(i,j)->a_ij, e(j,x)->b_j(x), v_t(j)->delta_t(j); backpointers psi omitted",
+    "read": "y_t = max_j v_t(j)",
+    "transformations": [],
+    "update": "v_1(j)=pi(j) e(j,x_1); v_t(j)=e(j,x_t) * max_i v_{t-1}(i) A(i,j) for t>1",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Viterbi algorithm",
+      "origin": "published",
+      "cite": "Viterbi algorithm (Viterbi 1967; Rabiner 1989 HMM tutorial), score recursion delta_t(j)=b_j(o_t) max_i delta_{t-1}(i) a_ij"
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "HMM forward recursion (Rabiner 1989): alpha_t(j)=b_j(o_t) sum_i alpha_{t-1}(i) a_ij, a diagonal-emission linear state-space recurrence",
+    "id": "hmm_forward_sum_product",
+    "limit_only": false,
+    "parameter_mapping": "A_t = diag(e(.,x_t)) A^T, state v_t, read C = 1^T; same pi, A, e as the card",
+    "read": "y_t = sum_j v_t(j)",
+    "transformations": [],
+    "update": "v_1(j)=pi(j) e(j,x_1); v_t(j)=e(j,x_t) * sum_i v_{t-1}(i) A(i,j)",
+    "components": [
+     {
+      "role": "transition",
+      "name": "HMM forward recursion",
+      "origin": "published",
+      "cite": "HMM forward recursion (Rabiner 1989): alpha_t(j)=b_j(o_t) sum_i alpha_{t-1}(i) a_ij, a diagonal-emission linear state-space recurrence"
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "Forward recursion with the sum replaced by a temperature-T power sum (log-sum-exp in the log domain), which tends to Viterbi as T->0",
+    "id": "tempered_forward_powermean",
+    "limit_only": true,
+    "parameter_mapping": "same pi, A, e; temperature T is free and has no card counterpart",
+    "read": "y_t = (sum_j v_t(j)^{1/T})^{T}",
+    "transformations": [
+     {
+      "type": "other",
+      "what": "Replaces the real sum over predecessors with a tempered power-mean/log-sum-exp. This is a semiring deformation, not a typed repair, and it equals max only as T->0."
+     }
+    ],
+    "update": "v_t(j)=e(j,x_t) * (sum_i (v_{t-1}(i) A(i,j))^{1/T})^{T}",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Forward recursion",
+      "origin": "published",
+      "cite": "Forward recursion with the sum replaced by a temperature-T power sum (log-sum-exp in the log domain), which tends to Viterbi as T->0"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "viterbi_published",
+    "comparator": "Viterbi max-product score recursion (log-domain implementation), running max readout",
+    "family": "other_known",
+    "inputs_tested": 25,
+    "max_abs_diff": 4.0335879657508867e-16,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Viterbi 1967 (doi:10.1109/TIT.1967.1054010); Rabiner 1989 delta recursion"
+   },
+   {
+    "declared_id": "hmm_forward_sum_product",
+    "comparator": "HMM forward sum-product recursion, likelihood readout",
+    "family": "ssm",
+    "inputs_tested": 25,
+    "max_abs_diff": 1.7709854469561497,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Rabiner 1989 forward algorithm alpha_t(j)=b_j(o_t) sum_i alpha_{t-1}(i) a_ij"
+   },
+   {
+    "declared_id": "tempered_forward_powermean",
+    "comparator": "Forward recursion with temperature-T power sum (T=0.25) replacing the sum",
+    "family": "ssm",
+    "inputs_tested": 25,
+    "max_abs_diff": 0.189029347438253,
+    "limit_only": true,
+    "transformations": [
+     "other"
+    ],
+    "reference": "Tempered/log-sum-exp forward recursion, tends to Viterbi as T->0"
+   }
+  ]
+ },
+ {
+  "card": "card-17100007",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100007/artifacts/reduction_critic/card-17100007-v3-8cbb1a.json",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "sequitur_published"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "sequitur_published"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "other_known",
+    "base_form": "SEQUITUR incremental grammar induction, Nevill-Manning and Witten (1997), JAIR 7:67-82, doi:10.1613/jair.374",
+    "id": "sequitur_published",
+    "limit_only": false,
+    "parameter_mapping": "card carried_state grammar -> SEQUITUR rule set; card digram index -> SEQUITUR digram hash table; card uses(A) -> SEQUITUR rule reference count; card fresh ids in creation order -> SEQUITUR rule numbering; no numeric parameters",
+    "read": "y_t = G_t (all rules, up to nonterminal renaming), with expand(S) = x_1..x_t",
+    "transformations": [],
+    "update": "S <- S x_t. Then repeat until stable: (1) digram uniqueness: if digram uv occurs twice without overlap across right-hand sides, replace both occurrences with an existing rule A whose RHS is exactly uv, or else create a fresh A->uv, and re-check the new adjacent pairs; (2) rule utility: if uses(A)=1 for non-start A, inline RHS(A) at its single use and delete A. Maintain the digram index and use counts as in section 4 of the paper.",
+    "components": [
+     {
+      "role": "transition",
+      "name": "SEQUITUR incremental grammar induction",
+      "origin": "published",
+      "cite": "SEQUITUR incremental grammar induction, Nevill-Manning and Witten (1997), JAIR 7:67-82, doi:10.1613/jair.374"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "sequitur_published",
+    "comparator": "SEQUITUR with doubly linked rule bodies, digram hash index (all occurrences), rule reference counts, check/match/substitute/expand scheduling of section 4",
+    "family": "other_known",
+    "inputs_tested": 67,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Nevill-Manning and Witten (1997), Identifying Hierarchical Structure in Sequences: A linear-time algorithm, JAIR 7:67-82, doi:10.1613/jair.374"
+   }
+  ]
+ },
+ {
+  "card": "card-17100008",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100008/artifacts/reduction_critic/card-17100008-v3-5a2037.json",
+  "reduces_to": "rnn",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "conv_rnn_lookup_activation"
+  ],
+  "new_outcome": "unverified",
+  "new_counted": [],
+  "restated": {
+   "conv_rnn_lookup_activation": "its activation 'Rule 110 lookup table' is not a standard rnn activation (identity, tanh, sigmoid, relu, leaky_relu, elu, gelu, softplus, hard_tanh, hard_sigmoid, softmax, clip)"
+  },
+  "comparators": [
+   {
+    "base_family": "rnn",
+    "base_form": "Elman RNN h_t = f(W h_{t-1} + U x_t), y_t = g(h_t) (Elman 1990), with a banded/convolutional recurrent matrix as in neural cellular automata (Gilpin 2019; Mordvintsev et al. 2020)",
+    "id": "conv_rnn_lookup_activation",
+    "limit_only": false,
+    "parameter_mapping": "Rule number 110 becomes the activation lookup f(z) = bit z of 110. The neighbourhood weights (4,2,1) on (i-1,i,i+1) become the tridiagonal recurrent matrix W_rec. Input weight U = 0 because the tick token carries no information. Readout g = identity on the interval. Card h_t becomes RNN h_t.",
+    "read": "y_t = h_t[-t : W+t] (identity readout of the stored interval, origin -t)",
+    "transformations": [
+     {
+      "type": "lifted_state",
+      "what": "Hidden state grows by one zero-padded cell at each end per tick (width W+2t), i.e. a state that grows with n; no width cap."
+     }
+    ],
+    "update": "h_t[i] = f(4 h_{t-1}[i-1] + 2 h_{t-1}[i] + h_{t-1}[i+1] + 0 * x_t), i in [-t, W-1+t], with h_{t-1}[j] = 0 outside [-(t-1), W-1+(t-1)]; f(z) = floor(110 / 2^z) mod 2 for z in {0..7}",
+    "components": [
+     {
+      "role": "activation",
+      "name": "Rule 110 lookup table",
+      "origin": "published",
+      "cite": "Wolfram 1983; Cook 2004"
+     },
+     {
+      "role": "update",
+      "name": "tridiagonal (4,2,1) recurrent matrix",
+      "origin": "published",
+      "cite": "Gilpin 2019"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "conv_rnn_lookup_activation",
+    "comparator": "Elman RNN with tridiagonal (4,2,1) recurrent matrix, Rule-110 lookup activation, U=0, identity readout, growing zero-padded state",
+    "family": "rnn",
+    "inputs_tested": 276,
+    "max_abs_diff": 0.0,
+    "limit_only": false,
+    "transformations": [
+     "lifted_state"
+    ],
+    "reference": "Elman (1990) h_t=f(W h_{t-1}+U x_t); CA-as-convolutional-recurrence (Gilpin 2019; Mordvintsev et al. 2020)"
+   }
+  ]
+ },
+ {
+  "card": "card-17100009",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-17100009/artifacts/reduction_critic/card-17100009-v3-ee3276.json",
+  "reduces_to": "ssm",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "mamba_zoh_n1",
+   "selective_diag_ssm"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "mamba_zoh_n1",
+   "selective_diag_ssm"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "ssm",
+    "base_form": "Input-dependent diagonal linear state-space recurrence S_t = A_t S_{t-1} + B_t x_t, y_t = C_t S_t (selective SSM, Gu and Dao 2023, arXiv:2312.00752)",
+    "id": "selective_diag_ssm",
+    "limit_only": false,
+    "parameter_mapping": "A_t = diag(sigma(W_f x_t + b_f)); B_t = diag(1 - sigma(W_f x_t + b_f)) W_u; C_t = I; state S_t = h_t, initially 0",
+    "read": "y_t = I h_t",
+    "transformations": [],
+    "update": "f_t = sigma(W_f x_t + b_f); h_t = diag(f_t) h_{t-1} + diag(1 - f_t) W_u x_t",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Input-dependent diagonal linear state-space recurrence S_t = A_t S_{t-1} + B_t x_t",
+      "origin": "published",
+      "cite": "Input-dependent diagonal linear state-space recurrence S_t = A_t S_{t-1} + B_t x_t, y_t = C_t S_t (selective SSM, Gu and Dao 2023, arXiv:2312.00752)"
+     }
+    ]
+   },
+   {
+    "base_family": "ssm",
+    "base_form": "Mamba selective scan with ZOH discretization, A_bar = exp(Delta A), B_bar = (Delta A)^{-1}(exp(Delta A) - I) Delta B, state size N = 1 per channel (Gu and Dao 2023)",
+    "id": "mamba_zoh_n1",
+    "limit_only": false,
+    "parameter_mapping": "A = -1 per channel; B = 1; C = 1; Mamba in_proj = W_u; Delta projection = -W_f with bias -b_f, so exp(-Delta_t) = sigma(W_f x_t + b_f) = f_t",
+    "read": "y_t = h_t (C = 1 per channel)",
+    "transformations": [],
+    "update": "Delta_t = softplus(-(W_f x_t + b_f)); u_t = W_u x_t; h_t = exp(-Delta_t) \u2299 h_{t-1} + (1 - exp(-Delta_t)) \u2299 u_t",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Mamba selective scan",
+      "origin": "published",
+      "cite": "Mamba selective scan with ZOH discretization, A_bar = exp(Delta A), B_bar = (Delta A)^{-1}(exp(Delta A) - I) Delta B, state size N = 1 per channel (Gu and Dao 2023)"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "selective_diag_ssm",
+    "comparator": "input-dependent diagonal SSM with A_t=diag(sigma(Wf x+bf)), B_t=diag(1-f_t)Wu, C_t=I",
+    "family": "ssm",
+    "inputs_tested": 45,
+    "max_abs_diff": 3.575724526312693e-16,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Selective SSM, Gu and Dao 2023, arXiv:2312.00752"
+   },
+   {
+    "declared_id": "mamba_zoh_n1",
+    "comparator": "Mamba ZOH selective scan, N=1 per channel, A=-1, B=1, C=1, Delta=softplus(-(Wf x+bf)), in_proj=Wu",
+    "family": "ssm",
+    "inputs_tested": 45,
+    "max_abs_diff": 1.6764308506899117e-15,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Mamba ZOH discretization, Gu and Dao 2023, arXiv:2312.00752"
+   }
+  ]
+ },
+ {
+  "card": "card-1710000a",
+  "source": "bigbrane/results/novelty-probe-20261017/later/s2-card-1710000a/artifacts/reduction_critic/card-1710000a-v3-472142.json",
+  "reduces_to": "linear_attention",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "deltanet_delta_rule"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "deltanet_delta_rule"
+  ],
+  "restated": {},
+  "comparators": [
+   {
+    "base_family": "linear_attention",
+    "base_form": "Delta-rule fast weight programmer, Schlag, Irie and Schmidhuber 2021 (arXiv:2102.11174); DeltaNet, Yang et al. 2024 (arXiv:2406.06484)",
+    "id": "deltanet_delta_rule",
+    "limit_only": false,
+    "parameter_mapping": "card S -> W (fast weights); card k, v, q, beta -> key, value, query, write strength; feature map phi = identity",
+    "read": "y_t = S_t q_t",
+    "transformations": [],
+    "update": "S_t = S_{t-1} + beta_t (v_t - S_{t-1} k_t) k_t^T, S_0 = 0",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Delta-rule fast weight programmer",
+      "origin": "published",
+      "cite": "Delta-rule fast weight programmer, Schlag, Irie and Schmidhuber 2021 (arXiv:2102.11174); DeltaNet, Yang et al. 2024 (arXiv:2406.06484)"
+     }
+    ]
+   },
+   {
+    "base_family": "linear_attention",
+    "base_form": "Unnormalized linear attention, Katharopoulos et al. 2020, in the card's orientation (plain form declared beside the delta-rule form; expected to differ on nonorthogonal keys or beta<1)",
+    "id": "additive_linear_attention",
+    "limit_only": false,
+    "parameter_mapping": "card S -> S; card k, v, q -> phi(k)=k, v, phi(q)=q; card beta_t -> write gate",
+    "read": "y_t = S_t q_t",
+    "transformations": [
+     {
+      "type": "gate",
+      "what": "scales each write by the card's input-dependent beta_t"
+     }
+    ],
+    "update": "S_t = S_{t-1} + beta_t v_t k_t^T, S_0 = 0",
+    "components": [
+     {
+      "role": "transition",
+      "name": "Unnormalized linear attention",
+      "origin": "published",
+      "cite": "Unnormalized linear attention, Katharopoulos et al. 2020, in the card's orientation (plain form declared beside the delta-rule form; expected to differ on nonorthogonal keys or beta<1)"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "declared_id": "deltanet_delta_rule",
+    "comparator": "Delta-rule fast weight programmer y_t = W_t q_t, W_t = W_{t-1} + beta_t (v_t - W_{t-1} k_t) k_t^T",
+    "family": "linear_attention",
+    "inputs_tested": 16,
+    "max_abs_diff": 5.585782655534936e-16,
+    "limit_only": false,
+    "transformations": [],
+    "reference": "Schlag, Irie and Schmidhuber 2021 arXiv:2102.11174; Yang et al. 2024 arXiv:2406.06484"
+   },
+   {
+    "declared_id": "additive_linear_attention",
+    "comparator": "Unnormalized additive linear attention with write gate beta_t",
+    "family": "linear_attention",
+    "inputs_tested": 16,
+    "max_abs_diff": 2.7680055402787547,
+    "limit_only": false,
+    "transformations": [
+     "gate"
+    ],
+    "reference": "Katharopoulos et al. 2020 arXiv:2006.16236"
+   }
+  ]
+ }
+]

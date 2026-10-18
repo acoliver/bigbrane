@@ -61,6 +61,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from dataclasses import dataclass
 from functools import partial
 from typing import Any
@@ -74,7 +75,8 @@ from hybrid.research.signature import card_signature
 from hybrid.research.schemas import SchemaViolation, load_schema, validate
 from hybrid.research.stages import difference, known_work
 from hybrid.research.stages.common import StageContext, StageError, card_for_prompt, load_section
-from hybrid.research.stages.contracts import (PRIOR_ART_DELTA, REDUCTION_CHECK, REDUCTION_CHECK_REPORT, REPAIR_TYPES,
+from hybrid.research.stages.contracts import (ALLOWED_ACTIVATIONS, CARD_FORBIDDEN_ROLES, COMPONENT_CHECKED_FAMILIES,
+    UNIVERSAL_CLASS_PATTERN, PRIOR_ART_DELTA, REDUCTION_CHECK, REDUCTION_CHECK_REPORT, REPAIR_TYPES,
                                               repair_policy_text)
 from hybrid.research.stages.escape import escape_user_suffix
 from hybrid.research.stages.r_refine import challenger_role, proposer_model
@@ -189,10 +191,53 @@ def types_of(comparator: dict) -> list[str]:
     return sorted({t["type"] for t in comparator["transformations"]})
 
 
+UNIVERSAL_CLASS = re.compile(UNIVERSAL_CLASS_PATTERN, re.I)
+
+
+def component_problem(comparator: dict) -> str | None:
+    """KD8: why a declared comparator is a restatement of the card and not a published mechanism, or None.
+
+    Only the families rnn, lstm_gru and other_known are checked (contracts.COMPONENT_CHECKED_FAMILIES). A universal
+    class (the head of `base_form`, or a transition or update component) is a template every card fills, and a
+    component of role activation, transition, update or readout whose origin is the card is the card's own
+    computation inside a template. In rnn and lstm_gru the activation must be a standard elementwise one; in
+    other_known a published transition or update with a citation must be named."""
+    family = comparator["base_family"]
+    if family not in COMPONENT_CHECKED_FAMILIES:
+        return None
+    head = re.split(r"[(,;:]| whose | with ", comparator["base_form"], maxsplit=1)[0]
+    if UNIVERSAL_CLASS.search(head):
+        return f"its base form '{head.strip()}' is a universal class, not a published mechanism"
+    components = comparator.get("components") or []
+    if not components:
+        return "it declares no components, so the host cannot tell a published mechanism from the card's own"
+    for comp in components:
+        if comp["origin"] == "card" and comp["role"] in CARD_FORBIDDEN_ROLES:
+            return f"its {comp['role']} '{comp['name'][:80]}' is the card's own"
+        if comp["role"] in ("transition", "update") and UNIVERSAL_CLASS.search(comp["name"]):
+            return f"its {comp['role']} '{comp['name'][:80]}' names a universal class"
+    if family in ALLOWED_ACTIVATIONS:
+        activations = [c for c in components if c["role"] == "activation"]
+        if not activations:
+            return "it declares no activation component"
+        for comp in activations:
+            if comp["name"].strip().lower() not in ALLOWED_ACTIVATIONS[family]:
+                return (f"its activation '{comp['name'][:80]}' is not a standard {family} activation "
+                        f"({', '.join(ALLOWED_ACTIVATIONS[family])})")
+    else:
+        mechanisms = [c for c in components if c["role"] in ("transition", "update") and c["origin"] == "published"
+                      and c["cite"].strip()]
+        if not mechanisms:
+            return "it names no published, cited transition or update"
+    return None
+
+
 def eligibility(comparator: dict, reduces_to: str) -> str:
     """FIX-12: how a declared comparator's comparison counts, derived from the declaration and the repair policy
     (contracts.REPAIR_TYPES), never from a label the check program prints:
     - `another_family`: its base family is not the claimed `reduces_to`; it cannot decide that claim;
+    - `restatement` (KD8): component_problem finds that the comparator is a universal template or carries the card's
+      own activation, transition, update or readout; it never counts, for or against the claim;
     - `unresolved`: a transformation type outside the policy (`other`); its family membership is not established, so it
       never verifies a reduction, and a match through it keeps the claim from being refuted;
     - `limit_only`: the declared equality holds only in a limit; it never verifies, and a measured difference at the
@@ -201,6 +246,8 @@ def eligibility(comparator: dict, reduces_to: str) -> str:
       counts against the claim outside it."""
     if comparator["base_family"] != reduces_to:
         return "another_family"
+    if component_problem(comparator) is not None:
+        return "restatement"
     if any(t not in REPAIR_TYPES for t in types_of(comparator)):
         return "unresolved"
     if comparator["limit_only"]:
@@ -243,8 +290,13 @@ def judge_comparisons(comparisons: list[dict], declared: list[dict],
         judged.append(dict(c, eligibility=status, counted=status in ("counted", "limit_only"),
                            within_tolerance=math.isfinite(diff) and diff <= EQUIVALENCE_TOL))
     groups = {status: [c for c in judged if c["eligibility"] == status]
-              for status in ("counted", "limit_only", "unresolved", "another_family", "undeclared")}
+              for status in ("counted", "limit_only", "unresolved", "restatement", "another_family",
+                             "undeclared")}
     tail = []
+    if groups["restatement"]:
+        tail.append("not counted (KD8, a restatement of the card, not a published mechanism): "
+                    + "; ".join(f"{_comparison_line(c)} [{component_problem(by_id[c['declared_id']])}]"
+                                for c in groups["restatement"]))
     if groups["unresolved"]:
         tail.append("unresolved (a transformation type outside the family policy, so family membership is not "
                     "established and the comparison cannot verify the reduction): "

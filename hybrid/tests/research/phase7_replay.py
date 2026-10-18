@@ -124,7 +124,9 @@ def replay(fixture: dict, work: Path) -> list[dict]:
         comparators = [] if recorded["reduces_to"] == "none" else [{
             "id": "recorded", "base_family": recorded["reduces_to"], "base_form": "recorded known form",
             "update": recorded["mapping"], "read": recorded["mapping"], "transformations": [],
-            "parameter_mapping": recorded["mapping"], "limit_only": False}]
+            "parameter_mapping": recorded["mapping"], "limit_only": False,
+            "components": [{"role": "activation", "name": "tanh", "origin": "published", "cite": "Elman 1990"},
+                           {"role": "update", "name": "recorded known form", "origin": "published", "cite": "recorded"}]}]
         # the fixture was written before decision R2C: its radical_enough answer is read as the new known_work fields
         novelty = novelty_fields(recorded) if "radical_enough" in recorded else {}
         answer = {key: value for key, value in recorded.items() if key != "radical_enough"}

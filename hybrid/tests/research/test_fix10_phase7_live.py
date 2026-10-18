@@ -45,7 +45,8 @@ HARD_BIMAP = {"id": "hard_bimap", "base_family": "other_known",
               "base_form": "bidirectional map (forcePut) used as an exact-match cache",
               "update": "forcePut(w_{t-1}, w_t): bind the pair, unbind any other key of the value; LRU cap",
               "read": "p(v) = 1 for the value bound to the query, fallback mass over unbound values",
-              "transformations": [], "parameter_mapping": "key w_{t-1}, value w_t, cap P_max", "limit_only": False}
+              "transformations": [], "parameter_mapping": "key w_{t-1}, value w_t, cap P_max", "limit_only": False,
+              "components": [{"role": "update", "name": "bimap forcePut", "origin": "published", "cite": "Guava BiMap"}]}
 HONEST_TAIL = '''
 print(json.dumps({"comparisons": [
     {"declared_id": None, "comparator": "two-sided state-gated one-hot delta rule with a -rho*x*y correction at (i, j)",

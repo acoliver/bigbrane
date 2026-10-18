@@ -109,7 +109,9 @@ def declared(family: str, comparator_id: str = "known", transformations: tuple[s
     """One comparator a reduction critic declares (schemas/reduction_critic.schema.json, `comparators`; FIX-12)."""
     return {"id": comparator_id, "base_family": family, "base_form": "textbook form", "update": "S_t = S_{t-1} + v k^T",
             "read": "y_t = S_t q_t", "transformations": [{"type": t, "what": f"a {t}"} for t in transformations],
-            "parameter_mapping": "card symbols map one to one", "limit_only": limit_only}
+            "parameter_mapping": "card symbols map one to one", "limit_only": limit_only,
+            "components": [{"role": "activation", "name": "tanh", "origin": "published", "cite": "Elman 1990"},
+                           {"role": "update", "name": "textbook update", "origin": "published", "cite": "Textbook 2000"}]}
 
 
 def declaring(critic: dict, *comparators: dict) -> dict:

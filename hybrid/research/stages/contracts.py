@@ -45,6 +45,35 @@ REPAIR_TYPES = {
     "multi_read": "repeated reads of the same memory with its write rule unchanged (each read's output is the next "
                   "query), combined by fixed or input-selected weights, including the zero-hop identity term",
 }
+# KD8: a comparator must be a published mechanism built from its own components. The critic lists them (schema
+# `components`) and the host checks the list (stages/s2_prior_art.component_problem): the card's own activation,
+# transition, update or readout can never be a component of the comparator, a universal class (finite automaton,
+# Moore machine, generic recurrence, Turing machine, function approximator) is a template that any card fills, and in
+# the recurrent families the activation must be a standard elementwise one.
+COMPONENT_ROLES = ("activation", "transition", "update", "readout", "input_map")
+CARD_FORBIDDEN_ROLES = ("activation", "transition", "update", "readout")
+COMPONENT_CHECKED_FAMILIES = ("rnn", "lstm_gru", "other_known")
+ALLOWED_ACTIVATIONS = {
+    "rnn": ("identity", "tanh", "sigmoid", "relu", "leaky_relu", "elu", "gelu", "softplus", "hard_tanh", "hard_sigmoid",
+            "softmax", "clip"),
+    "lstm_gru": ("sigmoid", "tanh"),
+}
+UNIVERSAL_CLASS_PATTERN = (r"\b(moore|mealy)\b|finite[- ]state|finite automat|state machine|turing|generic recurren|"
+                           r"recurrence relation|recurrent (neural )?network|function approximator|universal approximat")
+
+
+def component_policy_text() -> str:
+    """The component rules as the critic and the check program see them."""
+    return ("COMPONENT POLICY (families rnn, lstm_gru and other_known): list every component of a comparator under "
+            f"`components`, each with a role ({', '.join(COMPONENT_ROLES)}), a name, an origin (published or card) and "
+            "a citation. A comparator counts only when its activation, transition, update and readout are published "
+            "components, none of them the card's own function. In rnn the activation is one of "
+            f"{', '.join(ALLOWED_ACTIVATIONS['rnn'])}; in lstm_gru, sigmoid and tanh. A universal class (finite "
+            "automaton, Moore machine, generic recurrence, Turing machine, arbitrary function approximator) is not a "
+            "comparator. In other_known, name and cite the published mechanism whose transition is specified "
+            "independently of the card.")
+
+
 UNRESOLVED_TYPE = "other"
 UNRESOLVED_NOTE = ("any change the list does not name, such as keys or queries generated from the memory state, a "
                    "discrete search over the state, or a new write rule; a comparator with it is unresolved")
@@ -58,7 +87,7 @@ def repair_policy_text() -> str:
     lines.append(f"- {UNRESOLVED_TYPE}: {UNRESOLVED_NOTE}")
     lines.append("No type covers a term added only to cancel the card's difference from the base form; such a term "
                  "is not a repair, and a comparator with it is not declared.")
-    return "\n".join(lines)
+    return "\n".join(lines) + "\n\n" + component_policy_text()
 
 
 # FIX-10, FIX-12: the last line the reduction check program prints. The program reports each comparison it ran as

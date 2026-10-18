@@ -1,0 +1,190 @@
+[
+ {
+  "card": "card-8f2e71cf",
+  "reduces_to": "rnn",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "fixed_quadratic_rnn"
+  ],
+  "new_outcome": "unverified",
+  "new_counted": [],
+  "restated": {
+   "fixed_quadratic_rnn": "its activation 'H^2/tr(H^2) matrix square, normalized' is the card's own"
+  }
+ },
+ {
+  "card": "card-136a1e9b",
+  "reduces_to": "rnn",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "elman_rnn_identity_w",
+   "rnn_diff_sum_basis"
+  ],
+  "new_outcome": "unverified",
+  "new_counted": [],
+  "restated": {
+   "elman_rnn_identity_w": "its activation 'u - sigma E_kappa(u) pulse-equilibrate-withdraw map' is the card's own",
+   "rnn_diff_sum_basis": "its activation 'E_kappa(S,D) closed form in rotated basis' is the card's own"
+  }
+ },
+ {
+  "card": "card-383bd914",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "block_sequential_ca_moore"
+  ],
+  "new_outcome": "unverified",
+  "new_counted": [],
+  "restated": {
+   "block_sequential_ca_moore": "its base form 'Moore machine' is a universal class, not a published mechanism"
+  }
+ },
+ {
+  "card": "card-ea50345f",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "jeffrey_ipf_step"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "jeffrey_ipf_step"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-17100001",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "dpda_dyck2_textbook",
+   "hard_stack_rnn"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "dpda_dyck2_textbook",
+   "hard_stack_rnn"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-17100002",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "queue_automaton"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "queue_automaton"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-17100003",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "minsky_two_counter"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "minsky_two_counter"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-17100004",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "inside_algorithm_pcfg"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "inside_algorithm_pcfg"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-17100005",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "earley_1970"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "earley_1970"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-17100006",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "viterbi_published"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "viterbi_published"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-17100007",
+  "reduces_to": "other_known",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "sequitur_published"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "sequitur_published"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-17100008",
+  "reduces_to": "rnn",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "conv_rnn_lookup_activation"
+  ],
+  "new_outcome": "unverified",
+  "new_counted": [],
+  "restated": {
+   "conv_rnn_lookup_activation": "its activation 'Rule 110 lookup table' is not a standard rnn activation (identity, tanh, sigmoid, relu, leaky_relu, elu, gelu, softplus, hard_tanh, hard_sigmoid, softmax, clip)"
+  }
+ },
+ {
+  "card": "card-17100009",
+  "reduces_to": "ssm",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "mamba_zoh_n1",
+   "selective_diag_ssm"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "mamba_zoh_n1",
+   "selective_diag_ssm"
+  ],
+  "restated": {}
+ },
+ {
+  "card": "card-1710000a",
+  "reduces_to": "linear_attention",
+  "recorded_outcome": "verified",
+  "recorded_counted": [
+   "deltanet_delta_rule"
+  ],
+  "new_outcome": "verified",
+  "new_counted": [
+   "deltanet_delta_rule"
+  ],
+  "restated": {}
+ }
+]
