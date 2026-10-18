@@ -29,3 +29,9 @@ Budget about 350 calls.
 - [ ] replay launched
 - [ ] replay scored
 - [ ] REPORT.md
+
+## Update
+- Code for A, C, D committed (e4a50d9). Unit tests not yet updated.
+- Replay launched (4 nohup groups: recheck, batch8, probeA, probeB) via results-wt/r2-bar/tools/run_replay.sh;
+  logs in results-wt/r2-bar/logs, runs in results-wt/r2-bar/runs. data/arxiv-index is a symlink to the main
+  workspace index (gitignored) so the literature search matches the earlier runs.
