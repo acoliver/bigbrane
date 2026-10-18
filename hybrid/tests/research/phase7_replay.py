@@ -25,7 +25,9 @@ import re
 from pathlib import Path
 
 from hybrid.tests.research.critic_answers import novelty_fields
-from hybrid.tests.research.reference_replays import historical_phase7_evidence, load as replay_evidence
+from hybrid.tests.research.reference_replays import (
+    historical_phase7_evidence, next_historical_phase7_evidence, load as replay_evidence,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE_RUN = "run-20261010T181300Z"
@@ -131,7 +133,7 @@ def replay(fixture: dict, work: Path) -> list[dict]:
             repair = 'normalizer' if operation.startswith('diagonal_') else 'multi_read'
             comparators[0].update(reference_spec=evidence['reference_spec'],
                                   transformations=[{'type': repair, 'what': recorded['mapping']}])
-        historical = historical_phase7_evidence(entry_for(user))
+        historical = (historical_phase7_evidence(entry_for(user)) or next_historical_phase7_evidence(entry_for(user)))
         if historical:
             comparators = [historical['declaration']]
         # Legacy resemblance is not a source citation or independent reference.
@@ -145,7 +147,7 @@ def replay(fixture: dict, work: Path) -> list[dict]:
         # difference, when recorded. Missing numbers stay missing; no reference proof is reconstructed.
         entry = entry_for(user)
         outcome, diff = entry["reduction_outcome"], entry["max_abs_diff"]
-        historical = historical_phase7_evidence(entry)
+        historical = (historical_phase7_evidence(entry) or next_historical_phase7_evidence(entry))
         if historical:
             comparison = dict(historical['comparison'], reference_samples=historical['reference_samples'])
             return {"check_code": _program({"comparisons": [comparison], "notes": "recovered CARD-side trace"}),
@@ -195,7 +197,7 @@ def replay(fixture: dict, work: Path) -> list[dict]:
         record = build_record(view, card_id, "replay")
         s2 = view.latest_card(card_id)[0]["status"]["verdicts"]["S2"]
         rows.append({"card_id": card_id, "title": entry["card"]["title"],
-                     "reduces_to": entry["critic"]["reduces_to"], "check": entry["reduction_outcome"], "evidence_status": "executed_card_trace_with_host_reference" if card_id in replay_evidence("phase7") or historical_phase7_evidence(entry) else "historical_self_comparison_only",
+                     "reduces_to": entry["critic"]["reduces_to"], "check": entry["reduction_outcome"], "evidence_status": "executed_card_trace_with_host_reference" if card_id in replay_evidence("phase7") or (historical_phase7_evidence(entry) or next_historical_phase7_evidence(entry)) else "historical_self_comparison_only",
                      "learning_rule_prefix": entry["critic"]["difference_if_any"].strip().startswith("LEARNING_RULE:"),
                      "original_codes": entry["original"]["kill_codes"], "original_outcome": entry["original"]["outcome"],
                      "replay_s2": s2["verdict"], "replay_gate": next((r for r in s2["reasons"] if r.startswith("gate:")),

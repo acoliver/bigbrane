@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+    "results-wt/evidence-recovery/next_capture.py"
+  ],
+  "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "environment": {
+    "PYTHONHASHSEED": "0",
+    "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2"
+  },
+  "original_run": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z",
+  "capture_sha256": "dbea0629f6d64f0b780e380f2b7d834706ecb7b753404be72003ae34d500e770",
+  "draw_limit": "rng.choice(list(placed)) depends on Python set iteration. Original runtime hash seed was not saved; this is an untouched-source reexecution, not recovery of byte-exact historical draws."
+}

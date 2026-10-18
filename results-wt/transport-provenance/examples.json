@@ -1,0 +1,448 @@
+{
+  "retry-after-delta": [
+    {
+      "source": "arxiv",
+      "request_id": "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c",
+      "endpoint": "https://export.arxiv.org",
+      "operation": "get",
+      "association_id": "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c",
+      "call_id": "394362c32be04f87855fa6bc784fff17",
+      "started_at": "2026-10-18T00:00:00+00:00",
+      "started_s": 0.0,
+      "duration_s": 7.0,
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempt_count": 2,
+      "http_request_count": 2,
+      "http_response_count": 2,
+      "cooldown_remaining_s": 0.0,
+      "attempts": [
+        {
+          "ordinal": 1,
+          "started_at": "2026-10-18T00:00:00+00:00",
+          "started_s": 0.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 429,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 0.0,
+              "duration_s": 0.0,
+              "http_status": 429
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "delta",
+          "retry_after_s": 7.0,
+          "retry_delay_s": 7.0,
+          "retry_wait_s": 7.0,
+          "terminal": "retry",
+          "error_type": "HTTPStatus",
+          "http_request_count": 1,
+          "http_response_count": 1
+        },
+        {
+          "ordinal": 2,
+          "started_at": "2026-10-18T00:00:07+00:00",
+          "started_s": 7.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 200,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 7.0,
+              "duration_s": 0.0,
+              "http_status": 200
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "delta",
+          "retry_after_s": 7.0,
+          "retry_delay_s": 0.0,
+          "retry_wait_s": 0.0,
+          "terminal": "success",
+          "error_type": null,
+          "http_request_count": 1,
+          "http_response_count": 1
+        }
+      ]
+    }
+  ],
+  "retry-after-date": [
+    {
+      "source": "arxiv",
+      "request_id": "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c",
+      "endpoint": "https://export.arxiv.org",
+      "operation": "get",
+      "association_id": "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c",
+      "call_id": "e612033c64834979b4bf9e4c381e5fde",
+      "started_at": "2026-10-18T00:00:00+00:00",
+      "started_s": 0.0,
+      "duration_s": 5.0,
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempt_count": 2,
+      "http_request_count": 2,
+      "http_response_count": 2,
+      "cooldown_remaining_s": 0.0,
+      "attempts": [
+        {
+          "ordinal": 1,
+          "started_at": "2026-10-18T00:00:00+00:00",
+          "started_s": 0.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 429,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 0.0,
+              "duration_s": 0.0,
+              "http_status": 429
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "date",
+          "retry_after_s": 40.0,
+          "retry_delay_s": 5.0,
+          "retry_wait_s": 5.0,
+          "terminal": "retry",
+          "error_type": "HTTPStatus",
+          "http_request_count": 1,
+          "http_response_count": 1
+        },
+        {
+          "ordinal": 2,
+          "started_at": "2026-10-18T00:00:05+00:00",
+          "started_s": 5.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 200,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 5.0,
+              "duration_s": 0.0,
+              "http_status": 200
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "date",
+          "retry_after_s": 35.0,
+          "retry_delay_s": 0.0,
+          "retry_wait_s": 0.0,
+          "terminal": "success",
+          "error_type": null,
+          "http_request_count": 1,
+          "http_response_count": 1
+        }
+      ]
+    }
+  ],
+  "exhaustion-skip-cache": [
+    {
+      "source": "arxiv",
+      "request_id": "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c",
+      "endpoint": "https://export.arxiv.org",
+      "operation": "get",
+      "association_id": "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c",
+      "call_id": "37248585ca054f8594f47e2a04502934",
+      "started_at": "2026-10-18T00:00:00+00:00",
+      "started_s": 0.0,
+      "duration_s": 35.0,
+      "outcome": "network",
+      "terminal": "exhausted",
+      "error_type": "HTTPStatus",
+      "attempt_count": 4,
+      "http_request_count": 4,
+      "http_response_count": 4,
+      "cooldown_remaining_s": 600.0,
+      "attempts": [
+        {
+          "ordinal": 1,
+          "started_at": "2026-10-18T00:00:00+00:00",
+          "started_s": 0.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 429,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 0.0,
+              "duration_s": 0.0,
+              "http_status": 429
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "absent",
+          "retry_after_s": null,
+          "retry_delay_s": 5.0,
+          "retry_wait_s": 5.0,
+          "terminal": "retry",
+          "error_type": "HTTPStatus",
+          "http_request_count": 1,
+          "http_response_count": 1
+        },
+        {
+          "ordinal": 2,
+          "started_at": "2026-10-18T00:00:05+00:00",
+          "started_s": 5.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 429,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 5.0,
+              "duration_s": 0.0,
+              "http_status": 429
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "absent",
+          "retry_after_s": null,
+          "retry_delay_s": 10.0,
+          "retry_wait_s": 10.0,
+          "terminal": "retry",
+          "error_type": "HTTPStatus",
+          "http_request_count": 1,
+          "http_response_count": 1
+        },
+        {
+          "ordinal": 3,
+          "started_at": "2026-10-18T00:00:15+00:00",
+          "started_s": 15.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 429,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 15.0,
+              "duration_s": 0.0,
+              "http_status": 429
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "absent",
+          "retry_after_s": null,
+          "retry_delay_s": 20.0,
+          "retry_wait_s": 20.0,
+          "terminal": "retry",
+          "error_type": "HTTPStatus",
+          "http_request_count": 1,
+          "http_response_count": 1
+        },
+        {
+          "ordinal": 4,
+          "started_at": "2026-10-18T00:00:35+00:00",
+          "started_s": 35.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 429,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 35.0,
+              "duration_s": 0.0,
+              "http_status": 429
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "absent",
+          "retry_after_s": null,
+          "retry_delay_s": 0.0,
+          "retry_wait_s": 0.0,
+          "terminal": "error",
+          "error_type": "HTTPStatus",
+          "http_request_count": 1,
+          "http_response_count": 1
+        }
+      ]
+    },
+    {
+      "source": "arxiv",
+      "request_id": "a998358aabae98aab2558c45a3e9025c4e08b7cf5078512e19603c1d9d7ce95b",
+      "endpoint": "https://export.arxiv.org",
+      "operation": "get",
+      "association_id": "a998358aabae98aab2558c45a3e9025c4e08b7cf5078512e19603c1d9d7ce95b",
+      "call_id": "b364c0e5837a40918025d9cbb7d57084",
+      "started_at": "2026-10-18T00:00:35+00:00",
+      "started_s": 35.0,
+      "duration_s": 0.0,
+      "outcome": "cooldown",
+      "terminal": "skipped",
+      "error_type": null,
+      "attempt_count": 0,
+      "http_request_count": 0,
+      "http_response_count": 0,
+      "cooldown_remaining_s": 600.0,
+      "attempts": []
+    },
+    {
+      "source": "arxiv",
+      "request_id": "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d",
+      "endpoint": "https://export.arxiv.org",
+      "operation": "get",
+      "association_id": "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d",
+      "call_id": "67fe731bb2c14c8294c7038ef43eead8",
+      "started_at": "2026-10-18T00:00:35+00:00",
+      "started_s": 35.0,
+      "duration_s": 0.0,
+      "outcome": "cache_hit",
+      "terminal": "success",
+      "error_type": null,
+      "attempt_count": 0,
+      "http_request_count": 0,
+      "http_response_count": 0,
+      "cooldown_remaining_s": 0.0,
+      "attempts": []
+    }
+  ],
+  "timeout-retry": [
+    {
+      "source": "arxiv",
+      "request_id": "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c",
+      "endpoint": "https://export.arxiv.org",
+      "operation": "get",
+      "association_id": "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c",
+      "call_id": "19ae31b727b047dd9201a94e7cc90b1e",
+      "started_at": "2026-10-18T00:00:00+00:00",
+      "started_s": 0.0,
+      "duration_s": 7.0,
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempt_count": 2,
+      "http_request_count": 2,
+      "http_response_count": 1,
+      "cooldown_remaining_s": 0.0,
+      "attempts": [
+        {
+          "ordinal": 1,
+          "started_at": "2026-10-18T00:00:00+00:00",
+          "started_s": 0.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 2.0,
+          "http_status": null,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 0.0,
+              "duration_s": 2.0,
+              "http_status": null
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "absent",
+          "retry_after_s": null,
+          "retry_delay_s": 5.0,
+          "retry_wait_s": 5.0,
+          "terminal": "retry",
+          "error_type": "ReadTimeout",
+          "http_request_count": 1,
+          "http_response_count": 0
+        },
+        {
+          "ordinal": 2,
+          "started_at": "2026-10-18T00:00:07+00:00",
+          "started_s": 7.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 200,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 7.0,
+              "duration_s": 0.0,
+              "http_status": 200
+            }
+          ],
+          "redirect_chain": [],
+          "retry_after_kind": "absent",
+          "retry_after_s": null,
+          "retry_delay_s": 0.0,
+          "retry_wait_s": 0.0,
+          "terminal": "success",
+          "error_type": null,
+          "http_request_count": 1,
+          "http_response_count": 1
+        }
+      ]
+    }
+  ],
+  "redirect": [
+    {
+      "source": "arxiv",
+      "request_id": "6d82aa18aa6ba06dbc20da538a762bf9e5710d6290975dca58de2ce3bdef4961",
+      "endpoint": "http://export.arxiv.org",
+      "operation": "get",
+      "association_id": "6d82aa18aa6ba06dbc20da538a762bf9e5710d6290975dca58de2ce3bdef4961",
+      "call_id": "bc93f49aa271495c83ca7a425c9554ad",
+      "started_at": "2026-10-18T00:00:00+00:00",
+      "started_s": 0.0,
+      "duration_s": 0.0,
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempt_count": 1,
+      "http_request_count": 2,
+      "http_response_count": 2,
+      "cooldown_remaining_s": 0.0,
+      "attempts": [
+        {
+          "ordinal": 1,
+          "started_at": "2026-10-18T00:00:00+00:00",
+          "started_s": 0.0,
+          "pacer_wait_s": 0.0,
+          "duration_s": 0.0,
+          "http_status": 200,
+          "exchanges": [
+            {
+              "ordinal": 1,
+              "endpoint": "http://export.arxiv.org",
+              "started_s": 0.0,
+              "duration_s": 0.0,
+              "http_status": 301
+            },
+            {
+              "ordinal": 2,
+              "endpoint": "https://export.arxiv.org",
+              "started_s": 0.0,
+              "duration_s": 0.0,
+              "http_status": 200
+            }
+          ],
+          "redirect_chain": [
+            {
+              "endpoint": "http://export.arxiv.org",
+              "http_status": 301
+            }
+          ],
+          "retry_after_kind": "absent",
+          "retry_after_s": null,
+          "retry_delay_s": 0.0,
+          "retry_wait_s": 0.0,
+          "terminal": "success",
+          "error_type": null,
+          "http_request_count": 2,
+          "http_response_count": 2
+        }
+      ]
+    }
+  ]
+}

@@ -123,3 +123,57 @@ def concept_queries(episode):
             yield i, {'positive_scores': [similarity(x, anchor) for sign, x in entries if sign == '+'],
                       'negative_scores': [similarity(x, anchor) for sign, x in entries if sign == '-'],
                       'query_score': similarity(point, anchor)}, output[1]
+
+
+def next_historical_phase7_evidence(entry):
+    """Second evidence batch, bound to the complete immutable card and critic."""
+    evidence = load('next_declarations').get(entry['card_id'])
+    if evidence is None:
+        return None
+    for field in ('card', 'critic'):
+        encoded = json.dumps(entry[field], sort_keys=True, separators=(',', ':')).encode()
+        if hashlib.sha256(encoded).hexdigest() != evidence['specimen'][f'{field}_sha256']:
+            return None
+    return copy.deepcopy(evidence)
+
+
+@lru_cache(maxsize=1)
+def next_historical_capture():
+    """Retain all observed draws locally; an isolated package reexecutes immutable programs in memory."""
+    import os
+    import subprocess
+    import sys
+
+    root = FIXTURES.parents[4]
+    manifest = load('next_sources')
+    observer = root / 'results-wt/evidence-recovery/next_capture.py'
+    for record in manifest['cards'].values():
+        p = record['provenance']
+        assert hashlib.sha256((root / p['source']).read_bytes()).hexdigest() == p['sha256']
+        assert hashlib.sha256(observer.read_bytes()).hexdigest() == p['observer_sha256']
+    raw = root / 'results-wt/evidence-recovery/next-full-capture.json'
+    if raw.exists():
+        data = raw.read_bytes()
+        assert hashlib.sha256(data).hexdigest() == manifest['capture_sha256']
+        return json.loads(data)
+    program = '''import json, runpy, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+ns = runpy.run_path(str(root / 'results-wt/evidence-recovery/next_capture.py'))
+manifest = json.loads((root / 'hybrid/tests/research/fixtures/reference_replays/next_sources.json').read_text())
+records = manifest['cards']
+for card, record in records.items():
+    path = root / record['provenance']['source']
+    episodes, stdout = ns['capture'](card, path.read_text(), str(path))
+    assert stdout == record['reexecuted_stdout']
+    record['episodes'] = episodes
+json.dump(records, sys.stdout, separators=(',', ':'))
+'''
+    result = subprocess.run([sys.executable, '-c', program, str(root)], check=True, capture_output=True,
+                            text=True, env=dict(os.environ, PYTHONHASHSEED='0'))
+    records = json.loads(result.stdout)
+    for record in records.values():
+        draws = [{'parameters': e['parameters'], 'inputs': e['inputs']} for e in record['episodes']]
+        encoded = json.dumps(draws, sort_keys=True, separators=(',', ':')).encode()
+        assert hashlib.sha256(encoded).hexdigest() == record['provenance']['draws_sha256']
+    return records

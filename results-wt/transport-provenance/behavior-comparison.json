@@ -1,0 +1,410 @@
+{
+  "baseline_commit": "eeaba07",
+  "baseline_transport_sha256": "f378d4f4bc0bd7d4949049f62788c14c5704cac51ddfd937c277722fae750fd7",
+  "case_count": 12,
+  "all_unchanged": true,
+  "cases": {
+    "success-cache-pacer": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "5e65c5a044d080df0f932c6ede134c4f7da3e88c5efe0ee562ee8aa6c3551be9",
+          "started_s": 3.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        3.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:00+00:00",
+          "from_cache": false
+        },
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:00+00:00",
+          "from_cache": true
+        },
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:03+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "a998358aabae98aab2558c45a3e9025c4e08b7cf5078512e19603c1d9d7ce95b.json": "74ade9eade19fae000d34741eda71b297a674916d8c855d1f1dac75480b62cfc",
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "59eb4f1b036d1c97a4e708556f68580d5b9d54d49e908c48e3c0f0749d383465"
+      },
+      "final_clock_s": 3.0
+    },
+    "retry-after-delta": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 7.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        7.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:07+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "b6d83f1d8f910897f02033a85ed70b90a94e51552d349a4480e6f05d7b223d04"
+      },
+      "final_clock_s": 7.0
+    },
+    "retry-after-cap": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 120.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        120.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:02:00+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "3f4124dafb160daf8423bd271dafd5657ff69d7c736237fb919b7dfaf6052e3c"
+      },
+      "final_clock_s": 120.0
+    },
+    "retry-after-short-pacer": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 3.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        1.0,
+        2.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:03+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "58e47e004f6fd0b3f815712a06ef0cd499159711431d3be543c2f01f30d7920e"
+      },
+      "final_clock_s": 3.0
+    },
+    "retry-after-date": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 5.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        5.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:05+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "c1f783573b5351b1781dd26f867208cd2ac5c4df8948a7f41968582dd28c1b98"
+      },
+      "final_clock_s": 5.0
+    },
+    "retry-after-invalid": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 5.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        5.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:05+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "c1f783573b5351b1781dd26f867208cd2ac5c4df8948a7f41968582dd28c1b98"
+      },
+      "final_clock_s": 5.0
+    },
+    "exhaustion-skip-cache": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 5.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 15.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 35.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        5.0,
+        10.0,
+        20.0
+      ],
+      "results": [
+        {
+          "outcome": "HTTP 429 after 4 attempts"
+        },
+        {
+          "outcome": "cooldown"
+        },
+        {
+          "body": "synthetic cached answer",
+          "fetched_at": "2026-10-18T00:00:00+00:00",
+          "from_cache": true
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab"
+      },
+      "final_clock_s": 35.0
+    },
+    "timeout-retry": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": "timeout",
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 7.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        5.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:07+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "b6d83f1d8f910897f02033a85ed70b90a94e51552d349a4480e6f05d7b223d04"
+      },
+      "final_clock_s": 7.0
+    },
+    "redirect": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "0254fb19de13850e70bf72e03c0f8d78d11d981632195f451cb215052818e9d2",
+          "started_s": 0.0,
+          "response": 301,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:00+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "6d82aa18aa6ba06dbc20da538a762bf9e5710d6290975dca58de2ce3bdef4961.json": "c40c6f887d1ec921c266cf28932ec0f5b2bea6f2bb2633a8d6cfd90c54bef7ba"
+      },
+      "final_clock_s": 0.0
+    },
+    "terminal-404": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 404,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [],
+      "results": [
+        {
+          "outcome": "HTTP 404"
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab"
+      },
+      "final_clock_s": 0.0
+    },
+    "server-error": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 503,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 5.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        5.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:05+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "c1f783573b5351b1781dd26f867208cd2ac5c4df8948a7f41968582dd28c1b98"
+      },
+      "final_clock_s": 5.0
+    },
+    "early-sleep": {
+      "unchanged": true,
+      "requests": [
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 0.0,
+          "response": 429,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        },
+        {
+          "request_id": "8c0ee5a5a051cc0f8dc3842f39eff31bb7681cd89282ed1237ff2e8de6ab3a42",
+          "started_s": 6.0,
+          "response": 200,
+          "headers_hash": "4ba954c6a184dba18159facf0b6cab881f125111978af884635893885f4fd780"
+        }
+      ],
+      "sleeps_s": [
+        7.0
+      ],
+      "results": [
+        {
+          "body": "synthetic answer",
+          "fetched_at": "2026-10-18T00:00:06+00:00",
+          "from_cache": false
+        }
+      ],
+      "cache_envelope_hashes": {
+        "bb987c86f668c49a103f0467f8483d5b92931553af1df9b20c9e886a5a651e4d.json": "cd34c909a012da3ce03d13d9f506bf2401ad229f8960fe20a03dc427687e57ab",
+        "98c3ae62000649118f2f36ab393f940bb44671bd0b40edc2b630379c6049587c.json": "a994fd79532e0ee4e25cdc528d2b48a2958e460f351ef62c3430e7bc1dcd2a50"
+      },
+      "final_clock_s": 6.0
+    }
+  }
+}

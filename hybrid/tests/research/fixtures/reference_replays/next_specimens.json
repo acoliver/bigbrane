@@ -1,0 +1,137 @@
+{
+  "card-7ec5e5c2": {
+    "card": {
+      "path": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/cards/card-7ec5e5c2/v8.json",
+      "sha256": "6e28577f5d5ee3ce8cb7ecab6b92238693e4af9a8be38ef2592b191b9e49aaee",
+      "bytes": 22957,
+      "ledger_event": {
+        "actor": "store",
+        "data": {
+          "card_id": "card-7ec5e5c2",
+          "path": "cards/card-7ec5e5c2/v8.json",
+          "sha256": "6e28577f5d5ee3ce8cb7ecab6b92238693e4af9a8be38ef2592b191b9e49aaee",
+          "stage": "S2",
+          "version": 8
+        },
+        "hash": "641eac93ab53b682a67f499a7c8bd736147d4a518fc9e2e50fefa310492a98cd",
+        "prev_hash": "fe44bc3201a460527596942aa37689869d10ea302b910fa6e8569114a44306f1",
+        "seq": 580,
+        "ts": "2026-10-10T18:52:32.044210+00:00",
+        "type": "card_version"
+      },
+      "replay_specimen_sha256": "5a86671142dc82ad1ddbb9d27b5cf5a1dfbb95c1ab906a01928541c1e01c50c0"
+    },
+    "critic": {
+      "path": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/reduction_critic/card-7ec5e5c2-v7-fffa4e.json",
+      "sha256": "f6c06cd5d1496aea2025a22c3c7096200a1c685d969d261a1e47918f97ec50ec",
+      "bytes": 3728,
+      "ledger_event": {
+        "actor": "store",
+        "data": {
+          "bytes": 3728,
+          "card_id": "card-7ec5e5c2",
+          "kind": "reduction_critic",
+          "name": "card-7ec5e5c2-v7-fffa4e.json",
+          "path": "artifacts/reduction_critic/card-7ec5e5c2-v7-fffa4e.json",
+          "sha256": "f6c06cd5d1496aea2025a22c3c7096200a1c685d969d261a1e47918f97ec50ec"
+        },
+        "hash": "fe44bc3201a460527596942aa37689869d10ea302b910fa6e8569114a44306f1",
+        "prev_hash": "d432321d0d062d6ceea82ac48eeb230e7f84c339ded79d78850345b30e718958",
+        "seq": 579,
+        "ts": "2026-10-10T18:52:32.040654+00:00",
+        "type": "artifact"
+      },
+      "replay_specimen_sha256": "4120b6df5a41c166c1e74bd3c84799133b1c39bf6f6db521063079cab0a40262"
+    }
+  },
+  "card-bc3935ac": {
+    "card": {
+      "path": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/cards/card-bc3935ac/v8.json",
+      "sha256": "d34438b1cfb42257cde58c414ff32f32d5c560d2953680e9b8df12d1c62d54df",
+      "bytes": 29493,
+      "ledger_event": {
+        "actor": "store",
+        "data": {
+          "card_id": "card-bc3935ac",
+          "path": "cards/card-bc3935ac/v8.json",
+          "sha256": "d34438b1cfb42257cde58c414ff32f32d5c560d2953680e9b8df12d1c62d54df",
+          "stage": "S2",
+          "version": 8
+        },
+        "hash": "197786a69fee206b267a8aa21c6883e7ac13cfdd3b98097de1c975d5e4b3809b",
+        "prev_hash": "4e25c43e66beac0c6b3f1c9d9bc51c4baae7f8ba19ea5a2b6d7098146ed06754",
+        "seq": 765,
+        "ts": "2026-10-10T19:00:33.192736+00:00",
+        "type": "card_version"
+      },
+      "replay_specimen_sha256": "de67f3511e797e11fd5e71473535033f01f59335bc8f071fbbcaddc10ce53537"
+    },
+    "critic": {
+      "path": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/reduction_critic/card-bc3935ac-v7-5f3d54.json",
+      "sha256": "5d7cdf4d9376e6a0ea722b84eacf6db725dde7a8d4209862d30a74f2a32ce7bb",
+      "bytes": 3726,
+      "ledger_event": {
+        "actor": "store",
+        "data": {
+          "bytes": 3726,
+          "card_id": "card-bc3935ac",
+          "kind": "reduction_critic",
+          "name": "card-bc3935ac-v7-5f3d54.json",
+          "path": "artifacts/reduction_critic/card-bc3935ac-v7-5f3d54.json",
+          "sha256": "5d7cdf4d9376e6a0ea722b84eacf6db725dde7a8d4209862d30a74f2a32ce7bb"
+        },
+        "hash": "4e25c43e66beac0c6b3f1c9d9bc51c4baae7f8ba19ea5a2b6d7098146ed06754",
+        "prev_hash": "138829b26652184375606c4f5d51058af132a531695e91ec4a01b8f76303fccf",
+        "seq": 764,
+        "ts": "2026-10-10T19:00:33.190509+00:00",
+        "type": "artifact"
+      },
+      "replay_specimen_sha256": "e3fea5ea372c4521bf090d533ab8a14a44bb874a3f7a3e3be31148a90ffe3a72"
+    }
+  },
+  "card-d1d383d5": {
+    "card": {
+      "path": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/cards/card-d1d383d5/v7.json",
+      "sha256": "ee23b4aedb3d3e114bcbd4f6876f1fe145973021532226044c8ea025de06afde",
+      "bytes": 28601,
+      "ledger_event": {
+        "actor": "store",
+        "data": {
+          "card_id": "card-d1d383d5",
+          "path": "cards/card-d1d383d5/v7.json",
+          "sha256": "ee23b4aedb3d3e114bcbd4f6876f1fe145973021532226044c8ea025de06afde",
+          "stage": "S2",
+          "version": 7
+        },
+        "hash": "7c989420fe99e31e49470d22e6edea6c322584841cc15204fd3cde7fc4848466",
+        "prev_hash": "135864b76c9e475ae086ce070186efa35ada0fb722aae5984163c21f2a0d4248",
+        "seq": 755,
+        "ts": "2026-10-10T18:59:04.654083+00:00",
+        "type": "card_version"
+      },
+      "replay_specimen_sha256": "b5a42ef83498a8a3cffab5303ba6ba37fded4506eabc7966dfc43496a697184d"
+    },
+    "critic": {
+      "path": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/reduction_critic/card-d1d383d5-v6-e64a7b.json",
+      "sha256": "dce3d8b908ea9a266685f1a53134ee581cd4511392e96d2395f5dc995e572130",
+      "bytes": 4146,
+      "ledger_event": {
+        "actor": "store",
+        "data": {
+          "bytes": 4146,
+          "card_id": "card-d1d383d5",
+          "kind": "reduction_critic",
+          "name": "card-d1d383d5-v6-e64a7b.json",
+          "path": "artifacts/reduction_critic/card-d1d383d5-v6-e64a7b.json",
+          "sha256": "dce3d8b908ea9a266685f1a53134ee581cd4511392e96d2395f5dc995e572130"
+        },
+        "hash": "135864b76c9e475ae086ce070186efa35ada0fb722aae5984163c21f2a0d4248",
+        "prev_hash": "87d6024dff54efb33e11036e1e4211688de55a298f9bf7c3a70bb326cd2d09a7",
+        "seq": 754,
+        "ts": "2026-10-10T18:59:04.651646+00:00",
+        "type": "artifact"
+      },
+      "replay_specimen_sha256": "e87626aad389deee1259fb98fd0e3d759af7e336f52d8912c0314570fa984152"
+    }
+  }
+}

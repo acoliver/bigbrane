@@ -136,7 +136,9 @@
                 "linear_ssm_zero_lift",
                 "bimap_hard_l1_read",
                 "parityunionfind582f8abf",
-                "finitePGLversionspaced86dca4b"
+                "finitePGLversionspaced86dca4b",
+                "automatonMorphism7ec5e5c2",
+                "deweyForestbc3935ac"
                 ]
               },
               "parameters": {

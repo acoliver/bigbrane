@@ -188,6 +188,10 @@ def extended_outputs(operation: str, p: dict, inputs: list) -> np.ndarray:
         return parity_union_find(p, inputs)
     if operation == "finitePGLversionspaced86dca4b":
         return pgl_version_space(p, inputs)
+    if operation == "automatonMorphism7ec5e5c2":
+        return automaton_morphism_outputs(p, inputs)
+    if operation == "deweyForestbc3935ac":
+        return dewey_forest_outputs(p, inputs)
     if operation == "sequitur":
         return sequitur_outputs(inputs)
     if operation == "queue_copy":
@@ -518,3 +522,106 @@ def sugs_regression_assignments(p: dict, inputs: list) -> np.ndarray:
         clusters[selected] = (A + weight * np.outer(x, x), B + weight * np.outer(x, y), n + 1)
         outputs.append(selected)
     return np.asarray(outputs, dtype=float)
+
+
+NEXT_HISTORICAL_REFERENCE_OPERATIONS = {
+    "automatonMorphism7ec5e5c2": ("other_known", ("source", "target"), ()),
+    "deweyForestbc3935ac": ("other_known", ("vocabulary", "epsilon"), ()),
+}
+REFERENCE_OPERATIONS.update(NEXT_HISTORICAL_REFERENCE_OPERATIONS)
+
+
+def automaton_morphism_outputs(p: dict, inputs: list) -> np.ndarray:
+    """Labeled homomorphism closure (Transition Systems 7.1.2), with the fixed D/Q stream protocol."""
+    source, target = (np.asarray(p[k]) for k in ("source", "target"))
+    if (source.ndim != 2 or source.shape[0] != 2 or source.shape != target.shape or
+            source.shape[1] < 1 or source.dtype.kind not in "iu" or target.dtype.kind not in "iu"):
+        raise ValueError("homomorphism needs two equally sized, two-letter integer transition systems")
+    n = source.shape[1]
+    if ((source < 0) | (source >= n) | (target < 0) | (target >= n)).any():
+        raise ValueError("transition entries must index their state sets")
+    relation = np.zeros((n, n), dtype=bool)
+    mode, register = "idle", 0
+    outputs = []
+    for z in inputs:
+        numeric = isinstance(z, int) and not isinstance(z, bool) and 0 <= z < n
+        if not numeric and z not in ("D", "Q", "L", "R", "?"):
+            raise ValueError("token outside the homomorphism stream vocabulary")
+        seed = None
+        if mode == "idle":
+            mode = {"D": "demo_source", "Q": "query_source"}.get(z, "idle")
+        elif mode in ("demo_source", "query_source"):
+            if numeric:
+                register = z
+                mode = "demo_target" if mode == "demo_source" else "word"
+            else:
+                mode = "idle"
+        elif mode == "demo_target":
+            if numeric:
+                seed = (register, z)
+            mode = "idle"
+        elif mode == "word" and z in ("L", "R"):
+            register = int(source[0 if z == "L" else 1, register])
+        elif mode == "word" and z == "?":
+            mode = "answer"
+        else:
+            mode = "idle"
+        if seed is not None:
+            relation[seed] = True
+            # Least fixed point of the two commuting-edge implications, not FIFO assignment order.
+            while True:
+                before = relation.copy()
+                x, y = np.nonzero(before)
+                relation[source[:, x], target[:, y]] = True
+                if np.array_equal(before, relation):
+                    break
+        counts = relation.sum(axis=1)
+        output = np.full(n + 5, 1 / (n + 5))
+        if mode == "answer":
+            output[:] = 0
+            if counts.max() <= 1 and counts[register] == 1:
+                output[:n] = relation[register]
+            else:
+                output[:n] = 1 / n
+        outputs.append(output)
+    return np.asarray(outputs)
+
+
+def dewey_forest_outputs(p: dict, inputs: list) -> np.ndarray:
+    """Dewey ancestry (Xu et al. 2009, 2.2 P1), evaluated through parent links with fixed stream conventions."""
+    vocabulary, epsilon = p["vocabulary"], float(p["epsilon"])
+    reserved = {"<", "?", "yes", "no"}
+    if (not isinstance(vocabulary, list) or not all(isinstance(x, str) for x in vocabulary) or
+            len(set(vocabulary)) != len(vocabulary) or not reserved <= set(vocabulary) or
+            "RHO" in vocabulary or not np.isfinite(epsilon) or not 0 < epsilon < 1):
+        raise ValueError("forest needs a unique string vocabulary, four reserved tokens, and epsilon in (0,1)")
+    index = {x: i for i, x in enumerate(vocabulary)}
+    parent, window, outputs = {}, [], []
+    for token in inputs:
+        if not isinstance(token, str) or token not in index:
+            raise ValueError("token outside the forest vocabulary")
+        window = (window + [token])[-3:]
+        output = np.full(len(vocabulary), 1 / len(vocabulary))
+        if len(window) == 3:
+            child, operator, ancestor = window
+            if child not in reserved and ancestor not in reserved:
+                if operator == "<" and child not in parent and child != ancestor:
+                    # Unknown parents become fresh top-level roots only on an accepted leaf insertion.
+                    if ancestor not in parent:
+                        parent[ancestor] = None
+                    parent[child] = ancestor
+                elif operator == "?":
+                    output[:] = epsilon / len(vocabulary)
+                    if child == ancestor:
+                        yes = 1.
+                    elif child not in parent or ancestor not in parent:
+                        yes = .5
+                    else:
+                        current = child
+                        while current is not None and current != ancestor:
+                            current = parent[current]
+                        yes = float(current == ancestor)
+                    output[index["yes"]] += (1 - epsilon) * yes
+                    output[index["no"]] += (1 - epsilon) * (1 - yes)
+        outputs.append(output)
+    return np.asarray(outputs)
