@@ -18,7 +18,7 @@ from hybrid.research.stages import g_generate as gg
 from hybrid.tests.research.test_generation_arms import (CLOSED_CELL, OPEN_CELL, arms_cfg, classifier, events,
                                                         make_orchestrator, script)
 from hybrid.tests.research.test_kd4_counted_family import excluded_id, probe
-from hybrid.tests.research.test_orchestrator_fakes import comparison_check, declared
+from hybrid.tests.research.test_orchestrator_fakes import comparison_check, declared, synthetic_declared
 from hybrid.tests.research.test_difference import critic
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "kd5_s0_flags_20261017"
@@ -102,7 +102,7 @@ def full_line(tmp_path, run_dir, crit):
 
 def test_a_flagged_card_whose_reduction_is_counted_in_ssm_dies_at_s2(tmp_path, run_dir):
     crit = critic(reduces_to="ssm", family="ssm", **KNOWN, mapping="h_t = a_t h_{t-1} + b_t x_t",
-                  comparators=[declared("ssm", "diag_ssm")])
+                  comparators=[dict(synthetic_declared("ssm"), id="diag_ssm")])
     _, verdicts = full_line(tmp_path, run_dir, crit)
     assert verdicts["S0"]["verdict"] == "pass" and verdicts["S1"]["verdict"] == "pass"
     assert verdicts["S2"]["reasons"][-1].startswith("gate: excluded_family:ssm:")

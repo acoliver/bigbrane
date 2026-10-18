@@ -2,22 +2,19 @@
 
 ## Verdict
 
-The S2 bar change keeps the guard and lets five cards through that the old bar killed. Both pre-registered guard rules
-hold on intent: all 10 novelty-probe cards (8 published mechanisms, 2 controls) still die, and all 6 counted reductions
-still die. Nine of the ten probe cards died at the gate the rule named. Card-17100007 (SEQUITUR) died at a different
-gate: `prior_art_tested and no untested element`, not `reduces_to_known`. The critic did name the published form
-(reduces_to other_known, known_work true, textbook_transplant true, cited arxiv:cs/9709102), but the host's numeric check
-refuted the reduction (the declared SEQUITUR comparator differs from the card beyond the 1e-06 tolerance), so the
-reduction gate did not fire. The prior-art gate then killed it, because cs/9709102 is labelled `same_mechanism` and the
-card added no untested element. The guard held, but not by the gate the rule named. Three of the six counted reductions also died at another
-gate (no_difference, R3, R2) and none passed.
+The saved replay FAILS both pre-registered named-gate guards. Rule 1 requires all eight published mechanisms to die
+at `reduces_to_known:*` and both controls at `excluded_family:*`; 9/10 do so. SEQUITUR dies later at `prior_art_tested`
+after its numerical reduction is refuted. Rule 2 requires all six previously counted reductions to die at a reduction
+gate; only 3/6 do so. Card-440f0204 dies at no_difference, card-62785c10 at R3, and card-d6dfeac2 at R2.
+The secondary all-dead diagnostic is 10/10 and 6/6, respectively. It does not satisfy the registered predicates.
+No acceptance threshold or preregistration was changed to produce this correction.
 
 Five cards went from kill to S2 pass: card-3485a13f, card-f5ee7edb, card-8154d3b4, card-a4f684fb, card-89248ee5. Whether
 each one is truly new is not decided here. The critic's known-work answer, the sources it weighed and the accepted
 difference statement for each are in the flips section below, and an independent adversarial literature check of the
 five runs separately. Until that check is in, treat the five as unconfirmed, not as findings.
 
-Final suite: research suite 1391 passed, 2 skipped, 0 failed (the earlier run had 17 failed and 3 errors); the other hybrid suites 1831 passed (1827 plus 4 environment failures that pass once the worktree has its local data), 18 skipped, 0 code failures. No failure was a regression in the new code.
+Historical pre-KD8/PA2 suite, not verification of the current tree: research suite 1391 passed, 2 skipped, 0 failed (the earlier run had 17 failed and 3 errors); the other hybrid suites 1831 passed (1827 plus 4 environment failures that pass once the worktree has its local data), 18 skipped, 0 code failures. No failure was a regression in the new code.
 
 ## What changed
 
@@ -65,11 +62,11 @@ The earlier research run (logs/tests-2.log) had 17 failed and 3 errors. Classifi
 
 ## Acceptance rules (pre-registered in STATUS.md, scored in SCORE.md)
 
-| rule | intent | result | named gate |
+| rule | registered requirement | result | observed gate |
 |---|---|---|---|
-| 1. novelty probe guard | all 8 published mechanisms and both controls stay dead | met, 10 of 10 dead | 9 of 10; card-17100007 died at prior_art_tested |
-| 2. counted reductions stay dead | all 6 stay dead | met, 6 of 6 dead | 3 of 6 at the reduction gate; card-440f0204 no_difference, card-62785c10 R3, card-d6dfeac2 R2 |
-| 3. flips are inspected | each flip listed with reasons | 5 flips listed below | the radicality question is left to the independent literature check |
+| 1. novelty probe guard | all 8 published at reduces_to_known, both controls at excluded_family | FAIL | 9/10; card-17100007 died at prior_art_tested |
+| 2. counted reductions stay dead | all 6 at the reduction gate, no later-gate substitution | FAIL | 3/6; card-440f0204 no_difference, card-62785c10 R3, card-d6dfeac2 R2 |
+| 3. flips are inspected | every flip listed and the general-mechanism question answered | PASS for historical inspection | five listed below; independent audit classifies four incremental, tensor circulation a narrow unvalidated lead |
 
 Card-17100007 (SEQUITUR) died on a different gate than rule 1 named. The rule expected `reduces_to_known:*`. The kill
 code is `prior_art_tested and no untested element`. The kill came from the prior-art classifier finding cs/9709102, and
@@ -170,3 +167,12 @@ The accepted difference statement is the one the difference checker accepted.
 - The flips are listed, not judged. Whether the learned general mechanism of each is published or textbook is the question
   rule 3 asks; the independent adversarial literature check answers it. Several accepted statements rest on excerpts that
   the checker marked as not supporting the claims about the prior papers (`excerpt_gaps`, shown per flip).
+
+## Evidence correction after final findings
+
+These are historical observations from the saved run snapshots, not new outcomes from the repaired tree. The original
+Rule 1 and Rule 2 misses remain failures. Their exact gate reasons are retained in SCORE.md. A later kill cannot
+validate a failed reduction check. The independent audit at main `results/flip-audit-20261018/AUDIT.md` classifies
+3485a13f, f5ee7edb, a4f684fb and 89248ee5 as incremental, and 8154d3b4 as a narrow unvalidated lead. It establishes
+no sample-efficiency or language-model advantage. The newer KD8/PA2 results, source failures, and suite3 failure
+are reported separately in `../kd8/REPORT.md`. No full-suite result on the final repaired tree is claimed here.

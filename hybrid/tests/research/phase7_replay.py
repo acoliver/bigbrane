@@ -1,23 +1,21 @@
-"""Offline replay of the S2 reductions of runs/run-20261010T181300Z under the Phase 7 gate (the Phase 7 exit criterion of
+"""Historical routing replay with separate executed evidence for two supported published repairs.
+
+Offline replay of the S2 reductions of runs/run-20261010T181300Z under the Phase 7 gate (the Phase 7 exit criterion of
 DISCOVERY-PIPELINE-PLAN.md section 17), with recorded critic outputs and no live model.
 
 `extract` reads the source run read-only (hybrid.research.outcome_records.RunView) and writes, for every card that
 reached the reduction critic: the card, its recorded prior-art result, the recorded reduction critic answer, the
 recorded outcome of the numeric check, the prior_art_delta answer, and the card's original S2 verdict and kill codes.
 
-`replay` builds a new run with those cards at S1 pass and resumes it through the real orchestrator and the real S2
-stage. A fake model client answers each call from the recording: the reduction critic with the recorded answer (plus
-`family: "none"`, since no recorded critic was asked for a family, so the exclusion has to come from `reduces_to` and
-the families.toml keywords, as it would for a critic misled by a rename), the check with a program reporting the
-recorded difference as one comparison with the claimed family (FIX-10: the host decides; the replay trusts that the
-recorded check compared the claimed form; FIX-12: the replayed critic declares that form as comparator `recorded`, and
-the check reports it under that id), the prior-art classifier with the recorded label and sources. The
-difference statement is off, so a card that passes the reduction gates passes S2 as before (it would need a live difference statement); outcomes
-are off, so R3 is not part of this replay (test_difference.py covers it).
+`replay` resumes the recorded cards through the real S2 with fake clients and no live calls. Legacy comparators
+receive only their recorded mapping and family, with no invented component declaration, citation, numeric difference
+or reference trace unless separate executed evidence exists for that card. A radical_enough answer is not converted into checked known work. Historical differences remain
+diagnostic numbers and cannot independently verify a comparator.
 
-Expected codes. A verified reduction into the linear-attention or delta-rule family of families.toml becomes
-excluded_family:<id> (the plan, section 1.2: "a verified reduction into one of these families fails the card
-regardless of that prefix"); every other death keeps its original code."""
+The historical expected kill codes remain in expected_codes and test_phase7_replay.py, unchanged. Their current
+misses are reported, not recast as successful scientific replay. The difference gate and own-history enforcement
+are off; this does not measure their behavior or establish novelty.
+"""
 from __future__ import annotations
 
 import asyncio
@@ -27,6 +25,7 @@ import re
 from pathlib import Path
 
 from hybrid.tests.research.critic_answers import novelty_fields
+from hybrid.tests.research.reference_replays import load as replay_evidence
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE_RUN = "run-20261010T181300Z"
@@ -125,9 +124,14 @@ def replay(fixture: dict, work: Path) -> list[dict]:
             "id": "recorded", "base_family": recorded["reduces_to"], "base_form": "recorded known form",
             "update": recorded["mapping"], "read": recorded["mapping"], "transformations": [],
             "parameter_mapping": recorded["mapping"], "limit_only": False,
-            "components": [{"role": "activation", "name": "tanh", "origin": "published", "cite": "Elman 1990"},
-                           {"role": "update", "name": "recorded known form", "origin": "published", "cite": "recorded"}]}]
-        # the fixture was written before decision R2C: its radical_enough answer is read as the new known_work fields
+            "components": []}]  # No component declaration or independent reference was recorded.
+        evidence = replay_evidence('phase7').get(entry_for(user)['card_id'])
+        if evidence:
+            operation = evidence['reference_spec']['operation']
+            repair = 'normalizer' if operation.startswith('diagonal_') else 'multi_read'
+            comparators[0].update(reference_spec=evidence['reference_spec'],
+                                  transformations=[{'type': repair, 'what': recorded['mapping']}])
+        # Legacy resemblance is not a source citation or independent reference.
         novelty = novelty_fields(recorded) if "radical_enough" in recorded else {}
         answer = {key: value for key, value in recorded.items() if key != "radical_enough"}
         return dict(answer, **novelty, family="none", comparators=comparators,
@@ -135,14 +139,19 @@ def replay(fixture: dict, work: Path) -> list[dict]:
 
     def check(i, user):
         # FIX-10: the recorded outcome is replayed as one comparison with the claimed family, at the recorded
-        # difference (the host decides from it). A recorded verification with no difference replays at 0.0, a
-        # recorded refutation without one at 1.0, an unverified check as a report with no comparison.
+        # difference, when recorded. Missing numbers stay missing; no reference proof is reconstructed.
         entry = entry_for(user)
         outcome, diff = entry["reduction_outcome"], entry["max_abs_diff"]
+        if diff is None:
+            return {"check_code": None, "explanation": "no numeric difference or independent reference recorded"}
         comparisons = [{
             "declared_id": "recorded", "comparator": "recorded known form", "family": entry["critic"]["reduces_to"],
             "transformations": [], "limit_only": False, "reference": "recorded check", "inputs_tested": 1,
-            "max_abs_diff": diff if diff is not None else (0.0 if outcome == "verified" else 1.0)}]
+            "max_abs_diff": diff}]
+        evidence = replay_evidence('phase7').get(entry['card_id'])
+        if evidence:
+            repair = 'normalizer' if evidence['reference_spec']['operation'].startswith('diagonal_') else 'multi_read'
+            comparisons[0].update(reference_samples=evidence['reference_samples'], transformations=[repair])
         if outcome not in ("verified", "refuted"):
             # an unverified recorded check replays as a report that leaves out the declared comparator
             comparisons = []
@@ -178,7 +187,7 @@ def replay(fixture: dict, work: Path) -> list[dict]:
         record = build_record(view, card_id, "replay")
         s2 = view.latest_card(card_id)[0]["status"]["verdicts"]["S2"]
         rows.append({"card_id": card_id, "title": entry["card"]["title"],
-                     "reduces_to": entry["critic"]["reduces_to"], "check": entry["reduction_outcome"],
+                     "reduces_to": entry["critic"]["reduces_to"], "check": entry["reduction_outcome"], "evidence_status": "executed_card_trace_with_host_reference" if card_id in replay_evidence("phase7") else "historical_self_comparison_only",
                      "learning_rule_prefix": entry["critic"]["difference_if_any"].strip().startswith("LEARNING_RULE:"),
                      "original_codes": entry["original"]["kill_codes"], "original_outcome": entry["original"]["outcome"],
                      "replay_s2": s2["verdict"], "replay_gate": next((r for r in s2["reasons"] if r.startswith("gate:")),

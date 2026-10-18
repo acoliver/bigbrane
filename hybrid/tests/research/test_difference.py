@@ -103,6 +103,14 @@ def statement(*, records=True, causes=True, family=True, literature=True, refs=N
             prior.append({"kind": "family", "ref": fam, "title": fam, "what_was_tried": "the family form",
                           "why_it_failed": "it is that family"})
         prior += refs or []
+        # Synthetic routing statements obey R2D without inventing unrelated paper evidence.
+        for fill in ("exact_match_cache", "hopfield_associative_memory", "ssm"):
+            if sum(p["kind"] != "literature" for p in prior) >= 2:
+                break
+            if (not family and fill == fam) or any(p["kind"] == "family" and p["ref"] == fill for p in prior):
+                continue
+            prior.append({"kind": "family", "ref": fill, "title": fill,
+                          "what_was_tried": "the listed family form", "why_it_failed": "synthetic comparison"})
         return {"closest_prior": prior, "what_was_tried": "a phase-keyed running sum",
                 "why_it_failed": "it reduces to a known form", "precise_change": "The write is gated by a parity test.",
                 "changed_equation": equation, "cause_ids_addressed": r3_causes(user) if causes else []}
@@ -179,7 +187,8 @@ def test_a_difference_statement_is_required_and_invented_refs_drop_the_card_afte
 
 def test_host_checks_name_each_missing_part():
     families, _ = difference._families("hybrid/config/families.toml", "hybrid/config/archive.toml")
-    req = difference.Requirements(literature={"2401.00001": "A paper", "arxiv:2401.00001": ""}, outcomes={},
+    req = difference.Requirements(literature={"2401.00001": {"key": "arxiv:2401.00001"},
+                                            "arxiv:2401.00001": {"key": "arxiv:2401.00001"}}, outcomes={},
                                   r3=[{"record_id": "oc-aaaaaaaaaaaa", "card_id": "card-0000d001", "exact": True,
                                        "jaccard": 1.0, "causes": [{"id": "oc-aaaaaaaaaaaa/reduces_to_known:x",
                                                                    "detail": "reduced"}]}],
@@ -190,7 +199,7 @@ def test_host_checks_name_each_missing_part():
            "what_was_tried": "a", "why_it_failed": "b", "precise_change": "c", "changed_equation": "update[7]",
            "cause_ids_addressed": []}
     problems = difference.host_problems(bad, card, req)
-    assert set(problems) == {"closest_prior:count", "changed_equation", "r3_prior:oc-aaaaaaaaaaaa",
+    assert set(problems) == {"closest_prior:count", "closest_prior:total", "changed_equation", "r3_prior:oc-aaaaaaaaaaaa",
                              "r3:oc-aaaaaaaaaaaa/reduces_to_known:x", "family:hopfield_associative_memory"}
 
 

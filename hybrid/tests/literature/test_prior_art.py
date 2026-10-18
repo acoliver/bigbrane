@@ -63,7 +63,7 @@ def test_classification_is_grounded_in_search_hits_and_rejects_invented_ids(tmp_
         Completion(NO_REFINEMENT),
         Completion(
             {
-                "label": "prior_art_undertested",
+                "coverage_assessment": {"adequate_for_novelty": True, "reason": "Scripted coverage for routing test."}, "label": "prior_art_undertested",
                 "evidence": [
                     {"source": "arxiv", "source_id": grounded_id(), "relation": "closest_prior_work"},
                     {"source": "arxiv", "source_id": "9999.99999", "relation": "same_mechanism"},
@@ -92,7 +92,7 @@ def test_every_query_and_result_is_recorded_through_the_sink(tmp_path):
     llm = fake_llm(
         Completion({"queries": TAGGED}),
         Completion(NO_REFINEMENT),
-        Completion({"label": "novel", "evidence": [], "notes": "No close work found."}),
+        Completion({"coverage_assessment": {"adequate_for_novelty": True, "reason": "Scripted coverage for routing test."}, "label": "novel", "evidence": [], "notes": "No close work found."}),
     )
     asyncio.run(classify_prior_art(literature, CARD, llm, sink))
 
@@ -110,7 +110,7 @@ def test_judgment_prompt_lists_found_titles_and_abstracts(tmp_path):
     llm = fake_llm(
         Completion({"queries": TAGGED}),
         Completion(NO_REFINEMENT),
-        Completion({"label": "novel", "evidence": [], "notes": "none"}),
+        Completion({"coverage_assessment": {"adequate_for_novelty": True, "reason": "Scripted coverage for routing test."}, "label": "novel", "evidence": [], "notes": "none"}),
     )
     asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
     judgment_call = llm.calls[2]
@@ -137,7 +137,7 @@ def test_label_outside_the_enum_is_rejected(tmp_path):
     llm = fake_llm(
         Completion({"queries": TAGGED}),
         Completion(NO_REFINEMENT),
-        Completion({"label": "maybe", "evidence": [], "notes": "unsure"}),
+        Completion({"coverage_assessment": {"adequate_for_novelty": True, "reason": "Scripted coverage for routing test."}, "label": "maybe", "evidence": [], "notes": "unsure"}),
     )
     with pytest.raises(jsonschema.ValidationError):
         asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
@@ -166,7 +166,7 @@ def classify_citing(tmp_path, *cited):
         Completion(NO_REFINEMENT),
         Completion(
             {
-                "label": "prior_art_undertested",
+                "coverage_assessment": {"adequate_for_novelty": True, "reason": "Scripted coverage for routing test."}, "label": "prior_art_undertested",
                 "evidence": [dict(source=s, source_id=i, relation="closest_prior_work") for s, i in cited],
                 "notes": "n",
             }
@@ -215,7 +215,7 @@ def test_candidates_record_title_year_url_and_the_excerpt_the_classifier_saw(tmp
     llm = fake_llm(
         Completion({"queries": TAGGED}),
         Completion(NO_REFINEMENT),
-        Completion({"label": "novel", "evidence": [], "notes": "none"}),
+        Completion({"coverage_assessment": {"adequate_for_novelty": True, "reason": "Scripted coverage for routing test."}, "label": "novel", "evidence": [], "notes": "none"}),
     )
     result = asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
 
@@ -229,6 +229,13 @@ def test_candidates_record_title_year_url_and_the_excerpt_the_classifier_saw(tmp
         "year": paper.year,
         "url": paper.url,
         "excerpt": (paper.abstract or "(no abstract)")[:600],
+        "query_support": QUERIES,
+        "query_hits": 10,
+        "query_fields": sorted(set(FIELDS)),
+        "aliases": [f"arxiv:{paper.source_id}"],
+        "related_only": False,
+        "rank": 1,
+        "classifier_position": 1,
     }
     shown = llm.calls[2]["user"]
     assert f"[{record['key']}] ({paper.year}) {paper.title}\n  {record['excerpt']}" in shown

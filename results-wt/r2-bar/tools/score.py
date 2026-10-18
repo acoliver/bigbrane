@@ -62,15 +62,19 @@ def is_dead(cid):
     return cid in results and results[cid][1]["verdict"] in DEAD_VERDICTS
 
 
+def at_named_gate(cid, gates):
+    return cid in results and results[cid][1]["verdict"] == "reduces_to_known" and done[cid] in gates
+
+
 def rule_lines(cards, named_gate):
-    """Each card: dead or alive (the intent of the rule) and the code it died with; whether it died at the gate the rule named."""
+    """Report death separately from compliance with the registered gate predicate."""
     rows = []
     for cid in cards:
         if cid not in results:
             rows.append(f"- {cid}: NOT RUN")
             continue
         status = "dead" if is_dead(cid) else "ALIVE"
-        gate = "named gate" if done[cid] in named_gate else "other gate"
+        gate = "named gate" if at_named_gate(cid, named_gate) else "other gate"
         rows.append(f"- {cid}: {status}, code {done[cid]} ({gate})")
     return rows
 
@@ -79,20 +83,24 @@ pub_gate, ctl_gate = ("reduces_to_known",), ("excluded_family",)
 cnt_gate = ("reduces_to_known", "excluded_family")
 r1_cards = PROBE_PUBLISHED + PROBE_CONTROLS
 r1_dead = all(is_dead(c) for c in r1_cards)
-r1_named = sum(done.get(c) in pub_gate for c in PROBE_PUBLISHED) + sum(done.get(c) in ctl_gate for c in PROBE_CONTROLS)
+r1_named = sum(at_named_gate(c, pub_gate) for c in PROBE_PUBLISHED) + sum(at_named_gate(c, ctl_gate) for c in PROBE_CONTROLS)
 r2_dead = all(is_dead(c) for c in COUNTED_BEFORE)
-r2_named = sum(done.get(c) in cnt_gate for c in COUNTED_BEFORE)
+r2_named = sum(at_named_gate(c, cnt_gate) for c in COUNTED_BEFORE)
 flips = [c for c, d in done.items() if d == "pass"]
-lines += ["", f"## Rule 1 (novelty probe guard), intent: every published mechanism and both controls stay dead: "
-          f"{'MET' if r1_dead else 'NOT MET'}",
+lines += ["", f"## Rule 1 (novelty probe guard), registered named-gate predicate: "
+          f"{'MET' if r1_dead and r1_named == len(r1_cards) else 'NOT MET'}",
           "", f"{sum(is_dead(c) for c in r1_cards)} of {len(r1_cards)} dead; {r1_named} of {len(r1_cards)} died at the "
           f"gate the rule named (reduces_to_known for the 8 published, excluded_family for the 2 controls).", ""]
 lines += rule_lines(PROBE_PUBLISHED, pub_gate) + rule_lines(PROBE_CONTROLS, ctl_gate)
-lines += ["", f"## Rule 2 (counted reductions stay dead), intent: each stays dead: {'MET' if r2_dead else 'NOT MET'}",
+lines += ["", f"## Rule 2 (counted reductions stay dead), registered reduction-gate predicate: "
+          f"{'MET' if r2_dead and r2_named == len(COUNTED_BEFORE) else 'NOT MET'}",
           "", f"{sum(is_dead(c) for c in COUNTED_BEFORE)} of {len(COUNTED_BEFORE)} dead; {r2_named} of "
           f"{len(COUNTED_BEFORE)} died at the reduction gate itself (reduces_to_known or excluded_family); the rest "
-          f"died at another gate (no_difference, R3, R2), still dead.", ""]
+          f"died at another gate (no_difference, R3, R2) and FAIL this registered rule.", ""]
 lines += rule_lines(COUNTED_BEFORE, cnt_gate)
+lines += ["", "## Secondary all-dead diagnostic (not an acceptance rule)", "",
+          f"Probe: {'all dead' if r1_dead else 'not all dead'}; counted-before: {'all dead' if r2_dead else 'not all dead'}. "
+          "Later-gate kills do not satisfy either registered named-gate guard.", ""]
 lines += ["", f"## Rule 3 (flips to pass): {', '.join(flips) or 'none'}", ""]
 (ROOT / "SCORE.md").write_text("\n".join(lines) + "\n")
 print("\n".join(lines))

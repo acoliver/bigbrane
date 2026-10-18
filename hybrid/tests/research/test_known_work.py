@@ -35,15 +35,16 @@ def test_bare_claim_with_a_paper_outside_the_search_results_does_not_gate():
 
 
 @pytest.mark.parametrize("ref", ["s2:abc123", "abc123"])
-def test_cited_paper_in_the_results_gates_under_either_spelling(ref):
+def test_cited_paper_in_the_results_is_a_lead_not_checked_coverage(ref):
     verdict = known_work.judge(critic(known_work=True, known_work_sources=[source(ref=ref)]), [], CANDIDATES)
-    assert verdict.kills and verdict.basis == "cited_source"
+    assert not verdict.kills and verdict.basis == "coverage_unchecked"
 
 
-def test_named_textbook_and_algorithm_are_accepted_sources():
+def test_named_textbook_and_algorithm_are_unvalidated_leads():
     for kind in ("textbook", "standard_algorithm"):
-        assert known_work.judge(critic(known_work=True, known_work_sources=[source(kind, "Earley")]), [],
-                                CANDIDATES).kills
+        answer = critic(known_work=True, known_work_sources=[source(kind, "Earley")])
+        assert not known_work.judge(answer, [], CANDIDATES).kills
+        assert known_work.cited_names(answer, CANDIDATES) == [source(kind, "Earley")]
 
 
 def test_resemblance_with_a_learned_part_fixed_cannot_carry_a_cited_source_kill():
@@ -53,9 +54,9 @@ def test_resemblance_with_a_learned_part_fixed_cannot_carry_a_cited_source_kill(
     assert not verdict.kills and verdict.basis == "learned_part_fixed"
 
 
-def test_counted_comparator_stands_even_when_a_part_is_listed_as_fixed():
+def test_fixed_learned_part_prevents_general_mechanism_verification():
     fixed = [{"part": "sigma", "capability": "learns the width"}]
-    assert known_work.judge(critic(known_work=True, known_work_sources=[source()], fixed_learned_parts=fixed),
+    assert not known_work.judge(critic(known_work=True, known_work_sources=[source()], fixed_learned_parts=fixed),
                             COUNTED, CANDIDATES).kills
 
 
@@ -68,7 +69,7 @@ def test_schema_requires_a_source_when_known_work_is_true():
 
 def test_cited_papers_are_required_entries_and_names_go_to_the_checker():
     answer = critic(known_work=False, known_work_sources=[source(), source(ref="s2:zzz"), source("textbook", "CLRS 21")])
-    assert known_work.cited_papers(answer, CANDIDATES) == ["abc123"]
+    assert known_work.cited_papers(answer, CANDIDATES) == ["s2:abc123"]
     assert [s["ref"] for s in known_work.cited_names(answer, CANDIDATES)] == ["CLRS 21"]
 
 
@@ -91,7 +92,7 @@ def test_checker_schema_ties_accepted_to_problems():
 def requirements(**changes):
     families, _ = difference._families("hybrid/config/families.toml", "hybrid/config/archive.toml")
     fields = dict(literature={"s2:abc123": CANDIDATES[0], "abc123": CANDIDATES[0]}, outcomes={}, r3=[], family=None,
-                  need=0, families=families)
+                  need=0, families=families, relevant_papers=("s2:abc123",))
     return difference.Requirements(**(fields | changes)), families
 
 
@@ -104,7 +105,10 @@ def statement(*entries):
 def test_family_entries_alone_satisfy_a_card_with_no_relevant_source():
     from hybrid.tests.research.builders import make_card
     req, families = requirements()
-    assert not difference.host_problems(statement(("family", families.known[0].id)), make_card("card-r2test"), req)
+    card = make_card("card-r2test")
+    assert "closest_prior:total" in difference.host_problems(statement(("family", families.known[0].id)), card, req)
+    assert not difference.host_problems(statement(("family", families.known[0].id),
+                                                  ("family", families.known[1].id)), card, req)
 
 
 def test_relevant_sources_are_still_required_before_family_entries():
@@ -116,10 +120,10 @@ def test_relevant_sources_are_still_required_before_family_entries():
 
 def test_a_paper_the_critic_cited_must_be_listed_in_closest_prior():
     from hybrid.tests.research.builders import make_card
-    req, families = requirements(cited_papers=("abc123",))
+    req, families = requirements(cited_papers=("s2:abc123",))
     card = make_card("card-r2test")
     family = families.known[0].id
-    assert "cited_source:abc123" in difference.host_problems(
+    assert "cited_source:s2:abc123" in difference.host_problems(
         statement(("family", family), ("family", families.excluded[0].id)), card, req)
-    assert "cited_source:abc123" not in difference.host_problems(
+    assert "cited_source:s2:abc123" not in difference.host_problems(
         statement(("literature", "s2:abc123"), ("family", family)), card, req)

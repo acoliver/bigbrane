@@ -19,7 +19,7 @@
     "difference_if_any": {"type": "string"},
     "known_work": {
       "type": "boolean",
-      "description": "True when the card's general mechanism (update, readout and learning rule with learned parameters free) is already published or textbook. Gated only with evidence: a host-counted comparator or an accepted cited source (stages/known_work.py)."
+      "description": "True when the card's general mechanism (update, readout and learning rule with learned parameters free) is already published or textbook. Only independently referenced host-counted comparators gate automatically; cited identities and coverage assertions go to the difference challenger or remain unchecked (stages/known_work.py)."
     },
     "known_work_sources": {
       "description": "The closest published or textbook forms, each with the steps of the card it accounts for. Required when known_work is true; may also be given when it is false.",
@@ -94,6 +94,54 @@
           },
           "parameter_mapping": {"type": "string", "minLength": 1},
           "limit_only": {"type": "boolean"},
+          "reference_spec": {
+            "description": "Host-owned published operation and mapped parameters. Without an independently executed reference the comparison is unverified. Unsupported operations and repairs remain unverified.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation",
+              "parameters"
+            ],
+            "properties": {
+              "operation": {
+                "enum": [
+                  "elman_tanh",
+                  "elman_identity",
+                  "linear_ssm",
+                  "input_ssm",
+                  "linear_attention",
+                  "delta_rule",
+                  "jeffrey_ipf",
+                  "softmax_memory",
+                  "dyck2",
+                  "rule110",
+                  "viterbi",
+                  "queue_copy",
+                  "two_counter_abc",
+                  "inside_pcfg",
+                  "earley",
+                  "viterbi_max",
+                  "selective_diagonal",
+                  "mamba_zoh",
+                  "gated_additive_attention",
+                  "diagonal_attention_count",
+                  "diagonal_attention_phase",
+                  "mesa_single",
+                  "mesa_mixture",
+                  "bimap_hard",
+                  "bimap_weighted",
+                  "sequitur",
+                "diagonal_attention_epsilon_logits_probs",
+                "mesa_mixture_logits",
+                "linear_ssm_zero_lift",
+                "bimap_hard_l1_read"
+                ]
+              },
+              "parameters": {
+                "type": "object"
+              }
+            }
+          },
           "components": {
             "description": "KD8: the comparator's own parts, each a published component or the card's. Required in practice for families rnn, lstm_gru and other_known (the host does not count a comparator without them).",
             "type": "array",

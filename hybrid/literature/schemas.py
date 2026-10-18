@@ -1,4 +1,4 @@
-"""JSON schemas for the two model calls made by classify_prior_art."""
+"""JSON schemas for the three model calls made by classify_prior_art."""
 from __future__ import annotations
 
 PRIOR_ART_LABELS = ("novel", "prior_art_tested", "prior_art_undertested", "known_disproven")
@@ -30,6 +30,8 @@ QUERY_PROPOSAL_SCHEMA: dict = {
             "type": "array",
             "minItems": 10,
             "maxItems": 14,
+            "uniqueItems": True,
+            "description": "Distinct queries using at least four different fields; case and whitespace do not distinguish queries.",
             "items": {
                 "type": "object",
                 "properties": {
@@ -53,6 +55,7 @@ REFINE_PROPOSAL_SCHEMA: dict = {
             "type": "array",
             "minItems": 0,
             "maxItems": 4,
+            "uniqueItems": True,
             "items": {"type": "string", "minLength": 3, "maxLength": 200},
         }
     },
@@ -78,7 +81,16 @@ CLASSIFICATION_SCHEMA: dict = {
             },
         },
         "notes": {"type": "string"},
+        "coverage_assessment": {
+            "type": "object",
+            "properties": {
+                "adequate_for_novelty": {"type": "boolean"},
+                "reason": {"type": "string", "minLength": 1},
+            },
+            "required": ["adequate_for_novelty", "reason"],
+            "additionalProperties": False,
+        },
     },
-    "required": ["label", "evidence", "notes"],
+    "required": ["label", "evidence", "notes", "coverage_assessment"],
     "additionalProperties": False,
 }

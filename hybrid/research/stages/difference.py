@@ -13,8 +13,7 @@ counted family in none of them (other_known, rnn) gives no excluded kill and the
 verified-reduction path. When two out-of-scope families share the counted family (linear attention and the delta rule
 both list `linear_attention`), the critic's `family` picks between them when it is one of the two, and otherwise the
 one whose `keywords` occur most often in the counted comparators and the critic's mapping and argument is chosen (the
-first listed on a tie). A reduction verified on the critic's confidence alone has no counted comparator, so the
-claimed `reduces_to` stands as the counted family. So a renamed linear-attention variant that the critic reduces to
+first listed on a tie). A missing execution or report never supplies a counted comparator. So a renamed linear-attention variant that the critic reduces to
 `linear_attention` dies even when the critic, misled by the new names, answers `family: none`, and a Minsky counter
 machine counted as other_known does not die because the critic also argued an uncounted ssm simulation.
 
@@ -50,6 +49,7 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 
+from hybrid.literature.prior_art import render_receipt, select_candidates
 from hybrid.research import outcomes as outcome_store
 from hybrid.research.archive import Families, Family, load_archive_config, load_families
 from hybrid.research.schemas import load_schema, validate
@@ -158,11 +158,32 @@ class Requirements:
     need: int                                  # literature or outcome entries required (relevant sources, at most 2)
     families: Families
     searched: int = 0                          # papers the prior-art search returned, of which `literature` lists some
-    cited_papers: tuple[str, ...] = ()         # bare ids the reduction critic cited: each is a required entry (R2C)
+    cited_papers: tuple[str, ...] = ()         # source-qualified ids the reduction critic cited: each is a required entry (R2C)
+    relevant_papers: tuple[str, ...] = ()      # classifier evidence and resolved critic paper leads
     cited_names: tuple[dict, ...] = ()         # textbook sections and standard algorithms it cited (checker's job)
+
+    receipt: str = ""
 
     def cause_ids(self) -> list[str]:
         return [cause["id"] for target in self.r3 for cause in target["causes"]]
+
+
+def bounded_candidates(record: dict, pa_result: dict, limit: int, cited: tuple[str, ...] = ()) -> list[dict]:
+    """Keep required evidence visible, then use the field-balanced ranking within the existing bound."""
+    candidates = pa_result["candidates"]
+    required = dict.fromkeys(cited)
+    relations = {}
+    for item in record["evidence"]:
+        key = known_work.paper_key(item["source_id"], candidates)
+        if key is not None:
+            required[key] = None
+            relations[key] = item["relation"]
+    if len(required) > limit:
+        raise ValueError(f"{len(required)} required citations exceed the {limit}-paper listing bound")
+    selected = {c["key"]: c for c in candidates if c["key"] in required}
+    remaining = [c for c in candidates if c["key"] not in selected]
+    selected.update((c["key"], c) for c in select_candidates(remaining, limit - len(selected)))
+    return [dict(c, relation=relations[c["key"]]) if c["key"] in relations else c for c in selected.values()]
 
 
 def literature_refs(record: dict, pa_result: dict, cited: tuple[str, ...] = ()) -> dict[str, dict]:
@@ -176,19 +197,12 @@ def literature_refs(record: dict, pa_result: dict, cited: tuple[str, ...] = ()) 
     writer and the one for the checker are built from this one listing. Papers the reduction critic cited as known
     work come before both, so a required entry is always listed."""
     candidates = pa_result["candidates"]
-    by_source_id = {candidate["source_id"]: candidate for candidate in candidates}
-    listed: dict[str, dict] = {}
-    for candidate in candidates:
-        if known_work.bare(candidate["source_id"]) in cited:
-            listed.setdefault(candidate["key"], dict(candidate, relation="cited by the reduction critic as known work"))
-    for item in record["evidence"]:
-        candidate = by_source_id[item["source_id"]]
-        listed.setdefault(candidate["key"], dict(candidate, relation=item["relation"]))
-    for candidate in candidates:
-        listed.setdefault(candidate["key"], candidate)
+    selected = bounded_candidates(record, pa_result, LISTED_LITERATURE, cited)
     refs: dict[str, dict] = {}
-    for entry in list(listed.values())[:LISTED_LITERATURE]:
-        refs[entry["key"]] = refs[entry["source_id"]] = entry
+    for entry in selected:
+        refs[entry["key"]] = entry
+        if known_work.paper_key(entry["source_id"], candidates) == entry["key"]:
+            refs[entry["source_id"]] = entry
     return refs
 
 
@@ -204,13 +218,17 @@ def requirements(ctx: StageContext, record: dict, pa_result: dict, matches: list
                        "exact": match.exact, "jaccard": round(match.jaccard, 4),
                        "causes": [{"id": c["id"], "detail": c["detail"]} for c in match.stored.causes()]})
     # D: only sources the classifier judged relevant (its cited evidence) or the critic cited count toward the two
-    # required entries; when fewer than two are relevant, the requirement shrinks to what exists and `family`
-    # entries may fill the remaining slots (closest_prior has at least one entry by schema).
-    relevant = {known_work.bare(item["source_id"]) for item in record["evidence"]} | set(cited)
+    # required source entries; when fewer than two are relevant, the source requirement shrinks and `family`
+    # entries fill the remaining slots; at least two distinct valid entries are required.
+    relevant = {known_work.paper_key(item["source_id"], pa_result["candidates"])
+                for item in record["evidence"]} - {None}
+    relevant |= set(cited)
     need = min(2, len(relevant) + len(outcomes))
     return Requirements(literature, outcomes, r3, named_family(critic, families), need, families,
-                        len(pa_result["candidates"]), cited,
-                        tuple(known_work.cited_names(critic, pa_result["candidates"])))
+                        len(pa_result["candidates"]), cited, tuple(sorted(relevant)),
+                        tuple(known_work.cited_names(critic, pa_result["candidates"])),
+                        render_receipt(pa_result, list(dict.fromkeys(p["key"] for p in literature.values())),
+                                       LISTED_LITERATURE))
 
 
 def resolves(card: dict, ref: str) -> bool:
@@ -229,7 +247,7 @@ def host_problems(statement: dict, card: dict, req: Requirements) -> dict[str, s
     for item in statement["closest_prior"]:
         kind, ref = item["kind"], item["ref"]
         if kind == "literature" and ref in req.literature:
-            counted.add(("literature", ref.split(":", 1)[-1]))
+            counted.add(("literature", req.literature[ref]["key"]))
         elif kind == "outcome" and ref in req.outcomes:
             counted.add(("outcome", ref))
             cited_records.add(ref)
@@ -239,9 +257,13 @@ def host_problems(statement: dict, card: dict, req: Requirements) -> dict[str, s
             problems[f"unknown_ref:{kind}:{ref}"] = (f"closest_prior names {kind} {ref!r}, which is not a listed "
                                                     f"source of this card's prior-art search, one of its own-history "
                                                     f"records or a family of families.toml")
-    if len(counted) < req.need:
-        problems["closest_prior:count"] = (f"{len(counted)} literature or outcome entries with receipts; at least "
+    relevant_counted = {entry for entry in counted if entry[0] == "outcome" or entry[1] in req.relevant_papers}
+    if len(relevant_counted) < req.need:
+        problems["closest_prior:count"] = (f"{len(relevant_counted)} relevant literature or outcome entries with receipts; at least "
                                            f"{req.need} are required")
+    if len(relevant_counted) + len(families) < 2:
+        problems["closest_prior:total"] = ("at least two distinct closest-prior entries are required; "
+                                            "use family entries for missing relevant source slots (R2D)")
     listed = {ref for kind, ref in counted if kind == "literature"}
     for paper in req.cited_papers:
         if paper not in listed:
@@ -274,6 +296,7 @@ def host_problems(statement: dict, card: dict, req: Requirements) -> dict[str, s
 def writer_schema() -> dict:
     schema = copy.deepcopy(load_schema("difference"))
     schema.pop("$id", None)
+    schema["properties"].pop("evidence_scope", None)
     return schema
 
 
@@ -311,7 +334,7 @@ def context_block(record: dict, req: Requirements, critic: dict) -> str:
     shown = (f"{len(papers)} of the {req.searched} papers the search returned, the cited evidence first and then the "
              f"others in search order")
     parts = [f"PRIOR-ART SEARCH (cite literature entries by these source ids; {shown}):\n"
-             + (f"label {record['label']}\n" + ("\n".join(papers) or "(no source returned)")),
+             + (f"label {record['label']}\n" + ("\n".join(papers) or "(no source returned)")), req.receipt,
              "OWN HISTORY (outcome-store records; cite them by record id, and causes by cause id):\n"
              + ("\n".join(f"- {rid}: {m['card_id']} {m['title'][:80]} ({'exact' if m['exact_signature'] else 'near'}"
                           f" signature, Jaccard {m['jaccard']}), {m['outcome']} at {m['terminal_stage']}, kill codes "
@@ -322,14 +345,17 @@ def context_block(record: dict, req: Requirements, critic: dict) -> str:
                                                  ("reduces_to", "family", "family_why", "mapping", "difference_if_any",
                                                   "why", "known_work_sources")}, indent=2, ensure_ascii=False)]
     rules = [f"- at least {req.need} closest_prior entries of kind literature or outcome, with the ids above; if the "
-             f"search has fewer than two relevant sources, fill the remaining slots with family entries"]
+             f"search has fewer than two relevant sources, fill the remaining slots with family entries; "
+             f"at least two distinct entries in total are required (R2D)"]
     if req.cited_papers:
         rules.append(f"- the reduction critic cites these papers as the closest known work. List each as a literature "
                      f"entry: {', '.join(req.cited_papers)}")
     for source in req.cited_names:
-        rules.append(f"- the reduction critic cites the {source['kind'].replace('_', ' ')} {source['ref']!r}, covering: "
-                     f"{source['covers'][:300]}. Name it in a closest_prior entry (a family entry if it is one) and "
-                     f"say what your card changes in it")
+        rules.append(f"- UNVALIDATED SOURCE LEAD: {source['kind'].replace('_', ' ')} {source['ref']!r}; "
+                     f"the critic claims it covers: {source['covers'][:300]}. A name and a coverage assertion "
+                     "do not establish source existence or mechanism support. Check only supplied evidence; "
+                     "without independent support retain it as unevidenced, not a mandatory closest_prior entry "
+                     "or a reason to reject the card.")
     if req.r3:
         rules.append("- RULE R3: these dead ideas match the card's mechanism signature. List each as an outcome entry, "
                      "put every one of its cause ids in cause_ids_addressed, and make changed_equation the equation "
@@ -411,12 +437,38 @@ async def attempt(ctx: StageContext, card: dict, number: int, roles: tuple[str, 
     ctx.put_json_artifact("difference", ctx.artifact_name(card["id"]),
                           {"card_id": card["id"], "attempt": number, "send_back": send_back, "statement": statement,
                            "host_problems": problems, "check": verdict, "failures": result.failures,
-                           "accepted": result.accepted, "r3_targets": req.r3,
+                           "accepted": result.accepted,
+                           "accepted_statement": scoped_statement(result) if result.accepted else None,
+                           "r3_targets": req.r3,
                            "family": req.family.id if req.family else None, "calls": result.calls}, card["id"])
     ctx.emit("difference_judged", {"card_id": card["id"], "attempt": number, "accepted": result.accepted,
                                    "failures": sorted(result.failures), "r3_targets": [t["record_id"] for t in req.r3],
                                    "family": req.family.id if req.family else None, "calls": result.calls})
     return result
+
+
+def scoped_statement(attempt: Attempt) -> dict:
+    """Gaps have no field addresses. Remove prior-paper assertions conservatively, retaining the raw artifact.
+
+    Do not guess which substring is false or ask another model. The accepted card retains refs, equations,
+    full limitations and call provenance; the artifact retains the original author's prose.
+    """
+    statement = copy.deepcopy(attempt.statement)
+    gaps = attempt.verdict["excerpt_gaps"]
+    if not gaps:
+        return statement
+    scope = "The supplied excerpts do not establish this prior-paper comparison."
+    for entry in statement["closest_prior"]:
+        if entry["kind"] == "literature":
+            entry["what_was_tried"] = scope
+            entry["why_it_failed"] = scope
+    statement["what_was_tried"] = scope
+    statement["why_it_failed"] = scope
+    statement["precise_change"] = (f"The proposed change is at {statement['changed_equation']}; comparison with "
+                                    "prior papers remains limited by the supplied excerpts.")
+    statement["evidence_scope"] = {"status": "excerpt_limited", "excerpt_gaps": list(gaps),
+                                   "source_calls": list(attempt.calls)}
+    return statement
 
 
 def store_statement(ctx: StageContext, card_id: str, statement: dict, call_id: str) -> None:
@@ -446,13 +498,14 @@ async def gate(ctx: StageContext, card: dict, *, record: dict, pa_result: dict, 
             calls += final.calls
         else:
             reasons.append(stop.line())
-    store_statement(ctx, card["id"], final.statement, final.calls[0])
+    stored = scoped_statement(final) if final.accepted else final.statement
+    store_statement(ctx, card["id"], stored, final.calls[0])
     if final.accepted:
         if final.verdict["excerpt_gaps"]:
             reasons.append("claims about prior papers the supplied excerpts do not support (scoped, not a kill): "
-                           + "; ".join(final.verdict["excerpt_gaps"])[:600])
+                           + "; ".join(final.verdict["excerpt_gaps"]))
         reasons.append(f"difference statement accepted{' after the send-back' if final is not first else ''}: "
-                       f"{final.statement['precise_change'][:400]} (changed {final.statement['changed_equation']}; "
+                       f"{stored['precise_change'][:400]} (changed {stored['changed_equation']}; "
                        f"causes addressed: {', '.join(final.statement['cause_ids_addressed']) or 'none required'})")
         return None, reasons, calls
     code = "not_radical:R3" if final.r3_failed else "no_difference"

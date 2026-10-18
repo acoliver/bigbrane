@@ -59,7 +59,7 @@ ALLOWED_ACTIVATIONS = {
     "lstm_gru": ("sigmoid", "tanh"),
 }
 UNIVERSAL_CLASS_PATTERN = (r"\b(moore|mealy)\b|finite[- ]state|finite automat|state machine|turing|generic recurren|"
-                           r"recurrence relation|recurrent (neural )?network|function approximator|universal approximat")
+                           r"recurrence relation|^recurrent (neural )?network$|function approximator|universal approximat")
 
 
 def component_policy_text() -> str:
@@ -119,6 +119,11 @@ REDUCTION_CHECK_REPORT = {
                     "reference": {"type": "string"},
                     "inputs_tested": {"type": "integer", "minimum": 1},
                     "max_abs_diff": {"type": "number"},
+                    "reference_samples": {"type": "array", "minItems": 1, "items": {
+                        "type": "object", "additionalProperties": False, "required": ["inputs", "card_outputs"],
+                        "properties": {"inputs": {"type": "array", "minItems": 1},
+                                       "card_outputs": {"type": "array", "minItems": 1},
+                                       "parameters": {"type": "object"}}}},
                 },
             },
         },

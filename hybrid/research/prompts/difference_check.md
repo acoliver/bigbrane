@@ -15,3 +15,5 @@ Return:
 - `required_difference`: the specific difference the proposer must state if this goes back to them, in the form "closest prior X used Y; state what replaces Y and where in the card". Empty when accepted.
 
 Be adversarial and specific. Return only the JSON object matching the schema.
+
+On acceptance with excerpt gaps, the host removes unscoped prior-paper comparison prose from the stored accepted statement, keeps the full gap list and writer/check call provenance under `evidence_scope`, and preserves the original statement in the difference artifact. Do not treat a citation's identity or a critic's `covers` assertion as checked coverage; judge the mapping against the supplied source evidence and the card's general learned equations.

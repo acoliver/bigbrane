@@ -137,12 +137,13 @@ class ScriptedCtx:
         self.ledger = Ledger()
         self.classify_prior_art = None
         self._answers = [
-            {"queries": [{"field": "physics_dynamical_systems", "query": q} for q in (
+            {"queries": [{"field": ("physics_dynamical_systems", "signal_processing", "optimization", "cognitive_bayesian")[i % 4], "query": q} for i, q in enumerate((
                 "echo state network", "reservoir computing chaos", "recurrent random features", "random reservoir readout",
                 "chaotic dynamics prediction", "liquid state machine", "fixed random recurrence", "linear readout training",
-                "edge of chaos memory", "reservoir capacity")]},
+                "edge of chaos memory", "reservoir capacity"))]},
             {"queries": []},
-            {"label": "prior_art_undertested", "notes": "close",
+            {"coverage_assessment": {"adequate_for_novelty": True, "reason": "Local hits cover this fixture."},
+             "label": "prior_art_undertested", "notes": "close",
              "evidence": [{"source": "arxiv", "source_id": grounded_id, "relation": "closest_prior_work"}]},
         ]
 

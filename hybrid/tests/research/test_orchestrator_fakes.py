@@ -106,12 +106,39 @@ def claimed_family(user: str) -> str:
 
 def declared(family: str, comparator_id: str = "known", transformations: tuple[str, ...] = (),
              limit_only: bool = False) -> dict:
-    """One comparator a reduction critic declares (schemas/reduction_critic.schema.json, `comparators`; FIX-12)."""
+    """Synthetic declaration for routing tests, not independent evidence of a published operation."""
     return {"id": comparator_id, "base_family": family, "base_form": "textbook form", "update": "S_t = S_{t-1} + v k^T",
             "read": "y_t = S_t q_t", "transformations": [{"type": t, "what": f"a {t}"} for t in transformations],
             "parameter_mapping": "card symbols map one to one", "limit_only": limit_only,
-            "components": [{"role": "activation", "name": "tanh", "origin": "published", "cite": "Elman 1990"},
-                           {"role": "update", "name": "textbook update", "origin": "published", "cite": "Textbook 2000"}]}
+            "components": []}
+
+
+# Explicit synthetic specimens for routing tests only. These are NOT evidence about the fixture card or a
+# historical run. Constants are specified here independently of the production reference implementation.
+SYNTHETIC_REFERENCES = {
+    "ssm": ("linear_ssm", {"A": [[1]], "B": [[1]], "C": [[1]], "h0": [0]}, [[1]], [[1]], "linear state space"),
+    "rnn": ("elman_tanh", {"W": [[0]], "U": [[0]], "b": [0], "C": [[1]], "h0": [0]}, [[0]], [[0]], "Elman 1990"),
+    "linear_attention": ("linear_attention", {"S0": [[0]]},
+                         [{"key": [1], "value": [1], "query": [1]}], [[1]], "Katharopoulos et al. 2020"),
+    "other_known": ("dyck2", {}, [0, 2], [[0], [1]], "two-bracket pushdown automaton"),
+    "hopfield_or_kernel_memory": ("softmax_memory", {"keys": [[0]], "values": [[1]], "beta": 1},
+                                   [[0]], [[1]], "modern Hopfield softmax read"),
+}
+
+
+def synthetic_declared(family: str) -> dict:
+    """A specified published operation for a synthetic routing test, never a saved-run adapter."""
+    out = declared(family)
+    if family not in SYNTHETIC_REFERENCES:
+        return out
+    operation, params, _, _, cite = SYNTHETIC_REFERENCES[family]
+    out.update(base_form=f"Synthetic routing specimen of {operation}",
+               update=f"the host-specified {operation} update", read=f"the host-specified {operation} readout",
+               reference_spec={"operation": operation, "parameters": copy.deepcopy(params)},
+               components=[{"role": "update", "name": operation, "origin": "published", "cite": cite}])
+    if family == "rnn":
+        out["components"].append({"role": "activation", "name": "tanh", "origin": "published", "cite": cite})
+    return out
 
 
 def declaring(critic: dict, *comparators: dict) -> dict:
@@ -119,7 +146,7 @@ def declaring(critic: dict, *comparators: dict) -> dict:
     (none when reduces_to is "none")."""
     if critic["reduces_to"] == "none":
         return dict(critic, comparators=[])
-    return dict(critic, comparators=list(comparators) or [declared(critic["reduces_to"])])
+    return dict(critic, comparators=list(comparators) or [synthetic_declared(critic["reduces_to"])])
 
 
 def comparison(family: str, max_abs_diff: float, declared_id: str | None = "known", comparator: str = "known form",
@@ -139,8 +166,16 @@ def reported(comparator: dict, max_abs_diff: float) -> dict:
 def comparison_check(max_abs_diff: float = 0.0):
     """A reduction_check answer whose program reports every comparator the critic declared, each at max_abs_diff."""
     def answer(i, user):
-        report = {"comparisons": [reported(c, max_abs_diff) for c in claimed(user)["comparators"]],
-                  "notes": "fake check"}
+        comparisons = []
+        for c in claimed(user)["comparators"]:
+            result = reported(c, max_abs_diff)
+            fixture = SYNTHETIC_REFERENCES.get(c["base_family"])
+            if fixture is not None and c.get("reference_spec") == synthetic_declared(c["base_family"]).get("reference_spec"):
+                _, _, inputs, outputs, _ = fixture
+                result["reference_samples"] = [{"inputs": copy.deepcopy(inputs),
+                    "card_outputs": (np.asarray(outputs) + max_abs_diff).tolist()}]
+            comparisons.append(result)
+        report = {"comparisons": comparisons, "notes": "synthetic routing traces, not card conformance evidence"}
         return {"check_code": program(report), "explanation": "compares both forms"}
     return answer
 

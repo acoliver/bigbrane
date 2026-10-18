@@ -29,9 +29,9 @@ def evidence_of(key, relation="closest_prior_work"):
 
 def requirements(candidates, evidence=()):
     record = {"label": "novel", "evidence": list(evidence)}
-    refs = difference.literature_refs(record, {"candidates": candidates})
-    return record, difference.Requirements(literature=refs, outcomes={}, r3=[], family=None, need=2,
-                                           families=FAMILIES, searched=len(candidates))
+    ctx = SimpleNamespace(outcomes=None, cfg={"outcomes": {"enforce_r3": False}})
+    critic = {"family": "none", "known_work_sources": []}
+    return record, difference.requirements(ctx, record, {"candidates": candidates}, [], critic, FAMILIES)
 
 
 def test_the_cited_paper_comes_first_with_its_title_then_the_others_in_search_order():
@@ -51,7 +51,7 @@ def test_the_cited_paper_comes_first_with_its_title_then_the_others_in_search_or
 
 
 def test_a_ref_is_accepted_as_the_key_or_the_bare_source_id():
-    _, req = requirements(search(), [evidence_of(SDM)])
+    _, req = requirements(search(), [evidence_of(SDM), evidence_of("arxiv:2401.00000")])
     card = make_card("card-0000a001")
     for ref in (SDM, SDM.split(":", 1)[1]):
         statement = {"closest_prior": [{"kind": "literature", "ref": ref},
@@ -101,7 +101,9 @@ class RecordingCtx:
 
 
 STATEMENT = {"closest_prior": [{"kind": "literature", "ref": SDM, "title": "t", "what_was_tried": "w",
-                                "why_it_failed": "f"}],
+                                "why_it_failed": "f"},
+                               {"kind": "literature", "ref": "arxiv:2401.00000", "title": "Paper number 0",
+                                "what_was_tried": "w", "why_it_failed": "f"}],
              "what_was_tried": "w", "why_it_failed": "f", "precise_change": "c", "changed_equation": "learning",
              "cause_ids_addressed": []}
 VERDICT = {"accepted": True, "problems": [], "excerpt_gaps": [], "causes": [], "family_difference_real": None, "family_why": "",

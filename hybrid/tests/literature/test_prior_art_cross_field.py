@@ -1,11 +1,10 @@
 """PA2: cross-field query expansion and the second round, with a fake literature (no network, no hybrid/llm)."""
 import asyncio
-from dataclasses import dataclass
 
 import jsonschema
 import pytest
 
-from hybrid.literature.client import Related
+from hybrid.literature.client import Related, SearchReceipt
 from hybrid.literature.paper import Paper, paper_key_of
 from hybrid.literature.prior_art import (CLASSIFIER_CANDIDATES, ROUND2_TITLES_SHOWN, SEED_PAPERS, classify_prior_art)
 from hybrid.literature.schemas import QUERY_FIELDS
@@ -19,11 +18,6 @@ def paper(source_id, title, year=2020):
                  None, None, "t", arxiv_id=source_id)
 
 
-@dataclass
-class Receipt:
-    papers: tuple
-
-
 class FakeLiterature:
     """Answers a search from a table of query -> papers and a related() from a table of paper key -> Related."""
 
@@ -34,7 +28,9 @@ class FakeLiterature:
 
     def search_with_receipt(self, query, sources, limit, sink):
         self.searched.append(query)
-        return Receipt(tuple(self.hits.get(query, ())))
+        papers = tuple(self.hits.get(query, ()))
+        return SearchReceipt(query, sources, limit, "t", {s: tuple(p for p in papers if p.source == s)
+                                                       for s in sources}, {}, papers)
 
     def related(self, seed, sink=None):
         self.related_calls.append(paper_key_of(seed))
@@ -62,7 +58,7 @@ def tagged(n=12):
     return [{"field": QUERY_FIELDS[i % len(QUERY_FIELDS)], "query": f"qry{i}"} for i in range(n)]
 
 
-NOVEL = Completion({"label": "novel", "evidence": [], "notes": "n"})
+NOVEL = Completion({"coverage_assessment": {"adequate_for_novelty": True, "reason": "Scripted coverage for routing test."}, "label": "novel", "evidence": [], "notes": "n"})
 
 
 def run(lit, *completions):
@@ -133,7 +129,7 @@ def test_a_paper_beyond_the_prompt_can_still_be_cited_when_it_was_returned():
     many = [paper(f"2000.{i:05d}", f"Paper number {i}") for i in range(CLASSIFIER_CANDIDATES + 5)]
     last = many[-1]
     lit = FakeLiterature({"qry0": many})
-    cite = Completion({"label": "prior_art_undertested", "notes": "n", "evidence": [
+    cite = Completion({"coverage_assessment": {"adequate_for_novelty": True, "reason": "Scripted coverage for routing test."}, "label": "prior_art_undertested", "notes": "n", "evidence": [
         {"source": "arxiv", "source_id": last.source_id, "relation": "closest_prior_work"}]})
     result, _, _ = run(lit, Completion({"queries": tagged(10)}), Completion({"queries": []}), cite)
     assert [e["source_id"] for e in result["evidence"]] == [last.source_id]

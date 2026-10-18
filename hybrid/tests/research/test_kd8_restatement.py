@@ -1,11 +1,13 @@
 """KD8: a comparator that fills a universal template's free slot with the card's own computation is a restatement
-and never counts. Replays recorded reduction_critic artifacts (hybrid/tests/research/fixtures/kd8, built by
+and never counts. Historical declarations and verdicts stay immutable; separate executed card traces are now
+compared with host references for the published controls. Replays recorded reduction_critic artifacts (hybrid/tests/research/fixtures/kd8, built by
 results-wt/kd8/tools/replay_kd8.py from the s2-probe and novelty-probe runs) against the host rule; no live calls."""
 import json
 from pathlib import Path
 
 import pytest
 
+from hybrid.tests.research.reference_replays import kd8_record
 from hybrid.research.stages.s2_prior_art import component_problem, eligibility, judge_comparisons
 
 RECORDS = json.loads((Path(__file__).parent / "fixtures" / "kd8" / "replay_records.json").read_text())
@@ -13,7 +15,7 @@ BY_CARD = {r["card"]: r for r in RECORDS}
 
 
 def replay(card):
-    r = BY_CARD[card]
+    r = kd8_record(BY_CARD[card])
     outcome, _, judged = judge_comparisons(r["comparisons"], r["comparators"], r["reduces_to"])
     return outcome, sorted(c["declared_id"] for c in judged if c["counted"] and c["within_tolerance"])
 

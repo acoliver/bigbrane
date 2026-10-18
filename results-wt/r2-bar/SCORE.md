@@ -36,7 +36,7 @@ Card to base:
 | card-ebf0e99d | batch8 | fail | no_difference | R2 | gate: no_difference: difference statement rejected: The claimed change in update[0] is exactly the standard token-bucket equation with candidate evaluations substituted for traffic, so it is a different application of an unchanged known form rather than an equation-level difference.; The statement that a correctly predicted token spends zero compute is false |
 | card-f5ee7edb | batch8 | pass | pass | R2 | prior art: prior_art_undertested. The closest found work is higher-order motif link prediction (1902.06679, 1906.05059), which scores edges using two-path and higher-order motif statistics, a family related to the proposed connected-witness term Q. Long Sequence Hopfield Memory (W4379958458) uses He |
 
-## Rule 1 (novelty probe guard), intent: every published mechanism and both controls stay dead: MET
+## Rule 1 (novelty probe guard), registered named-gate predicate: NOT MET
 
 10 of 10 dead; 9 of 10 died at the gate the rule named (reduces_to_known for the 8 published, excluded_family for the 2 controls).
 
@@ -51,9 +51,9 @@ Card to base:
 - card-17100009: dead, code excluded_family (named gate)
 - card-1710000a: dead, code excluded_family (named gate)
 
-## Rule 2 (counted reductions stay dead), intent: each stays dead: MET
+## Rule 2 (counted reductions stay dead), registered reduction-gate predicate: NOT MET
 
-6 of 6 dead; 3 of 6 died at the reduction gate itself (reduces_to_known or excluded_family); the rest died at another gate (no_difference, R3, R2), still dead.
+6 of 6 dead; 3 of 6 died at the reduction gate itself (reduces_to_known or excluded_family); the rest died at another gate (no_difference, R3, R2) and FAIL this registered rule.
 
 - card-76ee768c: dead, code reduces_to_known (named gate)
 - card-440f0204: dead, code no_difference (other gate)
@@ -61,6 +61,11 @@ Card to base:
 - card-83bd879a: dead, code reduces_to_known (named gate)
 - card-97baae43: dead, code reduces_to_known (named gate)
 - card-d6dfeac2: dead, code R2 (other gate)
+
+## Secondary all-dead diagnostic (not an acceptance rule)
+
+Probe: all dead; counted-before: all dead. Later-gate kills do not satisfy either registered named-gate guard.
+
 
 ## Rule 3 (flips to pass): card-3485a13f, card-f5ee7edb, card-8154d3b4, card-a4f684fb, card-89248ee5
 
