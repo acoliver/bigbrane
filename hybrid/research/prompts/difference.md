@@ -8,7 +8,9 @@ Fields:
   - `literature`: a source id from this card's prior-art search, exactly as listed in the user message;
   - `outcome`: a record id (`oc-...`) of the Bigbrane outcome store from the OWN HISTORY list: an earlier card of ours with this mechanism or a near one, and how it died;
   - `family`: a family id from the known-family list (for example `hopfield_associative_memory`, `exact_match_cache`, `linear_attention`).
-  For each give `title`, `what_was_tried` and `why_it_failed` (a quote from the work, or for an outcome record its cause id and what it says). Give at least the number of literature and outcome entries the requirements state. Do not invent ids: an id that is not in the lists is rejected.
+  For each give `title`, `what_was_tried` and `why_it_failed` (a quote from the work, or for an outcome record its cause id and what it says). Give at least the number of literature and outcome entries the requirements state. Do not invent ids: an id that is not in the lists is rejected. When the search has fewer than two relevant sources, fill the remaining slots with `family` entries.
+  - Say about a prior paper only what its listed excerpt supports. When the excerpt does not state a detail (for example its update procedure), write that the excerpt does not state it; do not assert what the paper did beyond the excerpt. Claims about this card's own equations must be true of them, including edge cases.
+  - Papers the reduction critic cited as known work are required entries; answer each with what it did and what your card changes.
 - `what_was_tried`: across those works, the approach this card is closest to, in one or two sentences.
 - `why_it_failed`: why that approach failed or fell short, as a quote or an outcome cause id.
 - `precise_change`: one sentence: which equation of the card differs from that approach, and how.

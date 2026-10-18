@@ -21,12 +21,14 @@ Gate (RESEARCH-SYSTEM-SPEC.md section 3), applied in this order:
 3. `prior_art_tested` fails unless the card adds a specific untested element (one prior_art call).
 4. `novelty_unassessed` gives `undetermined`. A `novel` label whose searches returned no paper, even after
    one retry with broader queries, is not a finding of novelty (s2.empty_search_counts_as_novel = false).
-5. With s2.require_radical, `radical_enough: false` fails.
+5. With s2.require_radical, two gates (R2): `textbook_transplant: true` fails (the source field's construction,
+   unmodified), and `known_work: true` fails when the host can check its evidence, a counted comparator or an accepted
+   cited source (stages/known_work.py; decisions R2A, R2C). `surprise` is recorded and does not gate.
 6. Otherwise (`novel` with papers, `prior_art_undertested`, or tested-plus-new-element) passes.
 
 The reduction critic also says whether the core idea is a textbook construction from its source field
 applied without modification (`textbook_transplant`). That answer is recorded in the artifact and the
-verdict reasons and counted by `inspect`; it does not gate.
+verdict reasons and counted by `inspect`; with s2.require_radical a true answer also gates (gate 5).
 
 A card with a `non_reduction_argument` (an escape card) gets prompts/reduction_critic_escape.md and
 prompts/reduction_check_escape.md appended to the critic and check user messages, with the argument and
@@ -70,7 +72,7 @@ from hybrid.literature import LOCAL_SOURCE, SourceError, classify_prior_art, res
 from hybrid.research import outcomes as outcome_store
 from hybrid.research.signature import card_signature
 from hybrid.research.schemas import SchemaViolation, load_schema, validate
-from hybrid.research.stages import difference
+from hybrid.research.stages import difference, known_work
 from hybrid.research.stages.common import StageContext, StageError, card_for_prompt, load_section
 from hybrid.research.stages.contracts import (PRIOR_ART_DELTA, REDUCTION_CHECK, REDUCTION_CHECK_REPORT, REPAIR_TYPES,
                                               repair_policy_text)
@@ -528,6 +530,7 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
     user = "\n\n".join(["CARD:\n" + card_for_prompt(card),
                         "PRIOR ART CLASSIFICATION:\n" + json.dumps(record, indent=2), repair_policy_text()])
     user += escape_user_suffix(ctx, card, "reduction_critic_escape") + history_block
+    user += "\n\n" + known_work.search_listing(pa_result["candidates"])
     s2 = ctx.cfg["s2"]
     exclusion, statement_on = s2["family_exclusion"], s2["difference_statement"]
     families, keywords = difference.families_for(ctx) if (exclusion or statement_on) else (None, {})
@@ -538,7 +541,7 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
     critic_call = await ctx.ask("reduction_critic", "reduction_critic", user, schema)
     critic = critic_call.parsed
     calls.append(critic_call.call_id)
-    reasons.append(f"textbook transplant: {'yes' if critic['textbook_transplant'] else 'no'} (recorded, not gated): "
+    reasons.append(f"textbook transplant: {'yes' if critic['textbook_transplant'] else 'no'}: "
                    f"{critic['textbook_why'][:300]}")
     reduction, check_report = "none", None
     if critic["reduces_to"] != "none":
@@ -593,10 +596,19 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
                         reasons + [f"gate: prior_art_tested and no untested element ({delta['why'][:300]})"], calls)
             return None
         reasons.append(f"prior art tested, card adds an untested element: {delta['element'][:300]}")
-    if ctx.cfg["s2"]["require_radical"] and not critic["radical_enough"]:
-        ctx.verdict(card_id, "S2", "fail", reasons + [f"gate: not radical enough: {critic['why'][:500]}"], calls)
-        return None
-    reasons.append(f"reduction critic: {critic['reduces_to']}, radical_enough {critic['radical_enough']}: "
+    judgment = known_work.judge(critic, counted, pa_result["candidates"])
+    if ctx.cfg["s2"]["require_radical"]:
+        if critic["textbook_transplant"]:
+            ctx.verdict(card_id, "S2", "fail", reasons + [f"gate: not radical enough: textbook transplant, the source "
+                                                          f"field's construction unmodified: "
+                                                          f"{critic['textbook_why'][:500]}"], calls)
+            return None
+        if judgment.kills:
+            ctx.verdict(card_id, "S2", "fail", reasons + [f"gate: not radical enough: known work ({judgment.reason}): "
+                                                          f"{critic['why'][:500]}"], calls)
+            return None
+    reasons.append(f"reduction critic: {critic['reduces_to']}, known_work {critic['known_work']} "
+                   f"({judgment.basis}: {judgment.reason[:300]}), surprise {critic['surprise']} (recorded, not gated): "
                    f"{critic['why'][:400]}")
     if exclusion:
         reasons.append(f"family (reduction critic): {critic['family']}: {critic['family_why'][:300]}")
