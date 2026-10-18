@@ -35,13 +35,14 @@ from hybrid.research.stages.contracts import REPAIR_TYPES, UNRESOLVED_TYPE, repa
 from hybrid.research.stages.s2_prior_art import (ATTEMPTED, UNCHANGED, VALIDATED, eligibility, equation_changes,
                                                  judge_comparisons, render_changes, report_problem)
 from hybrid.research.stages.s3_feasibility import disproof_reason
+from hybrid.tests.research.critic_answers import novelty_fields
 from hybrid.tests.research.test_orchestrator_fakes import (comparison, declared, make_orchestrator, orch_config,
                                                            program)
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "phase7_live_20261014T2051Z"
 FIX10_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "phase7_live_20261014T1752Z"
 LIVE_RUN = "phase7-live-20261014T2051Z"
-CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "radical_enough", "why",
+CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "why",
                "textbook_transplant", "textbook_why", "family", "family_why")
 
 
@@ -51,7 +52,7 @@ def load(name, base=FIXTURES):
 
 def recorded_critic(name: str, comparators: list[dict], **changes) -> dict:
     record = load(name)
-    return {key: record[key] for key in CRITIC_KEYS} | {"comparators": comparators} | changes
+    return {key: record[key] for key in CRITIC_KEYS} | novelty_fields(record) | {"comparators": comparators} | changes
 
 
 def recorded_program(job: str, marker: str, tail: str, base=FIXTURES) -> str:

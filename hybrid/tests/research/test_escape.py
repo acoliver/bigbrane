@@ -1,5 +1,6 @@
 """Graveyard memory in S0, the escape operator, the escape sections of the S2 critic and check, and the
 inspect report of reductions and escapes. Scripted LLM, LocalExecutor, no live model calls."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import asyncio
 import json
 from pathlib import Path
@@ -26,11 +27,11 @@ ARGUMENT = {
                         "a min over paths, which no linear readout of a sum of per-token terms computes.",
 }
 REDUCED = declaring({"reduces_to": "ssm", "mapping": "S <- h, theta <- A. The card is a diagonal SSM.",
-                     "confidence": 0.9, "difference_if_any": "", "radical_enough": False,
+                     "confidence": 0.9, "difference_if_any": "", **KNOWN,
                      "why": "This is not a new mechanism. It is a diagonal recurrence with a phase readout.",
                      "textbook_transplant": True,
                      "textbook_why": "a diagonal linear recurrence as the textbook states it"})
-NOT_REDUCED = REDUCED | {"reduces_to": "none", "mapping": None, "confidence": 0.2, "radical_enough": True,
+NOT_REDUCED = REDUCED | {"reduces_to": "none", "mapping": None, "confidence": 0.2, **NOT_KNOWN,
                          "why": "No mapping onto a known form was found.", "comparators": []}
 
 

@@ -101,7 +101,7 @@ STATEMENT = {"closest_prior": [{"kind": "literature", "ref": SDM, "title": "t", 
                                 "why_it_failed": "f"}],
              "what_was_tried": "w", "why_it_failed": "f", "precise_change": "c", "changed_equation": "learning",
              "cause_ids_addressed": []}
-VERDICT = {"accepted": True, "problems": [], "causes": [], "family_difference_real": None, "family_why": "",
+VERDICT = {"accepted": True, "problems": [], "excerpt_gaps": [], "causes": [], "family_difference_real": None, "family_why": "",
            "required_difference": ""}
 
 

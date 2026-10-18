@@ -1,5 +1,6 @@
 """The outcome store: append-only JSONL with a hash chain, an SQLite index that equals a rebuild from the JSONL,
 kill-code validation, and the step 1 and step 3 queries."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import json
 
 import pytest
@@ -14,7 +15,7 @@ from hybrid.tests.research.outcome_fixtures import KNOWN_MECHANISMS, build_run, 
 LATER = "run-20261013T000000Z"
 REDUCED = ["gate: update rule reduces to linear_attention: v k^T accumulation"]
 CRITIC = {"reduces_to": "linear_attention", "mapping": "S = sum v k^T", "confidence": 0.9, "difference_if_any": "",
-          "radical_enough": False, "why": "This is not new. It is diagonal linear attention with a phase map.",
+          **KNOWN, "why": "This is not new. It is diagonal linear attention with a phase map.",
           "textbook_transplant": False, "textbook_why": "-"}
 
 

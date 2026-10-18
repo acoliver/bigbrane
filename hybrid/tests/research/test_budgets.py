@@ -11,6 +11,7 @@ Three layers:
   itself with every count inside its cap.
 Scripted LLM, LocalExecutor, no live model calls.
 """
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import asyncio
 import itertools
 import json
@@ -94,7 +95,7 @@ def repeater(index, user):
     return draft(0, user=user)
 
 
-NOT_RADICAL = NOT_REDUCED | {"radical_enough": False, "why": "A known running sum with a new name."}
+NOT_RADICAL = NOT_REDUCED | {**KNOWN, "why": "A known running sum with a new name."}
 
 
 def reducing(*families):

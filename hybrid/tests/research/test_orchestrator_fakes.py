@@ -4,6 +4,7 @@ Code checks run through hybrid.bench.local.LocalExecutor (host subprocess), so t
 reduction and disproof checks and the S4 construct check really execute.
 """
 from __future__ import annotations
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 
 import asyncio
 import copy
@@ -161,7 +162,7 @@ def defaults() -> dict:
         "salad_critic": {"ok": True, "fatal": [], "fixable": [], "notes": "Every symbol is defined."},
         "prior_art_query": {"queries": ["phase running sum", "complex accumulator memory", "holographic recall"]},
         "reduction_critic": {"reduces_to": "none", "mapping": None, "confidence": 0.2, "difference_if_any": "",
-                             "radical_enough": True, "why": "No mapping onto a known form was found.",
+                             **NOT_KNOWN, "why": "No mapping onto a known form was found.",
                              "textbook_transplant": False, "textbook_why": "The phases are learned, not fixed.",
                              "comparators": []},
         "reduction_check": comparison_check(0.0),

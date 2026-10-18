@@ -6,6 +6,7 @@ The novelty probe (results/novelty-probe-20261017) killed card-17100003, a Minsk
 comparator was "not counted (declared in another family)", and the critic's `family` said ssm. The three probe
 records are replayed from their saved reduction_critic artifacts (fixtures/kd4_novelty_probe_20261017, sha256 in
 SHA256SUMS), with no model call. The synthetic cases run S2 end to end with scripted models."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import asyncio
 import json
 from pathlib import Path
@@ -138,7 +139,7 @@ def run_s2(run_dir, empty, crit):
 
 
 def test_an_ssm_label_with_only_an_in_scope_comparator_counted_takes_the_verified_reduction_path(run_dir, empty):
-    crit = critic(reduces_to="other_known", family="ssm", radical_enough=False, mapping="a Minsky counter machine",
+    crit = critic(reduces_to="other_known", family="ssm", **KNOWN, mapping="a Minsky counter machine",
                   family_why="A lifted-state repair over reachable configurations is an ssm.",
                   comparators=[declared("other_known", "minsky_two_counter"), LIFTED])
     orch = run_s2(run_dir, empty, crit)
@@ -152,7 +153,7 @@ def test_an_ssm_label_with_only_an_in_scope_comparator_counted_takes_the_verifie
 
 
 def test_an_excluded_comparator_that_was_counted_kills_with_its_family(run_dir, empty):
-    crit = critic(reduces_to="ssm", family="none", radical_enough=False, mapping="h_t = a h_{t-1} + b x_t",
+    crit = critic(reduces_to="ssm", family="none", **KNOWN, mapping="h_t = a h_{t-1} + b x_t",
                   comparators=[declared("ssm", "diag_ssm")])
     orch = run_s2(run_dir, empty, crit)
     s2 = s2_of(orch)
@@ -167,7 +168,7 @@ def test_an_excluded_comparator_that_was_counted_kills_with_its_family(run_dir, 
 ])
 def test_a_confidence_verified_reduction_is_judged_by_the_claim_it_verified(run_dir, empty, reduces_to, family, expected):
     """No check code: the verification stands on the critic's confidence in `reduces_to`, which is then all there is."""
-    crit = critic(reduces_to=reduces_to, family=family, confidence=0.95, radical_enough=False, mapping="a mapping")
+    crit = critic(reduces_to=reduces_to, family=family, confidence=0.95, **KNOWN, mapping="a mapping")
     orch, _ = make_orchestrator(run_dir, cfg=config(empty), script={
         "reduction_critic": crit, "reduction_check": {"check_code": None, "explanation": "no numeric check is possible"}})
     asyncio.run(orch.run())

@@ -20,6 +20,7 @@ resources (FIX-16), so stage R asks each card's author for them once; the script
 of the calibration card its stage M uses.
 """
 from __future__ import annotations
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 
 import json
 import shutil
@@ -50,7 +51,7 @@ MARKERS = {"velarin": "T1", "quorrel": "T2", "tessaly": "T3", "mirrowen": "T4", 
            "pellwick": "T6", "ashgrove": "T7"}
 MAGIC_PREMISE = "an index that answers every probe from its own lookup at no counted cost"
 DEAD_CRITIC = {"reduces_to": "other_known", "mapping": "tally[b(x)] += 1", "confidence": 0.9, "difference_if_any": "",
-               "radical_enough": False, "why": "It is a counting table, a textbook structure.",
+               **KNOWN, "why": "It is a counting table, a textbook structure.",
                "textbook_transplant": True, "textbook_why": "-"}
 
 

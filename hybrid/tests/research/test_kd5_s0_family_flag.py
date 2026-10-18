@@ -6,6 +6,7 @@ The three batch cards killed at S0 as `excluded_family:ssm` (discovery-live-2026
 classifier outputs (fixtures/kd5_s0_flags_20261017, sha256 in SHA256SUMS), with no model call. The plainly excluded
 control, the gated diagonal recurrence card-17100009 of the novelty probe, is stopped at S2 from its saved reduction
 critic artifact (the KD4 fixtures) and, end to end with scripted models, after a flagged S0 pass."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import asyncio
 import json
 from pathlib import Path
@@ -100,7 +101,7 @@ def full_line(tmp_path, run_dir, crit):
 
 
 def test_a_flagged_card_whose_reduction_is_counted_in_ssm_dies_at_s2(tmp_path, run_dir):
-    crit = critic(reduces_to="ssm", family="ssm", radical_enough=False, mapping="h_t = a_t h_{t-1} + b_t x_t",
+    crit = critic(reduces_to="ssm", family="ssm", **KNOWN, mapping="h_t = a_t h_{t-1} + b_t x_t",
                   comparators=[declared("ssm", "diag_ssm")])
     _, verdicts = full_line(tmp_path, run_dir, crit)
     assert verdicts["S0"]["verdict"] == "pass" and verdicts["S1"]["verdict"] == "pass"
@@ -108,7 +109,7 @@ def test_a_flagged_card_whose_reduction_is_counted_in_ssm_dies_at_s2(tmp_path, r
 
 
 def test_a_flagged_card_with_no_reduction_goes_on_past_s2(tmp_path, run_dir):
-    crit = critic(reduces_to="none", family="ssm", radical_enough=True, mapping=None, confidence=0.1,
+    crit = critic(reduces_to="none", family="ssm", **NOT_KNOWN, mapping=None, confidence=0.1,
                   family_why="a lifted state could be argued")
     _, verdicts = full_line(tmp_path, run_dir, crit)
     assert verdicts["S0"]["verdict"] == "pass"

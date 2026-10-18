@@ -9,6 +9,7 @@ D1. Own history left out every record with the card's id, so a card copied into 
 deaths; fixture: the recorded outcome records of card-1184f7a7 and the card version S2 saw.
 D3. Every cause of a record shared one clipped detail; each cause now carries its own deciding explanation.
 D4. A dialogue stopped by the round cap recorded no open questions."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN, novelty_fields
 import asyncio
 import json
 import subprocess
@@ -34,7 +35,7 @@ from hybrid.tests.research.test_refine import config as refine_config
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "phase7_live_20261014T1752Z"
 LIVE_RUN = "phase7-live-20261014T1752Z"
 SOURCE_RUN = "run-20261010T181300Z"
-CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "radical_enough", "why",
+CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "why",
                "textbook_transplant", "textbook_why", "family", "family_why")
 # The recorded program ends by setting its own verdict from the soft rewrite alone.
 VERDICT_LINE = "equiv = maxd < 1e-6"
@@ -68,7 +69,7 @@ def recorded_job():
 
 def recorded_critic():
     record = load("reduction_critic-card-c9615069-v7-b1ef30.json")
-    return {key: record[key] for key in CRITIC_KEYS} | {"comparators": [HARD_BIMAP]}
+    return {key: record[key] for key in CRITIC_KEYS} | novelty_fields(record) | {"comparators": [HARD_BIMAP]}
 
 
 def honest_program() -> str:
@@ -252,7 +253,7 @@ ESCAPE_WHY = ("Escape test, step 1: the broken invariant is real in the card's o
               + "The repair closes the escape. " * 40)
 ESCAPE_CRITIC = {"reduces_to": "other_known", "mapping": "Known form: SUGS, a sequential greedy CRP mixture of "
                  "conjugate Bayesian linear regressions (Wang and Dunson 2011).", "confidence": 0.7,
-                 "difference_if_any": "", "radical_enough": False, "why": ESCAPE_WHY, "textbook_transplant": False,
+                 "difference_if_any": "", **KNOWN, "why": ESCAPE_WHY, "textbook_transplant": False,
                  "textbook_why": "-"}
 UP_TO_S2 = [("S0", "pass", ["ok"]), ("S1", "pass", ["ok"])]
 

@@ -9,6 +9,7 @@ from hybrid.research.inspect import inspect_run
 from hybrid.research.ledger import Ledger
 from hybrid.research.store import Store
 from hybrid.research.stages.s2_prior_art import BROADER_SEARCH_NOTE
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 from hybrid.tests.research.test_orchestrator_fakes import (TEMPLATE, FakeBench, analyst_supports_every_claim,
                                                            comparison_check, declaring, draft, make_orchestrator,
                                                            orch_config, program)
@@ -356,7 +357,7 @@ def test_s1_toy_crash_fails_after_revision(run_dir):
 
 def reduction(reduces_to="ssm", confidence=0.9, difference="", radical=False, textbook=True):
     return declaring({"reduces_to": reduces_to, "mapping": "S <- h, theta <- A", "confidence": confidence,
-            "difference_if_any": difference, "radical_enough": radical, "why": "it is a diagonal recurrence",
+            "difference_if_any": difference, **(NOT_KNOWN if radical else KNOWN), "why": "it is a diagonal recurrence",
             "textbook_transplant": textbook, "textbook_why": "a diagonal linear recurrence as the textbook states it"})
 
 

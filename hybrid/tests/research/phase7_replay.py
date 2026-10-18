@@ -26,10 +26,12 @@ import json
 import re
 from pathlib import Path
 
+from hybrid.tests.research.critic_answers import novelty_fields
+
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE_RUN = "run-20261010T181300Z"
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "phase7_replay" / f"{SOURCE_RUN}.json"
-CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "radical_enough", "why",
+CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "why",
                "textbook_transplant", "textbook_why")
 DIFF = re.compile(r"max_abs_diff ([0-9.eE+\-]+|None)")
 CARD_ID = re.compile(r'"id": "(card-[0-9a-f]{8})"')
@@ -55,7 +57,7 @@ def extract(run_dir: Path) -> dict:
         cards.append({
             "card_id": card_id, "card": shown,
             "prior_art": {key: prior.get(key) for key in ("label", "evidence", "notes", "queries", "candidates")},
-            "critic": {key: critic[key] for key in CRITIC_KEYS},
+            "critic": {key: critic[key] for key in CRITIC_KEYS} | novelty_fields(critic),
             "reduction_outcome": critic["reduction_outcome"], "prior_art_delta": critic.get("prior_art_delta"),
             "max_abs_diff": None if not diffs or diffs[0] == "None" else float(diffs[0]),
             "original": {"verdict": s2["verdict"], "gate": deciding_reason(s2["reasons"])[:400],
