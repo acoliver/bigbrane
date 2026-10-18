@@ -43,3 +43,5 @@ Budget about 350 calls.
 - Step: tools/flips.py extracts per-flip artifacts to logs/flips.md
 - Step: research suite final run started (logs/tests-10-research-final.log); other suites (literature, llm, gateway, bench, math, top-level): 1827 passed + 4 env failures that pass once the worktree has .venv-hybrid and the seed build log (31 passed)
 - Step: score.py rewritten (intent dead/alive plus code); flips.py done; writing REPORT.md next
+- Step: research suite relaunched as 4 shards (logs/tests-11-shard*.log)
+- Step: REPORT.md written; final suites pass
