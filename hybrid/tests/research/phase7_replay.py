@@ -159,7 +159,7 @@ def replay(fixture: dict, work: Path) -> list[dict]:
         await llm_complete("prior_art", "query system", card_text, {"type": "object"})
         evidence = [dict(item, source="arxiv") for item in prior["evidence"]]
         return {"label": prior["label"], "evidence": evidence, "notes": prior["notes"] or "recorded",
-                "queries": prior["queries"] or [],
+                "queries": prior["queries"] or [], "query_fields": [], "round2_queries": [],
                 "candidates": recorded_candidates(prior["candidates"] or ["arxiv:0000.00000"]),
                 "rejected_evidence": []}
 

@@ -565,8 +565,10 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
     except SchemaViolation as exc:
         reasons.append(f"prior-art label has no grounded evidence ({exc}); label kept, evidence missing")
     ctx.put_json_artifact("prior_art", ctx.artifact_name(card_id),
-                          dict(record, queries=pa_result["queries"], rejected_evidence=pa_result["rejected_evidence"],
-                               candidates=pa_result["candidates"]), card_id)
+                          dict(record, queries=pa_result["queries"], query_fields=pa_result["query_fields"],
+                               round2_queries=pa_result["round2_queries"],
+                               rejected_evidence=pa_result["rejected_evidence"], candidates=pa_result["candidates"]),
+                          card_id)
 
     delta = None
     if record["label"] == "prior_art_tested":
