@@ -1,0 +1,229 @@
+{
+  "results": {
+    "combined": {
+      "exit": 1,
+      "testcase_counts": {
+        "passed": 1893,
+        "skipped": 3,
+        "failed": 2
+      },
+      "testcase_elements": 1898,
+      "additional_passing_subtests": 14,
+      "suite_attributes": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "2",
+          "skipped": "3",
+          "tests": "1912",
+          "time": "692.825",
+          "timestamp": "2026-10-18T20:25:48.033591-03:00",
+          "hostname": "Andrews-MacBook-Pro.local"
+        }
+      ],
+      "failures": [
+        {
+          "classname": "hybrid.tests.research.test_phase7_replay",
+          "name": "test_every_s2_death_gets_its_expected_phase7_code"
+        },
+        {
+          "classname": "hybrid.tests.research.test_phase7_replay",
+          "name": "test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+        }
+      ],
+      "subsets": {
+        "hybrid.tests.research.test_composites_historical_evidence": {
+          "passed": 31
+        },
+        "hybrid.tests.research.test_historical_references": {
+          "passed": 19
+        },
+        "hybrid.tests.research.test_next_historical_references": {
+          "passed": 37
+        },
+        "hybrid.tests.research.test_remaining_historical_evidence": {
+          "passed": 24
+        },
+        "hybrid.tests.research.test_review_gate_evidence": {
+          "passed": 44
+        },
+        "hybrid.tests.literature.test_sampling": {
+          "passed": 9
+        },
+        "hybrid.tests.literature.test_seed": {
+          "passed": 7
+        },
+        "hybrid.tests.literature.test_seed_provenance": {
+          "passed": 29
+        },
+        "results-wt.transport-measurement.test_measure.MeasurementTests": {
+          "passed": 7
+        },
+        "results-wt.acquisition-windows.test_extract_windows.WindowTests": {
+          "passed": 18
+        }
+      },
+      "junit_local_path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/combined-junit.xml",
+      "junit_sha256": "fc6cb44f72b09493cfa99327f739395b3b074b51f70a675ade815bc090aa3583",
+      "phase7_rows_sha256": "259ec1b33cfaed911dfdd2f7034159bee4351eaf9a0f58b5cdd06bf8f025f72b",
+      "all_21_rows_unchanged": true,
+      "exact_codes": "7/19",
+      "required_gaps": 12,
+      "invocation": {
+        "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+        "command": [
+          "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+          "-m",
+          "pytest",
+          "-c",
+          "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/pyproject.toml",
+          "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+          "-q",
+          "-p",
+          "next_results",
+          "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/combined-pytest",
+          "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/combined-junit.xml",
+          "hybrid/tests/research",
+          "hybrid/tests/literature",
+          "results-wt/kd8/tools/tests/test_evidence_tools.py",
+          "results-wt/retrieval-diagnosis/test_diagnose.py",
+          "results-wt/transport-measurement/test_measure.py",
+          "results-wt/acquisition-windows/test_extract_windows.py"
+        ],
+        "environment": {
+          "BIGBRANE_LIVE": "0",
+          "PYTHONHASHSEED": "0",
+          "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-network-guard:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/transport-measurement:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/acquisition-windows",
+          "TMPDIR": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/tmp",
+          "NEXT_ROWS_OUTPUT": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/combined-phase7-rows.json"
+        }
+      }
+    },
+    "isolated": {
+      "exit": 1,
+      "testcase_counts": {
+        "passed": 475,
+        "skipped": 1,
+        "failed": 2
+      },
+      "testcase_elements": 478,
+      "additional_passing_subtests": 14,
+      "suite_attributes": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "2",
+          "skipped": "1",
+          "tests": "492",
+          "time": "46.570",
+          "timestamp": "2026-10-18T20:37:48.134777-03:00",
+          "hostname": "Andrews-MacBook-Pro.local"
+        }
+      ],
+      "failures": [
+        {
+          "classname": "hybrid.tests.research.test_phase7_replay",
+          "name": "test_every_s2_death_gets_its_expected_phase7_code"
+        },
+        {
+          "classname": "hybrid.tests.research.test_phase7_replay",
+          "name": "test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+        }
+      ],
+      "subsets": {
+        "hybrid.tests.literature.test_sampling": {
+          "passed": 9
+        },
+        "hybrid.tests.literature.test_seed": {
+          "passed": 7
+        },
+        "hybrid.tests.literature.test_seed_provenance": {
+          "passed": 29
+        },
+        "hybrid.tests.research.test_composites_historical_evidence": {
+          "passed": 31
+        },
+        "hybrid.tests.research.test_remaining_historical_evidence": {
+          "passed": 24
+        },
+        "hybrid.tests.research.test_next_historical_references": {
+          "passed": 37
+        },
+        "hybrid.tests.research.test_historical_references": {
+          "passed": 19
+        },
+        "hybrid.tests.research.test_review_gate_evidence": {
+          "passed": 44
+        },
+        "results-wt.transport-measurement.test_measure.MeasurementTests": {
+          "passed": 7
+        },
+        "results-wt.acquisition-windows.test_extract_windows.WindowTests": {
+          "passed": 18
+        }
+      },
+      "junit_local_path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/isolated-junit.xml",
+      "junit_sha256": "1925e9e6797dccfd4318508fff6cc67c49866292eada36f5177b9d3414242bcb",
+      "phase7_rows_sha256": "259ec1b33cfaed911dfdd2f7034159bee4351eaf9a0f58b5cdd06bf8f025f72b",
+      "all_21_rows_unchanged": true,
+      "exact_codes": "7/19",
+      "required_gaps": 12,
+      "invocation": {
+        "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/package",
+        "command": [
+          "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+          "-m",
+          "pytest",
+          "-c",
+          "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/package/pyproject.toml",
+          "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/package",
+          "-q",
+          "-p",
+          "next_results",
+          "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/isolated-pytest",
+          "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/isolated-junit.xml",
+          "hybrid/tests/literature",
+          "hybrid/tests/research/test_composites_historical_evidence.py",
+          "hybrid/tests/research/test_remaining_historical_evidence.py",
+          "hybrid/tests/research/test_next_historical_references.py",
+          "hybrid/tests/research/test_historical_binding.py",
+          "hybrid/tests/research/test_historical_references.py",
+          "hybrid/tests/research/test_reference_replays.py",
+          "hybrid/tests/research/test_review_gate_evidence.py",
+          "hybrid/tests/research/test_phase7_replay.py",
+          "results-wt/kd8/tools/tests/test_evidence_tools.py",
+          "results-wt/retrieval-diagnosis/test_diagnose.py",
+          "results-wt/transport-measurement/test_measure.py",
+          "results-wt/acquisition-windows/test_extract_windows.py"
+        ],
+        "environment": {
+          "BIGBRANE_LIVE": "0",
+          "PYTHONHASHSEED": "0",
+          "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/package/results-wt/evidence-recovery/composites-network-guard:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/package:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/package/results-wt/evidence-recovery:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/package/results-wt/transport-measurement:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/package/results-wt/acquisition-windows",
+          "TMPDIR": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/tmp",
+          "NEXT_ROWS_OUTPUT": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification/isolated-phase7-rows.json"
+        }
+      }
+    }
+  },
+  "checks": {
+    "protected_existing_files_unchanged": 88,
+    "saved_inputs_unchanged": 274,
+    "seed_raw_inputs_unchanged": 75,
+    "main_measurement_files_unchanged": 44,
+    "supplemental_acquisition_inputs_unchanged": 39,
+    "local_full_captures_unchanged": true,
+    "tested_files_unchanged": 1017,
+    "tested_manifest_sha256": "9731e5983cadba3aa6b3bfcf0aabddc385da18ecbb4381585ea1f0d8b2ed96ef",
+    "scope": "Research and literature, not full math or benchmark suites.",
+    "isolation": "Source export without raw captures, publication bodies, literature cache, runs or acquisition input histories; optional external original-run existence masked and opens prohibited.",
+    "network": "BIGBRANE_LIVE=0 and inherited socket connection, datagram and DNS audit prohibitions.",
+    "new_work_unreviewed": true,
+    "acceptance_unchanged": true,
+    "local_logs": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/composites-checkpoint-verification",
+    "heartbeat_seconds": 30,
+    "supervisor_limit_seconds": 1800,
+    "supervisor_source_sha256": "8d6c2c759625641b71ec50823ab84633098ce5456f25399d62171ded96680a43",
+    "counting": "Completed JUnit testcase elements counted separately for each run. Suite totals additionally count passing subtests. No sum of earlier executions."
+  }
+}

@@ -1,0 +1,708 @@
+{
+  "acceptance_input": false,
+  "acceptance_unchanged": {
+    "denominator": 4,
+    "required": 3,
+    "retrieved_cards": 2,
+    "status": "FAIL"
+  },
+  "counts": {
+    "fresh_parser_drops": 0,
+    "fresh_pool_classes": {
+      "exhausted_nonempty_pool": 1,
+      "explicit_zero_pool": 3,
+      "more_unseen_records": 8
+    },
+    "fresh_positions": 50,
+    "fresh_raw_files": 12,
+    "historical_availability": {
+      "cooldown_skip": 44,
+      "exhausted_http": 2,
+      "historical_local_receipt": 72,
+      "historical_raw_cache_evidence_network_path_unknown": 170
+    },
+    "historical_parser_drops": 0,
+    "historical_pool_classes": {
+      "exhausted_nonempty_pool": 11,
+      "explicit_zero_pool": 37,
+      "local_pool_not_recomputed": 72,
+      "more_unseen_records": 122,
+      "unobserved_error": 46
+    },
+    "historical_query_contexts": 72,
+    "historical_raw_contexts": 170,
+    "historical_raw_positions": 761,
+    "historical_returned_metadata": {
+      "abstract_present": 618,
+      "all_literal_tokens_in_title_abstract": 15,
+      "any_literal_token_in_title_abstract": 732,
+      "records": 761
+    },
+    "historical_returned_positions": 1193,
+    "historical_source_contexts": 288,
+    "historical_unique_raw_files_used": 170,
+    "registered_metadata_available": 9,
+    "registered_trace": {
+      "absent_from_all_saved_direct_and_selected_seed_edge_windows": 7,
+      "acquired_then_exposed": 1,
+      "acquired_then_rank_exposure_loss": 2,
+      "raw_bibliography_identity_without_fetched_work_record": 1
+    }
+  },
+  "diagnostic": true,
+  "external_query_docs": "Not fetched. Provider-internal boolean, field scope and default ranking remain unknown.",
+  "groups": [
+    {
+      "availability": {
+        "cooldown_skip": 4,
+        "historical_raw_cache_evidence_network_path_unknown": 6
+      },
+      "contexts": 10,
+      "field": "associative_memory",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 6,
+        "unobserved_error": 4
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 0,
+      "round": 1,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "cooldown_skip": 3,
+        "exhausted_http": 1,
+        "historical_raw_cache_evidence_network_path_unknown": 6
+      },
+      "contexts": 10,
+      "field": "automata_formal_languages",
+      "parser_drops": 0,
+      "pool_classes": {
+        "exhausted_nonempty_pool": 1,
+        "explicit_zero_pool": 5,
+        "unobserved_error": 4
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 2,
+      "returned_positions": 2,
+      "round": 1,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "cooldown_skip": 6,
+        "historical_raw_cache_evidence_network_path_unknown": 1
+      },
+      "contexts": 7,
+      "field": "cognitive_bayesian",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 1,
+        "unobserved_error": 6
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 0,
+      "round": 1,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "cooldown_skip": 4,
+        "exhausted_http": 1,
+        "historical_raw_cache_evidence_network_path_unknown": 2
+      },
+      "contexts": 7,
+      "field": "compression_coding",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 2,
+        "unobserved_error": 5
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 7,
+      "raw_positions": 0,
+      "returned_positions": 0,
+      "round": 1,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "cooldown_skip": 4,
+        "historical_raw_cache_evidence_network_path_unknown": 2
+      },
+      "contexts": 6,
+      "field": "optimization",
+      "parser_drops": 0,
+      "pool_classes": {
+        "exhausted_nonempty_pool": 1,
+        "explicit_zero_pool": 1,
+        "unobserved_error": 4
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 1,
+      "returned_positions": 1,
+      "round": 1,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "cooldown_skip": 5,
+        "historical_raw_cache_evidence_network_path_unknown": 1
+      },
+      "contexts": 6,
+      "field": "physics_dynamical_systems",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 1,
+        "unobserved_error": 5
+      },
+      "query_ascii_token_count_max": 8,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 0,
+      "round": 1,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "cooldown_skip": 4,
+        "historical_raw_cache_evidence_network_path_unknown": 3
+      },
+      "contexts": 7,
+      "field": "program_synthesis",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 3,
+        "unobserved_error": 4
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 0,
+      "round": 1,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "cooldown_skip": 3
+      },
+      "contexts": 3,
+      "field": "signal_processing",
+      "parser_drops": 0,
+      "pool_classes": {
+        "unobserved_error": 3
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 7,
+      "raw_positions": 0,
+      "returned_positions": 0,
+      "round": 1,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "cooldown_skip": 11,
+        "historical_raw_cache_evidence_network_path_unknown": 5
+      },
+      "contexts": 16,
+      "field": "untagged",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 5,
+        "unobserved_error": 11
+      },
+      "query_ascii_token_count_max": 11,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 0,
+      "round": 2,
+      "source": "arxiv"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 10
+      },
+      "contexts": 10,
+      "field": "associative_memory",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 10
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 60,
+      "round": 1,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 10
+      },
+      "contexts": 10,
+      "field": "automata_formal_languages",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 10
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 60,
+      "round": 1,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 7
+      },
+      "contexts": 7,
+      "field": "cognitive_bayesian",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 7
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 42,
+      "round": 1,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 7
+      },
+      "contexts": 7,
+      "field": "compression_coding",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 7
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 7,
+      "raw_positions": 0,
+      "returned_positions": 42,
+      "round": 1,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 6
+      },
+      "contexts": 6,
+      "field": "optimization",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 6
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 36,
+      "round": 1,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 6
+      },
+      "contexts": 6,
+      "field": "physics_dynamical_systems",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 6
+      },
+      "query_ascii_token_count_max": 8,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 36,
+      "round": 1,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 7
+      },
+      "contexts": 7,
+      "field": "program_synthesis",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 7
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 42,
+      "round": 1,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 3
+      },
+      "contexts": 3,
+      "field": "signal_processing",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 3
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 7,
+      "raw_positions": 0,
+      "returned_positions": 18,
+      "round": 1,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_local_receipt": 16
+      },
+      "contexts": 16,
+      "field": "untagged",
+      "parser_drops": 0,
+      "pool_classes": {
+        "local_pool_not_recomputed": 16
+      },
+      "query_ascii_token_count_max": 11,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 0,
+      "returned_positions": 96,
+      "round": 2,
+      "source": "arxiv_local"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 10
+      },
+      "contexts": 10,
+      "field": "associative_memory",
+      "parser_drops": 0,
+      "pool_classes": {
+        "exhausted_nonempty_pool": 1,
+        "more_unseen_records": 9
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 59,
+      "returned_positions": 59,
+      "round": 1,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 10
+      },
+      "contexts": 10,
+      "field": "automata_formal_languages",
+      "parser_drops": 0,
+      "pool_classes": {
+        "more_unseen_records": 10
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 60,
+      "returned_positions": 60,
+      "round": 1,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 7
+      },
+      "contexts": 7,
+      "field": "cognitive_bayesian",
+      "parser_drops": 0,
+      "pool_classes": {
+        "more_unseen_records": 7
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 42,
+      "returned_positions": 42,
+      "round": 1,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 7
+      },
+      "contexts": 7,
+      "field": "compression_coding",
+      "parser_drops": 0,
+      "pool_classes": {
+        "more_unseen_records": 7
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 7,
+      "raw_positions": 42,
+      "returned_positions": 42,
+      "round": 1,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 6
+      },
+      "contexts": 6,
+      "field": "optimization",
+      "parser_drops": 0,
+      "pool_classes": {
+        "more_unseen_records": 6
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 36,
+      "returned_positions": 36,
+      "round": 1,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 6
+      },
+      "contexts": 6,
+      "field": "physics_dynamical_systems",
+      "parser_drops": 0,
+      "pool_classes": {
+        "more_unseen_records": 6
+      },
+      "query_ascii_token_count_max": 8,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 36,
+      "returned_positions": 36,
+      "round": 1,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 7
+      },
+      "contexts": 7,
+      "field": "program_synthesis",
+      "parser_drops": 0,
+      "pool_classes": {
+        "more_unseen_records": 7
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 42,
+      "returned_positions": 42,
+      "round": 1,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 3
+      },
+      "contexts": 3,
+      "field": "signal_processing",
+      "parser_drops": 0,
+      "pool_classes": {
+        "more_unseen_records": 3
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 7,
+      "raw_positions": 18,
+      "returned_positions": 18,
+      "round": 1,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 16
+      },
+      "contexts": 16,
+      "field": "untagged",
+      "parser_drops": 0,
+      "pool_classes": {
+        "exhausted_nonempty_pool": 1,
+        "more_unseen_records": 15
+      },
+      "query_ascii_token_count_max": 11,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 93,
+      "returned_positions": 93,
+      "round": 2,
+      "source": "openalex"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 10
+      },
+      "contexts": 10,
+      "field": "associative_memory",
+      "parser_drops": 0,
+      "pool_classes": {
+        "exhausted_nonempty_pool": 4,
+        "more_unseen_records": 6
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 45,
+      "returned_positions": 45,
+      "round": 1,
+      "source": "s2"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 10
+      },
+      "contexts": 10,
+      "field": "automata_formal_languages",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 1,
+        "more_unseen_records": 9
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 54,
+      "returned_positions": 54,
+      "round": 1,
+      "source": "s2"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 7
+      },
+      "contexts": 7,
+      "field": "cognitive_bayesian",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 2,
+        "more_unseen_records": 5
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 30,
+      "returned_positions": 30,
+      "round": 1,
+      "source": "s2"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 7
+      },
+      "contexts": 7,
+      "field": "compression_coding",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 2,
+        "more_unseen_records": 5
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 7,
+      "raw_positions": 30,
+      "returned_positions": 30,
+      "round": 1,
+      "source": "s2"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 6
+      },
+      "contexts": 6,
+      "field": "optimization",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 2,
+        "more_unseen_records": 4
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 24,
+      "returned_positions": 24,
+      "round": 1,
+      "source": "s2"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 6
+      },
+      "contexts": 6,
+      "field": "physics_dynamical_systems",
+      "parser_drops": 0,
+      "pool_classes": {
+        "more_unseen_records": 6
+      },
+      "query_ascii_token_count_max": 8,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 36,
+      "returned_positions": 36,
+      "round": 1,
+      "source": "s2"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 7
+      },
+      "contexts": 7,
+      "field": "program_synthesis",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 1,
+        "more_unseen_records": 6
+      },
+      "query_ascii_token_count_max": 10,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 36,
+      "returned_positions": 36,
+      "round": 1,
+      "source": "s2"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 3
+      },
+      "contexts": 3,
+      "field": "signal_processing",
+      "parser_drops": 0,
+      "pool_classes": {
+        "explicit_zero_pool": 1,
+        "more_unseen_records": 2
+      },
+      "query_ascii_token_count_max": 9,
+      "query_ascii_token_count_min": 7,
+      "raw_positions": 12,
+      "returned_positions": 12,
+      "round": 1,
+      "source": "s2"
+    },
+    {
+      "availability": {
+        "historical_raw_cache_evidence_network_path_unknown": 16
+      },
+      "contexts": 16,
+      "field": "untagged",
+      "parser_drops": 0,
+      "pool_classes": {
+        "exhausted_nonempty_pool": 3,
+        "explicit_zero_pool": 4,
+        "more_unseen_records": 9
+      },
+      "query_ascii_token_count_max": 11,
+      "query_ascii_token_count_min": 6,
+      "raw_positions": 63,
+      "returned_positions": 63,
+      "round": 2,
+      "source": "s2"
+    }
+  ],
+  "historical_initial_429_cause": "unknown",
+  "plan_sha256": "139565a110a589ac5e69f719341d4e599cc63bd9f556568eadfc5c4ac7f1959b",
+  "pm2": "Original PM2 failed; not rerun",
+  "source_semantics_evidence": [
+    "hybrid/literature/sources/arxiv.py",
+    "hybrid/literature/sources/arxiv_local.py",
+    "hybrid/literature/sources/openalex.py",
+    "hybrid/literature/sources/semantic_scholar.py"
+  ]
+}
