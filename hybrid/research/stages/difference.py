@@ -61,7 +61,7 @@ LOOP = "send_back"
 WRITER_PROMPT = "difference"
 CHECK_PROMPT = "difference_check"
 R3_PREFIX = "r3"
-LISTED_LITERATURE = 25     # papers of the prior-art search shown to the writer and the checker, evidence included
+LISTED_LITERATURE = 35     # papers of the prior-art search shown to the writer and the checker, evidence included (PA2)
 
 
 # ----- families ------------------------------------------------------------------------------------------------------
@@ -170,9 +170,9 @@ def literature_refs(record: dict, pa_result: dict, cited: tuple[str, ...] = ()) 
     `literature` refs. Each paper is a candidate record (key, source_id, title, year, excerpt) and is reachable under
     both spellings a ref may take: the key `s2:712c...` and the bare source id.
 
-    The search returns about 80 papers, too many to show with their abstracts, so the listing is bounded to
+    The cross-field search (PA2) returns 100 to 250 papers, too many to show with their abstracts, so the listing is bounded to
     LISTED_LITERATURE papers: first the evidence the classifier cited (with its relation), because the classifier
-    judged those closest, then the remaining candidates in the order the searches returned them. The prompt for the
+    judged those closest, then the remaining candidates best-ranked first (the order prior_art stores them in). The prompt for the
     writer and the one for the checker are built from this one listing. Papers the reduction critic cited as known
     work come before both, so a required entry is always listed."""
     candidates = pa_result["candidates"]

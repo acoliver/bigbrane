@@ -76,7 +76,14 @@ def judge(critic: dict, counted: list[dict], candidates: list[dict]) -> Judgment
                                           "cited source (a paper id absent from the search results is not accepted)")
 
 
+LISTED_TITLES = 80   # PA2: candidates are stored best-ranked first; titles are cheap, so the critic sees more than the writer
+
+
 def search_listing(candidates: list[dict]) -> str:
-    """The search results the critic may cite by id, titles only (the difference writer gets the excerpts)."""
-    lines = [f"- {c['key']} ({c['year'] if c['year'] is not None else 'n.d.'}) {c['title']}" for c in candidates]
-    return "SEARCH RESULTS (cite a paper by exactly one of these ids):\n" + ("\n".join(lines) or "(no source returned)")
+    """The search results the critic may cite by id, titles only (the difference writer gets the excerpts). The
+    candidates arrive best-ranked first and the listing keeps the first LISTED_TITLES of them."""
+    lines = [f"- {c['key']} ({c['year'] if c['year'] is not None else 'n.d.'}) {c['title']}"
+             for c in candidates[:LISTED_TITLES]]
+    head = "SEARCH RESULTS (cite a paper by exactly one of these ids"
+    head += f"; the {len(lines)} best-ranked of {len(candidates)}):\n" if len(candidates) > len(lines) else "):\n"
+    return head + ("\n".join(lines) or "(no source returned)")

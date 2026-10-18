@@ -6,12 +6,17 @@ import httpx
 import jsonschema
 import pytest
 
-from hybrid.literature.client import Literature
+from hybrid.literature.client import Literature, Related
+from hybrid.literature.paper import paper_key_of
 from hybrid.literature.prior_art import classify_prior_art
 from hybrid.literature.sources import arxiv
 from hybrid.tests.literature.support import FakeClock, FakeWeb, RecordingSink, fixture_text, make_literature, ok, status
 
-QUERIES = ["linear attention recurrent state", "Mamba selective state space", "associative recall fixed state"]
+FIELDS = ["automata_formal_languages", "compression_coding", "cognitive_bayesian", "physics_dynamical_systems",
+          "optimization", "program_synthesis", "associative_memory", "signal_processing"]
+QUERIES = [f"query about sheaf diffusion {i}" for i in range(10)]
+TAGGED = [{"field": FIELDS[i % len(FIELDS)], "query": q} for i, q in enumerate(QUERIES)]
+NO_REFINEMENT = {"queries": []}
 CARD = "Card: a sample-efficient sequence learner based on sheaf diffusion over token graphs."
 
 
@@ -42,6 +47,7 @@ def build(tmp_path):
         }
     )
     literature = make_literature(tmp_path, web, clock=FakeClock())
+    literature.related = lambda paper, sink=None: Related(paper_key_of(paper), None, (), (), {})
     return literature, web
 
 
@@ -53,7 +59,8 @@ def test_classification_is_grounded_in_search_hits_and_rejects_invented_ids(tmp_
     literature, _ = build(tmp_path)
     sink = RecordingSink()
     llm = fake_llm(
-        Completion({"queries": QUERIES}),
+        Completion({"queries": TAGGED}),
+        Completion(NO_REFINEMENT),
         Completion(
             {
                 "label": "prior_art_undertested",
@@ -83,12 +90,13 @@ def test_every_query_and_result_is_recorded_through_the_sink(tmp_path):
     literature, _ = build(tmp_path)
     sink = RecordingSink()
     llm = fake_llm(
-        Completion({"queries": QUERIES}),
+        Completion({"queries": TAGGED}),
+        Completion(NO_REFINEMENT),
         Completion({"label": "novel", "evidence": [], "notes": "No close work found."}),
     )
     asyncio.run(classify_prior_art(literature, CARD, llm, sink))
 
-    assert sink.of_type("prior_art_queries") == [{"queries": QUERIES}]
+    assert sink.of_type("prior_art_queries") == [{"queries": QUERIES, "fields": [t["field"] for t in TAGGED]}]
     searches = sink.of_type("literature_search")
     assert [event["query"] for event in searches] == QUERIES
     assert all(event["sources"] == ["arxiv", "openalex", "s2"] for event in searches)
@@ -100,11 +108,12 @@ def test_every_query_and_result_is_recorded_through_the_sink(tmp_path):
 def test_judgment_prompt_lists_found_titles_and_abstracts(tmp_path):
     literature, _ = build(tmp_path)
     llm = fake_llm(
-        Completion({"queries": QUERIES}),
+        Completion({"queries": TAGGED}),
+        Completion(NO_REFINEMENT),
         Completion({"label": "novel", "evidence": [], "notes": "none"}),
     )
     asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
-    judgment_call = llm.calls[1]
+    judgment_call = llm.calls[2]
     assert judgment_call["role"] == "prior_art"
     assert CARD in judgment_call["user"]
     assert f"[arxiv:{grounded_id()}]" in judgment_call["user"]
@@ -116,9 +125,9 @@ def test_judgment_prompt_lists_found_titles_and_abstracts(tmp_path):
     ]
 
 
-def test_query_proposal_must_have_three_to_five_queries(tmp_path):
+def test_query_proposal_must_have_ten_to_fourteen_tagged_queries(tmp_path):
     literature, _ = build(tmp_path)
-    llm = fake_llm(Completion({"queries": ["only one"]}))
+    llm = fake_llm(Completion({"queries": TAGGED[:9]}))
     with pytest.raises(jsonschema.ValidationError):
         asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
 
@@ -126,7 +135,8 @@ def test_query_proposal_must_have_three_to_five_queries(tmp_path):
 def test_label_outside_the_enum_is_rejected(tmp_path):
     literature, _ = build(tmp_path)
     llm = fake_llm(
-        Completion({"queries": QUERIES}),
+        Completion({"queries": TAGGED}),
+        Completion(NO_REFINEMENT),
         Completion({"label": "maybe", "evidence": [], "notes": "unsure"}),
     )
     with pytest.raises(jsonschema.ValidationError):
@@ -152,7 +162,8 @@ def openalex_papers():
 def classify_citing(tmp_path, *cited):
     literature, _ = build(tmp_path)
     llm = fake_llm(
-        Completion({"queries": QUERIES}),
+        Completion({"queries": TAGGED}),
+        Completion(NO_REFINEMENT),
         Completion(
             {
                 "label": "prior_art_undertested",
@@ -202,7 +213,8 @@ def test_a_prefixed_citation_of_a_paper_the_searches_did_not_return_is_rejected(
 def test_candidates_record_title_year_url_and_the_excerpt_the_classifier_saw(tmp_path):
     literature, _ = build(tmp_path)
     llm = fake_llm(
-        Completion({"queries": QUERIES}),
+        Completion({"queries": TAGGED}),
+        Completion(NO_REFINEMENT),
         Completion({"label": "novel", "evidence": [], "notes": "none"}),
     )
     result = asyncio.run(classify_prior_art(literature, CARD, llm, RecordingSink()))
@@ -218,7 +230,7 @@ def test_candidates_record_title_year_url_and_the_excerpt_the_classifier_saw(tmp
         "url": paper.url,
         "excerpt": (paper.abstract or "(no abstract)")[:600],
     }
-    shown = llm.calls[1]["user"]
+    shown = llm.calls[2]["user"]
     assert f"[{record['key']}] ({paper.year}) {paper.title}\n  {record['excerpt']}" in shown
     keys = [c["key"] for c in result["candidates"]]
     assert len(keys) == len(set(keys))
