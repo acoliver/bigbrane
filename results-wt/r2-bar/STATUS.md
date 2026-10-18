@@ -1,0 +1,31 @@
+# STATUS r2-bar (worktree bigbrane-wt-r2, branch r2-bar)
+
+## Pre-registered acceptance rules (written before any replay run)
+
+1. Novelty probe guard. All 8 published mechanisms of results/novelty-probe-20261017 (cards P01 to P08, card-17100001
+   to card-17100008) end at S2 with verdict `reduces_to_known` (kill code reduces_to_known:*), and both controls
+   (C01 card-17100009, C02 card-1710000a) end as `excluded_family:*` kills. Any other outcome means the change leaks
+   and must be fixed.
+2. Counted reductions stay dead. Every replayed card whose S2 in the earlier run had a host-counted reduction
+   (reduction check outcome `verified` and the kill `reduces_to_known:*` or `excluded_family:*`) still dies at S2 with
+   the reduction gate, not at a later gate and not as a pass.
+3. Flips get inspected. Every card that goes from kill to S2 pass is listed with its reasons and gets the radicality
+   question (is its learned general mechanism already published or textbook?) answered in plain words in REPORT.md.
+
+Replay cards: the 11 recheck cards (cards.txt of results/defect-recheck-20261017), 8 batch cards whose binding kill
+was R2 (card-0fe3943c, 3485a13f, a775f78d, ebf0e99d, f5ee7edb, 8154d3b4 = the six batch kills that froze or zeroed a
+learned part; card-084a2510 and card-909ad773 = a moved-field kill and a refuted-claim kill), and the 10 novelty
+probe cards as singleton runs. Store: copy of results/discovery-live-20261017/outcomes-before for batch and recheck
+cards, the probe's empty store for probe cards. Configs: recheck.toml and probe.toml copied unchanged.
+Budget about 350 calls.
+
+## Steps
+
+- [x] audit and DECISIONS rows read
+- [ ] code: A + C (critic prompt, schema, host evidence rule)
+- [ ] code: D (difference gate)
+- [ ] unit tests
+- [ ] DECISIONS rows
+- [ ] replay launched
+- [ ] replay scored
+- [ ] REPORT.md
