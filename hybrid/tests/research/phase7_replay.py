@@ -125,7 +125,10 @@ def replay(fixture: dict, work: Path) -> list[dict]:
             "id": "recorded", "base_family": recorded["reduces_to"], "base_form": "recorded known form",
             "update": recorded["mapping"], "read": recorded["mapping"], "transformations": [],
             "parameter_mapping": recorded["mapping"], "limit_only": False}]
-        return dict(recorded, family="none", comparators=comparators,
+        # the fixture was written before decision R2C: its radical_enough answer is read as the new known_work fields
+        novelty = novelty_fields(recorded) if "radical_enough" in recorded else {}
+        answer = {key: value for key, value in recorded.items() if key != "radical_enough"}
+        return dict(answer, **novelty, family="none", comparators=comparators,
                     family_why="(recorded critic; no family question was asked in the source run)")
 
     def check(i, user):
