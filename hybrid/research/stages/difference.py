@@ -204,7 +204,8 @@ def requirements(ctx: StageContext, record: dict, pa_result: dict, matches: list
                        "exact": match.exact, "jaccard": round(match.jaccard, 4),
                        "causes": [{"id": c["id"], "detail": c["detail"]} for c in match.stored.causes()]})
     # D: only sources the classifier judged relevant (its cited evidence) or the critic cited count toward the two
-    # required entries; when fewer than two are relevant, family entries fill the rest (see host_problems).
+    # required entries; when fewer than two are relevant, the requirement shrinks to what exists and `family`
+    # entries may fill the remaining slots (closest_prior has at least one entry by schema).
     relevant = {known_work.bare(item["source_id"]) for item in record["evidence"]} | set(cited)
     need = min(2, len(relevant) + len(outcomes))
     return Requirements(literature, outcomes, r3, named_family(critic, families), need, families,
@@ -241,10 +242,6 @@ def host_problems(statement: dict, card: dict, req: Requirements) -> dict[str, s
     if len(counted) < req.need:
         problems["closest_prior:count"] = (f"{len(counted)} literature or outcome entries with receipts; at least "
                                            f"{req.need} are required")
-    elif len(counted) + len(families) < 2:
-        problems["closest_prior:count"] = (f"{len(counted)} literature or outcome entries and {len(families)} family "
-                                           f"entries; at least 2 entries are required, and a family entry may fill a "
-                                           f"slot the search has no relevant source for")
     listed = {ref for kind, ref in counted if kind == "literature"}
     for paper in req.cited_papers:
         if paper not in listed:
@@ -325,7 +322,7 @@ def context_block(record: dict, req: Requirements, critic: dict) -> str:
                                                  ("reduces_to", "family", "family_why", "mapping", "difference_if_any",
                                                   "why", "known_work_sources")}, indent=2, ensure_ascii=False)]
     rules = [f"- at least {req.need} closest_prior entries of kind literature or outcome, with the ids above; if the "
-             f"search has fewer than two relevant sources, add family entries so that closest_prior has at least two"]
+             f"search has fewer than two relevant sources, fill the remaining slots with family entries"]
     if req.cited_papers:
         rules.append(f"- the reduction critic cites these papers as the closest known work. List each as a literature "
                      f"entry: {', '.join(req.cited_papers)}")

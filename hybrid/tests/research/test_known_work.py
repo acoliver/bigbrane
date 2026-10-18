@@ -101,14 +101,17 @@ def statement(*entries):
             "changed_equation": "learning", "cause_ids_addressed": []}
 
 
-def test_family_entries_fill_the_slots_when_the_search_has_no_relevant_source():
+def test_family_entries_alone_satisfy_a_card_with_no_relevant_source():
     from hybrid.tests.research.builders import make_card
     req, families = requirements()
-    family = families.known[0].id
-    card = make_card("card-r2test")
-    assert "closest_prior:count" in difference.host_problems(statement(("family", family)), card, req)
-    assert "closest_prior:count" not in difference.host_problems(
-        statement(("family", family), ("family", families.excluded[0].id)), card, req)
+    assert not difference.host_problems(statement(("family", families.known[0].id)), make_card("card-r2test"), req)
+
+
+def test_relevant_sources_are_still_required_before_family_entries():
+    from hybrid.tests.research.builders import make_card
+    req, families = requirements(need=1)
+    problems = difference.host_problems(statement(("family", families.known[0].id)), make_card("card-r2test"), req)
+    assert "closest_prior:count" in problems
 
 
 def test_a_paper_the_critic_cited_must_be_listed_in_closest_prior():

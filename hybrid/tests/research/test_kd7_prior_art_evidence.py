@@ -77,15 +77,18 @@ def test_a_paper_beyond_the_listing_bound_is_not_shown_and_not_accepted():
         statement, make_card("card-0000a002"), req)
 
 
-def test_the_host_count_rule_is_unchanged_by_the_listing_bound():
+def test_the_required_entry_count_follows_the_relevant_sources_not_the_listing():
     ctx = SimpleNamespace(outcomes=None, cfg={"outcomes": {"enforce_r3": False}})
+    critic = {"family": "none", "known_work_sources": []}
 
-    def need(candidates):
-        record = {"label": "novel", "evidence": []}
-        return difference.requirements(ctx, record, {"candidates": candidates}, [], {"family": "none"}, FAMILIES).need
+    def need(candidates, cited=0):
+        evidence = [{"source_id": c["source_id"], "relation": "related"} for c in candidates[:cited]]
+        record = {"label": "novel", "evidence": evidence}
+        return difference.requirements(ctx, record, {"candidates": candidates}, [], critic, FAMILIES).need
 
     many = [paper(f"arxiv:2403.{n:05d}", f"Many {n}") for n in range(difference.LISTED_LITERATURE + 40)]
-    assert (need([]), need(many[:1]), need(many[:2]), need(many)) == (0, 1, 2, 2)
+    # D: papers the classifier did not cite as evidence are far relatives and do not raise the requirement
+    assert (need([]), need(many), need(many, 1), need(many, 2), need(many, 5)) == (0, 0, 1, 2, 2)
 
 
 class RecordingCtx:
