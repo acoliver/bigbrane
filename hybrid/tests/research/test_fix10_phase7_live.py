@@ -227,7 +227,8 @@ def test_own_history_finds_card_1184f7a7s_own_recorded_death_in_the_source_run(r
     # and the difference statement's requirements name that cause
     ctx = SimpleNamespace(outcomes=recorded_store, cfg={"outcomes": {"enforce_r3": True, "jaccard_min": 0.6}})
     families, _ = difference.families_for(SimpleNamespace(cfg=orch_config()))
-    req = difference.requirements(ctx, {"evidence": []}, {"candidates": []}, matches, {"family": "none"}, families)
+    critic = {"family": "none", "known_work_sources": []}
+    req = difference.requirements(ctx, {"evidence": []}, {"candidates": []}, matches, critic, families)
     assert req.cause_ids() == [cause]
 
 

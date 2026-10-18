@@ -355,7 +355,9 @@ def test_s1_toy_crash_fails_after_revision(run_dir):
 
 # ----- S2 ---------------------------------------------------------------------------------------
 
-def reduction(reduces_to="ssm", confidence=0.9, difference="", radical=False, textbook=True):
+def reduction(reduces_to="ssm", confidence=0.9, difference="", radical=False, textbook=None):
+    # textbook_transplant gates (decision R2C), so a card meant to pass S2 changes the construction by default
+    textbook = (not radical) if textbook is None else textbook
     return declaring({"reduces_to": reduces_to, "mapping": "S <- h, theta <- A", "confidence": confidence,
             "difference_if_any": difference, **(NOT_KNOWN if radical else KNOWN), "why": "it is a diagonal recurrence",
             "textbook_transplant": textbook, "textbook_why": "a diagonal linear recurrence as the textbook states it"})
@@ -369,18 +371,30 @@ def test_s2_known_disproven_fails(run_dir):
     assert any("known_disproven" in r for r in card["status"]["verdicts"]["S2"]["reasons"])
 
 
-def test_s2_records_the_textbook_answer_without_gating(run_dir):
+def test_s2_textbook_transplant_gates_and_is_recorded(run_dir):
     script = {"reduction_critic": reduction(reduces_to="none", radical=True, textbook=True) | {"mapping": None}}
     orch, llm = make_orchestrator(run_dir, script=script)
     orch.routing = {"table": "llxprt", "source": "file", "gateways": []}
     run(orch)
     card = only_card(orch)
-    assert verdicts(card)["S2"] == "pass" and card["status"]["stage"] == "S6"      # recorded, not gated
+    assert verdicts(card)["S2"] == "fail" and card["status"]["stage"] == "S2"
     reasons = card["status"]["verdicts"]["S2"]["reasons"]
-    assert any(r.startswith("textbook transplant: yes (recorded, not gated)") for r in reasons)
+    assert any(r.startswith("textbook transplant: yes: ") for r in reasons)
+    assert any(r.startswith("gate: not radical enough: textbook transplant") for r in reasons)
     artifact = [a for a in events(orch, "artifact") if a["kind"] == "reduction_critic"][0]
     assert json.loads((run_dir / artifact["path"]).read_text())["textbook_transplant"] is True
     assert events(orch, "run_start")[0]["routing"] == {"table": "llxprt", "source": "file", "gateways": []}
+
+
+def test_s2_textbook_transplant_is_only_recorded_when_the_radical_gates_are_off(run_dir):
+    cfg = orch_config()
+    cfg["s2"]["require_radical"] = False
+    script = {"reduction_critic": reduction(reduces_to="none", radical=True, textbook=True) | {"mapping": None}}
+    orch, llm = make_orchestrator(run_dir, cfg=cfg, script=script)
+    run(orch)
+    card = only_card(orch)
+    assert verdicts(card)["S2"] == "pass" and card["status"]["stage"] == "S6"
+    assert any(r.startswith("textbook transplant: yes: ") for r in card["status"]["verdicts"]["S2"]["reasons"])
 
 
 def test_inspect_counts_textbook_transplants_and_lenses_per_stage(run_dir, capsys):

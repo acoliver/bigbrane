@@ -32,7 +32,9 @@ REDUCED = declaring({"reduces_to": "ssm", "mapping": "S <- h, theta <- A. The ca
                      "textbook_transplant": True,
                      "textbook_why": "a diagonal linear recurrence as the textbook states it"})
 NOT_REDUCED = REDUCED | {"reduces_to": "none", "mapping": None, "confidence": 0.2, **NOT_KNOWN,
-                         "why": "No mapping onto a known form was found.", "comparators": []}
+                         "why": "No mapping onto a known form was found.", "comparators": [],
+                         "textbook_transplant": False,
+                         "textbook_why": "the card changes the update the textbook states"}
 
 
 def explorer(offset: int = 0):

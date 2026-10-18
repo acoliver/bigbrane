@@ -236,7 +236,7 @@ def test_critic_prompts_describe_the_new_fields():
         assert phrase in salad, phrase
     reduction = load_prompt("reduction_critic")
     assert "textbook construction from its source field applied without modification" in reduction
-    assert "textbook_why" in reduction and "does not decide the gate" in reduction
+    assert "textbook_why" in reduction and "the one answer of this kind that gates" in reduction
 
 
 def test_prompts_and_docs_avoid_banned_words():
