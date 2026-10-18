@@ -51,7 +51,7 @@ PROTOCOLS = {
     ("k1", "copy"): ("k1-copy", "e264cfca5b7c15a156a233cdf0b1ae87c73c9b0b7233e4deaefb58f6a93dbc6a", P2),
     ("k1", "recall"): ("k1-recall", "ead21867ef878030a7fa0488975fe713f35fb327c0ac54b28e5635521b0595ab", P2),
     ("k1", "dyck"): ("k1-nesting", "760d56fa2728c06d8eb51cef0c683424ab286e0e23fe53dcdd8c77d68f41988e", P2),
-    ("k1", "composition"): ("k1-composition", "c0f092e6cd7a6832bf3841c2466699058eeebea56be3311f3fbfb3d7b18b79af", P2),
+    ("k1", "composition"): ("k1-composition", "a81b9e4cc75f175a5ae6704519c87e2e02929f951c4ade9dd48f0299124dd1d2", P2),
     ("k2", "copy"): ("k2-copy", "cf38d4628ab6cf2d850316aa98fb64edaa946fc5da8433ecc337087da16911c9", P2),
     ("k2", "recall"): ("k2-recall", RECALL_SHA, P1),
     ("k2", "dyck"): ("k2-nesting", "1ff702d960a4610dfdf1ed06e05abb3d96b9aff0ff8824ae0094910e027e4b63", P2),

@@ -1,4 +1,4 @@
-RECIPE = {'width_d': 64, 'initialization': 'Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)', 'optimizer': 'AdamW', 'learning_rate': 0.002, 'betas': [0.9, 0.98], 'eps': 1e-08, 'weight_decay': 0.05, 'warmup_steps': 300, 'schedule': 'linear warmup then cosine decay to 0.05 of peak', 'grad_clip_norm': 1.0, 'epochs': 400, 'batch_size': 200, 'loss': 'next-symbol cross-entropy at the query positions, back-propagated through both rounds', 'dtype': 'float64'}
+RECIPE = {'width_d': 64, 'initialization': 'Gaussian: E and P std 0.7; W_a, W_c, W_p, V std 1/sqrt(d); W_o, U std 0.5/sqrt(d); O std 1/sqrt(d)', 'optimizer': 'AdamW', 'learning_rate': 0.002, 'betas': [0.9, 0.98], 'eps': 1e-08, 'weight_decay': 0.05, 'warmup_steps': 300, 'schedule': 'linear warmup then cosine decay to 0.05 of peak', 'grad_clip_norm': 1.0, 'epochs': 260, 'batch_size': 200, 'loss': 'next-symbol cross-entropy at the query positions, back-propagated through both rounds', 'dtype': 'float64'}
 
 
 def make_params(V, L, d, rng):
@@ -32,10 +32,10 @@ def grads(p, X, Y, qs, mask1, mask2, d, V):
     Pm = p['P'][:L]
     Wco1 = p['Wc1'] @ p['Wo1']
     Wco2 = p['Wc2'] @ p['Wo2']
-    h0 = p['E'][X] + Pm[None]
-    A1 = (p['E'] @ p['Wa1'])[X] + (Pm @ p['Wa1'])[None]
-    P1 = (p['E'] @ p['Wp1'])[X] + (Pm @ p['Wp1'])[None]
-    O1 = (p['E'] @ Wco1)[X] + (Pm @ Wco1)[None]
+    h0 = np.take(p['E'], X, axis=0) + Pm[None]
+    A1 = np.take(p['E'] @ p['Wa1'], X, axis=0) + (Pm @ p['Wa1'])[None]
+    P1 = np.take(p['E'] @ p['Wp1'], X, axis=0) + (Pm @ p['Wp1'])[None]
+    O1 = np.take(p['E'] @ Wco1, X, axis=0) + (Pm @ Wco1)[None]
     S1 = (P1 @ A1.transpose(0, 2, 1)) * sc + mask1
     S1 = S1 - S1.max(-1, keepdims=True)
     W1 = np.exp(S1)
@@ -94,10 +94,12 @@ def grads(p, X, Y, qs, mask1, mask2, d, V):
     dS1 = W1 * (dW1 - (dW1 * W1).sum(-1, keepdims=True)) * sc
     dP1 = dS1 @ A1
     dA1 = dS1.transpose(0, 2, 1) @ P1
-    ohx = (X.reshape(-1)[:, None] == np.arange(V)[None, :]).astype(np.float64)
+    ohT = (np.arange(V)[:, None] == X.reshape(-1)[None, :]).astype(np.float64)
     nb = dG1.shape[-1]
-    S = ohx.T @ np.concatenate([dP1, dA1, dO1, dG1], axis=-1).reshape(-1, 4 * nb)
-    SP, SA, SO, SG = S[:, :nb], S[:, nb:2 * nb], S[:, 2 * nb:3 * nb], S[:, 3 * nb:]
+    SP = ohT @ dP1.reshape(-1, nb)
+    SA = ohT @ dA1.reshape(-1, nb)
+    SO = ohT @ dO1.reshape(-1, nb)
+    SG = ohT @ dG1.reshape(-1, nb)
     TP, TA, TO, TG = dP1.sum(0), dA1.sum(0), dO1.sum(0), dG1.sum(0)
     g['Wp1'] = p['E'].T @ SP + Pm.T @ TP
     g['Wa1'] = p['E'].T @ SA + Pm.T @ TA
