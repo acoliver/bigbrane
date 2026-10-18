@@ -1,15 +1,21 @@
 # Current status, 2026-10-18
 
-**No idea survived the old-bar probe.** The completed probe (07:27Z) killed P 4/4, C 8/8, and L 7 at S2; one additional L card failed its toy check. Three P kills were KD8 universal-template restatements, so these outcomes do not show that every candidate was a repeat. See `results/s2-probe-20261018/SCORE.txt`, its ledgers, and driver log. No survivors.
+**Main integration remains held.** Checkpoint `fe264b5996b7177d2fbcca5e9274ca5414210578` is in the sibling `r2-bar` worktree; draft PR [#6](https://github.com/acoliver/bigbrane/pull/6) targets `p4-diagnosis`. It has not been integrated or merged, and it is not a verified fix. Report paths beginning `results-wt/` refer to files in sibling worktree `/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2` (draft PR #6), not this main checkout, until integration.
 
-An independent audit of five candidates that passed the proposed r2-bar rules classified four as **INCREMENTAL** and one, `card-8154d3b4`, as **NOVEL AS FAR AS FOUND**. Its masked nonlinear tensor redistribution is a novelty lead only. The search is incomplete, separation from excluded families is unproven, and usefulness is unknown. The audit also found prior-art searches missed cross-field antecedents. See `results/flip-audit-20261018/AUDIT.md`.
+Combined research, literature and evidence verification recorded 1668 passed, two failed and three skipped (exit 1); affected-file verification recorded 420 passed, two failed and one skipped. Both failures are the unchanged Phase7 aggregate exact-code assertions: 16 of 19 historical codes were not independently reproduced. No assertions or thresholds were weakened. Evidence: `results-wt/review-fixes/finish-PHASE7-REMAINING.md`, `results-wt/review-fixes/finish-REPORT.md`, and [issue #4](https://github.com/acoliver/bigbrane/issues/4).
 
-The `milestone-8154d3b4` run aborted at M after prover backend timeouts; C did not finish. This is neither a theory failure nor a milestone success. See `runs/milestone-8154d3b4/ledger.jsonl`. No investigator result was available when this status was updated.
+The findings-only follow-up returned **REQUEST CHANGES**: 11 findings fixed, B1 and B4 partial. The review is complete.
 
-The KD8+PA2 implementation through `fa08b93` is in the sibling `r2-bar` worktree and is not integrated or fully verified here. Retrieval and suite evaluation remain pending. KD8 remains open until that evidence is reviewed. Track the defects at [KD8](https://github.com/acoliver/bigbrane/issues/2) and [PA2](https://github.com/acoliver/bigbrane/issues/3).
+## Evidence and limits
 
-The historical sections below preserve their original measurements. Their claims that novelty checks work and that all affected cards die on merits are provisional in light of the later probe and independent audit.
+- The original r2 replay gates fail: Rule 1 is 9/10 and Rule 2 is 3/6. The 10/10 and 6/6 all-dead diagnostics do not replace them. KD8 remains open. See `results-wt/r2-bar/SCORE.md`, [issue #2](https://github.com/acoliver/bigbrane/issues/2) and [issue #4](https://github.com/acoliver/bigbrane/issues/4).
+- PA2 is 2/4 against the required 3/4. Rossi ranks 128 and was not shown to decision models; saved arXiv coverage failures are 51/52 searches in flipA and 11/36 in flipB. Four dead published controls do not establish retrieval success or novelty. See `results-wt/kd8/REPORT.md` and [issue #3](https://github.com/acoliver/bigbrane/issues/3).
+- The old-bar probe killed P 4/4, C 8/8 and L 7 at S2; one additional L card failed its toy check. Three P kills were universal-template restatements, so these counts do not show that every candidate was a repeat. An independent audit of five candidates passing proposed r2-bar rules classified four as incremental and one (`card-8154d3b4`) as a novelty lead only. Search is incomplete, separation from excluded families is unproven, and usefulness is unknown. The audit found missed cross-field antecedents. See `results/s2-probe-20261018/SCORE.txt` and `results/flip-audit-20261018/AUDIT.md`.
+- No final-tree live experiment establishes a new theory or novelty success. The saved experiments stop at S2 and establish neither mathematical validity nor subquadratic performance or sample efficiency. The full milestone result is `results/milestone-8154d3b4/RESULT.md`: provider 429 responses ended M and C did not run; P2 has a resource mismatch, P4 a query-interface mismatch, and P1/P5 cost claims were omitted. Only conditioning identity and bounded numerical examples were checked. No new theory milestone was achieved; task and resource problems remain. See [issue #5](https://github.com/acoliver/bigbrane/issues/5).
 
+The old-probe counts and audit describe saved candidates, not a new theory result. Preserve the preregistration and historical measurements; do not change acceptance criteria or describe the checkpoint as verified. Integration and merge remain outstanding.
+
+---
 ---
 
 # Bigbrane status, 2026-10-16
