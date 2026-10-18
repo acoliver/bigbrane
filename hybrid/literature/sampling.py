@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 
 from hybrid.literature.paper import Paper, dedupe
-from hybrid.literature.seed import BUILD_LOG_PATH, SEED_PATH, cached_search_papers, check_lens, load_seed
+from hybrid.literature.seed import SEED_PATH, cached_search_papers, check_lens, load_seed
 
 
 def sample_for_lens(
@@ -14,10 +14,10 @@ def sample_for_lens(
     seed: int,
     *,
     seed_path: Path = SEED_PATH,
-    build_log_path: Path = BUILD_LOG_PATH,
+    build_log_path: Path | None = None,
 ) -> list[Paper]:
-    """Pool = the seed list entries for the lens plus cached search hits for the lens, deduplicated.
-    The pool is sorted before sampling so the same seed always gives the same draw."""
+    """Draw from lens seed entries plus validated shipped history, or an explicit raw log.
+    The pool is deduplicated and sorted so the same seed always gives the same draw."""
     check_lens(lens)
     if k < 0:
         raise ValueError("k must be non-negative")

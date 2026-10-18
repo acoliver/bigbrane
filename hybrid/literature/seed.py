@@ -160,10 +160,11 @@ def read_build_log(path: Path | None = None) -> list[dict[str, Any]]:
     return list(iter_build_log(path))
 
 
-def cached_search_papers(lens: str, path: Path = BUILD_LOG_PATH) -> list[Paper]:
-    """Raw search hits recorded for this lens. These are the cached search results for the lens."""
+def cached_search_papers(lens: str, path: Path | None = None) -> list[Paper]:
+    """Lens hits from validated shipped history, or all rows of an explicit raw log."""
+    rows = read_build_log() if path is None else iter_build_log(path)
     papers = []
-    for row in iter_build_log(path):
+    for row in rows:
         if row["lens"] != lens:
             continue
         for found in row["per_source"].values():
