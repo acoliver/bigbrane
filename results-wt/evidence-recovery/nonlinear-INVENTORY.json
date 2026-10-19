@@ -1,0 +1,231 @@
+{
+  "required_files": {
+    "hybrid/tests/research/fixtures/reference_replays/nonlinear_evidence.json": {
+      "bytes": 147696,
+      "sha256": "33f3c5ab35ff79849a5e0a8dae3b7ede0a86b965f5829a99ae2d3d23f16b5b06"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/nonlinear_protected.json": {
+      "bytes": 122116,
+      "sha256": "80bd82010e03a7d41e9a604fec467feebf079a2efee58ec401a33b1e15f8a052"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/nonlinear_publications.json": {
+      "bytes": 18088,
+      "sha256": "d980cd42b5b3e4c87d6c1267336971cb68d650b8c9cf50b42dc37e9b66a83ea1"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/nonlinear_sources.json": {
+      "bytes": 6090,
+      "sha256": "71156f28f5c3a57084b69fa97b01afd6e8a8ec8f2eddea74c24acbd2854561cf"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/nonlinear_specimens.json": {
+      "bytes": 65724,
+      "sha256": "ae6611d2b0a1adffc730c01e22102ff551048ff4088d204ab6fc9b761813903d"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/programs/nonlinear-card-a36f1a3a.py": {
+      "bytes": 3699,
+      "sha256": "d193e05c1cb85ca59c798ba55a07bd1417eba68c1350e3ba66726a00dbe7b3b8"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/programs/nonlinear-card-ddb071bd.py": {
+      "bytes": 7332,
+      "sha256": "ab7af5e57788d469b0af43bdcaba7c2c19f5273c5278d688d93eb6e90b4a945b"
+    },
+    "hybrid/tests/research/nonlinear_replays.py": {
+      "bytes": 9331,
+      "sha256": "357b5fb5103ff53f195acf6eb025078d3872c78047cb5537d7b87d61df743839"
+    },
+    "hybrid/tests/research/test_nonlinear_historical_evidence.py": {
+      "bytes": 19763,
+      "sha256": "3700edfa23afdf6498487553075d86bcbe8bc7e44794094b1a5dc6246b31f187"
+    },
+    "results-wt/evidence-recovery/NONLINEAR.md": {
+      "bytes": 23897,
+      "sha256": "5c3248237a04c3bbe24b4b97fa3a62dd63bea2e31b41c4583f82d6b6a820ec1d"
+    },
+    "results-wt/evidence-recovery/composites-network-guard/sitecustomize.py": {
+      "bytes": 1061,
+      "sha256": "47d1e5801b55a9b878b51f106881d6700bc48622b7c1702cd5fc95231d25b09f"
+    },
+    "results-wt/evidence-recovery/nonlinear-LOCAL-SHA256SUMS": {
+      "bytes": 3553,
+      "sha256": "615b9c47ca1bf71385ac1ca31702aa0fc258b47d76203dc9b61c78073880c199"
+    },
+    "results-wt/evidence-recovery/nonlinear-STATUS.md": {
+      "bytes": 1822,
+      "sha256": "8ad3dcd73c2dc96edc59a03fccdee375a3cc57ba5504e79280e3ffa73f9bd5fb"
+    },
+    "results-wt/evidence-recovery/nonlinear-delivery-phase7-rows.json": {
+      "bytes": 15130,
+      "sha256": "259ec1b33cfaed911dfdd2f7034159bee4351eaf9a0f58b5cdd06bf8f025f72b"
+    },
+    "results-wt/evidence-recovery/nonlinear-isolated-delivery-phase7-rows.json": {
+      "bytes": 15130,
+      "sha256": "259ec1b33cfaed911dfdd2f7034159bee4351eaf9a0f58b5cdd06bf8f025f72b"
+    },
+    "results-wt/evidence-recovery/nonlinear-safety.json": {
+      "bytes": 477,
+      "sha256": "2dc476967e2f942922652a649b942e7a40f83cb54ef0b2ef24aaf08a77a7ed50"
+    },
+    "results-wt/evidence-recovery/nonlinear-tests.json": {
+      "bytes": 4963,
+      "sha256": "9c579c018598e01d2cfad6dce10c4bba3d0eb5b4b1822eef8faa437d477d4e1b"
+    },
+    "results-wt/evidence-recovery/nonlinear_capture.py": {
+      "bytes": 9058,
+      "sha256": "06d44296b601a1a339b09fb976416d0da57270550ff992ce79e13a6946e6e8b3"
+    },
+    "results-wt/evidence-recovery/nonlinear_fetch.py": {
+      "bytes": 1466,
+      "sha256": "f5f028ed325a84b8627e2ec6fa645eb5e9622622b58152634bf891ea2d136959"
+    },
+    "results-wt/evidence-recovery/nonlinear_inventory.py": {
+      "bytes": 5495,
+      "sha256": "5085f4bf87acc1918670a180e1c9da2e2b2b186b4c84d738cf7360f0ee3d9eeb"
+    },
+    "results-wt/evidence-recovery/nonlinear_measure.py": {
+      "bytes": 5373,
+      "sha256": "df1fab8104caf9dfc395297bbe16f70f42a11b3131f2db27b6a482656fb5b1d9"
+    },
+    "results-wt/evidence-recovery/nonlinear_package.py": {
+      "bytes": 2727,
+      "sha256": "41c783ebd3e3a91d41add6a69d9b1d821c2157e719c46a755a97bb6507c6f600"
+    },
+    "results-wt/evidence-recovery/nonlinear_verify.py": {
+      "bytes": 1226,
+      "sha256": "f5fd8f99f4b315f9f9edec6f5dc8ada7b8caff8433fc4ebbda7b8c94cc4d816e"
+    }
+  },
+  "local_only_capture_and_publications": {
+    "capture_bytes": 76116517,
+    "capture_sha256": "670b2050378c8018c90ca744d52d7841e66d797eb2452328ee0f036f0deb74eb",
+    "publication_bodies": 3,
+    "required_for_tests": false,
+    "hash_receipts": "results-wt/evidence-recovery/nonlinear-LOCAL-SHA256SUMS"
+  },
+  "phase7": {
+    "rows": 21,
+    "required": 19,
+    "matched": 7,
+    "remaining": 12,
+    "all_codes_unchanged": true,
+    "gap_cards": [
+      "card-14429dbc",
+      "card-2c5dd003",
+      "card-36725a7c",
+      "card-68612a2a",
+      "card-6de11b01",
+      "card-6fc7efec",
+      "card-8dc4db49",
+      "card-a36f1a3a",
+      "card-d1d383d5",
+      "card-dc69816b",
+      "card-ddb071bd",
+      "card-ffdbe331"
+    ],
+    "actual_rows": "results-wt/evidence-recovery/nonlinear-delivery-phase7-rows.json"
+  },
+  "tests": {
+    "unit": {
+      "tests": 31,
+      "passed": 27,
+      "failed": 4,
+      "failures": [
+        "hybrid.tests.research.test_nonlinear_historical_evidence.test_published_ppgn_block_uses_current_features_and_does_not_zero_its_diagonal",
+        "hybrid.tests.research.test_nonlinear_historical_evidence.test_pair_solver_dropped_term_mask_and_write_mutants_change_outputs[ppgn_chain-mutation1]",
+        "hybrid.tests.research.test_nonlinear_historical_evidence.test_fuzzy_art_published_choice_vigilance_minimum_update_and_recruitment_are_distinct",
+        "hybrid.tests.research.test_nonlinear_historical_evidence.test_complex_update_normalization_selection_vigilance_and_eviction_mutants_are_detected[protected_slot-mutation4]"
+      ],
+      "exit": 1,
+      "log": "results-wt/evidence-recovery/nonlinear-unit.log",
+      "junit": "results-wt/evidence-recovery/nonlinear-unit-junit.xml",
+      "junit_sha256": "309d9b11af8c48bdd643c04d34ed1694ee9b7439c2dc4d764bb2dce5e3604b6a"
+    },
+    "unit-final": {
+      "tests": 31,
+      "passed": 31,
+      "failed": 0,
+      "failures": [],
+      "exit": 0,
+      "log": "results-wt/evidence-recovery/nonlinear-unit-final.log",
+      "junit": "results-wt/evidence-recovery/nonlinear-unit-final-junit.xml",
+      "junit_sha256": "85083b39349bae93cb25c3bf65271b2aae3ae042294cfa938fcced3072253c33"
+    },
+    "current": {
+      "tests": 103,
+      "passed": 101,
+      "failed": 2,
+      "failures": [
+        "hybrid.tests.research.test_phase7_replay.test_every_s2_death_gets_its_expected_phase7_code",
+        "hybrid.tests.research.test_phase7_replay.test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      ],
+      "exit": 1,
+      "log": "results-wt/evidence-recovery/nonlinear-current.log",
+      "junit": "results-wt/evidence-recovery/nonlinear-current-junit.xml",
+      "junit_sha256": "0b1d2a4ab510a6f40b60ebba995c600654800fc7888636bbeac89e3ccbf29348"
+    },
+    "isolated": {
+      "tests": 42,
+      "passed": 40,
+      "failed": 2,
+      "failures": [
+        "hybrid.tests.research.test_phase7_replay.test_every_s2_death_gets_its_expected_phase7_code",
+        "hybrid.tests.research.test_phase7_replay.test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      ],
+      "exit": 1,
+      "log": "results-wt/evidence-recovery/nonlinear-isolated.log",
+      "junit": "results-wt/evidence-recovery/nonlinear-isolated-junit.xml",
+      "junit_sha256": "beb5c92797b3e543795382c574aa9f362c8bfd911fb9104d660236f16ee6586e"
+    },
+    "final": {
+      "tests": 110,
+      "passed": 108,
+      "failed": 2,
+      "failures": [
+        "hybrid.tests.research.test_phase7_replay.test_every_s2_death_gets_its_expected_phase7_code",
+        "hybrid.tests.research.test_phase7_replay.test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      ],
+      "exit": 1,
+      "log": "results-wt/evidence-recovery/nonlinear-final.log",
+      "junit": "results-wt/evidence-recovery/nonlinear-final-junit.xml",
+      "junit_sha256": "d4612734db9ec899cc14411eedf4988b33362c6c083dd58de403390f3eacfe48"
+    },
+    "delivery": {
+      "tests": 110,
+      "passed": 108,
+      "failed": 2,
+      "failures": [
+        "hybrid.tests.research.test_phase7_replay.test_every_s2_death_gets_its_expected_phase7_code",
+        "hybrid.tests.research.test_phase7_replay.test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      ],
+      "exit": 1,
+      "log": "results-wt/evidence-recovery/nonlinear-delivery.log",
+      "junit": "results-wt/evidence-recovery/nonlinear-delivery-junit.xml",
+      "junit_sha256": "7d8fdbb4cb03b18d46816d8b9c1cdf30539fdf9e0a39a4ba75247c36c33583a4"
+    },
+    "isolated-delivery": {
+      "tests": 42,
+      "passed": 40,
+      "failed": 2,
+      "failures": [
+        "hybrid.tests.research.test_phase7_replay.test_every_s2_death_gets_its_expected_phase7_code",
+        "hybrid.tests.research.test_phase7_replay.test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      ],
+      "exit": 1,
+      "log": "results-wt/evidence-recovery/nonlinear-isolated-delivery.log",
+      "junit": "results-wt/evidence-recovery/nonlinear-isolated-delivery-junit.xml",
+      "junit_sha256": "8e1a50777d21ac5cc26e10ed88e49f4855a1eb48720967d325039714aaa61112"
+    }
+  },
+  "safety": {
+    "main_branch": "p4-diagnosis",
+    "main_head": "8347c7ff845618c558b49e7c2fba1cd8848824c9",
+    "main_clean": true,
+    "sibling_branch": "r2-bar",
+    "sibling_head": "4dd48646c0c6652ad21b508322883efe69ee5d66",
+    "preexisting_tracked_files_unchanged": 1030,
+    "tracked_diff": [],
+    "staged_diff": [],
+    "raw_capture_tracked": false,
+    "no_new_operation_or_schema_or_acceptance_edits": true,
+    "source_receipts_checked": true,
+    "checked_utc": "2026-10-18T23:59:45.356695+00:00"
+  }
+}

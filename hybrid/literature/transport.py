@@ -14,14 +14,16 @@ from __future__ import annotations
 import fcntl
 import logging
 import os
+import sys
 import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping
+from typing import Any, Callable, Mapping
 
 import httpx
 
+from hybrid.literature import provenance
 from hybrid.literature.cache import ResponseCache, request_key
 from hybrid.literature.events import utc_now
 from hybrid.literature.keys import ApiKey
@@ -40,9 +42,11 @@ class SourceError(RuntimeError):
     """A source could not answer. Callers record this as an event; it is never swallowed."""
 
     def __init__(self, source: str, url: str, reason: str) -> None:
-        super().__init__(f"{source}: {reason} ({url})")
+        safe_url = provenance.endpoint(url)
+        super().__init__(f"{source}: {reason} ({safe_url})")
         self.source = source
-        self.url = url
+        self.url = safe_url
+        self.provenance: dict[str, Any] | None = None
         self.reason = reason
 
 
@@ -60,6 +64,7 @@ class Fetched:
     body: str
     fetched_at: str
     from_cache: bool
+    provenance: dict[str, Any] | None = None
 
 
 class Pacer:
@@ -148,6 +153,9 @@ class Transport:
     ) -> None:
         self._cache = cache
         self._http = http
+        for kind, hook in (("request", provenance.request_started), ("response", provenance.response_received)):
+            if hook not in http.event_hooks[kind]:
+                http.event_hooks[kind].append(hook)
         self._sleep = sleep
         self._clock = clock
         self._now = now
@@ -164,50 +172,104 @@ class Transport:
 
     def get(self, source: str, request: Request) -> Fetched:
         key = request_key(source, request.url, request.params)
-        cached = self._cache.get(source, key)
-        if cached is not None:
-            return Fetched(source, request.url, request.params, cached["body"], cached["fetched_at"], True)
-        cooldown_until = self._cooldown_until.get(source)
-        if cooldown_until is not None and self._clock() < cooldown_until:
-            raise SourceError(source, request.url, "skipped: source is cooling down after rate limiting")
+        started = self._clock()
+        record = provenance.new_record(source, key, provenance.endpoint(request.url), self._now(), started)
+        try:
+            cached = self._cache.get(source, key)
+            if cached is not None:
+                record["outcome"] = "cache_hit"
+                return Fetched(source, request.url, request.params, cached["body"], cached["fetched_at"], True, record)
+            cooldown_until = self._cooldown_until.get(source)
+            if cooldown_until is not None and self._clock() < cooldown_until:
+                record.update(outcome="cooldown", terminal="skipped",
+                              cooldown_remaining_s=cooldown_until - self._clock())
+                raise SourceError(source, request.url, "skipped: source is cooling down after rate limiting")
 
-        body, fetched_at = self._fetch_with_retries(source, request)
-        self._cache.put(
-            source,
-            key,
-            {
-                "source": source,
-                "url": request.url,
-                "params": request.params,
-                "status": 200,
-                "fetched_at": fetched_at,
-                "body": body,
-            },
-        )
-        return Fetched(source, request.url, request.params, body, fetched_at, False)
+            body, fetched_at = self._fetch_with_retries(source, request, record)
+            self._cache.put(
+                source,
+                key,
+                {
+                    "source": source,
+                    "url": request.url,
+                    "params": request.params,
+                    "status": 200,
+                    "fetched_at": fetched_at,
+                    "body": body,
+                },
+            )
+            return Fetched(source, request.url, request.params, body, fetched_at, False, record)
+        except SourceError as exc:
+            exc.provenance = record
+            raise
+        finally:
+            failure = sys.exception()
+            if failure is not None and record["terminal"] == "success":
+                record.update(terminal="error", error_type=type(failure).__name__)
+            record["duration_s"] = self._clock() - started
+            record["attempt_count"] = len(record["attempts"])
+            record["http_request_count"] = sum(len(a["exchanges"]) for a in record["attempts"])
+            record["http_response_count"] = sum(
+                e["http_status"] is not None for a in record["attempts"] for e in a["exchanges"]
+            )
 
-    def _fetch_with_retries(self, source: str, request: Request) -> tuple[str, str]:
+    def _fetch_with_retries(self, source: str, request: Request, record: dict[str, Any]) -> tuple[str, str]:
         attempts = self._max_retries + 1
         key = self._api_keys.get(source)
         headers = key.headers if key is not None else {}
         for attempt in range(attempts):
+            waiting = self._clock()
             self._pacer.wait_for_slot(source)
-            try:
-                response = self._http.get(request.url, params=request.params, headers=headers)
-            except httpx.TransportError as exc:
-                # The text comes from the HTTP library; strip the key in case it echoes a header.
-                text = key.redact(str(exc)) if key is not None else str(exc)
-                reason, retry_after = f"transport error: {text}", None
-            else:
-                if response.status_code == 200:
-                    return response.text, self._now()
-                if response.status_code not in RETRYABLE_STATUS:
-                    raise SourceError(source, request.url, f"HTTP {response.status_code}")
-                reason, retry_after = f"HTTP {response.status_code}", _retry_after_seconds(response)
+            started = self._clock()
+            observed = {
+                "ordinal": attempt + 1, "started_at": self._now(), "started_s": started,
+                "pacer_wait_s": started - waiting, "duration_s": 0.0, "http_status": None,
+                "exchanges": [], "redirect_chain": [], "retry_after_kind": "absent",
+                "retry_after_s": None, "retry_delay_s": 0.0, "retry_wait_s": 0.0,
+                "terminal": "success", "error_type": None,
+            }
+            record["attempts"].append(observed)
+            with provenance.exchanges(observed, self._clock):
+                try:
+                    response = self._http.get(request.url, params=request.params, headers=headers)
+                except httpx.TransportError as exc:
+                    # Exception messages can echo URLs, queries or authorization headers.
+                    observed.update(terminal="error", error_type=type(exc).__name__)
+                    reason, retry_after = f"transport error: {type(exc).__name__} (***)", None
+                else:
+                    observed["http_status"] = response.status_code
+                    observed["retry_after_kind"], observed["retry_after_s"] = provenance.retry_after(response, self._now())
+                    if response.status_code == 200:
+                        return response.text, self._now()
+                    observed.update(terminal="error", error_type="HTTPStatus")
+                    if response.status_code not in RETRYABLE_STATUS:
+                        record.update(terminal="http_error", error_type="HTTPStatus")
+                        raise SourceError(source, request.url, f"HTTP {response.status_code}")
+                    reason, retry_after = f"HTTP {response.status_code}", _retry_after_seconds(response)
+                finally:
+                    failure = sys.exception()
+                    if failure is not None and observed["terminal"] == "success":
+                        observed.update(terminal="error", error_type=type(failure).__name__)
+                    observed["http_request_count"] = len(observed["exchanges"])
+                    observed["http_response_count"] = sum(e["http_status"] is not None for e in observed["exchanges"])
+                    observed["duration_s"] = self._clock() - started
+                    observed["redirect_chain"] = [
+                        {"endpoint": e["endpoint"], "http_status": e["http_status"]}
+                        for e in observed["exchanges"] if e["http_status"] in (301, 302, 303, 307, 308)
+                    ]
+                    for exchange in observed["exchanges"]:
+                        if exchange["http_status"] is None:
+                            exchange["duration_s"] = self._clock() - exchange["started_s"]
             if attempt + 1 < attempts:
-                self._sleep(self._backoff_s(attempt, retry_after))
+                observed["terminal"] = "retry"
+                observed["retry_delay_s"] = self._backoff_s(attempt, retry_after)
+                waiting = self._clock()
+                self._sleep(observed["retry_delay_s"])
+                observed["retry_wait_s"] = self._clock() - waiting
+        record.update(terminal="exhausted", error_type=observed["error_type"])
         if reason == "HTTP 429":
             self._cooldown_until[source] = self._clock() + self._cooldown_s
+            record["cooldown_remaining_s"] = self._cooldown_s
         raise SourceError(source, request.url, f"{reason} after {attempts} attempts")
 
     def _backoff_s(self, attempt: int, retry_after: float | None) -> float:

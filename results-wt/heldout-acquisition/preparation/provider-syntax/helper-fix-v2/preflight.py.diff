@@ -1,0 +1,11 @@
+--- v1/preflight.py
++++ v2/preflight.py
+@@ -37,7 +37,7 @@
+ 
+ def check_freeze():
+     assert sha((ROOT / 'PLAN.md').read_bytes()) == (ROOT / 'PLAN.sha256').read_text().split()[0]
+-    for name, expected in json.loads((ROOT / 'INPUT-HASHES.json').read_text()).items():
++    for name, expected in json.loads((ROOT / 'INPUT-HASHES-v2.json').read_text()).items():
+         if '/var/slots/' not in name:
+             assert sha(Path(name).read_bytes()) == expected, name
+ 

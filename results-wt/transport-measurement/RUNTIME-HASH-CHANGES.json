@@ -1,0 +1,16 @@
+{
+  "changes": {
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/build_seed.py": {
+      "before": "f0e5887f0b7a5aa174f07e956398011b87591cea4f70857381cd3e118b9c3c9d",
+      "after": "53a63934964d3ffc2a651c2b6848a967f64a9b5dd5400c7ab84ea34b6820042f",
+      "mtime": "2026-10-18T19:24:23.785233-03:00"
+    },
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/seed.py": {
+      "before": "4e813b672ffea7a9eab83889797f58cc2e9adea2f3987bbd16fe9df12dfa42e2",
+      "after": "1c4cdc0063f23af56109f4bc2eb2d1ac2a11950e0360a90b1e75d744669c35f0",
+      "mtime": "2026-10-18T19:24:05.710868-03:00"
+    }
+  },
+  "scope": "Other-worker seed changes with file mtimes after the completed measurement.",
+  "all_transport_client_source_sink_ledger_hashes_unchanged": true
+}

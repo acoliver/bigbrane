@@ -1,0 +1,22 @@
+{
+  "artifacts": {
+    "../inventory/STAGE.v1.json": "c76e12528108f07913f6928fc59e470ac28a20df9bc9c5021fa6e24bbe88565f",
+    "../inventory/STAGE.v1.sha256": "c7c1897438799d6d98a463c84fb6939baad06a082ab96e932f5896572de95531",
+    "../inventory/v2/STAGE.v2.json": "431b5deb247bd766d34ab9758959acba8bb47dd3d581dd6c605aee626a04573a",
+    "../inventory/v2/STAGE.v2.sha256": "facacead8e93aef2633a424194d518c5d3f7903c2120b09041119c06194191b6",
+    "../inventory/v2/shipping-checkpoint.v2.json.gz": "8faf8eb99ec50a68bee121edeca86186a3a578a4755fa6a4a48dc1bfc68568b9",
+    "known-aliases.v1.json.gz": "83dfe819d246f35fd3e3cfc80e54e6e1ed41ae96a397db10453025dececefd27"
+  },
+  "current_harness_sha256": "2c1d366af78edd96cb12048b86c4b5656a11f396a91ebb8b2a7094c1c00cc5f0",
+  "format": "selective-exclusion-delivery-v1",
+  "future_acquisition_ready": false,
+  "historical_stage": "Original STAGE.v1/v2 are unchanged. Full stage artifact bodies are intentionally not all distributed. This delivery validates only its explicit artifacts.",
+  "named_logical_counts": {
+    "historical_recovery_19": 19,
+    "original_pa2_11": 11,
+    "seen_seed_109": 109
+  },
+  "source_authentication": "Scoped local declared-source hashes, not publisher authentication. Full reauthentication requires preserved local originals.",
+  "status": "PENDING",
+  "v1_uncompressed_sha256": "bd15b2e35324ac71c3d88a40b5b740396268d8b949003df37ab592e0ba9aae9c"
+}

@@ -1,0 +1,20 @@
+{
+  "acceptance_improvement": false,
+  "corpus": {
+    "disjointness": "No global disjointness claim; aliases remain uncertain.",
+    "incomplete_exclusions": [
+      "other_used_study_data"
+    ],
+    "reason": "Independent corpus, blinded label vault and full exclusion inventories have not been assembled.",
+    "status": "PENDING"
+  },
+  "input_sha256": {
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/PLAN.md": "4d8f90f91c7a709bf3530df42573067837ebcb7fce2c965b00990c0500b1c701",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/corpus.json": "a01a205221a236ee2cfbda782cc9005b86a1086ce61e3f27ee6f5d4bcecebbbc",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/harness.py": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/policy.json": "245a9d97b44df9807f1cc4a88b127c6790f7423d7f3c85b62c2124336591047c",
+    "results-wt/heldout-acquisition/preparation/inventory/exclusions.v1.json": "bd15b2e35324ac71c3d88a40b5b740396268d8b949003df37ab592e0ba9aae9c"
+  },
+  "query_effect": "unmeasured",
+  "status": "PENDING"
+}

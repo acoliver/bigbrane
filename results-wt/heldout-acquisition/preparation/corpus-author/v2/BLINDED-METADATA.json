@@ -1,0 +1,420 @@
+[
+  {
+    "id": "h01",
+    "concept": "incremental empty circumsphere tetrahedral mesh cavity insertion",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "circumsphere containment predicate",
+          "containing cell walk",
+          "spatial point ordering"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "facet adjacency state",
+          "conflicting tetrahedron set",
+          "cavity boundary facets"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "remove invalid cells",
+          "cone boundary to point",
+          "breadth first conflict traversal"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "updated tetrahedral mesh",
+          "empty sphere invariant",
+          "noncoplanar initialization"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h02",
+    "concept": "incremental convex hull outside sets visible facet horizon update",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "oriented hyperplane distance",
+          "extreme input points",
+          "nondegenerate initial simplex"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "facet neighbor graph",
+          "outside point assignment",
+          "farthest assigned point"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "visible facet removal",
+          "horizon ridge cone",
+          "outside set repartition"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "boundary hull facets",
+          "interior point discard",
+          "simplicial boundary invariant"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h04",
+    "concept": "asynchronous global state recording with channel delimiter messages",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "first delimiter receipt",
+          "record local process",
+          "outgoing delimiter broadcast"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "incoming channel sequence",
+          "in transit application messages",
+          "per channel recording flags"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "record before further sends",
+          "capture until delimiter",
+          "empty first incoming channel"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "consistent global snapshot",
+          "eventual channel delivery",
+          "initiator reachability"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h05",
+    "concept": "causal event timestamp counters in asynchronous message systems",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "local event sequence",
+          "send receive relation",
+          "transitive causal order"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "per process counter",
+          "message timestamp field",
+          "concurrent event pair"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "increment between events",
+          "advance beyond received time",
+          "maximum counter update"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "causality preserving timestamps",
+          "deterministic process tie order",
+          "one way clock condition"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h06",
+    "concept": "diffusing computation completion using message deficits and predecessor obligations",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "environment initiation message",
+          "directed computation graph",
+          "reverse acknowledgment signals"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "outgoing deficit total",
+          "predecessor occurrence cornet",
+          "oldest retained obligation"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "increment message debt",
+          "decrement returned signal",
+          "discharge predecessor entry"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "global termination signal",
+          "zero outstanding obligations",
+          "oldest entry restriction"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h07",
+    "concept": "filtered simplicial cycle birth death pairing and lifetime readout",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "face compatible simplex order",
+          "finite filtered complex",
+          "cycle boundary relation"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "positive simplex representatives",
+          "unpaired homology classes",
+          "boundary reduction state"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "insert next simplex",
+          "pair killed cycle",
+          "merge class into boundaries"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "birth death intervals",
+          "filtration value difference",
+          "surviving unpaired class"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h08",
+    "concept": "filter guided local clustering with overlap nerve complex construction",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "data filter function",
+          "cover of filter range",
+          "inverse image subsets"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "local cluster membership",
+          "overlapping cover elements",
+          "cluster vertex collection"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "cluster each preimage",
+          "connect intersecting clusters",
+          "insert common overlap simplex"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "nerve complex readout",
+          "cover resolution parameter",
+          "partial clustering graph"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h09",
+    "concept": "bidirectional linear map sequence interval decomposition for changing topology",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "forward backward maps",
+          "finite vector space sequence",
+          "fixed coefficient field"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "adjacent linear operators",
+          "interval summand basis",
+          "directed sequence representation"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "decompose into interval modules",
+          "restrict indexed spaces",
+          "split direct summands"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "integer interval multiset",
+          "decomposition invariant barcode",
+          "closed endpoint convention"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h10",
+    "concept": "multilevel grid error smoothing and recursive coarse correction cycle",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "discretized linear operator",
+          "nested grid hierarchy",
+          "coarse transfer operators"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "fine grid approximation",
+          "restricted residual problem",
+          "coarse error estimate"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "pre smooth oscillatory error",
+          "recursive coarse solve",
+          "interpolate correction upward"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "post smoothed iterate",
+          "coarsest direct solution",
+          "grid descent ascent cycle"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h11",
+    "concept": "symmetric operator three term orthogonal recurrence and tridiagonal projection",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "symmetric matrix action",
+          "nonzero starting vector",
+          "normalized initial direction"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "previous two basis vectors",
+          "diagonal projection coefficient",
+          "off diagonal norm coefficient"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "subtract previous direction",
+          "remove current projection",
+          "normalize next residual"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "tridiagonal projected matrix",
+          "approximate operator eigenvalues",
+          "exact arithmetic orthogonality"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h12",
+    "concept": "nonsymmetric linear solve with shadow residual and local polynomial stabilization",
+    "lenses": [
+      {
+        "name": "input",
+        "phrases": [
+          "fixed shadow residual",
+          "invertible preconditioning solve",
+          "nonsymmetric coefficient operator"
+        ]
+      },
+      {
+        "name": "state",
+        "phrases": [
+          "short recurrence direction",
+          "two correction scalars",
+          "current residual vector"
+        ]
+      },
+      {
+        "name": "update",
+        "phrases": [
+          "biorthogonal search update",
+          "local residual smoothing",
+          "two matrix products"
+        ]
+      },
+      {
+        "name": "readout",
+        "phrases": [
+          "stabilized approximate solution",
+          "intermediate residual stopping",
+          "scalar breakdown conditions"
+        ]
+      }
+    ]
+  }
+]

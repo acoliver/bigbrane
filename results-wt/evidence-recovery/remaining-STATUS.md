@@ -1,0 +1,9 @@
+# Three mechanism gaps documented; exact codes remain 7/19
+
+Captured the untouched original CARD side for 201 HMM episodes (2,404 tokens), one continuous tensor stream (330 tokens, three calibration blocks, 60 soft contractions), and 601 consolidation scenarios (12,008 tokens). Original program, card, critic, executor and ledger hashes are preserved. All original seeded inputs, state snapshots and outputs are retained locally; compact source-bound episodes and isolated witnesses are packaged separately.
+
+The 24 new tests pass. The network-prohibited current-tree run of the new cases, reference provenance, historical binding and unchanged Phase7 tests gives 50 passed and two failed. All 21 replay rows retain the prior checkpoint's codes. The required exact-code count is still 7/19. The two original Phase7 aggregate failures remain at lines 29 and 36.
+
+No accepted operation, enum, schema, original expected code, policy, tolerance, preregistration or original program was changed. No positive full-operation closure is claimed. HMM all-history smoothing is a diagnostic counterexample to treating permanent deposits as the full auxiliary-statistic recursion; it is not a refutation of every possible published finite-lag estimator. Published NGE's nearest-exemplar read differs from the CARD's subset abstention; a custom composite still needs a source. Tensor contraction agrees on the sampled tables, but its calibration learner remains unsupported by the RNTN source.
+
+Complete: the isolated offline package passed all 24 new tests without raw captures or publication snapshots. REMAINING.md records the full comparison scope, per-card exact old/new codes, limits and next source work. See remaining-tests.json and remaining-rows.json. Only the sibling worktree was written. No commits, pushes, integration, or reviews. New work has not been independently reviewed.

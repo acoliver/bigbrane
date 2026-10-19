@@ -1,0 +1,14 @@
+--- v1/harness.py
++++ v2/harness.py
+@@ -126,9 +126,11 @@
+ 
+ 
+ def search_request(raw, src, qpolicy):
++    require(qpolicy in ('Q0', 'Q1'), 'unknown query policy')
+     src = source(src)
+     if src == 'arxiv':
+         tokens = re.findall(r'[A-Za-z0-9]+', raw)
++        require(bool(tokens), 'no ASCII search terms')
+         query = ' AND '.join('all:' + t if qpolicy == 'Q0' else f'(ti:{t} OR abs:{t})' for t in tokens)
+         return {'endpoint': 'https://export.arxiv.org/api/query', 'params': {
+             'search_query': query, 'start': '0', 'max_results': '6', 'sortBy': 'relevance'}}

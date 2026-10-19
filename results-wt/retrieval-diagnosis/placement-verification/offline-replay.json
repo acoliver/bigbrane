@@ -1,0 +1,9 @@
+{
+  "mode": "saved replay, no --plan; socket connects prohibited",
+  "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+  "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "before_sha256": "fff61a1ce0c6a41e1423378875dd93c74c7716a1ad0ca69340f11289151563a3",
+  "after_sha256": "fff61a1ce0c6a41e1423378875dd93c74c7716a1ad0ca69340f11289151563a3",
+  "unchanged": true
+}

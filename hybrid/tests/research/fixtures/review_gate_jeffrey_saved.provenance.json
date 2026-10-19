@@ -1,0 +1,5 @@
+{
+  "source": "/Volumes/XS1000/acoliver/projects/bigbrane/results/s2-probe-20261018/runs/s2-P/jobs/job-481031acb7bf/in/main.py",
+  "sha256": "8a0930c26297cdab5049a8fa67000d1f4925834d9b72bc140e29c66576852cc2",
+  "status": "unchanged saved execution; tests execute card_run and compare with separately host-specified Jeffrey reference, not the saved comparator self-comparison"
+}

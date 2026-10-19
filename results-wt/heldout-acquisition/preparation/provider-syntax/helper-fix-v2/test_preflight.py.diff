@@ -1,0 +1,16 @@
+--- v1/test_preflight.py
++++ v2/test_preflight.py
+@@ -68,13 +68,11 @@
+ 
+ @pytest.mark.parametrize('policy', ['Q0', 'Q1'])
+ @pytest.mark.parametrize('raw', ['', '---', '中文'])
+-@pytest.mark.xfail(strict=True, reason='Frozen harness.search_request accepts zero ASCII tokens, unlike production')
+ def test_frozen_empty_tokens_rejected(raw, policy):
+     with pytest.raises(ValueError): h.search_request(raw, 'arxiv', policy)
+ 
+ 
+ @pytest.mark.parametrize('src', ['arxiv', 'openalex', 's2'])
+-@pytest.mark.xfail(strict=True, reason='Frozen search_request does not reject unknown qpolicy')
+ def test_frozen_unknown_policy_rejected(src):
+     with pytest.raises(ValueError): h.search_request('alpha', src, 'FOREIGN')
+ 

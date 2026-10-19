@@ -4,8 +4,8 @@
   "title": "Reduction critic output (S2)",
   "type": "object",
   "additionalProperties": false,
-  "required": ["reduces_to", "mapping", "confidence", "difference_if_any", "radical_enough", "why",
-               "textbook_transplant", "textbook_why"],
+  "required": ["reduces_to", "mapping", "confidence", "difference_if_any", "known_work", "known_work_sources",
+               "fixed_learned_parts", "surprise", "why", "textbook_transplant", "textbook_why"],
   "properties": {
     "reduces_to": {
       "enum": [
@@ -17,7 +17,39 @@
     "mapping": {"type": ["string", "null"]},
     "confidence": {"type": "number", "minimum": 0, "maximum": 1},
     "difference_if_any": {"type": "string"},
-    "radical_enough": {"type": "boolean"},
+    "known_work": {
+      "type": "boolean",
+      "description": "True when the card's general mechanism (update, readout and learning rule with learned parameters free) is already published or textbook. Only independently referenced host-counted comparators gate automatically; cited identities and coverage assertions go to the difference challenger or remain unchecked (stages/known_work.py)."
+    },
+    "known_work_sources": {
+      "description": "The closest published or textbook forms, each with the steps of the card it accounts for. Required when known_work is true; may also be given when it is false.",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "ref", "covers"],
+        "properties": {
+          "kind": {"enum": ["paper", "textbook", "standard_algorithm"]},
+          "ref": {"type": "string", "minLength": 1, "description": "paper: an id from the search results; textbook: author, title and section; standard_algorithm: its name."},
+          "covers": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "fixed_learned_parts": {
+      "description": "Learned or tunable parts the mapping fixes, zeroes or sets to the hand witness, each only when the card states a capability the frozen form lacks. Empty when the mapping holds with every learned part free.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["part", "capability"],
+        "properties": {"part": {"type": "string", "minLength": 1}, "capability": {"type": "string", "minLength": 1}}
+      }
+    },
+    "surprise": {
+      "type": "boolean",
+      "description": "Whether the core would surprise a researcher who knows the out-of-scope families. Recorded, not gated."
+    },
     "why": {"type": "string", "minLength": 1},
     "textbook_transplant": {
       "type": "boolean",
@@ -61,13 +93,85 @@
             }
           },
           "parameter_mapping": {"type": "string", "minLength": 1},
-          "limit_only": {"type": "boolean"}
+          "limit_only": {"type": "boolean"},
+          "reference_spec": {
+            "description": "Host-owned published operation and mapped parameters. Without an independently executed reference the comparison is unverified. Unsupported operations and repairs remain unverified.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation",
+              "parameters"
+            ],
+            "properties": {
+              "operation": {
+                "enum": [
+                  "elman_tanh",
+                  "elman_identity",
+                  "linear_ssm",
+                  "input_ssm",
+                  "linear_attention",
+                  "delta_rule",
+                  "jeffrey_ipf",
+                  "softmax_memory",
+                  "dyck2",
+                  "rule110",
+                  "viterbi",
+                  "queue_copy",
+                  "two_counter_abc",
+                  "inside_pcfg",
+                  "earley",
+                  "viterbi_max",
+                  "selective_diagonal",
+                  "mamba_zoh",
+                  "gated_additive_attention",
+                  "diagonal_attention_count",
+                  "diagonal_attention_phase",
+                  "mesa_single",
+                  "mesa_mixture",
+                  "bimap_hard",
+                  "bimap_weighted",
+                  "sequitur",
+                "diagonal_attention_epsilon_logits_probs",
+                "mesa_mixture_logits",
+                "linear_ssm_zero_lift",
+                "bimap_hard_l1_read",
+                "parityunionfind582f8abf",
+                "finitePGLversionspaced86dca4b",
+                "automatonMorphism7ec5e5c2",
+                "deweyForestbc3935ac"
+                ]
+              },
+              "parameters": {
+                "type": "object"
+              }
+            }
+          },
+          "components": {
+            "description": "KD8: the comparator's own parts, each a published component or the card's. Required in practice for families rnn, lstm_gru and other_known (the host does not count a comparator without them).",
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["role", "name", "origin", "cite"],
+              "properties": {
+                "role": {"enum": ["activation", "transition", "update", "readout", "input_map"]},
+                "name": {"type": "string", "minLength": 1},
+                "origin": {"enum": ["published", "card"]},
+                "cite": {"type": "string"}
+              }
+            }
+          }
         }
       }
     }
   },
-  "if": {"properties": {"reduces_to": {"const": "none"}}},
-  "then": {"properties": {"mapping": {"type": ["string", "null"]}, "comparators": {"maxItems": 0}}},
-  "else": {"required": ["comparators"],
-           "properties": {"mapping": {"type": "string", "minLength": 1}, "comparators": {"minItems": 1}}}
+  "allOf": [
+    {"if": {"properties": {"reduces_to": {"const": "none"}}},
+     "then": {"properties": {"mapping": {"type": ["string", "null"]}, "comparators": {"maxItems": 0}}},
+     "else": {"required": ["comparators"],
+              "properties": {"mapping": {"type": "string", "minLength": 1}, "comparators": {"minItems": 1}}}},
+    {"if": {"properties": {"known_work": {"const": true}}},
+     "then": {"properties": {"known_work_sources": {"minItems": 1}}}}
+  ]
 }

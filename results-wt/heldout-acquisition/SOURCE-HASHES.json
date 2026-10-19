@@ -1,0 +1,22 @@
+{
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/client.py": "db0504e69ffb9e0766c6d93f09aa277d34084480e4105ba6960c9b448c6b78cc",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/paper.py": "654f6f1a53487266fa6dad34c9293a9fac327ea99595567716f2a44fd2195b46",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/prior_art.py": "2b13584e76fdb18f27cd61cb0441f94d94aa2a00d9b916a488f8818b6cabecff",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/arxiv.py": "be20d9f3f0ceb52b2b2317ea0f18f4256f031c171390ffc3374a9411f6d61c11",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/openalex.py": "a7ea5c2023bc1515ac289dd87c0ecda37ed0d4f5f3e58d4622ed419e7889a256",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/semantic_scholar.py": "6f0f9608a3d64bda886d87e7a2edfb37a07cd832abeaf666e3a2d1adec74e7e1",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/transport.py": "147e2d890fd4817d5ea59d7f9f799acca2e851a9452a82be6f80f57c1278422e",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/acquisition-windows/DELIVERY-RECEIPTS.json": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/acquisition-windows/REPORT.md": "b18c0b89ea1ad1587722c3d813a789ac3cc9f11da11b38dd8d6178d041e592b4",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/acquisition-windows/SUMMARY.json": "f89a373ecc0f01ecadf19acb227d6e5b73aad3cf0c79be06a78a518c78d31cec",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/PLAN.md": "4d8f90f91c7a709bf3530df42573067837ebcb7fce2c965b00990c0500b1c701",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/build_exclusions.py": "cf4f5c6742b1e3865e40ee89ec7e81dbd8dc1c782290ab6afd878a6d5e8ad4e3",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/finalize.py": "a7b300a375724d604132271b4beda47fa889eead3a7dc88f1d9b7f446d956678",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/harness.py": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/offline.py": "d7250b9622301212baa5dfd1f9057ff16470e47684a35b3b0d380ac2f3171b83",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/policy.json": "245a9d97b44df9807f1cc4a88b127c6790f7423d7f3c85b62c2124336591047c",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/run_tests.py": "907f8e255232ff07c96da2ead672307458e6259dbd1a0b815a9cf0038c73431f",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/synthetic.py": "4cd41ff6d5caf96d79f79dc88f661fb67c9cfd4a2d7d2ccdba3f9dee8c4a6463",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/test_harness.py": "38bdc5cb291b59f5cce8bf2a90b7ef8990474a68dd76094e9f4c2d03b094db87",
+  "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/transport-measurement/REPORT.md": "d99d9c30d10b0d7e8fc73f4ac5f22e138d917a52068337b0b7b03166239820f9"
+}

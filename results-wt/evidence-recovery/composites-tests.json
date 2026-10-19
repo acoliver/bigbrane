@@ -1,0 +1,109 @@
+{
+  "unit": {
+    "total": 31,
+    "passed": 30,
+    "failed": 1,
+    "skipped": 0,
+    "exit": 1,
+    "junit_sha256": "df7384b71abe6b9a084fdabaa8338e6f1fda7fc8bd69b1248a1e77ed5365f081",
+    "log_sha256": "ab3129a434188cf663bda7addf3bb19c75d13e3b880158c3ceb2f239ccc1f305",
+    "failures": [
+      {
+        "class": "hybrid.tests.research.test_composites_historical_evidence",
+        "name": "test_gcd_minimal_schedule_and_forgetting_witnesses_disagree_with_all_seen_closure"
+      }
+    ]
+  },
+  "current": {
+    "total": 183,
+    "passed": 181,
+    "failed": 2,
+    "skipped": 0,
+    "exit": 1,
+    "junit_sha256": "aa3840bd07a61b7d336a5d39afe1308dc04c209c6b2d43a669a370cbc6cbf746",
+    "log_sha256": "95a168c1fd5e391e2fd2104ea73166a8a4df06455fab31527abe358c4d0fe1f6",
+    "failures": [
+      {
+        "class": "hybrid.tests.research.test_phase7_replay",
+        "name": "test_every_s2_death_gets_its_expected_phase7_code"
+      },
+      {
+        "class": "hybrid.tests.research.test_phase7_replay",
+        "name": "test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      }
+    ]
+  },
+  "final-unit": {
+    "total": 31,
+    "passed": 31,
+    "failed": 0,
+    "skipped": 0,
+    "exit": 0,
+    "junit_sha256": "0cbacb3574183587cb25cff3c25c6c0fb21593d26fdbacccd5fc4a0de504ae17",
+    "log_sha256": "b752af3cc180f2d6526232cdebef5276f7d90d10071af5d63987f513222c224a",
+    "failures": []
+  },
+  "isolated": {
+    "total": 183,
+    "passed": 180,
+    "failed": 3,
+    "skipped": 0,
+    "exit": 1,
+    "junit_sha256": "5baa7e39ace02510a9b4d4497f8df20287458acc7ff26f3f3c476fc1d67316ff",
+    "log_sha256": "aaa68a3646cb35db8fd6cafbc7edc88250ba2db1d4fa78e254e36a4340ba59af",
+    "failures": [
+      {
+        "class": "hybrid.tests.research.test_composites_historical_evidence",
+        "name": "test_protected_acceptance_code_math_tests_and_existing_controls_remain_unchanged"
+      },
+      {
+        "class": "hybrid.tests.research.test_phase7_replay",
+        "name": "test_every_s2_death_gets_its_expected_phase7_code"
+      },
+      {
+        "class": "hybrid.tests.research.test_phase7_replay",
+        "name": "test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      }
+    ]
+  },
+  "isolated-final": {
+    "total": 35,
+    "passed": 33,
+    "failed": 2,
+    "skipped": 0,
+    "exit": 1,
+    "junit_sha256": "47f47aa943019c44f4fb34291e94676b73322d246641767721d70be8bb0df37e",
+    "log_sha256": "94397bdeae2d6853a8ff6962e569fc9f90b71f58465b141c9e36684f858fe6c0",
+    "failures": [
+      {
+        "class": "hybrid.tests.research.test_phase7_replay",
+        "name": "test_every_s2_death_gets_its_expected_phase7_code"
+      },
+      {
+        "class": "hybrid.tests.research.test_phase7_replay",
+        "name": "test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+      }
+    ]
+  },
+  "fixture_regeneration": {
+    "isolated_exit": 0,
+    "byte_identical_compact_fixture": true,
+    "raw_capture_needed": false,
+    "external_original_run_needed": false,
+    "network_prohibited": true,
+    "log_sha256": "f221bb227b4be662b2e068714e3f7c2a582c32dab016e5ad4d24b30f3ceb1ca2"
+  },
+  "context": {
+    "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+    "cwd": "sibling or exported package",
+    "PYTHONHASHSEED": "0",
+    "BIGBRANE_LIVE": "0",
+    "explicit_confcutdir": true,
+    "current_tests_predate_positive_background_and_protected_inventory_packaging_adjustments": true,
+    "final_unit_and_isolated_final_test_final_test_and_fixture_files": true,
+    "phase7_assertions_unchanged": true,
+    "required_matches": 7,
+    "required_rows": 19,
+    "all_replay_rows": 21
+  }
+}

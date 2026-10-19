@@ -8,10 +8,12 @@ Run from the repository root:
 Every lens query runs through the real clients (cached under hybrid/literature/cache/).
 Every raw hit is written to cache/seed_build_log.jsonl. A pick is accepted only if the
 (source, source_id) pair appears in the raw hits of one of its lens's logged queries, so
-each seed entry traces back to a recorded search. Metadata comes from the logged hit.
+each seed entry traces back to a recorded search. Metadata comes from the logged hit. The shipped seed_provenance.json projection is
+validated against original cached HTTP responses and emitted with the seed list.
 """
 from __future__ import annotations
 
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,6 +26,10 @@ from hybrid.literature.seed import (
     KNOWN_ALTERNATIVES_LENS,
     LENSES,
     SEED_PATH,
+    SEED_PROVENANCE_PATH,
+    compile_seed_provenance,
+    read_seed_provenance,
+    write_seed_provenance,
     SeedEntry,
     search_row,
     write_build_log,
@@ -273,20 +279,24 @@ PICKS: dict[str, tuple[Pick, ...]] = {
 }
 
 
-def run_searches(literature: Literature) -> tuple[list[dict], dict[str, dict[tuple[str, str], Paper]]]:
-    rows: list[dict] = []
+def run_searches(literature: Literature) -> dict[str, dict[tuple[str, str], Paper]]:
     hits: dict[str, dict[tuple[str, str], Paper]] = {lens: {} for lens in LENSES}
-    for lens in LENSES:
-        for query in LENS_QUERIES[lens]:
-            receipt = literature.search_with_receipt(query, DEFAULT_SOURCES, SEARCH_LIMIT)
-            rows.append(search_row(lens, receipt))
-            for source, found in receipt.per_source.items():
-                for paper in found:
-                    hits[lens][(source, paper.source_id)] = paper
-            print(f"{lens}: {query!r} -> {len(receipt.papers)} unique, errors={sorted(receipt.errors)}", flush=True)
-    write_build_log(rows, BUILD_LOG_PATH)
-    print(f"wrote {len(rows)} search rows to {BUILD_LOG_PATH}", flush=True)
-    return rows, hits
+    wanted = {lens: {(p.source, p.source_id) for p in PICKS.get(lens, ())} for lens in LENSES}
+
+    def rows():
+        for lens in LENSES:
+            for query in LENS_QUERIES[lens]:
+                receipt = literature.search_with_receipt(query, DEFAULT_SOURCES, SEARCH_LIMIT)
+                for source, found in receipt.per_source.items():
+                    for paper in found:
+                        if (source, paper.source_id) in wanted[lens]:
+                            hits[lens][(source, paper.source_id)] = paper
+                print(f"{lens}: {query!r} -> {len(receipt.papers)} unique, errors={sorted(receipt.errors)}", flush=True)
+                yield search_row(lens, receipt)
+
+    write_build_log(rows(), BUILD_LOG_PATH)
+    print(f"wrote search rows to {BUILD_LOG_PATH}", flush=True)
+    return hits
 
 
 def picks_to_entries(hits: dict[str, dict[tuple[str, str], Paper]]) -> list[SeedEntry]:
@@ -302,16 +312,31 @@ def picks_to_entries(hits: dict[str, dict[tuple[str, str], Paper]]) -> list[Seed
     return entries
 
 
+def write_seed_bundle(
+    entries: list[SeedEntry], generated_at: str, *, seed_path: Path = SEED_PATH,
+    provenance_path: Path = SEED_PROVENANCE_PATH, log_path: Path = BUILD_LOG_PATH,
+    cache_root: Path = BUILD_LOG_PATH.parent,
+) -> None:
+    document = compile_seed_provenance(entries, log_path, cache_root)
+    pending_seed = seed_path.with_suffix(seed_path.suffix + ".new")
+    pending_provenance = provenance_path.with_suffix(provenance_path.suffix + ".new")
+    write_seed(entries, pending_seed, generated_at)
+    write_seed_provenance(document, pending_provenance)
+    read_seed_provenance(pending_provenance, pending_seed)
+    os.replace(pending_seed, seed_path)
+    os.replace(pending_provenance, provenance_path)
+
+
 def main(argv: list[str]) -> int:
     if argv not in ([], ["--searches-only"]):
         print("usage: python -m hybrid.literature.build_seed [--searches-only]", file=sys.stderr)
         return 2
     generated_at = utc_now()
-    _, hits = run_searches(default_literature())
+    hits = run_searches(default_literature())
     if argv == ["--searches-only"]:
         return 0
     entries = picks_to_entries(hits)
-    write_seed(entries, SEED_PATH, generated_at)
+    write_seed_bundle(entries, generated_at)
     counts = {lens: sum(1 for entry in entries if entry.lens == lens) for lens in LENSES}
     print(f"wrote {len(entries)} seed entries to {SEED_PATH}")
     for lens, count in counts.items():

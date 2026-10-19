@@ -1,0 +1,28 @@
+{
+  "exit_code": 1,
+  "groups": {
+    "test_harness": {
+      "total": 44,
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0
+    },
+    "preparation.provider-syntax.test_helper_fix": {
+      "total": 123,
+      "passed": 122,
+      "failed": 1,
+      "skipped": 0
+    },
+    "preparation.checkpoint.test_checkpoint": {
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "original_checkout_access_denied": true,
+  "network_prohibited": true,
+  "raw_cache_or_private_bodies_required": false,
+  "input_pin_path_relocation_only": true,
+  "full_suite_run": false
+}

@@ -1,0 +1,28 @@
+{
+  "current": {
+    "tests": 52,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0,
+    "exit_code": 1,
+    "network_prohibited": true,
+    "log": "remaining-finalcurrent.log",
+    "junit": "remaining-finalcurrent-junit.xml"
+  },
+  "isolated": {
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "exit_code": 0,
+    "network_prohibited": true,
+    "log": "remaining-isolated.log",
+    "junit": "remaining-isolated-junit.xml"
+  },
+  "required_exact_matches": 7,
+  "required_rows": 19,
+  "all_21_replay_codes_unchanged": true,
+  "phase7_green": false,
+  "newly_admitted_operations": [],
+  "review": "not independently reviewed"
+}

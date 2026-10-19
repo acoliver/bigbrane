@@ -1,0 +1,20 @@
+........................................................................ [ 40%]
+........................................................................ [ 80%]
+.....................F.............                                      [100%]
+=================================== FAILURES ===================================
+_______________ test_versioned_pins_preserve_historical_manifest _______________
+
+    def test_versioned_pins_preserve_historical_manifest():
+        old = json.loads((p.ROOT / 'INPUT-HASHES.json').read_text())
+        new = json.loads((p.ROOT / 'INPUT-HASHES-v2.json').read_text())
+        assert set(old) == set(new)
+        changed = [name for name in old if old[name] != new[name]]
+>       assert changed == [str(h.ROOT / 'harness.py')]
+E       AssertionError: assert ['/Volumes/XS...n/harness.py'] == ['/Volumes/XS...n/harness.py']
+E         
+E         At index 0 diff: '/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/tmp/preparation-checkpoint/isolated/main-not-present-wt-r2/tmp/preparation-checkpoint/isolated/repo/results-wt/heldout-acquisition/harness.py' != '/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/tmp/preparation-checkpoint/isolated/repo/results-wt/heldout-acquisition/harness.py'
+E         Use -v to get more diff
+
+results-wt/heldout-acquisition/preparation/provider-syntax/test_helper_fix.py:125: AssertionError
+=========================== short test summary info ============================
+FAILED results-wt/heldout-acquisition/preparation/provider-syntax/test_helper_fix.py::test_versioned_pins_preserve_historical_manifest

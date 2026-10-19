@@ -10,7 +10,7 @@
     "closest_prior": {
       "description": "Closest prior works: literature (a source id from this card's prior-art search), outcome (a record id of the outcome store, from this card's own-history matches) or family (an id of hybrid/config/families.toml).",
       "type": "array",
-      "minItems": 1,
+      "minItems": 2,
       "maxItems": 8,
       "items": {
         "type": "object",
@@ -29,6 +29,16 @@
     "why_it_failed": {"type": "string", "minLength": 1, "description": "A quote from the prior work, or the outcome cause id."},
     "precise_change": {"type": "string", "minLength": 1, "maxLength": 600, "description": "One sentence."},
     "changed_equation": {"type": "string", "pattern": "^((update|readout)\\[[0-9]+\\]|learning)$"},
+    "evidence_scope": {
+      "description": "Host-scoped accepted content; original prose remains in the difference artifact.",
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "excerpt_gaps", "source_calls"],
+      "properties": {
+        "status": {"const": "excerpt_limited"},
+        "excerpt_gaps": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "source_calls": {"type": "array", "items": {"type": "string"}}
+      }
+    },
     "cause_ids_addressed": {"type": "array", "items": {"type": "string", "minLength": 1}}
   }
 }

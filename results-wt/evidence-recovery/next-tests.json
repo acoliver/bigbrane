@@ -1,0 +1,57 @@
+{
+  "modules": {
+    "current": {
+      "test_next_historical_references": {
+        "passed": 37
+      },
+      "test_historical_binding": {
+        "passed": 18
+      },
+      "test_historical_references": {
+        "passed": 19
+      },
+      "test_reference_replays": {
+        "passed": 6
+      },
+      "test_review_gate_evidence": {
+        "passed": 44
+      },
+      "test_phase7_replay": {
+        "passed": 2,
+        "failed": 2
+      }
+    },
+    "isolated": {
+      "test_next_historical_references": {
+        "passed": 37
+      },
+      "test_historical_binding": {
+        "passed": 18
+      },
+      "test_historical_references": {
+        "passed": 19
+      },
+      "test_reference_replays": {
+        "passed": 6
+      },
+      "test_review_gate_evidence": {
+        "passed": 44
+      },
+      "test_phase7_replay": {
+        "passed": 2,
+        "failed": 2
+      }
+    }
+  },
+  "full_suite": false,
+  "review": false,
+  "current_log": "next-final.log",
+  "current_exit": 1,
+  "isolated_log": "next-isolated-delivery.log",
+  "isolated_exit": 1,
+  "network": "prohibited with inherited Python audit hook",
+  "failures": [
+    "test_phase7_replay.py:29",
+    "test_phase7_replay.py:36"
+  ]
+}

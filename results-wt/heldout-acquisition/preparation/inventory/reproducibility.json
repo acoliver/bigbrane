@@ -1,0 +1,7 @@
+{
+  "stage_bytes_identical": true,
+  "artifact_hashes_identical": true,
+  "exit_code": 0,
+  "stage_before": "c76e12528108f07913f6928fc59e470ac28a20df9bc9c5021fa6e24bbe88565f",
+  "stage_after": "c76e12528108f07913f6928fc59e470ac28a20df9bc9c5021fa6e24bbe88565f"
+}

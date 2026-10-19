@@ -1,5 +1,6 @@
 """S2 in Phase 7 (DISCOVERY-PIPELINE-PLAN.md sections 1.2, 1.3 and 8), with fake models: the family exclusion, the
 difference statement, rule R3 against the outcome store, and the one send-back."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import asyncio
 import re
 
@@ -15,7 +16,7 @@ from hybrid.tests.research.test_orchestrator_fakes import (analyst_supports_ever
 
 EARLIER_RUN = "run-20260901T000000Z"
 DEAD_CRITIC = {"reduces_to": "other_known", "mapping": "S = sum v exp(i theta)", "confidence": 0.9,
-               "difference_if_any": "", "radical_enough": False,
+               "difference_if_any": "", **KNOWN,
                "why": "It is a phase-keyed holographic sum, which is diagonal linear attention.",
                "textbook_transplant": True, "textbook_why": "-"}
 
@@ -102,6 +103,14 @@ def statement(*, records=True, causes=True, family=True, literature=True, refs=N
             prior.append({"kind": "family", "ref": fam, "title": fam, "what_was_tried": "the family form",
                           "why_it_failed": "it is that family"})
         prior += refs or []
+        # Synthetic routing statements obey R2D without inventing unrelated paper evidence.
+        for fill in ("exact_match_cache", "hopfield_associative_memory", "ssm"):
+            if sum(p["kind"] != "literature" for p in prior) >= 2:
+                break
+            if (not family and fill == fam) or any(p["kind"] == "family" and p["ref"] == fill for p in prior):
+                continue
+            prior.append({"kind": "family", "ref": fill, "title": fill,
+                          "what_was_tried": "the listed family form", "why_it_failed": "synthetic comparison"})
         return {"closest_prior": prior, "what_was_tried": "a phase-keyed running sum",
                 "why_it_failed": "it reduces to a known form", "precise_change": "The write is gated by a parity test.",
                 "changed_equation": equation, "cause_ids_addressed": r3_causes(user) if causes else []}
@@ -118,7 +127,7 @@ def checker(*, accept=True, addressed=True, real=True, required="closest prior X
         return {"accepted": nth(accept, i), "problems": [] if nth(accept, i) else ["the change is a renaming"],
                 "causes": [{"cause_id": c, "addressed": nth(addressed, i), "why": "the write equation changes"}
                            for c in r3_causes(user)],
-                "family_difference_real": nth(real, i) if fam else None, "family_why": "checked" if fam else "",
+                "excerpt_gaps": [], "family_difference_real": nth(real, i) if fam else None, "family_why": "checked" if fam else "",
                 "required_difference": "" if nth(accept, i) else required}
     return check
 
@@ -178,7 +187,8 @@ def test_a_difference_statement_is_required_and_invented_refs_drop_the_card_afte
 
 def test_host_checks_name_each_missing_part():
     families, _ = difference._families("hybrid/config/families.toml", "hybrid/config/archive.toml")
-    req = difference.Requirements(literature={"2401.00001": "A paper", "arxiv:2401.00001": ""}, outcomes={},
+    req = difference.Requirements(literature={"2401.00001": {"key": "arxiv:2401.00001"},
+                                            "arxiv:2401.00001": {"key": "arxiv:2401.00001"}}, outcomes={},
                                   r3=[{"record_id": "oc-aaaaaaaaaaaa", "card_id": "card-0000d001", "exact": True,
                                        "jaccard": 1.0, "causes": [{"id": "oc-aaaaaaaaaaaa/reduces_to_known:x",
                                                                    "detail": "reduced"}]}],
@@ -189,7 +199,7 @@ def test_host_checks_name_each_missing_part():
            "what_was_tried": "a", "why_it_failed": "b", "precise_change": "c", "changed_equation": "update[7]",
            "cause_ids_addressed": []}
     problems = difference.host_problems(bad, card, req)
-    assert set(problems) == {"closest_prior:count", "changed_equation", "r3_prior:oc-aaaaaaaaaaaa",
+    assert set(problems) == {"closest_prior:count", "closest_prior:total", "changed_equation", "r3_prior:oc-aaaaaaaaaaaa",
                              "r3:oc-aaaaaaaaaaaa/reduces_to_known:x", "family:hopfield_associative_memory"}
 
 
@@ -294,7 +304,7 @@ def test_a_full_lineage_refuses_the_send_back_and_the_card_drops_at_once(run_dir
 RENAMED_LA = critic(reduces_to="linear_attention", confidence=0.9, family="none",
                     family_why="The ledger of rotations is a new object.",
                     mapping="S_t = S_{t-1} + phi(k_t) v_t^T with phi the phase map; the 'rotation ledger' is S.",
-                    difference_if_any="LEARNING_RULE: the phases are learned by a local rule", radical_enough=False,
+                    difference_if_any="LEARNING_RULE: the phases are learned by a local rule", **KNOWN,
                     why="Renamed: the rotation ledger is an outer-product memory read with phi(q).")
 
 
@@ -315,14 +325,14 @@ def test_a_renamed_linear_attention_variant_is_excluded_despite_the_learning_rul
 def test_without_the_exclusion_the_learning_rule_prefix_still_passes_the_reduction(run_dir, empty):
     old = {k: v for k, v in RENAMED_LA.items() if k not in ("family", "family_why")}
     orch, llm = make_orchestrator(run_dir, cfg=config(empty, exclusion=False, statement=False),
-                                  script=script(statement(), checker(), reduction_critic=dict(old, radical_enough=True)))
+                                  script=script(statement(), checker(), reduction_critic=dict(old, **NOT_KNOWN)))
     run(orch)
     assert card_of(orch)["status"]["verdicts"]["S2"]["verdict"] == "pass"
     assert "OUT OF SCOPE FAMILIES" not in calls(llm, "reduction_critic")[0]["user"]
 
 
 def test_a_delta_rule_reduction_is_named_as_such_by_its_keywords(run_dir, empty):
-    delta = critic(reduces_to="linear_attention", family="none", radical_enough=False,
+    delta = critic(reduces_to="linear_attention", family="none", **KNOWN,
                    mapping="S_t = S_{t-1} + beta (v - S k) k^T: the gated DeltaNet delta rule",
                    why="This is the delta rule (fast weights), which RLS and MesaNet solve in closed form.")
     orch, _ = make_orchestrator(run_dir, cfg=config(empty), script=script(statement(), checker(),
@@ -334,7 +344,7 @@ def test_a_delta_rule_reduction_is_named_as_such_by_its_keywords(run_dir, empty)
 def test_the_counted_comparators_family_decides_for_a_verified_reduction(run_dir, empty):
     """KD4: the comparator the host counted is in ssm; the critic's family label is not what kills (see
     test_kd4_counted_family.py for the counted-in-scope case)."""
-    ssm = critic(reduces_to="ssm", family="none", mapping="h_t = a h_{t-1} + b x_t", radical_enough=False,
+    ssm = critic(reduces_to="ssm", family="none", mapping="h_t = a h_{t-1} + b x_t", **KNOWN,
                  why="A diagonal linear recurrence.")
     orch, _ = make_orchestrator(run_dir, cfg=config(empty), script=script(statement(), checker(), reduction_critic=ssm))
     run(orch)
@@ -394,7 +404,7 @@ def test_hopfield_listed_but_judged_not_different_is_killed(run_dir, empty):
 
 def test_a_verified_hopfield_reduction_still_reduces(run_dir, empty):
     verified = critic(reduces_to="hopfield_or_kernel_memory", family="hopfield_associative_memory",
-                      mapping="softmax read over stored keys", radical_enough=False)
+                      mapping="softmax read over stored keys", **KNOWN)
     orch, llm = make_orchestrator(run_dir, cfg=config(empty), script=script(statement(), checker(),
                                                                              reduction_critic=verified))
     run(orch)

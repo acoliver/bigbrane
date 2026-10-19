@@ -1,6 +1,7 @@
 """The outcome store in the loop (outcomes.enabled): S0 lists nearby dead ideas, S2 searches own history and can
 enforce R3, the orchestrator records every card whose line ends. With the switch off nothing changes, and runs
 started without the switch resume."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import asyncio
 
 import pytest
@@ -15,7 +16,7 @@ from hybrid.tests.research.test_orchestrator_fakes import (analyst_supports_ever
 
 EARLIER_RUN = "run-20260901T000000Z"
 CRITIC = {"reduces_to": "other_known", "mapping": "S = sum v exp(i theta)", "confidence": 0.9,
-          "difference_if_any": "", "radical_enough": False,
+          "difference_if_any": "", **KNOWN,
           "why": "It is a phase-keyed holographic sum, which is diagonal linear attention.",
           "textbook_transplant": True, "textbook_why": "-"}
 

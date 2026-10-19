@@ -1,0 +1,12 @@
+{
+  "all_274_original_hashes_unchanged": true,
+  "pinned_plan_runner_tests_transport_hashes_unchanged": true,
+  "other_worker_seed_changes": "See RUNTIME-HASH-CHANGES.json",
+  "main_tracked_tree_clean": true,
+  "both_diff_checks_pass": true,
+  "scoped_tests_passed": 7,
+  "raw_envelopes": 12,
+  "runtime_events": 36,
+  "prose_no_en_or_em_dashes": true,
+  "no_additional_network_calls": true
+}

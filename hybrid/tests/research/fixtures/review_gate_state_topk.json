@@ -1,0 +1,131 @@
+{
+  "source": "results-wt/kd8/runs/flipA/artifacts/reduction_critic/card-3485a13f-v7-dfbdce.json",
+  "comparators": [
+    {
+      "base_family": "ssm",
+      "base_form": "Selective diagonal state-space recurrence h_t = A_t h_{t-1} + B_t x_t, y_t = C_t h_t with input-dependent diagonal A_t (Mamba, Gu & Dao 2023), here with B = 0 and nonzero initial state",
+      "id": "topk_selective_diag_ssm",
+      "limit_only": false,
+      "parameter_mapping": "Card beam B = {pi : h_pi > 0}. Card m_pi = k - h_pi. Card s'(pi) = log prior + (h_pi - h_max) log rho, which ranks identically. Card newborn m = k - 1 is h = 1 after a reset. Card missed_now = 1 - b_pi. Card T gives the feature-map table b and the read selector C(q). Card lambda gives the initial state w_0. rho = (1 - eps + eps/V)/(eps/V). K is the sparsity budget.",
+      "read": "At key q: if S = {pi : h_pi > 0} is nonempty, p(y) = eps/V + (1 - eps) sum_{pi in S} w_pi [P_pi(q) = y] / sum_{pi in S} w_pi; otherwise p(y) = 1/V. Top-1 is the argmax, ties to the smallest token.",
+      "transformations": [
+        {
+          "type": "transformed_input",
+          "what": "Run over paired tokens (c, x_t) formed from the alternating key/value stream."
+        },
+        {
+          "type": "feature_map",
+          "what": "Per-channel input feature b_pi(c, x) = [T-composition P_pi(c) = x] from the fixed library table; it gives A_t = diag(rho^{b}) and the query-selected one-hot read C(q)."
+        },
+        {
+          "type": "sparsity",
+          "what": "Top-K state-selected mask over channels with h > 0, with masked channels returned to the initial state; the read is restricted to the support h > 0."
+        },
+        {
+          "type": "normalizer",
+          "what": "The read is divided by the total live mass sum_{h > 0} w and mixed with the fixed eps/V floor."
+        }
+      ],
+      "update": "At a value token x_t with pending key c, for every pi in Pi_D: w_pi <- rho^{b_pi} w_pi, with b_pi = [P_pi(c) = x_t] and w_0 = lambda-prior(pi); equivalently h_pi <- h_pi + b_pi. Then keep the K channels with h_pi > 0 of largest log prior(pi) + h_pi log rho, ties to b_pi = 1 and then the D15 order. Reset every other channel to h_pi = 0, i.e. w_pi = prior(pi). At a key token, set c <- x_t with no state change."
+    },
+    {
+      "base_family": "ssm",
+      "base_form": "Diagonal multiplicative recurrence w_t = diag(l(x_t)) w_{t-1} (exact sequential Bayesian model averaging / HMM forward filter with identity transition), as stated in the card's own known_relatives",
+      "id": "exact_bma_diag_ssm",
+      "limit_only": true,
+      "parameter_mapping": "Same as topk_selective_diag_ssm, with K >= |Pi_D| so the top-K mask never binds.",
+      "read": "p(y) = eps/V + (1 - eps) sum_{pi : h_pi > 0} w_pi [P_pi(q) = y] / sum_{pi : h_pi > 0} w_pi; uniform if no channel has h > 0.",
+      "transformations": [
+        {
+          "type": "transformed_input",
+          "what": "Paired (key, value) tokens."
+        },
+        {
+          "type": "feature_map",
+          "what": "Hit indicator per program from the library table."
+        },
+        {
+          "type": "sparsity",
+          "what": "Read restricted to channels with at least one hit."
+        },
+        {
+          "type": "normalizer",
+          "what": "Division by the live mass, plus the eps/V floor."
+        }
+      ],
+      "update": "For every pi in Pi_D: w_pi <- rho^{[P_pi(c) = x_t]} w_pi from w_0 = prior(pi), with no pruning."
+    }
+  ],
+  "reduces_to": "ssm",
+  "reduction_check": {
+    "comparisons": [
+      {
+        "comparator": "selective diagonal SSM over program channels, A_t = diag(rho^[P_pi(c)=x_t]), B = 0, w_0 = prior; top-K state mask with reset to w_0; normalized one-hot read plus eps/V floor",
+        "counted": true,
+        "declared_id": "topk_selective_diag_ssm",
+        "eligibility": "counted",
+        "family": "ssm",
+        "inputs_tested": 401,
+        "limit_only": false,
+        "max_abs_diff": 8.881784197001252e-16,
+        "reference": "selective diagonal state-space recurrence, Mamba (Gu & Dao 2023)",
+        "transformations": [
+          "transformed_input",
+          "feature_map",
+          "sparsity",
+          "normalizer"
+        ],
+        "within_tolerance": true
+      },
+      {
+        "comparator": "unpruned diagonal multiplicative recurrence (exact sequential Bayesian model averaging), normalized read over channels with h > 0",
+        "counted": true,
+        "declared_id": "exact_bma_diag_ssm",
+        "eligibility": "limit_only",
+        "family": "ssm",
+        "inputs_tested": 401,
+        "limit_only": true,
+        "max_abs_diff": 0.968983035010237,
+        "reference": "HMM forward filter with identity transition / sequential BMA, w_t = diag(l(x_t)) w_{t-1}",
+        "transformations": [
+          "transformed_input",
+          "feature_map",
+          "sparsity",
+          "normalizer"
+        ],
+        "within_tolerance": false
+      }
+    ],
+    "declared": [
+      {
+        "base_family": "ssm",
+        "eligibility": "counted",
+        "id": "topk_selective_diag_ssm",
+        "limit_only": false,
+        "transformations": [
+          "feature_map",
+          "normalizer",
+          "sparsity",
+          "transformed_input"
+        ]
+      },
+      {
+        "base_family": "ssm",
+        "eligibility": "limit_only",
+        "id": "exact_bma_diag_ssm",
+        "limit_only": true,
+        "transformations": [
+          "feature_map",
+          "normalizer",
+          "sparsity",
+          "transformed_input"
+        ]
+      }
+    ],
+    "job_id": "job-38540869dffb",
+    "notes": "Next-token probabilities are compared at every step; after value tokens both sides emit the uniform vector. 256 of 401 sequences had the top-K mask binding (exact BMA differs there). K, eps, T and lambda are random, including K = |Pi_D|; the toy stream is included. No rescaling.",
+    "outcome": "verified",
+    "reduces_to": "ssm",
+    "tolerance": 1e-06
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "capture_sha256": "670b2050378c8018c90ca744d52d7841e66d797eb2452328ee0f036f0deb74eb",
+  "invocation": {
+    "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+    "numpy": "2.5.3",
+    "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+    "PYTHONHASHSEED": "0"
+  },
+  "cards": {
+    "card-a36f1a3a": {
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 2.220446049250313e-16, \"notes\": \"36 random token streams, 489 ASK steps, 358 non-0.5 outputs; card update/readout vs one-hot-key linear-attention count table + tied 1-channel PPGN (m1=m2=id, m4=tanh([alpha,beta]), diag mask), output scale 1\"}\n",
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/nonlinear-card-a36f1a3a.py",
+        "source_sha256": "d193e05c1cb85ca59c798ba55a07bd1417eba68c1350e3ba66726a00dbe7b3b8",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-70e748c284d9/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-70e748c284d9.json",
+        "artifact_sha256": "14f2e2a2c4773615d14f73df37fa3c2f0cf37a64abf77a545c1281d60be7f65c",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 8561,
+            "card_id": "card-a36f1a3a",
+            "kind": "executor",
+            "name": "job-70e748c284d9.json",
+            "path": "artifacts/executor/job-70e748c284d9.json",
+            "sha256": "14f2e2a2c4773615d14f73df37fa3c2f0cf37a64abf77a545c1281d60be7f65c"
+          },
+          "hash": "95a1011b7bbf98306ef1369e91ac076b634537eda5bcc5eb02e71025b549283c",
+          "prev_hash": "7a9b5623c987450f29cd10cb90aa50f2efaefd039abe900e1fa659aecc57c801",
+          "seq": 1213,
+          "ts": "2026-10-10T19:55:37.377131+00:00",
+          "type": "artifact"
+        },
+        "ledger_file": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/ledger.jsonl",
+        "ledger_sha256": "9dac183f8fa511a89e6e7c228ef97130acd466fbe26c11bb6c1daffeb053d114",
+        "purpose": "reduction_check",
+        "observer_sha256": "06d44296b601a1a339b09fb976416d0da57270550ff992ce79e13a6946e6e8b3",
+        "specimen": {
+          "card_sha256": "34b1d86cec1258c0bbec88e0ff23e5e98dbedb1e5cbdf5b4ee7033708f556c9a",
+          "critic_sha256": "7aca69c76b2e57c7b49bb1d6fe4b56641532da43c4326cff6c6de17051d3a22d"
+        },
+        "trace_sha256": "6bc7dcadd795a9bee3ebf96d0b7f1b6910e71a5393d80bfb1ed67bf48651bee7",
+        "draws_sha256": "ea8403ee80814bd8557f740872dfeb4fff7680bcc60171f7ca93b9deb2cf792e",
+        "capture_insertions": [],
+        "draw_limit": "PYTHONHASHSEED=0 source reexecution, not recovered historical bytes: historical raw draws and hash seed were not saved. Program and seeded draws are untouched; no set-to-list random sampling occurs."
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 8.881784197001252e-16, \"notes\": \"36 random token streams, 489 ASK steps, 358 non-0.5 outputs; card update/readout vs one-hot-key linear-attention count table + tied 1-channel PPGN (m1=m2=id, m4=tanh([alpha,beta]), diag mask), output scale 1\"}\n"
+    },
+    "card-ddb071bd": {
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 7.216449660063518e-15, \"notes\": \"ART/leader-clustering+LFU-FIFO pool+HRR bind vs card on 115 seqs, every step; merges=467 evictions=950; parent H3 phase-norm form differs by 0.982 (repair fails)\"}\n",
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/nonlinear-card-ddb071bd.py",
+        "source_sha256": "ab7af5e57788d469b0af43bdcaba7c2c19f5273c5278d688d93eb6e90b4a945b",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-7292aee625ba/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-7292aee625ba.json",
+        "artifact_sha256": "0aaeeb43ce67afbfd2873480d96ab02e541cf3f392eddc6ac7305c1417c6c0fd",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 12221,
+            "card_id": "card-ddb071bd",
+            "kind": "executor",
+            "name": "job-7292aee625ba.json",
+            "path": "artifacts/executor/job-7292aee625ba.json",
+            "sha256": "0aaeeb43ce67afbfd2873480d96ab02e541cf3f392eddc6ac7305c1417c6c0fd"
+          },
+          "hash": "0d4af9f3f75a6531ccc7270c78377079859f2c5cc529c204593fe6f5f192bf5e",
+          "prev_hash": "9f65b9b5b3350ac1883b2e016fd721932ec42cd51f1985b35bf0e5373967ca50",
+          "seq": 1143,
+          "ts": "2026-10-10T19:51:41.065270+00:00",
+          "type": "artifact"
+        },
+        "ledger_file": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/ledger.jsonl",
+        "ledger_sha256": "9dac183f8fa511a89e6e7c228ef97130acd466fbe26c11bb6c1daffeb053d114",
+        "purpose": "reduction_check",
+        "observer_sha256": "06d44296b601a1a339b09fb976416d0da57270550ff992ce79e13a6946e6e8b3",
+        "specimen": {
+          "card_sha256": "edf49f5514b45c4f7c7c5ed5c44cb1605dca199bf61366b0b0b350bc529ff272",
+          "critic_sha256": "df741617be9e46ee34c03035604ef1033fe77ee8a61625a961447e16368e647a"
+        },
+        "trace_sha256": "72fe7f58f52ea8195bb168f95c0b258871577282871d262da6e4352e5705d531",
+        "draws_sha256": "9aae16284cb685c7de04f4bf23515c484ef87419a17419f39e8f5b981b8ed818",
+        "capture_insertions": [],
+        "draw_limit": "PYTHONHASHSEED=0 source reexecution, not recovered historical bytes: historical raw draws and hash seed were not saved. Program and seeded draws are untouched; no set-to-list random sampling occurs."
+      },
+      "original_stdout": "{\"equivalent\": false, \"max_abs_diff\": 0.44461806885749666, \"notes\": \"ART/leader-clustering+LFU-FIFO pool+HRR bind vs card on 115 seqs, every step; merges=467 evictions=950; parent H3 phase-norm form differs by 0.982 (repair fails)\"}\n"
+    }
+  }
+}

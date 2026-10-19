@@ -16,17 +16,19 @@ Gate (RESEARCH-SYSTEM-SPEC.md section 3), applied in this order:
    a type outside it (`other`) is unresolved and cannot verify; a limit-only one never verifies; a
    comparison under no declared id never counts. When every counted comparison is outside the tolerance
    the claim is refuted. No flag the program computes is read. When the critic gives no check code, or the
-   program prints no JSON object at all, a confidence at or above s2.reduction_confidence counts as
-   verified; a printed object outside the contract is unverified.
+   program prints no JSON object at all, the claim is unverified regardless of confidence. Counted numbers come
+   from a host-owned published reference applied to executed card traces, never from two model-written comparators.
 3. `prior_art_tested` fails unless the card adds a specific untested element (one prior_art call).
 4. `novelty_unassessed` gives `undetermined`. A `novel` label whose searches returned no paper, even after
    one retry with broader queries, is not a finding of novelty (s2.empty_search_counts_as_novel = false).
-5. With s2.require_radical, `radical_enough: false` fails.
+5. With s2.require_radical, two gates (R2): `textbook_transplant: true` fails (the source field's construction,
+   unmodified), and `known_work: true` fails only with an independently referenced host-counted comparator.
+   A source lead with unchecked coverage never kills automatically (stages/known_work.py). `surprise` is not gated.
 6. Otherwise (`novel` with papers, `prior_art_undertested`, or tested-plus-new-element) passes.
 
 The reduction critic also says whether the core idea is a textbook construction from its source field
 applied without modification (`textbook_transplant`). That answer is recorded in the artifact and the
-verdict reasons and counted by `inspect`; it does not gate.
+verdict reasons and counted by `inspect`; with s2.require_radical a true answer also gates (gate 5).
 
 A card with a `non_reduction_argument` (an escape card) gets prompts/reduction_critic_escape.md and
 prompts/reduction_check_escape.md appended to the critic and check user messages, with the argument and
@@ -59,22 +61,28 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from dataclasses import dataclass
 from functools import partial
 from typing import Any
 
 import httpx
 import jsonschema
+import numpy as np
 
+from hybrid.literature.prior_art import render_receipt
 from hybrid.literature import LOCAL_SOURCE, SourceError, classify_prior_art, resolve_index_path
 from hybrid.research import outcomes as outcome_store
 from hybrid.research.signature import card_signature
 from hybrid.research.schemas import SchemaViolation, load_schema, validate
-from hybrid.research.stages import difference
+from hybrid.research.stages import difference, known_work
 from hybrid.research.stages.common import StageContext, StageError, card_for_prompt, load_section
-from hybrid.research.stages.contracts import (PRIOR_ART_DELTA, REDUCTION_CHECK, REDUCTION_CHECK_REPORT, REPAIR_TYPES,
+from hybrid.research.stages.contracts import (ALLOWED_ACTIVATIONS, CARD_FORBIDDEN_ROLES, COMPONENT_CHECKED_FAMILIES,
+    UNIVERSAL_CLASS_PATTERN, PRIOR_ART_DELTA, REDUCTION_CHECK, REDUCTION_CHECK_REPORT, REPAIR_TYPES,
                                               repair_policy_text)
 from hybrid.research.stages.escape import escape_user_suffix
+from hybrid.research.stages.published_references import (REFERENCE_OPERATIONS, reference_outputs,
+                                                            reference_policy_text)
 from hybrid.research.stages.r_refine import challenger_role, proposer_model
 from hybrid.research.stages.s1_wellformed import explorer_role
 
@@ -156,10 +164,10 @@ async def prior_art_checked(ctx: StageContext, card: dict) -> tuple[dict, list[s
     """
     result, calls = await prior_art(ctx, card)
     if result["label"] != "novel" or result["candidates"] or ctx.cfg["s2"]["empty_search_counts_as_novel"]:
-        return result, calls, False
+        return result, calls, bool(result.get("novelty_unassessed", False))
     retry, retry_calls = await prior_art(ctx, card, broaden=True)
     calls += retry_calls
-    unassessed = retry["label"] == "novel" and not retry["candidates"]
+    unassessed = bool(retry.get("novelty_unassessed", False)) or (retry["label"] == "novel" and not retry["candidates"])
     ctx.emit("novelty_unassessed", {"card_id": card["id"], "first_queries": result["queries"],
                                     "retry_queries": retry["queries"], "retry_papers": len(retry["candidates"]),
                                     "still_unassessed": unassessed})
@@ -187,10 +195,53 @@ def types_of(comparator: dict) -> list[str]:
     return sorted({t["type"] for t in comparator["transformations"]})
 
 
+UNIVERSAL_CLASS = re.compile(UNIVERSAL_CLASS_PATTERN, re.I)
+
+
+def component_problem(comparator: dict) -> str | None:
+    """KD8: why a declared comparator is a restatement of the card and not a published mechanism, or None.
+
+    Only the families rnn, lstm_gru and other_known are checked (contracts.COMPONENT_CHECKED_FAMILIES). A universal
+    class (the head of `base_form`, or a transition or update component) is a template every card fills, and a
+    component of role activation, transition, update or readout whose origin is the card is the card's own
+    computation inside a template. In rnn and lstm_gru the activation must be a standard elementwise one; in
+    other_known a published transition or update with a citation must be named."""
+    family = comparator["base_family"]
+    if family not in COMPONENT_CHECKED_FAMILIES:
+        return None
+    head = re.split(r"[(,;:]| whose | with ", comparator["base_form"], maxsplit=1)[0]
+    if UNIVERSAL_CLASS.search(head):
+        return f"its base form '{head.strip()}' is a universal class, not a published mechanism"
+    components = comparator.get("components") or []
+    if not components:
+        return "it declares no components, so the host cannot tell a published mechanism from the card's own"
+    for comp in components:
+        if comp["origin"] == "card" and comp["role"] in CARD_FORBIDDEN_ROLES:
+            return f"its {comp['role']} '{comp['name'][:80]}' is the card's own"
+        if comp["role"] in ("transition", "update") and UNIVERSAL_CLASS.search(comp["name"]):
+            return f"its {comp['role']} '{comp['name'][:80]}' names a universal class"
+    if family in ALLOWED_ACTIVATIONS:
+        activations = [c for c in components if c["role"] == "activation"]
+        if not activations:
+            return "it declares no activation component"
+        for comp in activations:
+            if comp["name"].strip().lower() not in ALLOWED_ACTIVATIONS[family]:
+                return (f"its activation '{comp['name'][:80]}' is not a standard {family} activation "
+                        f"({', '.join(ALLOWED_ACTIVATIONS[family])})")
+    else:
+        mechanisms = [c for c in components if c["role"] in ("transition", "update") and c["origin"] == "published"
+                      and c["cite"].strip()]
+        if not mechanisms:
+            return "it names no published, cited transition or update"
+    return None
+
+
 def eligibility(comparator: dict, reduces_to: str) -> str:
     """FIX-12: how a declared comparator's comparison counts, derived from the declaration and the repair policy
     (contracts.REPAIR_TYPES), never from a label the check program prints:
     - `another_family`: its base family is not the claimed `reduces_to`; it cannot decide that claim;
+    - `restatement` (KD8): component_problem finds that the comparator is a universal template or carries the card's
+      own activation, transition, update or readout; it never counts, for or against the claim;
     - `unresolved`: a transformation type outside the policy (`other`); its family membership is not established, so it
       never verifies a reduction, and a match through it keeps the claim from being refuted;
     - `limit_only`: the declared equality holds only in a limit; it never verifies, and a measured difference at the
@@ -199,6 +250,8 @@ def eligibility(comparator: dict, reduces_to: str) -> str:
       counts against the claim outside it."""
     if comparator["base_family"] != reduces_to:
         return "another_family"
+    if component_problem(comparator) is not None:
+        return "restatement"
     if any(t not in REPAIR_TYPES for t in types_of(comparator)):
         return "unresolved"
     if comparator["limit_only"]:
@@ -208,6 +261,8 @@ def eligibility(comparator: dict, reduces_to: str) -> str:
 
 def declaration_problem(critic: dict) -> str | None:
     """Why the critic's declared comparators cannot bind a check (repeated ids), or None."""
+    if critic.get("fixed_learned_parts"):
+        return "the mapping fixes a learned part instead of comparing the general learned mechanism"
     ids = [c["id"] for c in critic["comparators"]]
     repeated = sorted({i for i in ids if ids.count(i) > 1})
     if repeated:
@@ -222,10 +277,55 @@ def _comparison_line(c: dict) -> str:
             f"max_abs_diff {c['max_abs_diff']:.3g}")
 
 
+
+def independent_comparison(comparison: dict, declaration: dict) -> dict:
+    """Replace the model's self-comparison by a host reference measurement, or leave it unverified.
+
+    This checks numeric samples, not a proof of general equivalence or card-code conformance. The card-side
+    implementation and parameter mapping still require the existing adversarial check. Unsupported published
+    operations/repairs need a separately implemented reference; their names and citations alone cannot count.
+    """
+    spec = declaration.get("reference_spec")
+    samples = comparison.get("reference_samples")
+    if not spec or not samples:
+        return {"reference_problem": "missing host reference specification or executed card samples"}
+    operation = spec["operation"]
+    if operation not in REFERENCE_OPERATIONS:
+        return {"reference_problem": f"no host reference for {operation}"}
+    family, names, repair_types = REFERENCE_OPERATIONS[operation]
+    if family != declaration["base_family"] or set(spec["parameters"]) != set(names):
+        return {"reference_problem": "reference family or parameter fields disagree with the host operation"}
+    if set(types_of(declaration)) != set(repair_types):
+        return {"reference_problem": "declared repairs have no independent implementation in this reference"}
+    if operation.startswith("elman_"):
+        activations = {c["name"].strip().lower() for c in declaration.get("components", [])
+                       if c["role"] == "activation"}
+        if activations != {operation.removeprefix("elman_")}:
+            return {"reference_problem": "declared activation disagrees with the host reference"}
+    differences = []
+    try:
+        with np.errstate(all="raise"):
+            for sample in samples:
+                parameters = sample.get("parameters", spec["parameters"])
+                if set(parameters) != set(names):
+                    raise ValueError("sample parameter fields disagree with the host operation")
+                expected = reference_outputs(operation, parameters, sample["inputs"])
+                actual = np.asarray(sample["card_outputs"], dtype=float)
+                if (expected.shape != actual.shape or not expected.size or not np.isfinite(expected).all()
+                        or not np.isfinite(actual).all()):
+                    raise ValueError("card/reference outputs must be nonempty finite arrays of the same shape")
+                differences.append(float(np.max(np.abs(actual - expected))))
+    except (ValueError, TypeError, KeyError, IndexError, OverflowError, FloatingPointError) as exc:
+        return {"reference_problem": f"invalid external reference samples: {exc}"}
+    return {"reference_operation": operation, "reported_max_abs_diff": comparison["max_abs_diff"],
+            "max_abs_diff": max(differences), "inputs_tested": len(samples)}
+
+
+
 def judge_comparisons(comparisons: list[dict], declared: list[dict],
                       reduces_to: str) -> tuple[str, list[str], list[dict]]:
-    """FIX-10, FIX-12: equivalence is decided here, from the numbers the check program printed against the comparators
-    the critic declared, never by the program. The report must already match the declaration (report_problem).
+    """Measure executed card traces against host-owned published operations, not model self-comparisons.
+    The report must already match the declaration (report_problem); a missing independent reference never counts.
 
     Each comparison takes the eligibility of its declared comparator (`eligibility`); a comparison with declared_id
     null (a rewrite of the card, a sanity check) never counts. Verified: a `counted` comparison has a finite
@@ -237,12 +337,23 @@ def judge_comparisons(comparisons: list[dict], declared: list[dict],
     judged = []
     for c in comparisons:
         status = eligibility(by_id[c["declared_id"]], reduces_to) if c["declared_id"] is not None else "undeclared"
-        diff = float(c["max_abs_diff"])
-        judged.append(dict(c, eligibility=status, counted=status in ("counted", "limit_only"),
+        reference = independent_comparison(c, by_id[c["declared_id"]]) if c["declared_id"] is not None else {}
+        if status in ("counted", "limit_only") and "max_abs_diff" not in reference:
+            status = "unverified_reference"
+        diff = float(reference.get("max_abs_diff", c["max_abs_diff"]))
+        judged.append(dict(c | reference, eligibility=status, counted=status in ("counted", "limit_only"),
                            within_tolerance=math.isfinite(diff) and diff <= EQUIVALENCE_TOL))
     groups = {status: [c for c in judged if c["eligibility"] == status]
-              for status in ("counted", "limit_only", "unresolved", "another_family", "undeclared")}
+              for status in ("counted", "limit_only", "unresolved", "restatement", "another_family",
+                             "undeclared", "unverified_reference")}
     tail = []
+    if groups["unverified_reference"]:
+        tail.append("not counted (no independently executed published reference): " + "; ".join(
+            f"{c['declared_id']}: {c['reference_problem']}" for c in groups["unverified_reference"]))
+    if groups["restatement"]:
+        tail.append("not counted (KD8, a restatement of the card, not a published mechanism): "
+                    + "; ".join(f"{_comparison_line(c)} [{component_problem(by_id[c['declared_id']])}]"
+                                for c in groups["restatement"]))
     if groups["unresolved"]:
         tail.append("unresolved (a transformation type outside the family policy, so family membership is not "
                     "established and the comparison cannot verify the reduction): "
@@ -274,21 +385,22 @@ def judge_comparisons(comparisons: list[dict], declared: list[dict],
         return "refuted", [f"numeric check rejects the claimed reduction: every declared comparator of {reduces_to} "
                            f"differs by more than the host tolerance {EQUIVALENCE_TOL:g}: "
                            + "; ".join(_comparison_line(c) for c in against)] + tail, judged
-    return "unverified", [f"the check compared no declared comparator of {reduces_to} inside the family policy, so "
+    return "unverified", [f"the check established no independently referenced comparator of {reduces_to} inside the family policy, so "
                           f"it does not verify the reduction"] + tail, judged
 
 
 def counted_comparisons(critic: dict, check_report: dict | None) -> list[dict]:
-    """KD4: the comparators that carried a verified reduction, for the excluded-family gate. Each has the `family` its
-    declaration stated (the report repeats it, report_problem), its `declared_id` and `comparator` text: the
-    comparisons of the host's report whose eligibility is `counted` and that are within the tolerance. A comparison
-    that was not counted (another family, unresolved, limit-only, undeclared) or that missed the tolerance never
-    decides. With no report (verified on the critic's confidence alone, see run_reduction_check) nothing was compared,
-    and the claimed `reduces_to` stands as the one counted family."""
-    if check_report is None:
-        return [{"declared_id": None, "family": critic["reduces_to"], "comparator": ""}]
+    """KD4: derive counted families from reference evidence, including when reading a saved report.
+
+    Saved eligibility/within_tolerance labels are not evidence. A legacy report without executable reference
+    samples cannot acquire verification merely by being loaded from an old artifact.
+    """
+    if (check_report is None or "comparisons" not in check_report or not critic.get("comparators")
+            or declaration_problem(critic) is not None):
+        return []
+    _, _, judged = judge_comparisons(check_report["comparisons"], critic["comparators"], critic["reduces_to"])
     return [{"declared_id": c["declared_id"], "family": c["family"], "comparator": c["comparator"]}
-            for c in check_report["comparisons"] if c["eligibility"] == "counted" and c["within_tolerance"]]
+            for c in judged if c["eligibility"] == "counted" and c["within_tolerance"]]
 
 
 def report_problem(printed: dict, declared: list[dict]) -> str | None:
@@ -333,16 +445,14 @@ def family_policy_block(ctx: StageContext, reduces_to: str) -> str:
     lines = [f"FAMILY POLICY (hybrid/config/families.toml; a family includes its published form and every repair built "
              f"only from the types of the repair policy). Families of {reduces_to}:"]
     lines += [f"- {f.id}: {f.name}. Form: {f.form}" for f in forms] or [f"- {reduces_to}: no families.toml entry"]
-    return "\n".join(lines) + "\n\n" + repair_policy_text()
+    return "\n".join(lines) + "\n\n" + repair_policy_text() + "\n\n" + reference_policy_text()
 
 
 async def run_reduction_check(ctx: StageContext, card: dict, critic: dict) -> ReductionCheck:
     """The executed check of the critic's reduction claim. The program prints its comparisons as data
     (contracts.REDUCTION_CHECK_REPORT), each under the id of a comparator the critic declared; report_problem binds the
-    report to the declaration and judge_comparisons decides. The critic's confidence stands in for a check only when
-    there is none: no check code, or a program that printed no JSON object (a crash or a timeout). A printed object
-    outside the contract or the declaration is unverified, whatever the confidence."""
-    s2 = ctx.cfg["s2"]
+    report to the declaration and judge_comparisons measures against the host reference. Missing code, a missing
+    report, a failed execution or a report outside the contract is unverified, whatever the confidence."""
     problem = declaration_problem(critic)
     if problem is not None:
         return ReductionCheck("unverified", [f"no check was run: {problem}"], [], {"problem": problem})
@@ -355,21 +465,15 @@ async def run_reduction_check(ctx: StageContext, card: dict, critic: dict) -> Re
     request = await ctx.ask("reduction_critic", "reduction_check", user, REDUCTION_CHECK)
     ids = [request.call_id]
     code = request.parsed["check_code"]
-    confidence = critic["confidence"]
     if not code:
-        if confidence >= s2["reduction_confidence"]:
-            return ReductionCheck("verified", [f"no numeric check possible ({request.parsed['explanation'][:300]}); "
-                                               f"confidence {confidence} >= {s2['reduction_confidence']}"], ids, None)
-        return ReductionCheck("unverified", [f"no numeric check and confidence {confidence} below "
-                                             f"{s2['reduction_confidence']}"], ids, None)
+        return ReductionCheck("unverified", [f"no numeric check ({request.parsed['explanation'][:300]}); "
+                                             "confidence cannot establish verification"], ids, None)
     result = await ctx.runner.run(card["id"], "reduction_check", {"main.py": code})
     ids.append(result.job_id)
     printed = result.printed_json() if result.ok else None
     if printed is None:
         detail = (f"check printed no comparison report ({result.status}; "
                   f"{result.stderr[-400:] or result.stdout[-400:]})")
-        if confidence >= s2["reduction_confidence"]:
-            return ReductionCheck("verified", [detail + f"; confidence {confidence} counts as verified"], ids, None)
         return ReductionCheck("unverified", [detail], ids, None)
     declared = critic["comparators"]
     problem = report_problem(printed, declared)
@@ -511,8 +615,13 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
     except SchemaViolation as exc:
         reasons.append(f"prior-art label has no grounded evidence ({exc}); label kept, evidence missing")
     ctx.put_json_artifact("prior_art", ctx.artifact_name(card_id),
-                          dict(record, queries=pa_result["queries"], rejected_evidence=pa_result["rejected_evidence"],
-                               candidates=pa_result["candidates"]), card_id)
+                          dict(record, queries=pa_result["queries"], query_fields=pa_result["query_fields"],
+                               round2_queries=pa_result["round2_queries"],
+                               rejected_evidence=pa_result["rejected_evidence"], candidates=pa_result["candidates"],
+                               novelty_unassessed=unassessed,
+                               **{key: pa_result.get(key) for key in ("coverage", "listing", "coverage_assessment",
+                                  "novelty_unassessed_reasons")}),
+                          card_id)
 
     delta = None
     if record["label"] == "prior_art_tested":
@@ -526,8 +635,12 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
     if ctx.outcomes is not None:
         reasons.append(history_reason(matches))
     user = "\n\n".join(["CARD:\n" + card_for_prompt(card),
-                        "PRIOR ART CLASSIFICATION:\n" + json.dumps(record, indent=2), repair_policy_text()])
+                        "PRIOR ART CLASSIFICATION:\n" + json.dumps(record, indent=2), repair_policy_text(),
+                        reference_policy_text()])
     user += escape_user_suffix(ctx, card, "reduction_critic_escape") + history_block
+    critic_papers = difference.bounded_candidates(record, pa_result, known_work.LISTED_TITLES)
+    user += "\n\n" + known_work.search_listing(critic_papers)
+    user += "\n\n" + render_receipt(pa_result, [p["key"] for p in critic_papers], known_work.LISTED_TITLES)
     s2 = ctx.cfg["s2"]
     exclusion, statement_on = s2["family_exclusion"], s2["difference_statement"]
     families, keywords = difference.families_for(ctx) if (exclusion or statement_on) else (None, {})
@@ -538,7 +651,7 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
     critic_call = await ctx.ask("reduction_critic", "reduction_critic", user, schema)
     critic = critic_call.parsed
     calls.append(critic_call.call_id)
-    reasons.append(f"textbook transplant: {'yes' if critic['textbook_transplant'] else 'no'} (recorded, not gated): "
+    reasons.append(f"textbook transplant: {'yes' if critic['textbook_transplant'] else 'no'}: "
                    f"{critic['textbook_why'][:300]}")
     reduction, check_report = "none", None
     if critic["reduces_to"] != "none":
@@ -585,7 +698,8 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
             return None
     if record["label"] == NOVELTY_UNASSESSED:
         ctx.verdict(card_id, "S2", "undetermined",
-                    reasons + ["novelty unassessed: literature search returned no papers"], calls)
+                    reasons + ["novelty unassessed: " + "; ".join(pa_result.get("novelty_unassessed_reasons", [])
+                                                                   or ["literature search returned no papers"])], calls)
         return None
     if record["label"] == "prior_art_tested":
         if not delta["adds_untested_element"]:
@@ -593,10 +707,19 @@ async def run(ctx: StageContext, card_id: str) -> str | None:
                         reasons + [f"gate: prior_art_tested and no untested element ({delta['why'][:300]})"], calls)
             return None
         reasons.append(f"prior art tested, card adds an untested element: {delta['element'][:300]}")
-    if ctx.cfg["s2"]["require_radical"] and not critic["radical_enough"]:
-        ctx.verdict(card_id, "S2", "fail", reasons + [f"gate: not radical enough: {critic['why'][:500]}"], calls)
-        return None
-    reasons.append(f"reduction critic: {critic['reduces_to']}, radical_enough {critic['radical_enough']}: "
+    judgment = known_work.judge(critic, counted, pa_result["candidates"])
+    if ctx.cfg["s2"]["require_radical"]:
+        if critic["textbook_transplant"]:
+            ctx.verdict(card_id, "S2", "fail", reasons + [f"gate: not radical enough: textbook transplant, the source "
+                                                          f"field's construction unmodified: "
+                                                          f"{critic['textbook_why'][:500]}"], calls)
+            return None
+        if judgment.kills:
+            ctx.verdict(card_id, "S2", "fail", reasons + [f"gate: not radical enough: known work ({judgment.reason}): "
+                                                          f"{critic['why'][:500]}"], calls)
+            return None
+    reasons.append(f"reduction critic: {critic['reduces_to']}, known_work {critic['known_work']} "
+                   f"({judgment.basis}: {judgment.reason[:300]}), surprise {critic['surprise']} (recorded, not gated): "
                    f"{critic['why'][:400]}")
     if exclusion:
         reasons.append(f"family (reduction critic): {critic['family']}: {critic['family_why'][:300]}")

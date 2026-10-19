@@ -1,0 +1,66 @@
+{
+  "worktree": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "baseline_commit": "eeaba07b93a8907cf6b1e4a6bef62b458b01ae5d",
+  "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "environment": {
+    "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+    "BIGBRANE_LIVE": "0"
+  },
+  "files": {
+    "hybrid/literature/provenance.py": "6d2e825eb2996fbdf290491caee74b03be514e03e4d09ccc656535acfed75532",
+    "hybrid/literature/transport.py": "147e2d890fd4817d5ea59d7f9f799acca2e851a9452a82be6f80f57c1278422e",
+    "hybrid/literature/client.py": "db0504e69ffb9e0766c6d93f09aa277d34084480e4105ba6960c9b448c6b78cc",
+    "hybrid/tests/literature/test_transport_provenance.py": "d44a065338171d68fdc70ac9b77ec3aa1d19174a4ad22ea2b83b83c0adebea48"
+  },
+  "targeted": {
+    "command": [
+      "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+      "-m",
+      "pytest",
+      "-c",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/pyproject.toml",
+      "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+      "hybrid/tests/literature/test_transport_provenance.py",
+      "hybrid/tests/literature/test_client.py",
+      "hybrid/tests/literature/test_api_keys.py",
+      "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/transport-provenance/pytest-targeted-complete",
+      "-q"
+    ],
+    "passed": 79,
+    "failed": 0,
+    "log": "targeted-complete.log"
+  },
+  "full_literature": {
+    "command": [
+      "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+      "-m",
+      "pytest",
+      "-c",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/pyproject.toml",
+      "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+      "hybrid/tests/literature",
+      "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/transport-provenance/pytest-full",
+      "-q"
+    ],
+    "passed": 212,
+    "skipped": 1,
+    "failed": 0,
+    "exit": 0,
+    "log": "full-literature.log"
+  },
+  "differential": {
+    "command": [
+      "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/transport-provenance/verify_behavior.py"
+    ],
+    "cases": 12,
+    "all_unchanged": true,
+    "artifact": "behavior-comparison.json"
+  },
+  "new_instrumentation_cases": 22,
+  "main_status": "",
+  "no_live_calls": true,
+  "no_further_review": true,
+  "no_research_suite": true,
+  "no_commit_push_integration": true
+}

@@ -1,0 +1,102 @@
+{
+  "files": {
+    "hybrid/tests/research/composites_replays.py": {
+      "bytes": 6126,
+      "sha256": "cbb2df3e50bc76479ba667461007b31bd729e9ca91f6f5d9eb0b1ae099d3cf3d"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/composites_evidence.json": {
+      "bytes": 580771,
+      "sha256": "4b804e4ebe0d43df468d2428bad236b2f95f906ff68512da0ed86995c7ad982f"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/composites_protected.json": {
+      "bytes": 10042,
+      "sha256": "97ad56cff66512ef1023a16d323192453d8fb41957b00d5e5c92ffda3f7b2863"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/composites_publications.json": {
+      "bytes": 17481,
+      "sha256": "727831e34cfa1637ca2c9c3ababe26054bd077664ae0afb92654fdaf30c5e08f"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/composites_sources.json": {
+      "bytes": 8272,
+      "sha256": "80007a48096eb7ac077a3c20df85ccf742b23af902c0f632eb55eec393e66ac7"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/composites_specimens.json": {
+      "bytes": 96375,
+      "sha256": "5f58b9f0a722c075f5f3b672e832820c168b334216d9bab6382a6d72c89d6a27"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/programs/composites-card-14429dbc.py": {
+      "bytes": 5626,
+      "sha256": "e3925147a50752ea6fb0a634299321f58c34650922af8307cda071ac7cf4dbfa"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/programs/composites-card-68612a2a.py": {
+      "bytes": 5042,
+      "sha256": "901ff16747be60e3a9aeff904b115f62023db7398f2cdec56030d560337634ad"
+    },
+    "hybrid/tests/research/fixtures/reference_replays/programs/composites-card-8dc4db49.py": {
+      "bytes": 4547,
+      "sha256": "056fef18497b3f5d5228086baf5641783311ef69815687ba67d11504abeda070"
+    },
+    "hybrid/tests/research/test_composites_historical_evidence.py": {
+      "bytes": 15548,
+      "sha256": "acac19bfd644d9425a2aa31b36551d1deb911532b53c9ab9b8c19affa7aa2a94"
+    },
+    "results-wt/evidence-recovery/COMPOSITES.md": {
+      "bytes": 20304,
+      "sha256": "94b9c3d5e1add37a98ab4af1df258820f75e6d9a1e6f877cb1099ec0e8b3c138"
+    },
+    "results-wt/evidence-recovery/composites-STATUS.md": {
+      "bytes": 1678,
+      "sha256": "667d5d6b132bd744901efd586b11a9174dbb5add537de43705f9c670746223cd"
+    },
+    "results-wt/evidence-recovery/composites-isolated-final-inventory.json": {
+      "bytes": 2275,
+      "sha256": "7a58b8dd3b3e629c34d49e5cd363ca62f70aea8b19d2eddfee48f32a2cc261ca"
+    },
+    "results-wt/evidence-recovery/composites-network-guard/sitecustomize.py": {
+      "bytes": 1061,
+      "sha256": "47d1e5801b55a9b878b51f106881d6700bc48622b7c1702cd5fc95231d25b09f"
+    },
+    "results-wt/evidence-recovery/composites-rows.json": {
+      "bytes": 16431,
+      "sha256": "d6c52c14ede670687ee6653bb7db4f7be6f7dd12f94660de4b1d08ea58f49bd6"
+    },
+    "results-wt/evidence-recovery/composites-tests.json": {
+      "bytes": 3690,
+      "sha256": "c546ef29f6c306f1d33da5d59b8d9c460b6aac5babe3b8e81a34afdfc09439b6"
+    },
+    "results-wt/evidence-recovery/composites_capture.py": {
+      "bytes": 9454,
+      "sha256": "e4eec46b487471261714cb7d087d977a7d8ec756203f83c23ec6215eac7d4ed1"
+    },
+    "results-wt/evidence-recovery/composites_inventory.py": {
+      "bytes": 2802,
+      "sha256": "12644cd993cc4b11dbde7c32b8b61f5aa852fa0b716d12eddd738e092b528897"
+    },
+    "results-wt/evidence-recovery/composites_measure.py": {
+      "bytes": 7166,
+      "sha256": "6de58bca965388c6d390e34895fe75d6fb3c8669c66d1cdc130808d492abd5b6"
+    },
+    "results-wt/evidence-recovery/composites_package.py": {
+      "bytes": 2888,
+      "sha256": "2c7d2961220635f122cc7e5fd405fd71d1edbd0729a74f21d753c6994a11af7c"
+    },
+    "results-wt/evidence-recovery/composites_summarize.py": {
+      "bytes": 3241,
+      "sha256": "0c238a41f2fc1b0812b63dbc6e2f7025f8a91cd83499da9c2fc535d7773740f4"
+    },
+    "results-wt/evidence-recovery/composites_verify.py": {
+      "bytes": 1459,
+      "sha256": "d8ceca7f61d4a1707f5013cc689fef38603fda3482fc3edd4ea22c82786e926c"
+    },
+    "results-wt/evidence-recovery/composites-SHA256SUMS": {
+      "bytes": 2834,
+      "sha256": "ff6c9c85efc673a71860f9e6855af69ed8982fa9d70641619a14dd17d2060095"
+    }
+  },
+  "inventory_excludes_itself": true,
+  "required_new_files": 24,
+  "main_head": "09dd7568f6a7ee2931859bdc0cf86adf1dcc1ffe",
+  "sibling_head": "a7bb1e0a95d49688007672de47c87ac0a7d6bfe5",
+  "uncommitted": true,
+  "prohibited_changes": "No existing source, tests, host contracts, schemas, expected codes, math, README, EXPERIMENT or policy changed."
+}

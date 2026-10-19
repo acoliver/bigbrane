@@ -12,7 +12,7 @@ from typing import Any, Callable, Mapping
 
 import httpx
 
-from hybrid.literature import sources
+from hybrid.literature import provenance, sources
 from hybrid.literature.cache import ResponseCache
 from hybrid.literature.events import EventSink, utc_now
 from hybrid.literature.keys import ApiKey, load_api_keys
@@ -49,6 +49,7 @@ class SearchReceipt:
     # Snapshot facts about the local index when arxiv_local was searched: path, record_count,
     # snapshot_date, complete. None when arxiv_local was not requested.
     local_index: dict[str, Any] | None = None
+    transport: tuple[dict[str, Any], ...] = ()
 
     def event_data(self) -> dict[str, Any]:
         data = {
@@ -62,6 +63,8 @@ class SearchReceipt:
             "errors": dict(self.errors),
             "result_count": len(self.papers),
         }
+        if self.transport:
+            data["transport_call_id"] = self.transport[0]["call_id"]
         if self.local_index is not None:
             data["local_index"] = dict(self.local_index)
         return data
@@ -101,6 +104,7 @@ class Literature:
             transport_kwargs["clock"] = clock
         self._transport = Transport(ResponseCache(Path(cache_root)), http, **transport_kwargs)
         self._now = now
+        self._clock = clock if clock is not None else time.monotonic
         self._local = ArxivLocal(Path(local_index_path)) if local_index_path is not None else None
         # The contact address is sent only when given, and only to OpenAlex. OpenAlex has required an
         # API key since February 2026 and ignores `mailto`, so this is harmless but no longer useful.
@@ -132,36 +136,49 @@ class Literature:
         limit: int = 10,
         sink: EventSink | None = None,
     ) -> SearchReceipt:
-        _check_sources(sources)
-        if not query.strip():
-            raise ValueError("search query is empty")
-        if limit < 1:
-            raise ValueError("search limit must be at least 1")
-        ts = self._now()
-        per_source: dict[str, tuple[Paper, ...]] = {}
-        errors: dict[str, str] = {}
-        local_index: dict[str, Any] | None = None
-        for source in sources:
-            try:
-                if source == LOCAL_SOURCE:
-                    found, local_index = self._search_local(query, limit, ts)
-                    per_source[source] = found
-                else:
-                    per_source[source] = tuple(self._search_source(source, query, limit))
-            except SourceError as exc:
-                per_source[source] = ()
-                errors[source] = exc.reason
-                if source == LOCAL_SOURCE:
-                    missing = self._local is None or not self._local.exists()
-                    local_index = {"path": self._local_path_text(), "status": "missing" if missing else "unreadable"}
-        # Sources are merged in the order requested, so the local index's records win ties.
-        papers = tuple(dedupe(paper for source in sources for paper in per_source[source]))
-        receipt = SearchReceipt(query, tuple(sources), limit, ts, per_source, errors, papers, local_index)
-        if errors:
-            _LOG.warning("literature search %r: source errors %s", query, errors)
-        if sink is not None:
-            sink.append("literature_search", ACTOR, receipt.event_data())
-        return receipt
+        with provenance.operation("search_with_receipt", query, sink) as context:
+            _check_sources(sources)
+            if not query.strip():
+                raise ValueError("search query is empty")
+            if limit < 1:
+                raise ValueError("search limit must be at least 1")
+            ts = self._now()
+            per_source: dict[str, tuple[Paper, ...]] = {}
+            errors: dict[str, str] = {}
+            local_index: dict[str, Any] | None = None
+            for source in sources:
+                try:
+                    if source == LOCAL_SOURCE:
+                        started = self._clock()
+                        local_record = provenance.new_record(
+                            source, provenance.identity_hash(f"{source}:{query}:{limit}"), "", ts, started
+                        )
+                        local_record["outcome"] = "local"
+                        try:
+                            found, local_index = self._search_local(query, limit, ts)
+                            per_source[source] = found
+                        except SourceError as exc:
+                            local_record.update(terminal="error", error_type=type(exc).__name__)
+                            raise
+                        finally:
+                            local_record["duration_s"] = self._clock() - started
+                    else:
+                        per_source[source] = tuple(self._search_source(source, query, limit))
+                except SourceError as exc:
+                    per_source[source] = ()
+                    errors[source] = exc.reason
+                    if source == LOCAL_SOURCE:
+                        missing = self._local is None or not self._local.exists()
+                        local_index = {"path": self._local_path_text(), "status": "missing" if missing else "unreadable"}
+            # Sources are merged in the order requested, so the local index's records win ties.
+            papers = tuple(dedupe(paper for source in sources for paper in per_source[source]))
+            receipt = SearchReceipt(query, tuple(sources), limit, ts, per_source, errors, papers, local_index,
+                                    tuple(context.records))
+            if errors:
+                _LOG.warning("literature search id=%s: source errors %s", provenance.identity_hash(query), errors)
+            if sink is not None:
+                sink.append("literature_search", ACTOR, receipt.event_data())
+            return receipt
 
     def _search_local(self, query: str, limit: int, ts: str) -> tuple[tuple[Paper, ...], dict[str, Any]]:
         if self._local is None:
@@ -194,52 +211,56 @@ class Literature:
     # Lookup
 
     def get_paper(self, source: str, source_id: str, sink: EventSink | None = None) -> Paper:
-        _check_sources((source,))
-        module = sources.MODULES[source]
-        fetched = self._fetch(source, module.get_request(source_id))
-        paper = _parse(source, fetched, module.parse_get)
-        if sink is not None:
-            sink.append(
-                "literature_get",
-                ACTOR,
-                {"source": source, "source_id": source_id, "ts": self._now(), "from_cache": fetched.from_cache},
-            )
-        return paper
+        with provenance.operation("get_paper", f"{source}:{source_id}", sink) as context:
+            _check_sources((source,))
+            module = sources.MODULES[source]
+            fetched = self._fetch(source, module.get_request(source_id))
+            paper = _parse(source, fetched, module.parse_get)
+            if sink is not None:
+                sink.append(
+                    "literature_get",
+                    ACTOR,
+                    {"source": source, "source_id": source_id, "ts": self._now(), "from_cache": fetched.from_cache,
+                     "transport_call_id": context.call_id},
+                )
+            return paper
 
     # Citation graph
 
     def related(self, paper: Paper, sink: EventSink | None = None) -> Related:
         """Best-effort references and citations. OpenAlex is tried first, then Semantic Scholar.
         Each failed attempt is recorded in `errors`; the result is empty when neither answers."""
-        errors: dict[str, str] = {}
-        result: Related | None = None
-        for source in RELATED_SOURCES:
-            try:
-                if source == "openalex":
-                    references, citations = self._related_openalex(paper)
-                else:
-                    references, citations = self._related_s2(paper)
-            except SourceError as exc:
-                errors[source] = exc.reason
-                continue
-            result = Related(paper_key_of(paper), source, references, citations, errors)
-            break
-        if result is None:
-            result = Related(paper_key_of(paper), None, (), (), errors)
-        if sink is not None:
-            sink.append(
-                "literature_related",
-                ACTOR,
-                {
-                    "paper": result.paper_key,
-                    "via": result.via,
-                    "reference_ids": [p.source_id for p in result.references],
-                    "citation_ids": [p.source_id for p in result.citations],
-                    "errors": dict(errors),
-                    "ts": self._now(),
-                },
-            )
-        return result
+        with provenance.operation("related", paper_key_of(paper), sink) as context:
+            errors: dict[str, str] = {}
+            result: Related | None = None
+            for source in RELATED_SOURCES:
+                try:
+                    if source == "openalex":
+                        references, citations = self._related_openalex(paper)
+                    else:
+                        references, citations = self._related_s2(paper)
+                except SourceError as exc:
+                    errors[source] = exc.reason
+                    continue
+                result = Related(paper_key_of(paper), source, references, citations, errors)
+                break
+            if result is None:
+                result = Related(paper_key_of(paper), None, (), (), errors)
+            if sink is not None:
+                sink.append(
+                    "literature_related",
+                    ACTOR,
+                    {
+                        "transport_call_id": context.call_id,
+                        "paper": result.paper_key,
+                        "via": result.via,
+                        "reference_ids": [p.source_id for p in result.references],
+                        "citation_ids": [p.source_id for p in result.citations],
+                        "errors": dict(errors),
+                        "ts": self._now(),
+                    },
+                )
+            return result
 
     def _related_openalex(self, paper: Paper) -> tuple[tuple[Paper, ...], tuple[Paper, ...]]:
         module = sources.openalex
@@ -300,15 +321,21 @@ def _parse(source: str, fetched: Fetched, parser: Callable[[str, str], Any]) -> 
     try:
         return parser(fetched.body, fetched.fetched_at)
     except (ValueError, KeyError, TypeError) as exc:
-        raise SourceError(source, fetched.url, f"unparseable response: {exc}") from exc
+        if fetched.provenance is not None:
+            fetched.provenance.update(terminal="parse_error", error_type=type(exc).__name__)
+        raise SourceError(source, fetched.url, f"unparseable response: {type(exc).__name__}") from None
 
 
 def _load_json(source: str, fetched: Fetched, expected: type) -> Any:
     try:
         payload = json.loads(fetched.body)
     except ValueError as exc:
-        raise SourceError(source, fetched.url, f"invalid JSON: {exc}") from exc
+        if fetched.provenance is not None:
+            fetched.provenance.update(terminal="parse_error", error_type=type(exc).__name__)
+        raise SourceError(source, fetched.url, f"invalid JSON: {type(exc).__name__}") from None
     if not isinstance(payload, expected):
+        if fetched.provenance is not None:
+            fetched.provenance.update(terminal="parse_error", error_type="TypeError")
         raise SourceError(source, fetched.url, f"expected JSON {expected.__name__}")
     return payload
 

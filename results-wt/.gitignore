@@ -1,0 +1,29 @@
+# Generated evidence stays local; reports and reusable tools are selected explicitly.
+**/*.log
+**/*.pid
+**/*.exit
+**/logs/
+**/stores/
+**/cache/
+**/suite/
+**/suite[0-9]*/
+/kd8/*.json
+/kd8/*.jsonl
+
+# Repair-worker output is excluded except for these compact delivery records.
+/review-fixes/*
+!/review-fixes/CHECKPOINT.md
+!/review-fixes/SUMMARY.md
+!/review-fixes/GATES.md
+!/review-fixes/LITERATURE.md
+!/review-fixes/gates-STATUS.md
+!/review-fixes/literature-STATUS.md
+!/review-fixes/finish-REPORT.md
+!/review-fixes/finish-STATUS.md
+!/review-fixes/finish-PHASE7-REMAINING.md
+!/review-fixes/capture_saved_traces.py
+
+/final-review/*
+!/final-review/REVIEW.md
+!/final-review/FOLLOWUP.md
+/r2-bar/tools/dbg.py

@@ -1,0 +1,52 @@
+{
+  "card-ea50345f": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/s2-probe-20261018/runs/s2-P/jobs/job-481031acb7bf/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-ea50345f.py",
+    "sha256": "8a0930c26297cdab5049a8fa67000d1f4925834d9b72bc140e29c66576852cc2"
+  },
+  "card-17100001": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-17100001/jobs/job-824959d1221c/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-17100001.py",
+    "sha256": "e1918d678ac58349c96bbad70660aeb645636b114bd0fd2a67abe3edee9746f7"
+  },
+  "card-17100002": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-17100002/jobs/job-416f87af8600/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-17100002.py",
+    "sha256": "b99ca84866886c19d2db96f448999d475d27ae35a3e2b0f7fe3e6e0231cc72a8"
+  },
+  "card-17100003": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-17100003/jobs/job-91e7e9ec66bd/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-17100003.py",
+    "sha256": "31b5f8d1b70de4e466440cb40ad1c2fd28887d1e0c62ab5efac8ea4859863f8f"
+  },
+  "card-17100004": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-17100004/jobs/job-369b22a345fa/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-17100004.py",
+    "sha256": "8119252c87792af62d7c513ba891fa151b0e62e05e3579aa3834ec6202a0e790"
+  },
+  "card-17100005": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-17100005/jobs/job-e8fe63d9bc51/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-17100005.py",
+    "sha256": "2322788684951299725855c8b6364c95b29174cdcd9e61f8d88fce1cd778ad74"
+  },
+  "card-17100006": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-17100006/jobs/job-20b9e7d16acb/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-17100006.py",
+    "sha256": "1ad137354e67872ed3942163751aa0a27834b57315277c6f1eaf05aac5f8f43b"
+  },
+  "card-17100007": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-17100007/jobs/job-757b7bb1bb93/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-17100007.py",
+    "sha256": "8c16bda033be1105820440d1c5b6d99d5d4fe8200e5b7540dea9d94fca83a6c4"
+  },
+  "card-17100009": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-17100009/jobs/job-abb211689f35/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-17100009.py",
+    "sha256": "46dcc2583d3b9939383d8b04ff32149a0265acc23aafab99e72a1d84d07b6f1f"
+  },
+  "card-1710000a": {
+    "original": "/Volumes/XS1000/acoliver/projects/bigbrane/results/novelty-probe-20261017/later/s2-card-1710000a/jobs/job-9248d01f343c/in/main.py",
+    "fixture": "hybrid/tests/research/fixtures/reference_replays/programs/card-1710000a.py",
+    "sha256": "7e50848750bafdaf5d385668bee42a5f764f7793a9dc8db0f8faee50207ea831"
+  }
+}

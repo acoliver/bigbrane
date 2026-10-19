@@ -1,0 +1,106 @@
+{
+  "limit": 6,
+  "phrase_origin_url": "https://info.arxiv.org/help/api/user-manual.html",
+  "requests": [
+    {
+      "source": "arxiv",
+      "policy": "Q0",
+      "raw": "electron proton",
+      "request": {
+        "endpoint": "https://export.arxiv.org/api/query",
+        "params": {
+          "search_query": "all:electron AND all:proton",
+          "start": "0",
+          "max_results": "6",
+          "sortBy": "relevance"
+        }
+      },
+      "encoded_url": "https://export.arxiv.org/api/query?search_query=all%3Aelectron+AND+all%3Aproton&start=0&max_results=6&sortBy=relevance",
+      "request_id": "c58dc23d7f0ec46b29236cd8031ed29e5bcc51f4bd542d3ea4d4329b49e18a5e"
+    },
+    {
+      "source": "arxiv",
+      "policy": "Q1",
+      "raw": "electron proton",
+      "request": {
+        "endpoint": "https://export.arxiv.org/api/query",
+        "params": {
+          "search_query": "(ti:electron OR abs:electron) AND (ti:proton OR abs:proton)",
+          "start": "0",
+          "max_results": "6",
+          "sortBy": "relevance"
+        }
+      },
+      "encoded_url": "https://export.arxiv.org/api/query?search_query=%28ti%3Aelectron+OR+abs%3Aelectron%29+AND+%28ti%3Aproton+OR+abs%3Aproton%29&start=0&max_results=6&sortBy=relevance",
+      "request_id": "43ee7bb5f3927e7fe966f54343f55332050afe7e7438d0f5d187465f64af0c88"
+    },
+    {
+      "source": "openalex",
+      "policy": "Q0",
+      "raw": "electron proton",
+      "request": {
+        "endpoint": "https://api.openalex.org/works",
+        "params": {
+          "search": "electron proton",
+          "per-page": "6",
+          "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+        }
+      },
+      "encoded_url": "https://api.openalex.org/works?search=electron+proton&per-page=6&select=id%2Cdoi%2Ctitle%2Cdisplay_name%2Cpublication_year%2Cauthorships%2Cprimary_location%2Ccited_by_count%2Cabstract_inverted_index%2Creferenced_works",
+      "request_id": "114edaf6879454e318c61af545f1881e53605eb2f4be3b39d231d88558d817fa"
+    },
+    {
+      "source": "openalex",
+      "policy": "Q1",
+      "raw": "electron proton",
+      "request": {
+        "endpoint": "https://api.openalex.org/works",
+        "params": {
+          "search": "electron proton",
+          "per-page": "6",
+          "select": "id,doi,title,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,referenced_works"
+        }
+      },
+      "encoded_url": "https://api.openalex.org/works?search=electron+proton&per-page=6&select=id%2Cdoi%2Ctitle%2Cdisplay_name%2Cpublication_year%2Cauthorships%2Cprimary_location%2Ccited_by_count%2Cabstract_inverted_index%2Creferenced_works",
+      "request_id": "114edaf6879454e318c61af545f1881e53605eb2f4be3b39d231d88558d817fa"
+    },
+    {
+      "source": "s2",
+      "policy": "Q0",
+      "raw": "electron proton",
+      "request": {
+        "endpoint": "https://api.semanticscholar.org/graph/v1/paper/search",
+        "params": {
+          "query": "electron proton",
+          "limit": "6",
+          "fields": "paperId,externalIds,url,title,abstract,year,authors,venue,citationCount"
+        }
+      },
+      "encoded_url": "https://api.semanticscholar.org/graph/v1/paper/search?query=electron+proton&limit=6&fields=paperId%2CexternalIds%2Curl%2Ctitle%2Cabstract%2Cyear%2Cauthors%2Cvenue%2CcitationCount",
+      "request_id": "6e3f92f59ebf3b217d00027d9d1c188975e07d5d6cb76e4cfac17b1002a54434"
+    },
+    {
+      "source": "s2",
+      "policy": "Q1",
+      "raw": "electron proton",
+      "request": {
+        "endpoint": "https://api.semanticscholar.org/graph/v1/paper/search",
+        "params": {
+          "query": "electron proton",
+          "limit": "6",
+          "fields": "paperId,externalIds,url,title,abstract,year,authors,venue,citationCount"
+        }
+      },
+      "encoded_url": "https://api.semanticscholar.org/graph/v1/paper/search?query=electron+proton&limit=6&fields=paperId%2CexternalIds%2Curl%2Ctitle%2Cabstract%2Cyear%2Cauthors%2Cvenue%2CcitationCount",
+      "request_id": "6e3f92f59ebf3b217d00027d9d1c188975e07d5d6cb76e4cfac17b1002a54434"
+    }
+  ],
+  "arxiv_token_quotes": "No double quotes added: safe ASCII single tokens match frozen P0 output; URL escaping is distinct from phrase quoting.",
+  "live_sources": [
+    "arxiv"
+  ],
+  "live_operations_max": 2,
+  "source_http_max": 168,
+  "docs_http_max": 21,
+  "other_sources": "Differential offline evidence only; no new query, authentication or availability validation."
+}

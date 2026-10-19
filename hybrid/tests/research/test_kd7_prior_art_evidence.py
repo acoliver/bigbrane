@@ -29,9 +29,9 @@ def evidence_of(key, relation="closest_prior_work"):
 
 def requirements(candidates, evidence=()):
     record = {"label": "novel", "evidence": list(evidence)}
-    refs = difference.literature_refs(record, {"candidates": candidates})
-    return record, difference.Requirements(literature=refs, outcomes={}, r3=[], family=None, need=2,
-                                           families=FAMILIES, searched=len(candidates))
+    ctx = SimpleNamespace(outcomes=None, cfg={"outcomes": {"enforce_r3": False}})
+    critic = {"family": "none", "known_work_sources": []}
+    return record, difference.requirements(ctx, record, {"candidates": candidates}, [], critic, FAMILIES)
 
 
 def test_the_cited_paper_comes_first_with_its_title_then_the_others_in_search_order():
@@ -51,7 +51,7 @@ def test_the_cited_paper_comes_first_with_its_title_then_the_others_in_search_or
 
 
 def test_a_ref_is_accepted_as_the_key_or_the_bare_source_id():
-    _, req = requirements(search(), [evidence_of(SDM)])
+    _, req = requirements(search(), [evidence_of(SDM), evidence_of("arxiv:2401.00000")])
     card = make_card("card-0000a001")
     for ref in (SDM, SDM.split(":", 1)[1]):
         statement = {"closest_prior": [{"kind": "literature", "ref": ref},
@@ -77,15 +77,18 @@ def test_a_paper_beyond_the_listing_bound_is_not_shown_and_not_accepted():
         statement, make_card("card-0000a002"), req)
 
 
-def test_the_host_count_rule_is_unchanged_by_the_listing_bound():
+def test_the_required_entry_count_follows_the_relevant_sources_not_the_listing():
     ctx = SimpleNamespace(outcomes=None, cfg={"outcomes": {"enforce_r3": False}})
+    critic = {"family": "none", "known_work_sources": []}
 
-    def need(candidates):
-        record = {"label": "novel", "evidence": []}
-        return difference.requirements(ctx, record, {"candidates": candidates}, [], {"family": "none"}, FAMILIES).need
+    def need(candidates, cited=0):
+        evidence = [{"source_id": c["source_id"], "relation": "related"} for c in candidates[:cited]]
+        record = {"label": "novel", "evidence": evidence}
+        return difference.requirements(ctx, record, {"candidates": candidates}, [], critic, FAMILIES).need
 
     many = [paper(f"arxiv:2403.{n:05d}", f"Many {n}") for n in range(difference.LISTED_LITERATURE + 40)]
-    assert (need([]), need(many[:1]), need(many[:2]), need(many)) == (0, 1, 2, 2)
+    # D: papers the classifier did not cite as evidence are far relatives and do not raise the requirement
+    assert (need([]), need(many), need(many, 1), need(many, 2), need(many, 5)) == (0, 0, 1, 2, 2)
 
 
 class RecordingCtx:
@@ -98,10 +101,12 @@ class RecordingCtx:
 
 
 STATEMENT = {"closest_prior": [{"kind": "literature", "ref": SDM, "title": "t", "what_was_tried": "w",
-                                "why_it_failed": "f"}],
+                                "why_it_failed": "f"},
+                               {"kind": "literature", "ref": "arxiv:2401.00000", "title": "Paper number 0",
+                                "what_was_tried": "w", "why_it_failed": "f"}],
              "what_was_tried": "w", "why_it_failed": "f", "precise_change": "c", "changed_equation": "learning",
              "cause_ids_addressed": []}
-VERDICT = {"accepted": True, "problems": [], "causes": [], "family_difference_real": None, "family_why": "",
+VERDICT = {"accepted": True, "problems": [], "excerpt_gaps": [], "causes": [], "family_difference_real": None, "family_why": "",
            "required_difference": ""}
 
 

@@ -1,0 +1,115 @@
+{
+  "entries": [
+    {
+      "identity": {
+        "arxiv_id": "1110.5667",
+        "title": "Inducing Probabilistic Programs by Bayesian Program Merging"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "arxiv_id": "2204.09837",
+        "title": "Memory Bounds for the Experts Problem"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "arxiv_id": "1904.06317",
+        "title": "Few-Shot Bayesian Imitation Learning with Logical Program Policies"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "title": "Factorization Machines"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "arxiv_id": "1906.05059",
+        "title": "Higher-Order Ranking and Link Prediction"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "title": "Quadratic assignment problem (2-opt)"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "title": "Fundamental Permutation Group Algorithms for Symmetry Computation"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "arxiv_id": "1409.0334",
+        "title": "Storing Sequences in Binary Tournament-Based Neural Networks"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "arxiv_id": "0901.0553",
+        "title": "Predicting Missing Links via Local Information"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "arxiv_id": "1207.7196",
+        "title": "Binary Willshaw Learning Yields High Synaptic Capacity for Long-Term Familiarity Memory"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    },
+    {
+      "identity": {
+        "arxiv_id": "2411.14480",
+        "title": "Associative Knowledge Graphs for Efficient Sequence Storage and Retrieval"
+      },
+      "origin_sha256": "455541f8f0604507011f772cf6383cf88fa53bb0837995d08faba9f4f0de6e43",
+      "scope": "original_pa2_11"
+    }
+  ],
+  "scopes": {
+    "historical_recovery_19": {
+      "inventory_sha256": null,
+      "reason": "Full prior-study inventory and alias audit not assembled in this run.",
+      "status": "pending"
+    },
+    "original_pa2_11": {
+      "inventory_sha256": null,
+      "reason": "Full prior-study inventory and alias audit not assembled in this run.",
+      "status": "pending"
+    },
+    "other_used_study_data": {
+      "inventory_sha256": null,
+      "reason": "Full prior-study inventory and alias audit not assembled in this run.",
+      "status": "pending"
+    },
+    "seen_seed_109": {
+      "inventory_sha256": null,
+      "reason": "Full prior-study inventory and alias audit not assembled in this run.",
+      "status": "pending"
+    }
+  },
+  "unknown_aliases": [
+    "Unresolved cross-provider aliases remain.",
+    "Original registrations without usable metadata: "
+  ]
+}

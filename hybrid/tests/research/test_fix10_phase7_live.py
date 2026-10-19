@@ -9,8 +9,12 @@ D1. Own history left out every record with the card's id, so a card copied into 
 deaths; fixture: the recorded outcome records of card-1184f7a7 and the card version S2 saw.
 D3. Every cause of a record shared one clipped detail; each cause now carries its own deciding explanation.
 D4. A dialogue stopped by the round cap recorded no open questions."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN, novelty_fields
 import asyncio
 import json
+import math
+
+import numpy as np
 import subprocess
 import sys
 from pathlib import Path
@@ -24,17 +28,18 @@ from hybrid.research.signature import card_signature
 from hybrid.research.stages import difference, s2_prior_art
 from hybrid.research.stages.common import ESCAPE_FIELD, ExecResult
 from hybrid.research.stages.s2_prior_art import EQUIVALENCE_TOL, judge_comparisons, report_problem
+from hybrid.tests.research.reference_replays import FIXTURES as REPLAY_FIXTURES, load as replay_evidence
 from hybrid.tests.research.builders import make_card
 from hybrid.tests.research.outcome_fixtures import build_run
 from hybrid.tests.research.test_orchestrator_fakes import (comparison, declared, make_orchestrator, orch_config,
-                                                           program)
+                                                           program, synthetic_declared, SYNTHETIC_REFERENCES)
 from hybrid.tests.research.test_refine import always_new, asks, grown, proposer, question
 from hybrid.tests.research.test_refine import config as refine_config
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "phase7_live_20261014T1752Z"
 LIVE_RUN = "phase7-live-20261014T1752Z"
 SOURCE_RUN = "run-20261010T181300Z"
-CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "radical_enough", "why",
+CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "why",
                "textbook_transplant", "textbook_why", "family", "family_why")
 # The recorded program ends by setting its own verdict from the soft rewrite alone.
 VERDICT_LINE = "equiv = maxd < 1e-6"
@@ -44,7 +49,9 @@ HARD_BIMAP = {"id": "hard_bimap", "base_family": "other_known",
               "base_form": "bidirectional map (forcePut) used as an exact-match cache",
               "update": "forcePut(w_{t-1}, w_t): bind the pair, unbind any other key of the value; LRU cap",
               "read": "p(v) = 1 for the value bound to the query, fallback mass over unbound values",
-              "transformations": [], "parameter_mapping": "key w_{t-1}, value w_t, cap P_max", "limit_only": False}
+              "transformations": [], "parameter_mapping": "key w_{t-1}, value w_t, cap P_max", "limit_only": False,
+              "components": [{"role": "update", "name": "bimap forcePut", "origin": "published", "cite": "Guava BiMap"}]}
+HARD_BIMAP['reference_spec'] = replay_evidence('fix10')['hard_bimap']['reference_spec']
 HONEST_TAIL = '''
 print(json.dumps({"comparisons": [
     {"declared_id": None, "comparator": "two-sided state-gated one-hot delta rule with a -rho*x*y correction at (i, j)",
@@ -53,7 +60,8 @@ print(json.dumps({"comparisons": [
      "inputs_tested": 300, "max_abs_diff": maxd},
     {"declared_id": "hard_bimap", "comparator": "hard bimap with forcePut, LRU cap and fallback over unbound values",
      "family": "other_known", "transformations": [], "limit_only": False,
-     "reference": "bidirectional map (forcePut), exact-match cache", "inputs_tested": 300, "max_abs_diff": bd}],
+     "reference": "bidirectional map (forcePut), exact-match cache", "inputs_tested": 300, "max_abs_diff": bd,
+     "reference_samples": json.load(open(REPLAY_FIXTURE))["hard_bimap"]["reference_samples"]}],
     "notes": "recorded job-137fb29ee378 with its own numbers reported as comparisons"}))
 '''
 
@@ -68,13 +76,13 @@ def recorded_job():
 
 def recorded_critic():
     record = load("reduction_critic-card-c9615069-v7-b1ef30.json")
-    return {key: record[key] for key in CRITIC_KEYS} | {"comparators": [HARD_BIMAP]}
+    return {key: record[key] for key in CRITIC_KEYS} | novelty_fields(record) | {"comparators": [HARD_BIMAP]}
 
 
 def honest_program() -> str:
     code = recorded_job()["files"]["main.py"]
     assert code.count(VERDICT_LINE) == 1
-    return code.split(VERDICT_LINE, 1)[0] + HONEST_TAIL
+    return code.split(VERDICT_LINE, 1)[0] + HONEST_TAIL.replace("REPLAY_FIXTURE", repr(str(REPLAY_FIXTURES / "fix10.json")))
 
 
 def run(orch):
@@ -113,8 +121,30 @@ def test_the_recorded_programs_own_numbers_refute_the_hard_cache_claim(tmp_path)
     assert [c["counted"] for c in judged] == [False, True]
 
 
-PUBLISHED = declared("other_known")
-REPAIRED = declared("other_known", "repaired", ("normalizer",))
+# Explicit synthetic numerical specimens for downstream routing, not historical card evidence.
+PUBLISHED = dict(HARD_BIMAP, id='known')
+REPAIRED = dict(PUBLISHED, id='repaired', transformations=[{'type':'normalizer', 'what':'L1 normalize the read'}],
+                reference_spec=dict(PUBLISHED['reference_spec'], operation='bimap_hard_l1_read'))
+
+
+def synthetic_rows(rows, declarations):
+    declarations = {c['id']: c for c in declarations}
+    result = []
+    for row in rows:
+        c = declarations.get(row['declared_id'])
+        if c is None or 'reference_spec' not in c:
+            result.append(row)
+            continue
+        if c['base_family'] == 'ssm':
+            _, _, inputs, values, _ = SYNTHETIC_REFERENCES['ssm']
+        else:
+            sample = replay_evidence('fix10')['hard_bimap']['reference_samples'][0]
+            inputs, values = sample['inputs'][:1], sample['card_outputs'][:1]
+        offset = row['max_abs_diff'] if math.isfinite(row['max_abs_diff']) else 1.0
+        # The nonfinite reported scalar is diagnostic; these explicit synthetic output values decide.
+        trace = {'inputs': inputs, 'card_outputs': (np.asarray(values) + offset).tolist()}
+        result.append(dict(row, reference_samples=[trace]))
+    return result
 
 
 @pytest.mark.parametrize("declared_list, comparisons, outcome", [
@@ -129,14 +159,16 @@ REPAIRED = declared("other_known", "repaired", ("normalizer",))
     ([], [], "unverified"),
 ])
 def test_only_declared_comparators_of_the_stated_family_decide(declared_list, comparisons, outcome):
-    assert judge_comparisons(comparisons, declared_list, "other_known")[0] == outcome
+    assert judge_comparisons(synthetic_rows(comparisons, declared_list), declared_list, "other_known")[0] == outcome
 
 
 def test_a_verified_repair_still_reports_the_claimed_form_that_failed():
-    parent, lifted = declared("ssm", "parent"), declared("ssm", "lifted", ("lifted_state",))
+    parent = dict(synthetic_declared('ssm'), id='parent')
+    lifted = dict(parent, id='lifted', transformations=[{'type':'lifted_state', 'what':'direct sum with a zero channel'}],
+                  reference_spec=dict(parent['reference_spec'], operation='linear_ssm_zero_lift'))
     outcome, reasons, _ = judge_comparisons(
-        [comparison("ssm", 0.3, "parent", comparator="parent mapping"),
-         comparison("ssm", 1e-9, "lifted", comparator="lifted state", transformations=("lifted_state",))],
+        synthetic_rows([comparison("ssm", 0.3, "parent", comparator="parent mapping"),
+         comparison("ssm", 1e-9, "lifted", comparator="lifted state", transformations=("lifted_state",))], [parent, lifted]),
         [parent, lifted], "ssm")
     assert outcome == "verified" and "lifted state" in reasons[0] and f"{EQUIVALENCE_TOL:g}" in reasons[0]
     assert reasons[1].startswith("other comparisons with ssm") and "parent mapping" in reasons[1]
@@ -185,7 +217,10 @@ def test_s2_no_longer_accepts_the_recorded_reduction_of_c9615069(run_dir_fix10, 
 
 
 def test_a_comparison_with_the_claimed_form_still_gives_reduces_to_known(run_dir_fix10):
-    report = {"comparisons": [comparison("other_known", 0.0, "hard_bimap")], "notes": ""}
+    sample = replay_evidence('fix10')['hard_bimap']['reference_samples'][0]
+    trace = dict(sample, inputs=sample['inputs'][:1], card_outputs=sample['card_outputs'][:1])
+    report = {"comparisons": [dict(comparison("other_known", 0.0, "hard_bimap"), reference_samples=[trace])],
+              "notes": "routing only: the actual first saved prefix matches; this does not preserve the full card reduction"}
     orch, _ = make_orchestrator(run_dir_fix10, cfg=exclusion_config(), script=s2_script(program(report)))
     run(orch)
     assert only_card(orch)["status"]["verdicts"]["S2"]["verdict"] == "reduces_to_known"
@@ -226,7 +261,8 @@ def test_own_history_finds_card_1184f7a7s_own_recorded_death_in_the_source_run(r
     # and the difference statement's requirements name that cause
     ctx = SimpleNamespace(outcomes=recorded_store, cfg={"outcomes": {"enforce_r3": True, "jaccard_min": 0.6}})
     families, _ = difference.families_for(SimpleNamespace(cfg=orch_config()))
-    req = difference.requirements(ctx, {"evidence": []}, {"candidates": []}, matches, {"family": "none"}, families)
+    critic = {"family": "none", "known_work_sources": []}
+    req = difference.requirements(ctx, {"evidence": []}, {"candidates": []}, matches, critic, families)
     assert req.cause_ids() == [cause]
 
 
@@ -252,7 +288,7 @@ ESCAPE_WHY = ("Escape test, step 1: the broken invariant is real in the card's o
               + "The repair closes the escape. " * 40)
 ESCAPE_CRITIC = {"reduces_to": "other_known", "mapping": "Known form: SUGS, a sequential greedy CRP mixture of "
                  "conjugate Bayesian linear regressions (Wang and Dunson 2011).", "confidence": 0.7,
-                 "difference_if_any": "", "radical_enough": False, "why": ESCAPE_WHY, "textbook_transplant": False,
+                 "difference_if_any": "", **KNOWN, "why": ESCAPE_WHY, "textbook_transplant": False,
                  "textbook_why": "-"}
 UP_TO_S2 = [("S0", "pass", ["ok"]), ("S1", "pass", ["ok"])]
 

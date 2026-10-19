@@ -1,0 +1,659 @@
+{
+  "base_head": "eeaba07b93a8907cf6b1e4a6bef62b458b01ae5d",
+  "main_head": "701f7d2e2a642714779cfce3d7321f6f9d0b12be",
+  "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+  "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "environment": {
+    "BIGBRANE_LIVE": "0",
+    "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-network-guard:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery",
+    "TMPDIR": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/tmp",
+    "NEXT_ROWS_OUTPUT": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/phase7-rows.json"
+  },
+  "network": "inherited Python audit hook prohibits socket connect and DNS resolution",
+  "new_combined_run": {
+    "counts": {
+      "passed": 1779,
+      "skipped": 3,
+      "failed": 2
+    },
+    "modules": {
+      "hybrid.tests.research.test_budgets": {
+        "passed": 63
+      },
+      "hybrid.tests.research.test_calibration": {
+        "passed": 26,
+        "skipped": 1
+      },
+      "hybrid.tests.research.test_calibration_live_fixes": {
+        "passed": 16
+      },
+      "hybrid.tests.research.test_cli_routing": {
+        "passed": 4
+      },
+      "hybrid.tests.research.test_concurrency": {
+        "passed": 9
+      },
+      "hybrid.tests.research.test_difference": {
+        "passed": 23
+      },
+      "hybrid.tests.research.test_diskguard_wiring": {
+        "passed": 3
+      },
+      "hybrid.tests.research.test_escape": {
+        "passed": 22
+      },
+      "hybrid.tests.research.test_escape_reserve": {
+        "passed": 13
+      },
+      "hybrid.tests.research.test_escape_similarity": {
+        "passed": 5
+      },
+      "hybrid.tests.research.test_falsifier_gates": {
+        "passed": 23
+      },
+      "hybrid.tests.research.test_falsifiers": {
+        "passed": 14
+      },
+      "hybrid.tests.research.test_fix10_phase7_live": {
+        "passed": 25
+      },
+      "hybrid.tests.research.test_fix12_phase7_live": {
+        "passed": 33
+      },
+      "hybrid.tests.research.test_fix13_materiality": {
+        "passed": 22
+      },
+      "hybrid.tests.research.test_fix15_precision": {
+        "passed": 26
+      },
+      "hybrid.tests.research.test_fix16_card_completeness": {
+        "passed": 37
+      },
+      "hybrid.tests.research.test_fix17_stage": {
+        "passed": 19
+      },
+      "hybrid.tests.research.test_fix18_card_limits": {
+        "passed": 27
+      },
+      "hybrid.tests.research.test_fix19_prefreeze": {
+        "passed": 20
+      },
+      "hybrid.tests.research.test_fix20_precision_policy": {
+        "passed": 37
+      },
+      "hybrid.tests.research.test_fix21_measurement": {
+        "passed": 38
+      },
+      "hybrid.tests.research.test_fix22_invalid_runs": {
+        "passed": 24
+      },
+      "hybrid.tests.research.test_fix2_learnability_budget": {
+        "passed": 22
+      },
+      "hybrid.tests.research.test_fix3_contracts": {
+        "passed": 45
+      },
+      "hybrid.tests.research.test_fix4_challenge": {
+        "passed": 26
+      },
+      "hybrid.tests.research.test_fix5_p5_cards": {
+        "passed": 4
+      },
+      "hybrid.tests.research.test_fix5_prover": {
+        "passed": 13
+      },
+      "hybrid.tests.research.test_fix6_settlement": {
+        "passed": 26
+      },
+      "hybrid.tests.research.test_fix7_match": {
+        "passed": 25
+      },
+      "hybrid.tests.research.test_fix7_unread": {
+        "passed": 9
+      },
+      "hybrid.tests.research.test_fix9_settled_premises": {
+        "passed": 13
+      },
+      "hybrid.tests.research.test_fixct_hang_guard": {
+        "passed": 5
+      },
+      "hybrid.tests.research.test_generation_arms": {
+        "passed": 36
+      },
+      "hybrid.tests.research.test_historical_binding": {
+        "passed": 18
+      },
+      "hybrid.tests.research.test_historical_references": {
+        "passed": 19
+      },
+      "hybrid.tests.research.test_inspect": {
+        "passed": 14
+      },
+      "hybrid.tests.research.test_kd2_table_limit": {
+        "passed": 18
+      },
+      "hybrid.tests.research.test_kd4_counted_family": {
+        "passed": 19
+      },
+      "hybrid.tests.research.test_kd5_s0_family_flag": {
+        "passed": 10
+      },
+      "hybrid.tests.research.test_kd6_stage_errors": {
+        "passed": 4
+      },
+      "hybrid.tests.research.test_kd7_prior_art_evidence": {
+        "passed": 5
+      },
+      "hybrid.tests.research.test_kd8_restatement": {
+        "passed": 27
+      },
+      "hybrid.tests.research.test_known_work": {
+        "passed": 15
+      },
+      "hybrid.tests.research.test_ledger": {
+        "passed": 13
+      },
+      "hybrid.tests.research.test_live_check": {
+        "passed": 3
+      },
+      "hybrid.tests.research.test_local_index": {
+        "passed": 9
+      },
+      "hybrid.tests.research.test_localmodels": {
+        "passed": 12
+      },
+      "hybrid.tests.research.test_math_premises": {
+        "passed": 17
+      },
+      "hybrid.tests.research.test_math_stages": {
+        "passed": 25
+      },
+      "hybrid.tests.research.test_math_wiring": {
+        "passed": 12
+      },
+      "hybrid.tests.research.test_next_historical_references": {
+        "passed": 37
+      },
+      "hybrid.tests.research.test_obligation_checks": {
+        "passed": 24
+      },
+      "hybrid.tests.research.test_orchestrator": {
+        "passed": 62
+      },
+      "hybrid.tests.research.test_orchestrator_units": {
+        "passed": 29
+      },
+      "hybrid.tests.research.test_outcome_backfill": {
+        "passed": 7
+      },
+      "hybrid.tests.research.test_outcome_store": {
+        "passed": 10
+      },
+      "hybrid.tests.research.test_outcomes_wiring": {
+        "passed": 7
+      },
+      "hybrid.tests.research.test_p4p_protocols": {
+        "passed": 50,
+        "skipped": 1
+      },
+      "hybrid.tests.research.test_phase6_regressions": {
+        "passed": 18
+      },
+      "hybrid.tests.research.test_phase7_replay": {
+        "passed": 2,
+        "failed": 2
+      },
+      "hybrid.tests.research.test_planted": {
+        "passed": 33
+      },
+      "hybrid.tests.research.test_planted_metrics": {
+        "passed": 31
+      },
+      "hybrid.tests.research.test_planted_target_kills": {
+        "passed": 25
+      },
+      "hybrid.tests.research.test_plumb": {
+        "passed": 20
+      },
+      "hybrid.tests.research.test_profile_stage": {
+        "passed": 23
+      },
+      "hybrid.tests.research.test_reference_replays": {
+        "passed": 6
+      },
+      "hybrid.tests.research.test_refine": {
+        "passed": 18
+      },
+      "hybrid.tests.research.test_review_coverage_wiring": {
+        "passed": 4
+      },
+      "hybrid.tests.research.test_review_gate_evidence": {
+        "passed": 44
+      },
+      "hybrid.tests.research.test_run_discovery_config": {
+        "passed": 8
+      },
+      "hybrid.tests.research.test_s6_labels": {
+        "passed": 9
+      },
+      "hybrid.tests.research.test_s6_rule_override": {
+        "passed": 11
+      },
+      "hybrid.tests.research.test_schemas": {
+        "passed": 35
+      },
+      "hybrid.tests.research.test_signature": {
+        "passed": 20
+      },
+      "hybrid.tests.research.test_store": {
+        "passed": 18
+      },
+      "hybrid.tests.literature.test_api_keys": {
+        "passed": 38
+      },
+      "hybrid.tests.literature.test_arxiv_https": {
+        "passed": 3
+      },
+      "hybrid.tests.literature.test_arxiv_local": {
+        "passed": 26
+      },
+      "hybrid.tests.literature.test_client": {
+        "passed": 19
+      },
+      "hybrid.tests.literature.test_dedupe": {
+        "passed": 4
+      },
+      "hybrid.tests.literature.test_harvest": {
+        "passed": 20
+      },
+      "hybrid.tests.literature.test_live": {
+        "skipped": 1
+      },
+      "hybrid.tests.literature.test_oai": {
+        "passed": 7
+      },
+      "hybrid.tests.literature.test_pacing": {
+        "passed": 12
+      },
+      "hybrid.tests.literature.test_parsing": {
+        "passed": 17
+      },
+      "hybrid.tests.literature.test_prior_art": {
+        "passed": 10
+      },
+      "hybrid.tests.literature.test_prior_art_cross_field": {
+        "passed": 6
+      },
+      "hybrid.tests.literature.test_prior_art_receipts": {
+        "passed": 15
+      },
+      "hybrid.tests.literature.test_sampling": {
+        "passed": 4
+      },
+      "hybrid.tests.literature.test_seed": {
+        "passed": 7
+      },
+      "hybrid.tests.literature.test_semantic_scholar_empty": {
+        "passed": 2
+      },
+      "hybrid.tests.literature.test_transport_provenance": {
+        "passed": 22
+      },
+      "results-wt.kd8.tools.tests.test_evidence_tools": {
+        "passed": 11
+      },
+      "results-wt.retrieval-diagnosis.test_diagnose": {
+        "passed": 12
+      }
+    },
+    "failed_nodes": [
+      "hybrid.tests.research.test_phase7_replay::test_every_s2_death_gets_its_expected_phase7_code",
+      "hybrid.tests.research.test_phase7_replay::test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+    ],
+    "skipped_nodes": [
+      {
+        "node": "hybrid.tests.research.test_calibration::test_the_stored_live_calibration_meets_the_acceptance_rule",
+        "reason": "set BIGBRANE_CALIBRATION_RESULT to a live calibration.json"
+      },
+      {
+        "node": "hybrid.tests.research.test_p4p_protocols::test_the_k2_recall_protocol_replays_through_the_stage_m_learnability_path",
+        "reason": "trains the K2 recall learner for minutes; set BIGBRANE_RUN_SLOW=1"
+      },
+      {
+        "node": "hybrid.tests.literature.test_live::test_live_arxiv_and_openalex_search_return_titled_papers",
+        "reason": "live test: set BIGBRANE_LIVE=1 to run"
+      }
+    ],
+    "command": [
+      "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+      "-m",
+      "pytest",
+      "-c",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/pyproject.toml",
+      "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+      "hybrid/tests/research",
+      "hybrid/tests/literature",
+      "results-wt/kd8/tools/tests/test_evidence_tools.py",
+      "results-wt/retrieval-diagnosis/test_diagnose.py",
+      "-p",
+      "next_results",
+      "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/pytest",
+      "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/combined-junit.xml",
+      "-q"
+    ],
+    "exit_code": 1,
+    "started_at": "2026-10-18T21:57:54Z",
+    "finished_at": "2026-10-18T22:09:15Z",
+    "local_raw_log": "results-wt/evidence-recovery/next-checkpoint-verification/combined.log",
+    "local_raw_log_sha256": "21470e0b0971473e1b7d2b6725e6ceaaedd64f341054d5aa98e59a3155671f95",
+    "local_junit_sha256": "1407fe987cbc03f0e7a75fe1b38ee9ffedbb55f79eb0130cd7acf3cc64d701ea"
+  },
+  "new_isolated_archive_run": {
+    "counts": {
+      "passed": 360,
+      "failed": 3,
+      "skipped": 1
+    },
+    "modules": {
+      "hybrid.tests.research.test_next_historical_references": {
+        "passed": 37
+      },
+      "hybrid.tests.research.test_historical_binding": {
+        "passed": 18
+      },
+      "hybrid.tests.research.test_historical_references": {
+        "passed": 19
+      },
+      "hybrid.tests.research.test_reference_replays": {
+        "passed": 6
+      },
+      "hybrid.tests.research.test_review_gate_evidence": {
+        "passed": 44
+      },
+      "hybrid.tests.research.test_phase7_replay": {
+        "passed": 2,
+        "failed": 2
+      },
+      "hybrid.tests.literature.test_api_keys": {
+        "passed": 38
+      },
+      "hybrid.tests.literature.test_arxiv_https": {
+        "passed": 3
+      },
+      "hybrid.tests.literature.test_arxiv_local": {
+        "passed": 26
+      },
+      "hybrid.tests.literature.test_client": {
+        "passed": 19
+      },
+      "hybrid.tests.literature.test_dedupe": {
+        "passed": 4
+      },
+      "hybrid.tests.literature.test_harvest": {
+        "passed": 20
+      },
+      "hybrid.tests.literature.test_live": {
+        "skipped": 1
+      },
+      "hybrid.tests.literature.test_oai": {
+        "passed": 7
+      },
+      "hybrid.tests.literature.test_pacing": {
+        "passed": 12
+      },
+      "hybrid.tests.literature.test_parsing": {
+        "passed": 17
+      },
+      "hybrid.tests.literature.test_prior_art": {
+        "passed": 10
+      },
+      "hybrid.tests.literature.test_prior_art_cross_field": {
+        "passed": 6
+      },
+      "hybrid.tests.literature.test_prior_art_receipts": {
+        "passed": 15
+      },
+      "hybrid.tests.literature.test_sampling": {
+        "passed": 4
+      },
+      "hybrid.tests.literature.test_seed": {
+        "passed": 6,
+        "failed": 1
+      },
+      "hybrid.tests.literature.test_semantic_scholar_empty": {
+        "passed": 2
+      },
+      "hybrid.tests.literature.test_transport_provenance": {
+        "passed": 22
+      },
+      "results-wt.kd8.tools.tests.test_evidence_tools": {
+        "passed": 11
+      },
+      "results-wt.retrieval-diagnosis.test_diagnose": {
+        "passed": 12
+      }
+    },
+    "failed_nodes": [
+      "hybrid.tests.research.test_phase7_replay::test_every_s2_death_gets_its_expected_phase7_code",
+      "hybrid.tests.research.test_phase7_replay::test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families",
+      "hybrid.tests.literature.test_seed::test_every_entry_traces_to_a_logged_search_hit_for_its_lens"
+    ],
+    "skipped_nodes": [
+      {
+        "node": "hybrid.tests.literature.test_live::test_live_arxiv_and_openalex_search_return_titled_papers",
+        "reason": "live test: set BIGBRANE_LIVE=1 to run"
+      }
+    ],
+    "exit_code": 1,
+    "invocation": {
+      "staged_tree": "3d1853024072c62a267737ad94b169c453ff8419",
+      "package": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/isolated-package",
+      "command": [
+        "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+        "-c",
+        "import sys,pytest\nfrom pathlib import Path\nexists=Path.exists\nprefix='/Volumes/XS1000/acoliver/projects/bigbrane/runs/'\nPath.exists=lambda p: False if str(p).startswith(prefix) else exists(p)\nraise SystemExit(pytest.main(sys.argv[1:]))\n",
+        "-c",
+        "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/isolated-package/pyproject.toml",
+        "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/isolated-package",
+        "-q",
+        "-p",
+        "next_results",
+        "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/pytest-isolated",
+        "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/isolated-junit.xml",
+        "hybrid/tests/research/test_next_historical_references.py",
+        "hybrid/tests/research/test_historical_binding.py",
+        "hybrid/tests/research/test_historical_references.py",
+        "hybrid/tests/research/test_reference_replays.py",
+        "hybrid/tests/research/test_review_gate_evidence.py",
+        "hybrid/tests/research/test_phase7_replay.py",
+        "hybrid/tests/literature",
+        "results-wt/kd8/tools/tests/test_evidence_tools.py",
+        "results-wt/retrieval-diagnosis/test_diagnose.py"
+      ],
+      "environment": {
+        "BIGBRANE_LIVE": "0",
+        "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/isolated-package/results-wt/evidence-recovery/next-network-guard:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/isolated-package:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/isolated-package/results-wt/evidence-recovery",
+        "TMPDIR": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/tmp",
+        "NEXT_ROWS_OUTPUT": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/next-checkpoint-verification/isolated-phase7-rows.json"
+      },
+      "absent": [
+        "hybrid/tests/research/fixtures/reference_replays/historical.json",
+        "results-wt/evidence-recovery/next-full-capture.json",
+        "results-wt/evidence-recovery/next-sources",
+        "results-wt/evidence-recovery/sources",
+        "results-wt/transport-provenance/comparison-cache"
+      ],
+      "original_run_checks": "masked as absent",
+      "archive_sha256": "f74fa4503426e1555921be2093ac5c9dbf6b9a157da44ef6daa13d3805cbf455"
+    },
+    "baseline_seed_dependency": {
+      "test": "hybrid/tests/literature/test_seed.py:34",
+      "read_path": "hybrid/literature/cache/seed_build_log.jsonl",
+      "current_tree_present": true,
+      "current_tree_bytes": 2346413,
+      "current_tree_sha256": "5a256f4a78b16415e85dd6ed553529f1d5361d4804d8f2bba206215077036e26",
+      "isolated_path_exists": false,
+      "root_cause": "read_build_log returns [] when the ignored seed build log is absent; the unchanged seed provenance assertion requires those historical source hits. This baseline dependency is outside the owned package and raw caches/logs must not be committed.",
+      "seed_loader_test_and_list_identical_to_base": true
+    },
+    "local_raw_log_sha256": "dbbb6742217a1854b88b9013d415f9ecd219514b7646090678c34009aa00e256"
+  },
+  "prior_worker_results": {
+    "research_current_and_isolated_each": {
+      "passed": 126,
+      "failed": 2
+    },
+    "literature": {
+      "passed": 212,
+      "skipped": 1
+    },
+    "literature_targeted": {
+      "passed": 79
+    },
+    "transport_differential": {
+      "cases": 12,
+      "unchanged": 12
+    }
+  },
+  "source_tree_sha256": "a62b6e1929f61877024c51962184daeec70494257118ca979d257a94a87c220c",
+  "source_files": [
+    {
+      "path": "hybrid/literature/client.py",
+      "bytes": 15998,
+      "sha256": "db0504e69ffb9e0766c6d93f09aa277d34084480e4105ba6960c9b448c6b78cc"
+    },
+    {
+      "path": "hybrid/literature/provenance.py",
+      "bytes": 4206,
+      "sha256": "6d2e825eb2996fbdf290491caee74b03be514e03e4d09ccc656535acfed75532"
+    },
+    {
+      "path": "hybrid/literature/transport.py",
+      "bytes": 13718,
+      "sha256": "147e2d890fd4817d5ea59d7f9f799acca2e851a9452a82be6f80f57c1278422e"
+    },
+    {
+      "path": "hybrid/research/schemas/reduction_critic.schema.json",
+      "bytes": 8072,
+      "sha256": "e217be1882ebc07de5a172c122d5ed816b162c7b9e89efa4d167a004d2fdd4d8"
+    },
+    {
+      "path": "hybrid/research/stages/published_references.py",
+      "bytes": 31734,
+      "sha256": "4722f09be165701ae2b1bff991aa502c3005eaf98b8e2c0ca7bf2aa1e706ad27"
+    },
+    {
+      "path": "hybrid/tests/literature/test_transport_provenance.py",
+      "bytes": 18204,
+      "sha256": "d44a065338171d68fdc70ac9b77ec3aa1d19174a4ad22ea2b83b83c0adebea48"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/SHA256SUMS",
+      "bytes": 3294,
+      "sha256": "464ed520c6b8faddb52d025941750f8f695c1abbfc02874c5b97b62e2f1face3"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_dam_diagnostic.json",
+      "bytes": 31251,
+      "sha256": "e3735e6fb10288f7a4ed67e5ff437eec0369e58f31338c96df095bdf15dab8ab"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_declarations.json",
+      "bytes": 503321,
+      "sha256": "20b8bf55ea227803e206233408ab17946cf79f02a1f5aed68bc32d084e9ca857"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_publications.json",
+      "bytes": 1635,
+      "sha256": "19d70a7cff6fac6a29ac988118618b005caf227d17c99aea01fc04d4c080b3ac"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_sources.json",
+      "bytes": 8390,
+      "sha256": "080ab6fbb1ed23bcf6bfada53141311bcf9d2e522ffa72eba6a89c53f63c7939"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_specimens.json",
+      "bytes": 5979,
+      "sha256": "f35721b068faee7e6d1abadc45ee0457be08a71fe4e0d7d44ddc22a2041498e4"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-7ec5e5c2.py",
+      "bytes": 5526,
+      "sha256": "3ef8afa81e32b1e5a92366f8e06ac3943926928839ec61cdcd3e0d2cae888a3d"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-bc3935ac.py",
+      "bytes": 5759,
+      "sha256": "800994ee22177f8dd6bed118d02a407bab65fed6484692187e434f0460da13e0"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-d1d383d5.py",
+      "bytes": 3878,
+      "sha256": "9dc2c6610bfd006e991ef9ede199ad0e6bdf8bbaaeadc77e621d7c3544590488"
+    },
+    {
+      "path": "hybrid/tests/research/phase7_replay.py",
+      "bytes": 13433,
+      "sha256": "2e5e014d03677ecd6d96e9f6b75012c3ebed3e5cdc251ae6f387098e6f0147b0"
+    },
+    {
+      "path": "hybrid/tests/research/reference_replays.py",
+      "bytes": 8164,
+      "sha256": "be9caa32defd91f909bf2f997f072fb9a022e5de2be915ae61fc771b4a6f6c77"
+    },
+    {
+      "path": "hybrid/tests/research/test_next_historical_references.py",
+      "bytes": 22647,
+      "sha256": "125d1f236b86355096c60ed734c534b7de5ba891a3078d4ecbda584305e0bea4"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next-network-guard/sitecustomize.py",
+      "bytes": 354,
+      "sha256": "f209b8c3fae338d0a717d03c62197d122347f1a4983f942177bf4f26c2aa0a1a"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next_capture.py",
+      "bytes": 5869,
+      "sha256": "26854cb2e4c9c97fb71f225bcd60c34a2f7376acf7d9e5fabdb0f8202ceb386e"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next_results.py",
+      "bytes": 491,
+      "sha256": "098f85def56dcfc69647852312a1f6828d89f3dff7877c0075592e8888871ffc"
+    },
+    {
+      "path": "results-wt/transport-provenance/verify_behavior.py",
+      "bytes": 5269,
+      "sha256": "483844838439c9080c802991e6751bc9abad663f087a6a9c5718b9081ce06506"
+    }
+  ],
+  "exact_code_summary": {
+    "required": 19,
+    "matched_before": 5,
+    "matched_after": 7,
+    "misses_before": 14,
+    "misses_after": 12,
+    "resolved": [
+      "card-7ec5e5c2",
+      "card-bc3935ac"
+    ],
+    "remaining": [
+      "card-14429dbc",
+      "card-2c5dd003",
+      "card-36725a7c",
+      "card-68612a2a",
+      "card-6de11b01",
+      "card-6fc7efec",
+      "card-8dc4db49",
+      "card-a36f1a3a",
+      "card-d1d383d5",
+      "card-dc69816b",
+      "card-ddb071bd",
+      "card-ffdbe331"
+    ]
+  },
+  "acceptance": "Original PA2 FAIL 2/4 against 3/4; named guards 9/10 and 3/6 unchanged. No novelty or integration acceptance.",
+  "review": "Latest work not independently reviewed; no new review cycle.",
+  "no_repeated_combined_suite": true
+}

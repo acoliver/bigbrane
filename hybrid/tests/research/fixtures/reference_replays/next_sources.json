@@ -1,0 +1,132 @@
+{
+  "capture_sha256": "dbea0629f6d64f0b780e380f2b7d834706ecb7b753404be72003ae34d500e770",
+  "cards": {
+    "card-7ec5e5c2": {
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-7ec5e5c2.py",
+        "sha256": "3ef8afa81e32b1e5a92366f8e06ac3943926928839ec61cdcd3e0d2cae888a3d",
+        "executed_source_sha256": "3ef8afa81e32b1e5a92366f8e06ac3943926928839ec61cdcd3e0d2cae888a3d",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-7b08c71f58f2/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-7b08c71f58f2.json",
+        "artifact_sha256": "e2dd4ff011a87d8211e830cf61ca60c437c9bae66bdfba004d375b6428dd52a4",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 10377,
+            "card_id": "card-7ec5e5c2",
+            "kind": "executor",
+            "name": "job-7b08c71f58f2.json",
+            "path": "artifacts/executor/job-7b08c71f58f2.json",
+            "sha256": "e2dd4ff011a87d8211e830cf61ca60c437c9bae66bdfba004d375b6428dd52a4"
+          },
+          "hash": "d432321d0d062d6ceea82ac48eeb230e7f84c339ded79d78850345b30e718958",
+          "prev_hash": "c5e4aa3f1ccd14cb1183fbac2d6d4ef47ccd8bdf2bffde473bf4e257d6dac66f",
+          "seq": 578,
+          "ts": "2026-10-10T18:52:31.994070+00:00",
+          "type": "artifact"
+        },
+        "purpose": "reduction_check",
+        "source_run": "run-20261010T181300Z",
+        "observer_sha256": "26854cb2e4c9c97fb71f225bcd60c34a2f7376acf7d9e5fabdb0f8202ceb386e",
+        "capture_insertions": [],
+        "method": "observer-only sys.settrace; untouched complete original program",
+        "draws_sha256": "770ac9d34f7d276fe566a7f8999f17b7e1fce3d155e6bb3171fed8cd876f0602",
+        "specimen": {
+          "card_sha256": "5a86671142dc82ad1ddbb9d27b5cf5a1dfbb95c1ab906a01928541c1e01c50c0",
+          "critic_sha256": "4120b6df5a41c166c1e74bd3c84799133b1c39bf6f6db521063079cab0a40262"
+        }
+      },
+      "specimen": {
+        "card_sha256": "5a86671142dc82ad1ddbb9d27b5cf5a1dfbb95c1ab906a01928541c1e01c50c0",
+        "critic_sha256": "4120b6df5a41c166c1e74bd3c84799133b1c39bf6f6db521063079cab0a40262"
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"200 trials, 30693 tokens; card FIFO closure vs product-automaton pair reachability + functionality test; point-mass answers=1206, uniform-answer outputs=1997\"}\n",
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"200 trials, 30693 tokens; card FIFO closure vs product-automaton pair reachability + functionality test; point-mass answers=1206, uniform-answer outputs=1997\"}\n"
+    },
+    "card-bc3935ac": {
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-bc3935ac.py",
+        "sha256": "800994ee22177f8dd6bed118d02a407bab65fed6484692187e434f0460da13e0",
+        "executed_source_sha256": "800994ee22177f8dd6bed118d02a407bab65fed6484692187e434f0460da13e0",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-2cd0ec0741cb/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-2cd0ec0741cb.json",
+        "artifact_sha256": "f0b2c8bc76f0bfc3010b42c31cd001bee4179f478cea9c25e677d123ca4fc2eb",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 10537,
+            "card_id": "card-bc3935ac",
+            "kind": "executor",
+            "name": "job-2cd0ec0741cb.json",
+            "path": "artifacts/executor/job-2cd0ec0741cb.json",
+            "sha256": "f0b2c8bc76f0bfc3010b42c31cd001bee4179f478cea9c25e677d123ca4fc2eb"
+          },
+          "hash": "138829b26652184375606c4f5d51058af132a531695e91ec4a01b8f76303fccf",
+          "prev_hash": "5c8239f34b9e11e6967b062b2afa338f1301d312b014205a46dfbe2e1a363d75",
+          "seq": 763,
+          "ts": "2026-10-10T19:00:33.189651+00:00",
+          "type": "artifact"
+        },
+        "purpose": "reduction_check",
+        "source_run": "run-20261010T181300Z",
+        "observer_sha256": "26854cb2e4c9c97fb71f225bcd60c34a2f7376acf7d9e5fabdb0f8202ceb386e",
+        "capture_insertions": [],
+        "method": "observer-only sys.settrace; untouched complete original program",
+        "draws_sha256": "2b29f68805cf83f705c5e46a7a9979b0a085d5413a36062e25887fe79dc3a8fa",
+        "specimen": {
+          "card_sha256": "de67f3511e797e11fd5e71473535033f01f59335bc8f071fbbcaddc10ce53537",
+          "critic_sha256": "e3fea5ea372c4521bf090d533ab8a14a44bb874a3f7a3e3be31148a90ffe3a72"
+        },
+        "draw_limit": "rng.choice(list(placed)) depends on Python set iteration. Original runtime hash seed was not saved; this is an untouched-source reexecution, not recovery of byte-exact historical draws."
+      },
+      "specimen": {
+        "card_sha256": "de67f3511e797e11fd5e71473535033f01f59335bc8f071fbbcaddc10ce53537",
+        "critic_sha256": "e3fea5ea372c4521bf090d533ab8a14a44bb874a3f7a3e3be31148a90ffe3a72"
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"200 streams; dist diff 0, label diff 0, interval-vs-prefix mismatches 0, ~3493 query windows\"}\n",
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"200 streams; dist diff 0, label diff 0, interval-vs-prefix mismatches 0, ~3493 query windows\"}\n"
+    },
+    "card-d1d383d5": {
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-d1d383d5.py",
+        "sha256": "9dc2c6610bfd006e991ef9ede199ad0e6bdf8bbaaeadc77e621d7c3544590488",
+        "executed_source_sha256": "9dc2c6610bfd006e991ef9ede199ad0e6bdf8bbaaeadc77e621d7c3544590488",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-3015131d972c/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-3015131d972c.json",
+        "artifact_sha256": "756ce767d8735a35fcb06d78a6b7254e22c35e9cc6a9cadcb04ab584b0b62383",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 8692,
+            "card_id": "card-d1d383d5",
+            "kind": "executor",
+            "name": "job-3015131d972c.json",
+            "path": "artifacts/executor/job-3015131d972c.json",
+            "sha256": "756ce767d8735a35fcb06d78a6b7254e22c35e9cc6a9cadcb04ab584b0b62383"
+          },
+          "hash": "87d6024dff54efb33e11036e1e4211688de55a298f9bf7c3a70bb326cd2d09a7",
+          "prev_hash": "7d52859d45cb095cec66cb0c1088cfb761cfecb9265f074686aa40cc378eefed",
+          "seq": 753,
+          "ts": "2026-10-10T18:59:04.650342+00:00",
+          "type": "artifact"
+        },
+        "purpose": "reduction_check",
+        "source_run": "run-20261010T181300Z",
+        "observer_sha256": "26854cb2e4c9c97fb71f225bcd60c34a2f7376acf7d9e5fabdb0f8202ceb386e",
+        "capture_insertions": [],
+        "method": "observer-only sys.settrace; untouched complete original program",
+        "draws_sha256": "143854dc7d9b05146772211f44bb2fbc94d089a0ff5a566cc18ca3dfa4aebf03",
+        "specimen": {
+          "card_sha256": "b5a42ef83498a8a3cffab5303ba6ba37fded4506eabc7966dfc43496a697184d",
+          "critic_sha256": "e87626aad389deee1259fb98fd0e3d759af7e336f52d8912c0314570fa984152"
+        }
+      },
+      "specimen": {
+        "card_sha256": "b5a42ef83498a8a3cffab5303ba6ba37fded4506eabc7966dfc43496a697184d",
+        "critic_sha256": "e87626aad389deee1259fb98fd0e3d759af7e336f52d8912c0314570fa984152"
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 3.505551404714424e-11, \"notes\": \"h, sigma and p compared at every step; general symmetric W mapped to sum_r (a_r.u)^2 a_r via polarization (R=8d^3), Hebbian W via a=xi/d^(2/3); h via identity-transition SSM scan\"}\n",
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 1.981859121258367e-11, \"notes\": \"h, sigma and p compared at every step; general symmetric W mapped to sum_r (a_r.u)^2 a_r via polarization (R=8d^3), Hebbian W via a=xi/d^(2/3); h via identity-transition SSM scan\"}\n"
+    }
+  }
+}

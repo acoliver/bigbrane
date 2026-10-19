@@ -1,0 +1,37 @@
+[
+  {
+    "file": "automata.pdf",
+    "url": "https://cs.nju.edu.cn/lixuandong/automata/fch7.pdf",
+    "final_url": "https://cs.nju.edu.cn/lixuandong/automata/fch7.pdf",
+    "retrieved_utc": "2026-10-18T21:40:41.356571+00:00",
+    "sha256": "1118154bfb765f1f5111aca69d26cde571cb369fa842f30548fe815af6d6a910",
+    "section": "7.1.2 labeled transition system homomorphisms",
+    "text_extraction_exit": 0
+  },
+  {
+    "file": "dewey.pdf",
+    "url": "https://www.comp.nus.edu.sg/~lingtw/papers/sigmod2009.xuliang.pdf",
+    "final_url": "https://www.comp.nus.edu.sg/~lingtw/papers/sigmod2009.xuliang.pdf",
+    "retrieved_utc": "2026-10-18T21:40:48.109987+00:00",
+    "sha256": "61cf359c7b45534e5996349a99f4fe1a72eca5176974cbc16e522fae23ebd3d0",
+    "section": "2.2, Dewey labeling, properties P1-P5",
+    "text_extraction_exit": 0
+  },
+  {
+    "file": "dam.pdf",
+    "url": "https://arxiv.org/pdf/2008.06996",
+    "final_url": "https://arxiv.org/pdf/2008.06996",
+    "retrieved_utc": "2026-10-18T21:40:48.399002+00:00",
+    "sha256": "c75787e77160fdcd7e40be0fa23ecf9ccfb7600e452ec56758d1267878d65fb9",
+    "section": "polynomial associative energy and continuous dynamics",
+    "text_extraction_exit": 0
+  },
+  {
+    "file": "stern-brocot.html",
+    "url": "https://cp-algorithms.com/others/stern_brocot_tree_farey_sequences.html",
+    "final_url": "https://cp-algorithms.com/others/stern_brocot_tree_farey_sequences.html",
+    "retrieved_utc": "2026-10-18T21:41:08.529432+00:00",
+    "sha256": "ea5cf5a9dda601fb8272752fdef68034d6b9fe34a422fa62dac6e6dbe1522dcb",
+    "section": "uniqueness and search, mediant interval subdivision"
+  }
+]

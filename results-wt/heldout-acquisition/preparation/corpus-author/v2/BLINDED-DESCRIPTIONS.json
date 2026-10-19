@@ -1,0 +1,90 @@
+[
+  {
+    "id": "h01",
+    "input": "A finite three-dimensional point set S and a valid tetrahedral triangulation DT_k.",
+    "state": "Tetrahedra, facet adjacency, a containing tetrahedron, and remaining insertion points.",
+    "update": "For p in S, find the containing cell, collect C={tetrahedra whose circumspheres contain p}, and set DT_(k+1)=(DT_k minus C) union B, where B cones the cavity boundary to p.",
+    "readout": "Updated empty-circumsphere tetrahedralization of the inserted vertices.",
+    "constraints": "The displayed kernel inserts inside the existing domain; initialization needs four noncoplanar vertices. Degenerate predicates and exterior handling are separate implementation details."
+  },
+  {
+    "id": "h02",
+    "input": "A finite point set in R^d.",
+    "state": "A simplicial convex hull with oriented facet equations, neighboring facets, and a disjoint outside-point assignment.",
+    "update": "Choose a farthest outside point p. Delete facets visible from p, join p to horizon ridges, and repartition the deleted facets outside sets among new facets; discard points below all new facets.",
+    "readout": "Hull vertices and boundary facets.",
+    "constraints": "The formal presentation assumes general position. A facet signed distance is n dot p + b; positive distance denotes visibility. Floating-point facet merging is beyond this card."
+  },
+  {
+    "id": "h04",
+    "input": "A running asynchronous process network with directed message channels.",
+    "state": "Each process local snapshot, each incoming channel message sequence, and marker flags.",
+    "update": "After recording its local state, a process sends a marker on every outgoing channel before later application messages. First-marker receipt records local state and an empty state for that incoming channel. Other channels record messages received after the local recording and before their marker.",
+    "readout": "A collection of process states and in-transit channel states forming a consistent global snapshot.",
+    "constraints": "Error-free FIFO channels; eventual marker delivery. Every process must initiate or be reachable from an initiator for termination. No shared physical clock is required."
+  },
+  {
+    "id": "h05",
+    "input": "Process-local event sequences with message sends and receives.",
+    "state": "A scalar counter C_i per process and a timestamp on each message.",
+    "update": "Increment C_i between successive local events. Sending attaches the current timestamp T_m. Receipt advances C_i to exceed both its previous value and T_m; integers permit C_i := max(C_i,T_m)+1.",
+    "readout": "Timestamps satisfying a precedes b implies C(a)<C(b); process identifiers may break equal timestamp ties for total order.",
+    "constraints": "The implication is one-way: ordered scalar timestamps do not establish causality. No physical-clock synchronization is assumed."
+  },
+  {
+    "id": "h06",
+    "input": "A diffusing computation initiated by an environment message through a gate.",
+    "state": "Per-edge message-minus-signal deficits, outgoing deficit total D, and a cornet of predecessor occurrences of size C.",
+    "update": "Sending a computation message increments D; receiving its reverse signal decrements D. Receiving a message adds its predecessor to the cornet. Return a signal by deleting that predecessor occurrence subject to the oldest-entry restriction and preserving C>0 or D=0.",
+    "readout": "A completion signal to the environment when all distributed message obligations have discharged.",
+    "constraints": "The oldest cornet occurrence is removed only when it is the sole entry. Signals acknowledge computation obligations rather than physical time; OCR notation is not treated as an exact mathematical transcription."
+  },
+  {
+    "id": "h07",
+    "input": "A finite simplicial complex with simplices ordered so each prefix is a subcomplex.",
+    "state": "Cycle representatives indexed by positive simplices and the current boundary relations.",
+    "update": "Insert simplices in filtration order. A positive simplex creates a homology class; a negative simplex kills a class by making it a boundary, and is paired with a surviving positive simplex using the cycle basis.",
+    "readout": "Birth/death simplex pairs and intervals; time persistence is death filtration value minus birth filtration value.",
+    "constraints": "Use a fixed coefficient convention, here mod 2 as a card specialization. An unpaired birth survives to the end. The source index convention subtracts one from index difference and is distinct from real-valued lifetime."
+  },
+  {
+    "id": "h08",
+    "input": "A data set X, a filter f:X to Z, a finite cover {U_alpha} of f(X), and a local clustering rule.",
+    "state": "For each alpha, clusters of f^(-1)(U_alpha); membership lists shared across overlapping cover elements.",
+    "update": "Pull back the cover, cluster within each inverse image, make a vertex for each cluster, and insert a simplex for a family of clusters with nonempty common intersection.",
+    "readout": "The nerve complex of the clustered cover, or its graph of pairwise overlaps.",
+    "constraints": "Cover resolution, overlap, filter, and clustering are explicit parameters. Local clusters can share observations across cover elements; this does not force global cluster disjointness."
+  },
+  {
+    "id": "h09",
+    "input": "A finite sequence V_1,...,V_n of finite-dimensional vector spaces with a linear map in either direction between adjacent spaces.",
+    "state": "Vector-space bases and the directed linear maps of the sequence.",
+    "update": "Decompose the sequence representation into interval summands I(b_j,d_j), with a one-dimensional space on indices b_j through d_j and zero outside, and identity maps inside each interval.",
+    "readout": "The multiset Pers(V)={[b_j,d_j]}, invariant under the choice of interval decomposition.",
+    "constraints": "A field and finite dimensions are required. Both forward and backward maps are allowed. Intervals here are closed integer intervals, unlike the half-open real intervals often used for monotone filtrations. This card states the formal decomposition, not an uninspected update algorithm."
+  },
+  {
+    "id": "h10",
+    "input": "A discretized linear problem A_h x_h=b_h and a hierarchy of coarser grids.",
+    "state": "Fine-grid approximation, coarse-grid projected problems, and transfer operators.",
+    "update": "Pre-smooth high-frequency error; restrict the remaining problem to a coarser grid and solve recursively; interpolate the correction back and post-smooth. A linear correction formulation is r_h=b_h-A_h x_h, A_H e_H=R r_h, x_h:=x_h+P e_H.",
+    "readout": "An updated fine-grid approximate solution after descent and ascent through the grid hierarchy.",
+    "constraints": "The displayed residual equations specialize the source projected-problem description to linear correction form. Coarsening stops where a direct solve is feasible. Grid hierarchy, smoother, restriction R, and interpolation P must be specified by an implementation."
+  },
+  {
+    "id": "h11",
+    "input": "A real symmetric matrix A and a nonzero initial vector q_1.",
+    "state": "Orthogonal basis vectors and tridiagonal coefficients alpha_j,beta_j.",
+    "update": "Normalize q_1. With beta_0=0, compute w=A q_j-beta_(j-1) q_(j-1), alpha_j=q_j^T w, w:=w-alpha_j q_j, beta_j=||w||_2, and q_(j+1)=w/beta_j if beta_j is nonzero.",
+    "readout": "A tridiagonal projection T_m=Q_m^T A Q_m; its eigenvalues approximate those of A.",
+    "constraints": "This card uses normalized modern notation for the symmetric three-term recurrence. Exact arithmetic gives orthogonality; finite precision can lose it. A zero beta is termination, not a division to execute."
+  },
+  {
+    "id": "h12",
+    "input": "A nonsymmetric system Ax=b, an initial x, a fixed shadow residual r_tilde, and an invertible preconditioner M.",
+    "state": "Residual r, search direction p, matrix image v, and scalars rho,alpha,omega.",
+    "update": "Set rho=r_tilde^T r, beta=(rho/rho_old)(alpha_old/omega_old), p=r+beta(p_old-omega_old v_old); solve M p_hat=p; v=A p_hat; alpha=rho/(r_tilde^T v); s=r-alpha v. Solve M s_hat=s; t=A s_hat; omega=(t^T s)/(t^T t); x:=x+alpha p_hat+omega s_hat and r:=s-omega t. The first iteration uses p=r.",
+    "readout": "An approximate solution and residual norm after stabilized short-recurrence updates.",
+    "constraints": "Stop early when s is sufficiently small before the second correction. Zero rho, zero omega, or vanishing denominators require algorithmic breakdown handling. No full Arnoldi basis is stored."
+  }
+]

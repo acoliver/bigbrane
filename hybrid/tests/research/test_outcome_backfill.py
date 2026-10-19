@@ -1,4 +1,5 @@
 """Backfill: every card of every run becomes one record with its kill codes; the source runs are not written."""
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import hashlib
 import json
 import os
@@ -13,7 +14,7 @@ from hybrid.tests.research.outcome_fixtures import KNOWN_MECHANISMS, build_run
 
 PASS = ["ok"]
 CRITIC = {"reduces_to": "other_known", "mapping": "m", "confidence": 0.9, "difference_if_any": "",
-          "radical_enough": False, "why": "This is not a renamed recurrence. It is weighted union-find with labels.",
+          **KNOWN, "why": "This is not a renamed recurrence. It is weighted union-find with labels.",
           "textbook_transplant": True, "textbook_why": "-"}
 S3_GATE = {"rule": "check_violation", "verdict": "infeasible_proved"}
 MATH_C = {"stage": "C", "verdict": "fail", "kill_codes": ["circular:C13", "statement_mismatch"]}

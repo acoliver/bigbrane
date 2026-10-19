@@ -6,6 +6,8 @@ The novelty probe (results/novelty-probe-20261017) killed card-17100003, a Minsk
 comparator was "not counted (declared in another family)", and the critic's `family` said ssm. The three probe
 records are replayed from their saved reduction_critic artifacts (fixtures/kd4_novelty_probe_20261017, sha256 in
 SHA256SUMS), with no model call. The synthetic cases run S2 end to end with scripted models."""
+from hybrid.tests.research.reference_replays import kd8_record
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import asyncio
 import json
 from pathlib import Path
@@ -16,14 +18,18 @@ from hybrid.research.outcomes import OutcomeStore
 from hybrid.research.stages import difference
 from hybrid.research.stages.s2_prior_art import counted_comparisons
 from hybrid.tests.research.test_difference import config, critic, mine
-from hybrid.tests.research.test_orchestrator_fakes import comparison_check, declared, make_orchestrator
+from hybrid.tests.research.test_orchestrator_fakes import comparison_check, declared, make_orchestrator, synthetic_declared
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "kd4_novelty_probe_20261017"
 FAMILIES, KEYWORDS = difference._families("hybrid/config/families.toml", "hybrid/config/archive.toml")
 
 
 def probe(card_id: str) -> dict:
-    return json.loads((FIXTURES / f"reduction_critic-{card_id}.json").read_text(encoding="utf-8"))
+    historical = json.loads((FIXTURES / f"reduction_critic-{card_id}.json").read_text(encoding="utf-8"))
+    replay = kd8_record({"card": card_id, "comparators": historical["comparators"],
+                         "comparisons": historical["reduction_check"]["comparisons"]})
+    return dict(historical, comparators=replay["comparators"],
+                reduction_check=dict(historical["reduction_check"], comparisons=replay["comparisons"]))
 
 
 def excluded_id(artifact: dict) -> str | None:
@@ -138,9 +144,9 @@ def run_s2(run_dir, empty, crit):
 
 
 def test_an_ssm_label_with_only_an_in_scope_comparator_counted_takes_the_verified_reduction_path(run_dir, empty):
-    crit = critic(reduces_to="other_known", family="ssm", radical_enough=False, mapping="a Minsky counter machine",
+    crit = critic(reduces_to="other_known", family="ssm", **KNOWN, mapping="a synthetic Dyck-2 routing control, not the recorded Minsky card",
                   family_why="A lifted-state repair over reachable configurations is an ssm.",
-                  comparators=[declared("other_known", "minsky_two_counter"), LIFTED])
+                  comparators=[synthetic_declared("other_known"), LIFTED])
     orch = run_s2(run_dir, empty, crit)
     s2 = s2_of(orch)
     assert s2["verdict"] == "reduces_to_known"
@@ -152,8 +158,9 @@ def test_an_ssm_label_with_only_an_in_scope_comparator_counted_takes_the_verifie
 
 
 def test_an_excluded_comparator_that_was_counted_kills_with_its_family(run_dir, empty):
-    crit = critic(reduces_to="ssm", family="none", radical_enough=False, mapping="h_t = a h_{t-1} + b x_t",
-                  comparators=[declared("ssm", "diag_ssm")])
+    control = dict(synthetic_declared("ssm"), id="diag_ssm")
+    crit = critic(reduces_to="ssm", family="none", **KNOWN, mapping="h_t = a h_{t-1} + b x_t",
+                  comparators=[control])
     orch = run_s2(run_dir, empty, crit)
     s2 = s2_of(orch)
     assert s2["verdict"] == "reduces_to_known" and s2["reasons"][-1].startswith("gate: excluded_family:ssm:")
@@ -161,14 +168,17 @@ def test_an_excluded_comparator_that_was_counted_kills_with_its_family(run_dir, 
     assert kill_codes(orch, run_dir, empty) == ["excluded_family:ssm"]
 
 
-@pytest.mark.parametrize("reduces_to, family, expected", [
-    ("other_known", "ssm", "gate: update rule reduces to other_known:"),
-    ("ssm", "none", "gate: excluded_family:ssm:"),
-])
-def test_a_confidence_verified_reduction_is_judged_by_the_claim_it_verified(run_dir, empty, reduces_to, family, expected):
-    """No check code: the verification stands on the critic's confidence in `reduces_to`, which is then all there is."""
-    crit = critic(reduces_to=reduces_to, family=family, confidence=0.95, radical_enough=False, mapping="a mapping")
-    orch, _ = make_orchestrator(run_dir, cfg=config(empty), script={
+@pytest.mark.parametrize("reduces_to, family", [("other_known", "ssm"), ("ssm", "none")])
+def test_confidence_without_execution_cannot_create_a_counted_family(run_dir, empty, reduces_to, family):
+    crit = critic(reduces_to=reduces_to, family=family, confidence=0.95, **KNOWN, mapping="a mapping")
+    orch, _ = make_orchestrator(run_dir, cfg=config(empty, statement=False), script={
         "reduction_critic": crit, "reduction_check": {"check_code": None, "explanation": "no numeric check is possible"}})
     asyncio.run(orch.run())
-    assert s2_of(orch)["reasons"][-1].startswith(expected)
+    verdict = s2_of(orch)
+    assert verdict["verdict"] == "pass"
+    assert any("confidence cannot establish verification" in reason for reason in verdict["reasons"])
+    assert not any("gate: excluded_family" in reason or "gate: update rule reduces" in reason
+                   for reason in verdict["reasons"])
+    record = orch.ctx.latest_json_artifact(orch.store.list_cards()[0], "reduction_critic")
+    assert record["reduction_outcome"] == "unverified" and record["reduction_check"] is None
+    assert counted_comparisons(record, record["reduction_check"]) == []

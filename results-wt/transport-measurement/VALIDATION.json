@@ -1,0 +1,24 @@
+{
+  "plan_sha256": "22a3b10aa88d985ce1e1b6bd1ff2eb9d2887f574df7eb75b869049c6c7abeadc",
+  "fixture_sha256": "4b5874f955a921b473c7927c10f06baaeb7348e92022d9990ef37fffb146de67",
+  "all_274_original_hashes_unchanged": true,
+  "pinned_transport_runtime_hashes_unchanged": true,
+  "other_worker_seed_changes": {
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/build_seed.py": {
+      "before": "f0e5887f0b7a5aa174f07e956398011b87591cea4f70857381cd3e118b9c3c9d",
+      "after": "53a63934964d3ffc2a651c2b6848a967f64a9b5dd5400c7ab84ea34b6820042f",
+      "mtime": "2026-10-18T19:24:23.785233-03:00"
+    },
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/seed.py": {
+      "before": "4e813b672ffea7a9eab83889797f58cc2e9adea2f3987bbd16fe9df12dfa42e2",
+      "after": "1c4cdc0063f23af56109f4bc2eb2d1ac2a11950e0360a90b1e75d744669c35f0",
+      "mtime": "2026-10-18T19:24:05.710868-03:00"
+    }
+  },
+  "pinned_tool_hashes_unchanged": true,
+  "runtime_started_at": "2026-10-18T22:23:11.435066+00:00",
+  "runtime_finished_at": "2026-10-18T22:23:28.088626+00:00",
+  "runtime_elapsed_s": 16.65356,
+  "main_git_status": "",
+  "sibling_git_status_other_workers": " M hybrid/literature/build_seed.py\n M hybrid/literature/seed.py\n?? hybrid/literature/seed_provenance.json\n?? hybrid/tests/literature/test_seed_provenance.py\n?? hybrid/tests/research/fixtures/reference_replays/programs/remaining-card-2c5dd003.py\n?? hybrid/tests/research/fixtures/reference_replays/programs/remaining-card-6fc7efec.py\n?? hybrid/tests/research/fixtures/reference_replays/programs/remaining-card-dc69816b.py\n?? hybrid/tests/research/fixtures/reference_replays/remaining_evidence.json\n?? hybrid/tests/research/fixtures/reference_replays/remaining_protected.json\n?? hybrid/tests/research/fixtures/reference_replays/remaining_publications.json\n?? hybrid/tests/research/fixtures/reference_replays/remaining_sources.json\n?? hybrid/tests/research/remaining_replays.py\n"
+}

@@ -1,0 +1,20 @@
+{
+  "exit_code": 0,
+  "total": 77,
+  "passed": 68,
+  "expected_failures": [
+    "test_frozen_empty_tokens_rejected[-Q0]",
+    "test_frozen_empty_tokens_rejected[-Q1]",
+    "test_frozen_empty_tokens_rejected[----Q0]",
+    "test_frozen_empty_tokens_rejected[----Q1]",
+    "test_frozen_empty_tokens_rejected[\\u4e2d\\u6587-Q0]",
+    "test_frozen_empty_tokens_rejected[\\u4e2d\\u6587-Q1]",
+    "test_frozen_unknown_policy_rejected[arxiv]",
+    "test_frozen_unknown_policy_rejected[openalex]",
+    "test_frozen_unknown_policy_rejected[s2]"
+  ],
+  "failed": [],
+  "required_probe_builder_checks_passed": true,
+  "network_prohibited": true,
+  "scope": "focused provider contract only, not full suite"
+}

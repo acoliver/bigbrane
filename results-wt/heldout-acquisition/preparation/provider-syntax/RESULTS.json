@@ -1,0 +1,93 @@
+{
+  "kind": "experimental_preparation_not_study_or_review",
+  "provider_syntax_status": "syntax_valid",
+  "complete_request_contract_status": "pending",
+  "criteria": {
+    "documented_arxiv_grammar_parameters_escaping": "passed",
+    "q0_nonempty_production_parity": "passed",
+    "q1_exact_grouping_all_tokens_retained": "passed",
+    "oa_s2_unchanged_builder_mock_transport": "passed",
+    "response_errors_and_unknown_total": "passed",
+    "ownership_request_hash_and_redaction": "passed",
+    "bounded_neutral_live_parse": "passed",
+    "frozen_inputs_and_main_unchanged": "passed",
+    "empty_ascii_helper_rejection": "pending_frozen_helper_defect",
+    "unknown_policy_helper_rejection": "pending_frozen_helper_defect"
+  },
+  "tests": {
+    "total": 77,
+    "passed": 68,
+    "expected_failure_cases": 9,
+    "unexpected_failures": 0
+  },
+  "runtime": {
+    "status": "syntax_valid",
+    "logical_operations": 2,
+    "attempts": 2,
+    "http_requests": 2,
+    "http_responses": 2,
+    "redirects": 0,
+    "retries": 0,
+    "cooldown_remaining_s": 0.0,
+    "source_operations_unspent": 0,
+    "diagnostic_unique_papers": 12,
+    "docs_http_requests": 1,
+    "docs_http_responses": 1,
+    "combined_http_requests": 3,
+    "source_http_dispatch_bound": 168,
+    "combined_http_dispatch_bound": 189,
+    "configured": {
+      "timeout_s": 30,
+      "attempts_max": 4,
+      "backoff_initial_s": 5,
+      "backoff_cap_s": 120,
+      "cooldown_s": 600,
+      "redirects_per_attempt_max": 20
+    },
+    "pacing": {
+      "leases_acquired_at": "2026-10-19T00:42:19+00:00",
+      "ingress_wait_s": 2.459040842950344e-06,
+      "egress_wait_s": 3.0077215830096975,
+      "leases_released_at": "2026-10-19T00:42:26+00:00"
+    },
+    "per_operation": [
+      {
+        "policy": "Q0",
+        "status": "syntax_valid",
+        "returned_count": 6,
+        "request_id": "c58dc23d7f0ec46b29236cd8031ed29e5bcc51f4bd542d3ea4d4329b49e18a5e",
+        "body_sha256": "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984",
+        "call_id": "4b82acea42334477a7169573ac053ee5",
+        "pacer_wait_s": 0.00039816705975681543
+      },
+      {
+        "policy": "Q1",
+        "status": "syntax_valid",
+        "returned_count": 6,
+        "request_id": "43ee7bb5f3927e7fe966f54343f55332050afe7e7438d0f5d187465f64af0c88",
+        "body_sha256": "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb",
+        "call_id": "5452848320f74164809e7f24d70386f0",
+        "pacer_wait_s": 2.4315281660528854
+      }
+    ],
+    "no_study_requests": true,
+    "no_live_other_provider_llm_gateway_or_credentials": true
+  },
+  "probe_exclusions": {
+    "path": "PROBE-EXCLUSIONS.json",
+    "sha256": "1dad768a0a4afff9d1e3823749590aa163f70134d59279658bf57e17b0c2b4ca",
+    "identities": 12,
+    "registry_modified": false
+  },
+  "remaining": [
+    "Two direct helper contract gaps; valid replay metadata/arm guards constrain them.",
+    "all documented as all listed fields, exact internal fulltext/analyzer scope and rank unknown.",
+    "One neutral pair is not proof for arbitrary token inputs, recall, rank equivalence or policy benefit.",
+    "OA/S2 current live authentication and availability untested; strings and requests unchanged.",
+    "Future worker must consume diagnostic exclusion handoff before corpus/reference identity checks."
+  ],
+  "original_pa2": "FAIL 2/4, unchanged",
+  "initial_429_cause": "unknown",
+  "study_accepted": false,
+  "ranking_verified": false
+}

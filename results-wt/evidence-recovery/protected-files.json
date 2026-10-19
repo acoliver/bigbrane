@@ -1,0 +1,278 @@
+{
+  "head": "fe264b5996b7177d2fbcca5e9274ca5414210578",
+  "changed_protected_files": [],
+  "files": [
+    {
+      "path": "DECISIONS.md",
+      "sha256": "e7477f989eb6d12ba138eb6181b4cc99bce5342a233debea088f0124b2b77e83"
+    },
+    {
+      "path": "EXPERIMENT.md",
+      "sha256": "ff63ef6da58502fecaac31312aa6cc20564ae7670ba0acd99327820b86bd5fe3"
+    },
+    {
+      "path": "README.md",
+      "sha256": "1d3d0acc7bffec24bdbd7affc41b9023f38c242fc598f9d042df228d00e498e9"
+    },
+    {
+      "path": "STATUS.md",
+      "sha256": "6945e2ba56f09b1abd9495ccbe693c576ef46853bffb8a16cecb085d5bfbe11a"
+    },
+    {
+      "path": "bigbrane/__init__.py",
+      "sha256": "299ca2b1998cf695db4bd972562943c8f4a3d8c26548acd187e3dcc765ac674c"
+    },
+    {
+      "path": "bigbrane/artifacts.py",
+      "sha256": "ebb95e4fdc519b804c7804263c4d080a8d29dd5dc16607bb1ea19a7cf4eb81cd"
+    },
+    {
+      "path": "bigbrane/cli.py",
+      "sha256": "fdcb155c00dde799f379aa77fe2c20b75ec55af002d68946cb0f277fe1796aa5"
+    },
+    {
+      "path": "bigbrane/core.py",
+      "sha256": "adb77a83fed6e111b8dcf7e4e2a0ebba1e3e6547e6806ba98b6c3168a4139ee1"
+    },
+    {
+      "path": "bigbrane/decisions.py",
+      "sha256": "2d473a15b86723e2ebbcdee2be20d78e4c3f25e9a14de4dbb3087f87de19611e"
+    },
+    {
+      "path": "bigbrane/evaluation.py",
+      "sha256": "280bd65dc8e532ae7b3c7fd789ec337aa4be2cdeb2bbbd6a04a5353da737db89"
+    },
+    {
+      "path": "bigbrane/fitting.py",
+      "sha256": "19c9723e05e832fc9025e96ae4b9a80705954db4703c5d000e95e4e795c2cb44"
+    },
+    {
+      "path": "bigbrane/neural.py",
+      "sha256": "54ba229111b076031d1a8972091a44aa3994af0cf5681ecf92c7dbb8a2373144"
+    },
+    {
+      "path": "bigbrane/protocol.py",
+      "sha256": "3ac913a48fe7b3293d6693ffac66d47e2a5ebb8034d68258f972a0d299d318ce"
+    },
+    {
+      "path": "bigbrane/runner.py",
+      "sha256": "d48240de4736518c358a20983c255c0ab672ddc7d6a70b7e33730934d01e3e4f"
+    },
+    {
+      "path": "hybrid/bench/README.md",
+      "sha256": "d707be33d7ffdc633baa93eae93a1e3cada5d563e0998b9a1e0e07df1c4c4730"
+    },
+    {
+      "path": "hybrid/executor/README.md",
+      "sha256": "a078eefbbe40b5d5b889dabcdedc857a31ed540daf81598d2c350ade310182b1"
+    },
+    {
+      "path": "hybrid/fixtures/calibration/expected.json",
+      "sha256": "5128de7eafa082107a0783fe34a924bd3b822650f2f2893df4a0669b181cbcca"
+    },
+    {
+      "path": "hybrid/gateway/README.md",
+      "sha256": "b07eccfa0feadcce3da53c5d699cfe7796db6a702ea3ae480259424545a253b4"
+    },
+    {
+      "path": "hybrid/literature/README.md",
+      "sha256": "3efab7fd8665f9822fd6b4c42fa96e0a451f4524049487d5823c3e35d5e37723"
+    },
+    {
+      "path": "hybrid/literature/STATUS.md",
+      "sha256": "9f5d33cff9407712ad475c4f249e31bab2e38df78d64cf2f51747b9b9d2f938c"
+    },
+    {
+      "path": "hybrid/literature/__init__.py",
+      "sha256": "f98dc94ddb93836eed8a91bea1874f89436ea3d32114816c091ce6661edaec09"
+    },
+    {
+      "path": "hybrid/literature/__main__.py",
+      "sha256": "1105b07932a248daa7db1082a7ed3cc1d3d9f0bd2d5d9547c6939cc8a6bf4264"
+    },
+    {
+      "path": "hybrid/literature/arxiv_index.py",
+      "sha256": "99613fb7601c22789b025cf9c8f666f849454a3dbfd5358488759e1235ae2fce"
+    },
+    {
+      "path": "hybrid/literature/build_seed.py",
+      "sha256": "f0e5887f0b7a5aa174f07e956398011b87591cea4f70857381cd3e118b9c3c9d"
+    },
+    {
+      "path": "hybrid/literature/cache.py",
+      "sha256": "4bee5110092a2130aa4091d100359e378865ea2afd985f5114620247fbd32638"
+    },
+    {
+      "path": "hybrid/literature/client.py",
+      "sha256": "76eff6a37059e08e5b1cb5aa6867c40b0b208f145a4789a316bb91b8a73bd03f"
+    },
+    {
+      "path": "hybrid/literature/events.py",
+      "sha256": "947244c1bd2ccd811da03b7474bf2bd2f4fb9728f988d23d93851bdcf87b4c01"
+    },
+    {
+      "path": "hybrid/literature/harvest.py",
+      "sha256": "51bcb070d00738646dddc7f02a51a91eea9f085a5eaae2754870b4fb8d3d187e"
+    },
+    {
+      "path": "hybrid/literature/key_report.py",
+      "sha256": "57da2c32f4f72e764a5e8220d6976923489493d4be644c99e0d71fe1cdb5e232"
+    },
+    {
+      "path": "hybrid/literature/keys.py",
+      "sha256": "8f17d432ef3c1e212bbb2995ec38a14d66e6e411f6215706bdd9579dc2a38736"
+    },
+    {
+      "path": "hybrid/literature/oai.py",
+      "sha256": "0b363fbac3c2008e59b9eb0a35f8e9d9f81a099f45175c5ea62b7ef6a2a0f81e"
+    },
+    {
+      "path": "hybrid/literature/paper.py",
+      "sha256": "654f6f1a53487266fa6dad34c9293a9fac327ea99595567716f2a44fd2195b46"
+    },
+    {
+      "path": "hybrid/literature/prior_art.py",
+      "sha256": "2b13584e76fdb18f27cd61cb0441f94d94aa2a00d9b916a488f8818b6cabecff"
+    },
+    {
+      "path": "hybrid/literature/sampling.py",
+      "sha256": "9051a5909a0b036a328b5c15937f8074d06e8f28ac6e880c664d71ea3d5fe208"
+    },
+    {
+      "path": "hybrid/literature/schemas.py",
+      "sha256": "3ee2cc18e7d6cbb05b38e095b2859f00eba14bfd95d6d9d996d21049cf5115be"
+    },
+    {
+      "path": "hybrid/literature/seed.py",
+      "sha256": "4e813b672ffea7a9eab83889797f58cc2e9adea2f3987bbd16fe9df12dfa42e2"
+    },
+    {
+      "path": "hybrid/literature/seed_reading_list.toml",
+      "sha256": "a72d06d7d1e49531c59cfd89b3ca9a18d3477430fe5a23ad85b6a131949cce3f"
+    },
+    {
+      "path": "hybrid/literature/sources/__init__.py",
+      "sha256": "7f527bbca917c9c32e8a9a5709d13f6655654d58ce6454ef5bf77d4af25d503c"
+    },
+    {
+      "path": "hybrid/literature/sources/arxiv.py",
+      "sha256": "5b09ce5f154b665aa0259a1f9b8a5c286b06705e8b3daf87a44b6e1e9bf447c2"
+    },
+    {
+      "path": "hybrid/literature/sources/arxiv_local.py",
+      "sha256": "4ac218dfa0e9892c76175885a445ab1d0eed5b0365027393509e2ea4b7795135"
+    },
+    {
+      "path": "hybrid/literature/sources/openalex.py",
+      "sha256": "a7ea5c2023bc1515ac289dd87c0ecda37ed0d4f5f3e58d4622ed419e7889a256"
+    },
+    {
+      "path": "hybrid/literature/sources/semantic_scholar.py",
+      "sha256": "6f0f9608a3d64bda886d87e7a2edfb37a07cd832abeaf666e3a2d1adec74e7e1"
+    },
+    {
+      "path": "hybrid/literature/transport.py",
+      "sha256": "f378d4f4bc0bd7d4949049f62788c14c5704cac51ddfd937c277722fae750fd7"
+    },
+    {
+      "path": "hybrid/llm/README.md",
+      "sha256": "7982d1fbe43761560394a728e3a775d88416676d853a492fd972dca385e084d9"
+    },
+    {
+      "path": "hybrid/math/README.md",
+      "sha256": "3e8575179d1ab647a7d3ae7a0bc837bd26fabf2b8ee56908c5cec445c4c8f4b5"
+    },
+    {
+      "path": "hybrid/research/schemas/__init__.py",
+      "sha256": "cd303fddbb093ac63afc8738fa3f71535ff3e164c76e74a8c6e4b01e2b1e7c3d"
+    },
+    {
+      "path": "hybrid/research/schemas/analyst.schema.json",
+      "sha256": "f74b9ef69fcc1a6c9554c8ba547ed8f5f7ad243749cdace2c6304bb6cbbcc38d"
+    },
+    {
+      "path": "hybrid/research/schemas/assumption.schema.json",
+      "sha256": "7e92e88caff4a423d5e5207f18942f923a62335b1d10df5ebc7db137c6abb8f1"
+    },
+    {
+      "path": "hybrid/research/schemas/bench_result.schema.json",
+      "sha256": "4c22a2ba8df3a117c4ce8ceb049d3bd1dead3eeafe3d9ff9c48f2979c727a1fa"
+    },
+    {
+      "path": "hybrid/research/schemas/claims_ledger.schema.json",
+      "sha256": "f058a22a1a8a9aa7e5132cfb381d3118c68da36ff3be0d7b4df67a6d27c9f2e3"
+    },
+    {
+      "path": "hybrid/research/schemas/difference.schema.json",
+      "sha256": "5b1240b68cff8ec2dfb3d74c1092efc5d53503d4261ca0babe8c4e3e751ebbfd"
+    },
+    {
+      "path": "hybrid/research/schemas/disprover.schema.json",
+      "sha256": "0470dfe4d9a36861bc0408436599999f9a53a8160fad9c3cb9012f4428160dff"
+    },
+    {
+      "path": "hybrid/research/schemas/feasibility_judge.schema.json",
+      "sha256": "ed836ed74085553982ff4b04527f9d4fa2f34975ff8456265ca895463c8c2d98"
+    },
+    {
+      "path": "hybrid/research/schemas/literature_receipt.schema.json",
+      "sha256": "b7dbf9f2dba5ba27bfd234367878202e1cb46dbf0ffecdc909785a43e8ced72e"
+    },
+    {
+      "path": "hybrid/research/schemas/math_statement.schema.json",
+      "sha256": "0db41047f69fb09103b7fcad31b447636952525604c56fab0511413cee880691"
+    },
+    {
+      "path": "hybrid/research/schemas/math_verdict.schema.json",
+      "sha256": "7e39d23febb8d15e9c71ff3fcc493c1f28ee3221b18545050d9601f6aff5819d"
+    },
+    {
+      "path": "hybrid/research/schemas/outcome.schema.json",
+      "sha256": "117003892d7e8d2a21b532e2f360d5c35ea0e5d1e12b10bb9e39001cdea155bf"
+    },
+    {
+      "path": "hybrid/research/schemas/prior_art.schema.json",
+      "sha256": "3a1be88a39cde6cd746b1efa183ffe2dbc9efdf6f5c94c069e17810fba749009"
+    },
+    {
+      "path": "hybrid/research/schemas/reduction_critic.schema.json",
+      "sha256": "130754de945d015da32f7d10bc11d1087ad0bd8fd5852c8a8291263fd0b3a920"
+    },
+    {
+      "path": "hybrid/research/schemas/salad_critic.schema.json",
+      "sha256": "74957294f9099be4cbad0fe25d76834a09d30bae7c805e71ceba0420f1103b5b"
+    },
+    {
+      "path": "hybrid/research/schemas/theory_card.schema.json",
+      "sha256": "05768824ab7dd201a14973af095a20d85db17e9a5c37942fd66f8976def86eb2"
+    },
+    {
+      "path": "hybrid/research/schemas/verdict.schema.json",
+      "sha256": "5cca43df5fd837b057ec2c5cc0314ee30dd1c0644582f01682aaff1b501e2af3"
+    },
+    {
+      "path": "hybrid/tests/research/phase7_replay.py",
+      "sha256": "ae17c5e161d38c668851043e56c537c0c938481193a2dbfd08c254c08f1b614d"
+    },
+    {
+      "path": "hybrid/tests/research/test_phase7_replay.py",
+      "sha256": "62251a0315e1f0f7ff03ce2ce2602338fb50bebb738608d1a26dba1a31216e1f"
+    },
+    {
+      "path": "tests/test_core.py",
+      "sha256": "6ab07dd4872f1dfe57538c5ca1ac95c7434ed6457a241b1eb536988405a93767"
+    },
+    {
+      "path": "tests/test_harness.py",
+      "sha256": "4ec26c7782b563a5b464dea403c58fa5a0915f5104a9070708cbd661bd89391c"
+    },
+    {
+      "path": "tests/test_integrity.py",
+      "sha256": "754649384ec4eb675dfc7aed81505b0eaf92d5e2c0df71d08b9a717e629b6db1"
+    },
+    {
+      "path": "tests/test_neural.py",
+      "sha256": "29a13deaa619ca685420826eec9e2838f6282de11e432d26bb15682bf634b1a3"
+    }
+  ]
+}

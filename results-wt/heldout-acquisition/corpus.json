@@ -1,0 +1,6 @@
+{
+  "status": "PENDING",
+  "reason": "Independent corpus, blinded label vault and full exclusion inventories have not been assembled.",
+  "cards": [],
+  "vault_sha256": null
+}

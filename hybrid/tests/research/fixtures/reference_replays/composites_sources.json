@@ -1,0 +1,122 @@
+{
+  "capture_sha256": "9694d991522796312735b686329f11101e2d74b13bc3ee045082f8afdb0d3a2d",
+  "invocation": {
+    "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+    "numpy": "2.5.3",
+    "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+    "PYTHONHASHSEED": "0"
+  },
+  "cards": {
+    "card-14429dbc": {
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"compared 63981 readouts over 401 streams; states valid&g>0=2019, invalid=536, full-window demos=521\"}\n",
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/composites-card-14429dbc.py",
+        "source_sha256": "e3925147a50752ea6fb0a634299321f58c34650922af8307cda071ac7cf4dbfa",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-dd0bfcfad21a/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-dd0bfcfad21a.json",
+        "artifact_sha256": "6fecec11a94c27eaee197591ffe2300872e3d762f0cc9f2915467ed0ca4b7a7e",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 10411,
+            "card_id": "card-14429dbc",
+            "kind": "executor",
+            "name": "job-dd0bfcfad21a.json",
+            "path": "artifacts/executor/job-dd0bfcfad21a.json",
+            "sha256": "6fecec11a94c27eaee197591ffe2300872e3d762f0cc9f2915467ed0ca4b7a7e"
+          },
+          "hash": "4f1dad0b35f9d99ef689056e60495f2323e1ec5f0322086ca9b146332aae2d21",
+          "prev_hash": "30bed03a179b0d2ed64ea76249fc695ba4673efb2735cea0d588627f266649dc",
+          "seq": 431,
+          "ts": "2026-10-10T18:47:59.118786+00:00",
+          "type": "artifact"
+        },
+        "purpose": "reduction_check",
+        "observer_sha256": "e4eec46b487471261714cb7d087d977a7d8ec756203f83c23ec6215eac7d4ed1",
+        "specimen": {
+          "card_sha256": "71c25e46b44a6f7fbf6bda8f107b3abc4a1d12e8af1ae9e64dd805b219c5ea04",
+          "critic_sha256": "8eff6c56699a4f08b570b614fb78087a4ff4dcce8e621fb3192f123a05b670a4"
+        },
+        "trace_sha256": "bfaab2b48020504be0682d8a2c625cae5c103e8609023adea5f58ed865d094c1",
+        "draws_sha256": "8e602739a5c6dc3a389a9f326e4d5bf60783754da7ba3c3bb757808186b43ecf",
+        "capture_insertions": [],
+        "draw_limit": "Historical raw draws and process hash seed were not saved. PYTHONHASHSEED=0 source reexecution is not recovered historical bytes; seeds and source bytes are unchanged. These programs do not draw from set-to-list conversions."
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 0.0, \"notes\": \"compared 63981 readouts over 401 streams; states valid&g>0=2019, invalid=536, full-window demos=521\"}\n"
+    },
+    "card-68612a2a": {
+      "reexecuted_stdout": "{\"equivalent\": false, \"max_abs_diff\": 1.4279215152635878, \"notes\": \"steps=99 writes=75 gate/size mismatches=0; card OMP-store vs coupled-dictionary OMP + RAN/ALD-style sparse-residual allocation, FIFO budget d=12>m=8\"}\n",
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/composites-card-68612a2a.py",
+        "source_sha256": "901ff16747be60e3a9aeff904b115f62023db7398f2cdec56030d560337634ad",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-7f666761c096/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-7f666761c096.json",
+        "artifact_sha256": "7d6cd194d60c90f0c76dd181f764d3373b5dacd4b527a969f88060c85b2d2be2",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 9866,
+            "card_id": "card-68612a2a",
+            "kind": "executor",
+            "name": "job-7f666761c096.json",
+            "path": "artifacts/executor/job-7f666761c096.json",
+            "sha256": "7d6cd194d60c90f0c76dd181f764d3373b5dacd4b527a969f88060c85b2d2be2"
+          },
+          "hash": "34ecaea0c82de355ecb7e4217c8fa6e3f4ccad25ec365837924c05aaa3c3412a",
+          "prev_hash": "b86bfaf689cd78091de256f7826a362f36e4a73b5ffa4a37536337ee10757c05",
+          "seq": 1377,
+          "ts": "2026-10-10T20:06:23.685267+00:00",
+          "type": "artifact"
+        },
+        "purpose": "reduction_check",
+        "observer_sha256": "e4eec46b487471261714cb7d087d977a7d8ec756203f83c23ec6215eac7d4ed1",
+        "specimen": {
+          "card_sha256": "652d3a56bc739e6287a42054c3d10b714bef32059b593118fa454428f1640123",
+          "critic_sha256": "540f8d37b52ef357a8902be332130c6b80ef142056829f253ab0138979d05876"
+        },
+        "trace_sha256": "5eb5b9d4e2ac3af2fb86dce4c7be72f117244a935d91f401872b57d2b365b0e2",
+        "draws_sha256": "cbdfa02c51ad098cf7ef8aa336eb6ccaf96914637af24a31c6e9bbbd1ebcd512",
+        "capture_insertions": [],
+        "draw_limit": "Historical raw draws and process hash seed were not saved. PYTHONHASHSEED=0 source reexecution is not recovered historical bytes; seeds and source bytes are unchanged. These programs do not draw from set-to-list conversions."
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 1.4210854715202004e-14, \"notes\": \"steps=99 writes=75 gate/size mismatches=0; card OMP-store vs coupled-dictionary OMP + RAN/ALD-style sparse-residual allocation, FIFO budget d=12>m=8\"}\n"
+    },
+    "card-8dc4db49": {
+      "reexecuted_stdout": "{\"equivalent\": true, \"max_abs_diff\": 6.661338147750939e-16, \"notes\": \"n=60 steps compared; evictions=29, gated-out bigrams=7; known=dense LFU-capped one-hot outer-product state + log-domain dustbin Sinkhorn (J warm-started iters) + sentinel mix; card mass err=3.3e-16; max TV of J=3 vs converged=1.974e-02\"}\n",
+      "provenance": {
+        "source": "hybrid/tests/research/fixtures/reference_replays/programs/composites-card-8dc4db49.py",
+        "source_sha256": "056fef18497b3f5d5228086baf5641783311ef69815687ba67d11504abeda070",
+        "original_source": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/jobs/job-0e6f6b6daa50/in/main.py",
+        "artifact": "/Volumes/XS1000/acoliver/projects/bigbrane/runs/run-20261010T181300Z/artifacts/executor/job-0e6f6b6daa50.json",
+        "artifact_sha256": "3e7ec6e0503a7245bf50f1ac788b2355fe97d187d16aa6da95acdf34f23a961a",
+        "ledger_event": {
+          "actor": "store",
+          "data": {
+            "bytes": 9436,
+            "card_id": "card-8dc4db49",
+            "kind": "executor",
+            "name": "job-0e6f6b6daa50.json",
+            "path": "artifacts/executor/job-0e6f6b6daa50.json",
+            "sha256": "3e7ec6e0503a7245bf50f1ac788b2355fe97d187d16aa6da95acdf34f23a961a"
+          },
+          "hash": "c3decc0e7baa29d85e46626889508cc5d81fa2f3516b620140b6ad166feff5c4",
+          "prev_hash": "851d399c322095ee92db66867811971a29db0f4a08455b5987607b388ad5b689",
+          "seq": 723,
+          "ts": "2026-10-10T18:58:45.055397+00:00",
+          "type": "artifact"
+        },
+        "purpose": "reduction_check",
+        "observer_sha256": "e4eec46b487471261714cb7d087d977a7d8ec756203f83c23ec6215eac7d4ed1",
+        "specimen": {
+          "card_sha256": "daefb93fe6bbe4016a5a28573b88bad6ca8d4f9e0bca7c185f7efe784e6f7ca0",
+          "critic_sha256": "9d8732a7faa711ea5839584ced3fd46a20073749daf8078b81c48493df3971a4"
+        },
+        "trace_sha256": "d01066efd039e670b07f02c8efd91c6d139f0bd7a2ed2c3be9fe3be08febbf1b",
+        "draws_sha256": "ff10e6ca45ecde52089dfcb9a7f1e55a5fd90cc4ce16f042ee05cf380f871834",
+        "capture_insertions": [],
+        "draw_limit": "Historical raw draws and process hash seed were not saved. PYTHONHASHSEED=0 source reexecution is not recovered historical bytes; seeds and source bytes are unchanged. These programs do not draw from set-to-list conversions."
+      },
+      "original_stdout": "{\"equivalent\": true, \"max_abs_diff\": 5.551115123125783e-16, \"notes\": \"n=60 steps compared; evictions=29, gated-out bigrams=7; known=dense LFU-capped one-hot outer-product state + log-domain dustbin Sinkhorn (J warm-started iters) + sentinel mix; card mass err=2.2e-16; max TV of J=3 vs converged=1.974e-02\"}\n"
+    }
+  }
+}

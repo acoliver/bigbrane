@@ -1,3 +1,4 @@
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import copy
 import json
 import subprocess
@@ -162,7 +163,7 @@ def test_salad_critic_findings_are_strict(bad):
 
 REDUCTION = {
     "reduces_to": "rnn", "mapping": "h_t = tanh(W h + U x) equals S_t up to the readout",
-    "confidence": 0.8, "difference_if_any": "", "radical_enough": False, "why": "Same state update.",
+    "confidence": 0.8, "difference_if_any": "", **KNOWN, "why": "Same state update.",
     "textbook_transplant": True, "textbook_why": "An Elman network as the textbook gives it.",
     "comparators": [{"id": "elman", "base_family": "rnn", "base_form": "Elman network", "update": "h_t = tanh(W h + U x)",
                      "read": "y_t = V h_t", "transformations": [], "parameter_mapping": "W, U and V as in the card",

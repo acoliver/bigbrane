@@ -34,7 +34,7 @@ def test_arxiv_error_entry_is_a_parse_failure():
 
 def test_arxiv_search_request_uses_one_term_per_word():
     request = arxiv.search_request("Mamba/SSM test-time", 5)
-    assert request.url == "http://export.arxiv.org/api/query"
+    assert request.url == "https://export.arxiv.org/api/query"
     assert request.params["search_query"] == "all:Mamba AND all:SSM AND all:test AND all:time"
     assert request.params["max_results"] == "5"
 

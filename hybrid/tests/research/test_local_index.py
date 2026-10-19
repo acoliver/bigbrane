@@ -137,8 +137,13 @@ class ScriptedCtx:
         self.ledger = Ledger()
         self.classify_prior_art = None
         self._answers = [
-            {"queries": ["echo state network", "reservoir computing chaos", "recurrent random features"]},
-            {"label": "prior_art_undertested", "notes": "close",
+            {"queries": [{"field": ("physics_dynamical_systems", "signal_processing", "optimization", "cognitive_bayesian")[i % 4], "query": q} for i, q in enumerate((
+                "echo state network", "reservoir computing chaos", "recurrent random features", "random reservoir readout",
+                "chaotic dynamics prediction", "liquid state machine", "fixed random recurrence", "linear readout training",
+                "edge of chaos memory", "reservoir capacity"))]},
+            {"queries": []},
+            {"coverage_assessment": {"adequate_for_novelty": True, "reason": "Local hits cover this fixture."},
+             "label": "prior_art_undertested", "notes": "close",
              "evidence": [{"source": "arxiv", "source_id": grounded_id, "relation": "closest_prior_work"}]},
         ]
 
@@ -165,7 +170,7 @@ def test_prior_art_finds_and_grounds_local_hits_while_every_remote_source_is_rat
     assert result["rejected_evidence"] == []
     receipts = ctx.ledger.of_type("literature_receipt")
     local = [r for r in receipts if r["source"] == "arxiv_local"]
-    assert len(local) == 3 and all(r["record_count"] == 5 and r["snapshot_date"] == "2026-10-11" for r in local)
+    assert len(local) == 10 and all(r["record_count"] == 5 and r["snapshot_date"] == "2026-10-11" for r in local)
     assert any("2401.00001" in r["result_ids"] for r in local)
     remote_ids = [r["result_ids"] for r in receipts if r["source"] in ("arxiv", "openalex")]
     assert remote_ids and all(ids == [] for ids in remote_ids)
@@ -176,11 +181,11 @@ def test_prior_art_with_missing_index_still_runs_and_records_the_skip(tmp_path, 
     shared = all_rate_limited_literature(missing)
     monkeypatch.setattr(literature_module, "literature_for", lambda path: shared)
     ctx = ScriptedCtx(missing, "2401.00001")
-    ctx._answers[1]["evidence"] = []
+    ctx._answers[2]["evidence"] = []
 
     result, _ = asyncio.run(s2_prior_art.prior_art(ctx, make_card(CARD_ID)))
 
     assert result["candidates"] == []
     local = [r for r in ctx.ledger.of_type("literature_receipt") if r["source"] == "arxiv_local"]
-    assert len(local) == 3
+    assert len(local) == 10
     assert all(r["note"].startswith("skipped: local index not found") and r["result_ids"] == [] for r in local)

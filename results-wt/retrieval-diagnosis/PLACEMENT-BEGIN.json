@@ -1,0 +1,8 @@
+{
+  "started_utc": "2026-10-18T21:17:25.580210+00:00",
+  "main": "/Volumes/XS1000/acoliver/projects/bigbrane",
+  "sibling": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "main_head": "9c01df3afa58c971e8745ec0344aafd1bc972b27",
+  "sibling_head": "fe264b5996b7177d2fbcca5e9274ca5414210578",
+  "constraints": "No network calls, no research tests, no commit/push/merge. Preserve original evidence before restoring only misplaced source line."
+}

@@ -1,0 +1,31 @@
+[
+  {
+    "label": "isolated",
+    "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/seed-provenance/isolated",
+    "command": [
+      "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+      "-m",
+      "pytest",
+      "hybrid/tests/literature/test_seed.py",
+      "hybrid/tests/literature/test_seed_provenance.py",
+      "-q",
+      "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/seed-provenance/isolated.xml"
+    ],
+    "returncode": 0,
+    "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/seed-provenance/offline:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/seed-provenance/isolated"
+  },
+  {
+    "label": "literature",
+    "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+    "command": [
+      "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+      "-m",
+      "pytest",
+      "hybrid/tests/literature",
+      "-q",
+      "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/seed-provenance/literature.xml"
+    ],
+    "returncode": 0,
+    "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/seed-provenance/offline:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2"
+  }
+]

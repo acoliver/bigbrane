@@ -1,0 +1,51 @@
+{
+  "authorized_changes": {
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/harness.py": {
+      "after": "2c1d366af78edd96cb12048b86c4b5656a11f396a91ebb8b2a7094c1c00cc5f0",
+      "before": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867"
+    }
+  },
+  "base_pin_count": 20,
+  "historical_manifests_logs_docs_probes_unchanged": true,
+  "implementation_version": 2,
+  "inventory_v1": "Historical old-harness pin retained; other worker owns broader inventory v2.",
+  "previous_manifest": "../INPUT-HASHES.json",
+  "repositories": {
+    "/Volumes/XS1000/acoliver/projects/bigbrane": {
+      "changed_tracked_files": [],
+      "head": "3ce1516b406f8053763033bcc1362a2f5c8889bd",
+      "production_unchanged": true,
+      "tracked_file_count": 783
+    },
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2": {
+      "changed_tracked_files": [
+        "results-wt/heldout-acquisition/harness.py"
+      ],
+      "head": "8cad9a1cf600c53d58e65889e36d8248342c7984",
+      "production_unchanged": true,
+      "tracked_file_count": 1083
+    }
+  },
+  "unchanged_count": 19,
+  "unchanged_files": {
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/cache.py": "4bee5110092a2130aa4091d100359e378865ea2afd985f5114620247fbd32638",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/client.py": "db0504e69ffb9e0766c6d93f09aa277d34084480e4105ba6960c9b448c6b78cc",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/events.py": "947244c1bd2ccd811da03b7474bf2bd2f4fb9728f988d23d93851bdcf87b4c01",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/provenance.py": "6d2e825eb2996fbdf290491caee74b03be514e03e4d09ccc656535acfed75532",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/arxiv.py": "be20d9f3f0ceb52b2b2317ea0f18f4256f031c171390ffc3374a9411f6d61c11",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/openalex.py": "a7ea5c2023bc1515ac289dd87c0ecda37ed0d4f5f3e58d4622ed419e7889a256",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/semantic_scholar.py": "6f0f9608a3d64bda886d87e7a2edfb37a07cd832abeaf666e3a2d1adec74e7e1",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/transport.py": "147e2d890fd4817d5ea59d7f9f799acca2e851a9452a82be6f80f57c1278422e",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/PLAN.md": "4d8f90f91c7a709bf3530df42573067837ebcb7fce2c965b00990c0500b1c701",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/PREREGISTRATION.sha256": "f4790e856188d8d9dafa9977fe72a9c35b8eeebde373da66defb1304e6a61d30",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/corpus.json": "a01a205221a236ee2cfbda782cc9005b86a1086ce61e3f27ee6f5d4bcecebbbc",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/exclusions.json": "45f3753e8181ef784c77df11529fe9eea405a6c1f1f90b99c411bb2c69d8e433",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/exclusions.sha256": "4e86ec45b34b5f135f378d2fb232f85304940620115b47d79242c2ddfac65ae0",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/offline.py": "d7250b9622301212baa5dfd1f9057ff16470e47684a35b3b0d380ac2f3171b83",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/policy.json": "245a9d97b44df9807f1cc4a88b127c6790f7423d7f3c85b62c2124336591047c",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/var/slots/literature-arxiv.last": "b02111b7d30440b0c08a38e5bbd0391a19de8c0e0ce06915c87797b8ce41e35d",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/var/slots/literature-arxiv.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Volumes/XS1000/acoliver/projects/bigbrane/var/slots/literature-arxiv.last": "3c22939640eab5f0bd324dca8b78049b3d7ba648ad81ba5a2de8c1dc8eab780b",
+    "/Volumes/XS1000/acoliver/projects/bigbrane/var/slots/literature-arxiv.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

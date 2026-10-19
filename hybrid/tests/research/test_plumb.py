@@ -3,6 +3,7 @@
 The stages run for real against fakes (scripted LLM, LocalExecutor, fake bench), the same ones the
 orchestrator tests use.
 """
+from hybrid.tests.research.critic_answers import KNOWN, NOT_KNOWN
 import asyncio
 import hashlib
 import json
@@ -28,7 +29,7 @@ CARD = "card-537e161c"
 REASON = "plumbing check of S4-S6; card was reduced to linear_attention at S2"
 PAGES = ["index.html", "cards.html", "lineage.html", "models.html", f"dossiers/{CARD}.html"]
 REDUCTION = {"reduces_to": "linear_attention", "mapping": "k = shifted token", "confidence": 0.9,
-             "difference_if_any": "", "radical_enough": False, "why": "The update is a delta rule.",
+             "difference_if_any": "", **KNOWN, "why": "The update is a delta rule.",
              "reduction_outcome": "verified", "textbook_transplant": True, "textbook_why": "textbook EDMD"}
 
 

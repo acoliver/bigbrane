@@ -1,0 +1,31 @@
+{
+  "corpus_selected": false,
+  "files": {
+    "BUILD-RECEIPT.v1.json": "95cda0e01fefab0172d69a23e4f1167d75cd0716e72fc80e840cf63623990eb9",
+    "REPORT.md": "96019e0c0d791c8bcc99cd93417bfd8ebf3d1565cc309a623d6ce23d7eae29be",
+    "STATUS.md": "94ee0739f928365862b41b5d7f4858ff213cabfd3232bcf543c83c8fda61f72b",
+    "harness-replay.json": "16bf63b43a36280300dcccd8a5fced8b15c843f43ce9f3439659af4917e68734",
+    "reproducibility.json": "19c70725c0d3aee473b9b10fb4161891d79bd38af6f6f0ce6ec18b69105a38aa",
+    "source-validation.log": "d8b82b454c2378745fa4e306664f040bf58712eed403b981f330b3a64b2f3a7a",
+    "tests.log": "68ca53df379c2636b57cb6a5cd05943592e5fe6ca80c5dcf0ac5024dacacc465",
+    "tests.xml": "67593aef8cb7dd51cc8f8e393c48411991303a19edc20266929b4ca9f0a4ae40"
+  },
+  "main_head": "3ce1516",
+  "network_or_llm_calls": 0,
+  "policy_or_preregistration_changed": false,
+  "rebuild_byte_identical": true,
+  "registry_sha256": "bd15b2e35324ac71c3d88a40b5b740396268d8b949003df37ab592e0ba9aae9c",
+  "sibling_head": "8cad9a1",
+  "source_validation_exit_code": 0,
+  "stage_sha256": "c76e12528108f07913f6928fc59e470ac28a20df9bc9c5021fa6e24bbe88565f",
+  "tests": {
+    "errors": "0",
+    "failures": "0",
+    "hostname": "Andrews-MacBook-Pro.local",
+    "name": "pytest",
+    "skipped": "0",
+    "tests": "32",
+    "time": "2.909",
+    "timestamp": "2026-10-18T21:52:23.390917-03:00"
+  }
+}

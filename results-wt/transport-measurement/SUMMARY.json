@@ -1,0 +1,479 @@
+{
+  "diagnostic": true,
+  "acceptance_input": false,
+  "counts": {
+    "attempts": 13,
+    "http_requests": 13,
+    "http_responses": 13,
+    "source_receipts": 12,
+    "redirects": 0,
+    "pacer_wait_s": 0.7298350830096751,
+    "retry_wait_s": 5.000308125047013,
+    "retry_delay_s": 5.0,
+    "operations": 12,
+    "outcomes": {
+      "network": 12
+    },
+    "terminals": {
+      "success": 12
+    },
+    "statuses": {
+      "200": 12,
+      "429": 1
+    }
+  },
+  "rows": [
+    {
+      "card_id": "card-3485a13f",
+      "source": "arxiv",
+      "call_id": "a5f910f15b224385a5019fa907418e77",
+      "query_sha256": "c8b2f1f2dcf5ad14f55bccffc75b558acf0ba180c1e976c43cd436d0d276e250",
+      "request_id": "ba7fc895c3a753453f84e4ffa99a67f35d228ac02d08e558a0ee840867932763",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 0,
+      "result_ids": [],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.0034107499523088336,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 0.5195422089891508,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-3485a13f",
+      "source": "openalex",
+      "call_id": "aa0e9a20ccfe42ea96202c479c465cb0",
+      "query_sha256": "c8b2f1f2dcf5ad14f55bccffc75b558acf0ba180c1e976c43cd436d0d276e250",
+      "request_id": "d6bdc94ef7ceddf3b5844175fda133d9f45c99a67b336cba10a835c22d76621f",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 6,
+      "result_ids": [
+        "W4416615487",
+        "W7133362630",
+        "W4404340302",
+        "W7214128231",
+        "W2981332691",
+        "W7167257601"
+      ],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.004698915989138186,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 1.0079507089685649,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-3485a13f",
+      "source": "s2",
+      "call_id": "a9d5f7229d7a4209b3a0cb2f455485d1",
+      "query_sha256": "c8b2f1f2dcf5ad14f55bccffc75b558acf0ba180c1e976c43cd436d0d276e250",
+      "request_id": "ca7b0d213318234b5e072a71a5faced97757ed875c1aa28242f08182dab1a641",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 6,
+      "result_ids": [
+        "987db28d690bb277289c0472809dba523e438619",
+        "dbc9f876b920b233a2ce9d99a060fdc776e3e228",
+        "d4e1e2e1f322265e2363d78961b2a6dc42cd2e29",
+        "f60a94ef96cf8c6648e947543b982a1b810d9fe2",
+        "f89b49fbc25506d69d744c8f899e5bd8d1df4279",
+        "8575792b33256c6411692e8b360e47978a6e035c"
+      ],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.001291166990995407,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 1.0101857909467071,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-f5ee7edb",
+      "source": "arxiv",
+      "call_id": "9ffb049b4e8c4c1fa6b5af1e12c20383",
+      "query_sha256": "1322705b4452867b65b886a6c8d054e14bf1a2ef4642b703ecc7bb9f0888ac17",
+      "request_id": "4dd55e04154603bf6496318e78a0ccd3d8fd73416ce828b6811c26409620a9cf",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 0,
+      "result_ids": [],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.09188116597943008,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 0.4216519580222666,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-f5ee7edb",
+      "source": "openalex",
+      "call_id": "70d83ad98df148d19a93e6f493cb4788",
+      "query_sha256": "1322705b4452867b65b886a6c8d054e14bf1a2ef4642b703ecc7bb9f0888ac17",
+      "request_id": "b3bbe4d00bbf950c65391a090d6c15c25e56f6ea6431d4cf1f6ca4ac25e30dde",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 6,
+      "result_ids": [
+        "W1594044668",
+        "W2014556729",
+        "W4394946694",
+        "W2921626126",
+        "W4401147307",
+        "W4416184944"
+      ],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.0004445409867912531,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 0.8589281250024214,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-f5ee7edb",
+      "source": "s2",
+      "call_id": "58003a76c2c3415eaeb19bd1a8641b45",
+      "query_sha256": "1322705b4452867b65b886a6c8d054e14bf1a2ef4642b703ecc7bb9f0888ac17",
+      "request_id": "7f8c4b523bc7e55abd73576f73da2ceb98f6ffbed308bd19ccb3d75b33e21849",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 2,
+      "http_requests": 2,
+      "http_responses": 2,
+      "source_receipts": 1,
+      "result_count": 6,
+      "result_ids": [
+        "9a15e07e18ea5b91ce37e523b599d4651dac0995",
+        "4b28b81d5993bded2232cfa03e8b1861266128f8",
+        "305113adc2189c97e1fa9dd01523056e789f8fff",
+        "7a540e1b546139bc21472bafbecf24632d94f5f8",
+        "30b18ddf13d2a5a7307dcdedeb7004c712b8a1e6",
+        "c808bfe1c4f731f1af925cd547f22322e2682bcb"
+      ],
+      "statuses": [
+        429,
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.0010641670087352395,
+      "retry_wait_s": 5.000308125047013,
+      "retry_delay_s": 5.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        },
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 7.227073333924636,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-a4f684fb",
+      "source": "arxiv",
+      "call_id": "0ea75e1d6d9b4d6ebf578028e0a34117",
+      "query_sha256": "bbec48499a57395574e94f2c6606abcd7f356dace1f5c4ec0011941029bb13b4",
+      "request_id": "19745cd5c88130f2b4a8e58617688c182c7aee59d0ae4c05b28b2a931d602b2f",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 2,
+      "result_ids": [
+        "2107.04683",
+        "1205.0682"
+      ],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.0003951659891754389,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 0.4199718750314787,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-a4f684fb",
+      "source": "openalex",
+      "call_id": "26292c10108b4dfab9c9a0850a96398b",
+      "query_sha256": "bbec48499a57395574e94f2c6606abcd7f356dace1f5c4ec0011941029bb13b4",
+      "request_id": "30830eeec194f4b16c398cb2fa5e83d9ae17a0d913fcd7495ed22e417023de88",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 6,
+      "result_ids": [
+        "W2169341714",
+        "W3194887545",
+        "W4249002680",
+        "W4293325636",
+        "W2022557081",
+        "W2621395058"
+      ],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.00031804200261831284,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 0.615222749998793,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-a4f684fb",
+      "source": "s2",
+      "call_id": "c6de69006d104813940b5e2e8fcea2e1",
+      "query_sha256": "bbec48499a57395574e94f2c6606abcd7f356dace1f5c4ec0011941029bb13b4",
+      "request_id": "adb13dbc47819c5b57861b284b859d566fb84c8dd36d15baa7035094463db427",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 6,
+      "result_ids": [
+        "cf43129fb9b8db4e8924b25ffd0d823c8dbc943b",
+        "e3740f834f623e5b1c027b313e63e945f203005a",
+        "7977afea1fc3e99de58e64c2b6d38eddb580aabf",
+        "69b2542204a190c93e58d8c10ae9a8f9b359050b",
+        "7ccd7b516da0ac5d45177eea2fb113280c37e76f",
+        "ba7d2126093968a055e8de70b623d2d3470c6b49"
+      ],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.00041258404962718487,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 1.3358696249779314,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-89248ee5",
+      "source": "arxiv",
+      "call_id": "c77163d03d81450ba7d14ba4c28421d9",
+      "query_sha256": "db0ee97f491634c907a5151f3ea45c8dcc752488dca743b39ac61923a753e9d2",
+      "request_id": "de4fcf4d059ec6e28cab23da742493b20bb94402fc96bb575fafdc46335f2656",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 0,
+      "result_ids": [],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.6251936670159921,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 1.0574073339812458,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-89248ee5",
+      "source": "openalex",
+      "call_id": "042ab08206e74fc79fefd22f22263687",
+      "query_sha256": "db0ee97f491634c907a5151f3ea45c8dcc752488dca743b39ac61923a753e9d2",
+      "request_id": "286dc245d47b847b8fc36f1262f757313b236e77b676e5d606f5b63d966d0fef",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 6,
+      "result_ids": [
+        "W1525999779",
+        "W203260150",
+        "W1527068730",
+        "W4360103626",
+        "W13660921",
+        "W2101082242"
+      ],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.0003788750618696213,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 0.8432021249318495,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    },
+    {
+      "card_id": "card-89248ee5",
+      "source": "s2",
+      "call_id": "2a1f7c6b57ef4a328759a9e5dcf2e982",
+      "query_sha256": "db0ee97f491634c907a5151f3ea45c8dcc752488dca743b39ac61923a753e9d2",
+      "request_id": "d7d8574a94a471d21a375273b80647b749f2b5894ed35a45da542fa86ef242f4",
+      "outcome": "network",
+      "terminal": "success",
+      "error_type": null,
+      "attempts": 1,
+      "http_requests": 1,
+      "http_responses": 1,
+      "source_receipts": 1,
+      "result_count": 6,
+      "result_ids": [
+        "38678deea9e2a4aedaec94a9ded57251945490ae",
+        "e80d940955a13a259135c1ae640ebe0e4550e8d2",
+        "f1feb244cdb04ca23f2d1f9939154c358ea482a3",
+        "6ec7fb1a659cb96d9c95a49ffaf90b2af637f6c1",
+        "edd967ce7483e6985c747ed73769f34cc08dda93",
+        "8bf523f1c4ccc5715a3c44c6abe5a0520aed9b75"
+      ],
+      "statuses": [
+        200
+      ],
+      "redirects": 0,
+      "pacer_wait_s": 0.00034604198299348354,
+      "retry_wait_s": 0.0,
+      "retry_delay_s": 0.0,
+      "retry_after": [
+        {
+          "kind": "absent",
+          "seconds": null
+        }
+      ],
+      "duration_s": 0.880999416927807,
+      "cooldown_remaining_s": 0.0,
+      "errors": {}
+    }
+  ],
+  "completed_plan": true,
+  "attribution_verified": true,
+  "ledger_chain_verified": true,
+  "transport_redaction_verified": true
+}

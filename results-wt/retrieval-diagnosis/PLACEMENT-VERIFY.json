@@ -1,0 +1,211 @@
+{
+  "verified_utc": "2026-10-18T21:23:07.277815+00:00",
+  "main": {
+    "branch": "p4-diagnosis",
+    "head": "9c01df3afa58c971e8745ec0344aafd1bc972b27",
+    "commands": {
+      "git status --short": "",
+      "git diff HEAD --name-status": "",
+      "git diff --cached --name-only": "",
+      "git check-ignore -v results-wt/retrieval-diagnosis/http.jsonl": ".git/info/exclude:9:/results-wt/\tresults-wt/retrieval-diagnosis/http.jsonl\n"
+    },
+    "tracked_clean": true,
+    "index_clean": true,
+    "original_test_safely_preserved_and_removed": true,
+    "evidence_ignored": true
+  },
+  "sibling": {
+    "branch": "r2-bar",
+    "head": "fe264b5996b7177d2fbcca5e9274ca5414210578",
+    "status_short": " M hybrid/literature/sources/arxiv.py\n M hybrid/research/schemas/reduction_critic.schema.json\n M hybrid/research/stages/published_references.py\n M hybrid/tests/literature/test_parsing.py\n M hybrid/tests/research/fixtures/reference_replays/SHA256SUMS\n M hybrid/tests/research/phase7_replay.py\n M hybrid/tests/research/reference_replays.py\n?? hybrid/tests/literature/test_arxiv_https.py\n?? hybrid/tests/research/fixtures/reference_replays/.gitignore\n?? hybrid/tests/research/fixtures/reference_replays/historical_declarations.json\n?? hybrid/tests/research/fixtures/reference_replays/historical_negative_controls.json\n?? hybrid/tests/research/fixtures/reference_replays/historical_sources.json\n?? hybrid/tests/research/fixtures/reference_replays/programs/historical-card-36725a7c.py\n?? hybrid/tests/research/fixtures/reference_replays/programs/historical-card-582f8abf.py\n?? hybrid/tests/research/fixtures/reference_replays/programs/historical-card-d86dca4b.py\n?? hybrid/tests/research/fixtures/reference_replays/programs/historical-card-ffdbe331.py\n?? hybrid/tests/research/test_historical_binding.py\n?? hybrid/tests/research/test_historical_references.py\n",
+    "index_clean": true,
+    "outside_scope_files_edited_by_this_task": [],
+    "baseline_other_worker_file_count": 10,
+    "baseline_files_still_byte_identical": 5,
+    "concurrent_other_worker_changes": [
+      {
+        "path": "hybrid/tests/research/fixtures/reference_replays/historical_declarations.json",
+        "before_sha256": "1e2ff750e8f6ba6aba5da843b305f2f0f649bc1ec6c14f8a2097683cc0e40c53",
+        "after_sha256": "8a8476373a0dbdbbeefbd9d4c39accd1ead61acb1d0042ee3970a1abb59f41a0"
+      },
+      {
+        "path": "hybrid/tests/research/test_historical_references.py",
+        "before_sha256": "02c267cd58c6238c3174cb88e4c30106dd36d3d2ca10a98a9324478e816914cc",
+        "after_sha256": "5b9fd48305cc217e24c168bc3dfc634f6e0f0bd556f21c148753b0286a569c9b"
+      },
+      {
+        "path": "hybrid/research/stages/published_references.py",
+        "before_sha256": "043c00ea0d7daeed335163be8faed4d20504ee79836e568585af9bec5962df3d",
+        "after_sha256": "6b7aaf0bf1daeeee34209757f18cbadecb69f9f2f59733ccfac99237f9215fde"
+      },
+      {
+        "path": "hybrid/tests/research/fixtures/reference_replays/SHA256SUMS",
+        "before_sha256": "67e147ec65d4f51683a0067f78455406e7efcbacb3820fbc4cb89d39448497b1",
+        "after_sha256": "644c74fd0277c22d88a1036bfcc2e799b9ef0d8925bdc52154ceadadef5c7857"
+      },
+      {
+        "path": "hybrid/tests/research/reference_replays.py",
+        "before_sha256": "bf90d4832030ff52cdb267b2be8f42124681c9f176b63a810369d9358ab6560a",
+        "after_sha256": "05677159ef0be25505c29352ffdbe79d0a5e7b4961b64d7d08f8d54ad540946e"
+      }
+    ],
+    "concurrent_changes_restored_or_modified": false
+  },
+  "original_diagnostic_files_verified": 71,
+  "original_sibling_locations": {
+    "MEASUREMENTS.json": "MEASUREMENTS.json",
+    "PRESERVATION.json": "PRESERVATION.json",
+    "QUERIES.md": "QUERIES.md",
+    "REPORT.md": "placement-originals/REPORT.md",
+    "STATUS.md": "placement-originals/STATUS.md",
+    "audit_raw.py": "audit_raw.py",
+    "diagnose.py": "placement-originals/diagnose.py",
+    "diagnostic-cache/arxiv/08c70c435a9f25a728ef9f352bc794a45f63b7f45bd4412c508656b69659aaa0.json": "diagnostic-cache/arxiv/08c70c435a9f25a728ef9f352bc794a45f63b7f45bd4412c508656b69659aaa0.json",
+    "diagnostic-cache/arxiv/0948afd228e1b0faa962f9eb809d5f268e854d422a8a9487fc0a83fa147764f2.json": "diagnostic-cache/arxiv/0948afd228e1b0faa962f9eb809d5f268e854d422a8a9487fc0a83fa147764f2.json",
+    "diagnostic-cache/arxiv/210fd7ae3fe638001ef01ba401d399991b761dc70012b547969d34d4c5f5ef91.json": "diagnostic-cache/arxiv/210fd7ae3fe638001ef01ba401d399991b761dc70012b547969d34d4c5f5ef91.json",
+    "diagnostic-cache/arxiv/234cbfc4920bf8cba38dc48eed8990f2bddadfa6fc0991e136e493c0bc6b5ecd.json": "diagnostic-cache/arxiv/234cbfc4920bf8cba38dc48eed8990f2bddadfa6fc0991e136e493c0bc6b5ecd.json",
+    "diagnostic-cache/arxiv/2d0c8332ffb08a24cc21c994235d08e47bf0a15e04523bb0ade36d5f552002c6.json": "diagnostic-cache/arxiv/2d0c8332ffb08a24cc21c994235d08e47bf0a15e04523bb0ade36d5f552002c6.json",
+    "diagnostic-cache/arxiv/2e292384e67a32bc1ecff43f5e4291c53a8ff540d13c50cf8dbc1cf51781847e.json": "diagnostic-cache/arxiv/2e292384e67a32bc1ecff43f5e4291c53a8ff540d13c50cf8dbc1cf51781847e.json",
+    "diagnostic-cache/arxiv/3750f8322dbadd232e8846e698f9b522c130f2d1d09aeafdd401d05a2c306735.json": "diagnostic-cache/arxiv/3750f8322dbadd232e8846e698f9b522c130f2d1d09aeafdd401d05a2c306735.json",
+    "diagnostic-cache/arxiv/3f4ad4f624c554ab7003c89a71aefecb137acda420f4244927a672d7a2f81d16.json": "diagnostic-cache/arxiv/3f4ad4f624c554ab7003c89a71aefecb137acda420f4244927a672d7a2f81d16.json",
+    "diagnostic-cache/arxiv/5810be54c579f9fa69a9b958b5f148c2bc3bf197c9c11db9f5e688d9be9947f0.json": "diagnostic-cache/arxiv/5810be54c579f9fa69a9b958b5f148c2bc3bf197c9c11db9f5e688d9be9947f0.json",
+    "diagnostic-cache/arxiv/6951a21baa38343066fa824cc89dbc2a01b9549dd7b626a46a36f5919cb366e6.json": "diagnostic-cache/arxiv/6951a21baa38343066fa824cc89dbc2a01b9549dd7b626a46a36f5919cb366e6.json",
+    "diagnostic-cache/arxiv/6b09f818ed2a80b07cd1669f9aa814a286e0cd9aaa3aef71b4b23ffb32f20753.json": "diagnostic-cache/arxiv/6b09f818ed2a80b07cd1669f9aa814a286e0cd9aaa3aef71b4b23ffb32f20753.json",
+    "diagnostic-cache/arxiv/726d1e161cd33db6d9e532e84b662d150c7b21662e47bd74df65192683fd56d7.json": "diagnostic-cache/arxiv/726d1e161cd33db6d9e532e84b662d150c7b21662e47bd74df65192683fd56d7.json",
+    "diagnostic-cache/arxiv/b1cb04938a709775b0b64cd9554a30e45557d9236c82681fcd819e36095f208e.json": "diagnostic-cache/arxiv/b1cb04938a709775b0b64cd9554a30e45557d9236c82681fcd819e36095f208e.json",
+    "diagnostic-cache/arxiv/bb5aca120a0c33b886263e836450ab84592b867ea6b38dba7eaa996857682d79.json": "diagnostic-cache/arxiv/bb5aca120a0c33b886263e836450ab84592b867ea6b38dba7eaa996857682d79.json",
+    "diagnostic-cache/arxiv/c5df075040ebd932ad2ed393df1d35fb5c925a500077b636095217e6e43ca375.json": "diagnostic-cache/arxiv/c5df075040ebd932ad2ed393df1d35fb5c925a500077b636095217e6e43ca375.json",
+    "diagnostic-cache/arxiv/d306aa0b5b5167bab891f88655f78aecabd63279e3a487285c9a931016d39926.json": "diagnostic-cache/arxiv/d306aa0b5b5167bab891f88655f78aecabd63279e3a487285c9a931016d39926.json",
+    "diagnostic-cache/openalex/2b08d96c6c2bbb574a86eb0daa33dab30b73e929bd0183d7c903693df489112b.json": "diagnostic-cache/openalex/2b08d96c6c2bbb574a86eb0daa33dab30b73e929bd0183d7c903693df489112b.json",
+    "diagnostic-cache/openalex/300705d6d663af53eeb8d5049734eaa69b091ac456b940e7e810c899ec6ff0dd.json": "diagnostic-cache/openalex/300705d6d663af53eeb8d5049734eaa69b091ac456b940e7e810c899ec6ff0dd.json",
+    "diagnostic-cache/openalex/4aa0451511e9d74ee8206cfa0e8a96ba57da9a6ab885ba68bd48ba750cffbe51.json": "diagnostic-cache/openalex/4aa0451511e9d74ee8206cfa0e8a96ba57da9a6ab885ba68bd48ba750cffbe51.json",
+    "diagnostic-cache/openalex/60266c080584e2da3a7fd27b3a3597a0edc447a3575cf87fa723fbefee959c62.json": "diagnostic-cache/openalex/60266c080584e2da3a7fd27b3a3597a0edc447a3575cf87fa723fbefee959c62.json",
+    "diagnostic-cache/openalex/60f43115626421f09a144fcc57d8ee2efc5898112bd5c7f69647d87c9bb772c0.json": "diagnostic-cache/openalex/60f43115626421f09a144fcc57d8ee2efc5898112bd5c7f69647d87c9bb772c0.json",
+    "diagnostic-cache/openalex/7ddcf098b77a9b61670e0a111f515c46c38669c81a65b6742937fee2ddbb6033.json": "diagnostic-cache/openalex/7ddcf098b77a9b61670e0a111f515c46c38669c81a65b6742937fee2ddbb6033.json",
+    "diagnostic-cache/openalex/7e8ad4d19b2b3f0749ad43752ef597154288a4d27c93ba38b670e656e87dbabc.json": "diagnostic-cache/openalex/7e8ad4d19b2b3f0749ad43752ef597154288a4d27c93ba38b670e656e87dbabc.json",
+    "diagnostic-cache/openalex/8ace62a9dfbd4ef422984aa0ccd36b1c1f7fb5b8fe97eed8ec0d17c69c68e788.json": "diagnostic-cache/openalex/8ace62a9dfbd4ef422984aa0ccd36b1c1f7fb5b8fe97eed8ec0d17c69c68e788.json",
+    "diagnostic-cache/openalex/8e689752e99d38c54e85ac19f0f1cd85a9f29dbcd446c7ed1e24dde3eb069ecc.json": "diagnostic-cache/openalex/8e689752e99d38c54e85ac19f0f1cd85a9f29dbcd446c7ed1e24dde3eb069ecc.json",
+    "diagnostic-cache/openalex/96758e3d57e06c6d6b474ecb856cc703e653756aa0dc38bb6ef23d2ee67b4a2d.json": "diagnostic-cache/openalex/96758e3d57e06c6d6b474ecb856cc703e653756aa0dc38bb6ef23d2ee67b4a2d.json",
+    "diagnostic-cache/openalex/9b45c8367d7c904350ecc367ca31ed38a698ddf1ff6b3f95f07b6ceb755a63ab.json": "diagnostic-cache/openalex/9b45c8367d7c904350ecc367ca31ed38a698ddf1ff6b3f95f07b6ceb755a63ab.json",
+    "diagnostic-cache/openalex/b81b748db07a439ebc4dc1a395e4aa97cb96e2e8565ab8cba21247eb34762967.json": "diagnostic-cache/openalex/b81b748db07a439ebc4dc1a395e4aa97cb96e2e8565ab8cba21247eb34762967.json",
+    "diagnostic-cache/openalex/bb57b29c78289ef44636bbed668084f8a13305b0567c9a354691878caef122a8.json": "diagnostic-cache/openalex/bb57b29c78289ef44636bbed668084f8a13305b0567c9a354691878caef122a8.json",
+    "diagnostic-cache/openalex/c07e09a53fd717901b358a03fd1a42360d0df0b0e4682930dc29ad5a53cffcb5.json": "diagnostic-cache/openalex/c07e09a53fd717901b358a03fd1a42360d0df0b0e4682930dc29ad5a53cffcb5.json",
+    "diagnostic-cache/openalex/d8a32c3ab22624a9fef69e7bf8be565eee99e554f5795f0d25a81389b2a14995.json": "diagnostic-cache/openalex/d8a32c3ab22624a9fef69e7bf8be565eee99e554f5795f0d25a81389b2a14995.json",
+    "diagnostic-cache/openalex/ef23ec23982e6017de1501b91bf79654c4d51c4de93b575506507ad41dfb173b.json": "diagnostic-cache/openalex/ef23ec23982e6017de1501b91bf79654c4d51c4de93b575506507ad41dfb173b.json",
+    "diagnostic-cache/openalex/fc2644b89211df17983dc08eccab7afb39edee0a9fda168660f7400c77a9ead5.json": "diagnostic-cache/openalex/fc2644b89211df17983dc08eccab7afb39edee0a9fda168660f7400c77a9ead5.json",
+    "diagnostic-cache/openalex/fc8fe18834c81ab4a2b71d2258c1c69de69c88bf71264f64618328b30c41101e.json": "diagnostic-cache/openalex/fc8fe18834c81ab4a2b71d2258c1c69de69c88bf71264f64618328b30c41101e.json",
+    "diagnostic-cache/openalex/ff849553add813eb455696d6abc61e0fabd6dcea305f90f488f02b3cb93a3d77.json": "diagnostic-cache/openalex/ff849553add813eb455696d6abc61e0fabd6dcea305f90f488f02b3cb93a3d77.json",
+    "http.jsonl": "http.jsonl",
+    "https-tests.log": "https-tests.log",
+    "main-literature-tests.log": "main-literature-tests.log",
+    "measurements.log": "measurements.log",
+    "offline.json": "offline.json",
+    "offline.log": "offline.log",
+    "postfix-cache/arxiv/be2ac14ecb112ccbb90b58330666a65738280bc57878cb79d5e0779acf652801.json": "postfix-cache/arxiv/be2ac14ecb112ccbb90b58330666a65738280bc57878cb79d5e0779acf652801.json",
+    "postfix-cache/arxiv/c4d8de2164e7f9455a3f4b5c10270bf066ad7bab60cab591059ad43a96ba6793.json": "postfix-cache/arxiv/c4d8de2164e7f9455a3f4b5c10270bf066ad7bab60cab591059ad43a96ba6793.json",
+    "postfix-http.jsonl": "postfix-http.jsonl",
+    "postfix-results.json": "postfix-results.json",
+    "postfix-validation.log": "postfix-validation.log",
+    "primary-live.log": "primary-live.log",
+    "primary-plan-results.json": "primary-plan-results.json",
+    "primary-plan.json": "primary-plan.json",
+    "raw-audit.json": "raw-audit.json",
+    "raw-audit.log": "raw-audit.log",
+    "rehn-publications.html": "rehn-publications.html",
+    "rehn-thesis.pdf": "rehn-thesis.pdf",
+    "replay-tests.log": "replay-tests.log",
+    "scipy-qap-2opt.html": "scipy-qap-2opt.html",
+    "source-live.log": "source-live.log",
+    "source-plan-results.json": "source-plan-results.json",
+    "source-plan.json": "source-plan.json",
+    "summarize.py": "summarize.py",
+    "test_diagnose.py": "placement-originals/test_diagnose.py",
+    "tools-tests-final.log": "tools-tests-final.log",
+    "tools-tests-raw-final.log": "tools-tests-raw-final.log",
+    "tools-tests.log": "tools-tests.log",
+    "validate_transport.py": "validate_transport.py"
+  },
+  "unchanged_replay_input_count": 274,
+  "protected_snapshot_file_count_unchanged": 7,
+  "code_sha256": {
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/literature/sources/arxiv.py": "be20d9f3f0ceb52b2b2317ea0f18f4256f031c171390ffc3374a9411f6d61c11",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/tests/literature/test_parsing.py": "57e7ea64ffed7fa9f565878bfd1d1945eb19297719ae5c2414c6e4aaa8b1e212",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/hybrid/tests/literature/test_arxiv_https.py": "97136a8cc659e1f1ce20b2680461dbaad96887d210c4ab2540cc440fd68eaa5c",
+    "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/sources/arxiv.py": "5b09ce5f154b665aa0259a1f9b8a5c286b06705e8b3daf87a44b6e1e9bf447c2"
+  },
+  "tool_sha256": {
+    "diagnose.py": "d80f49e4fae115763fafe04fb1ba6d38b418ba7a0f5d3baf9c805f256702def2",
+    "test_diagnose.py": "212d30175b1b41275525f5294bd0e733a357d6265dc0ccb1be2bbf579f95e301",
+    "audit_raw.py": "fe51bc4f175bfd033f9e6e8bdf6061dda4cedb00b875548ccb69e323126f394d",
+    "summarize.py": "a3570d6056bd1b269a1c5c7fb1914d809d877a738f708d3758816801aca82676",
+    "validate_transport.py": "844dcf647888d98abb63b7ea24c39b5e08404a2e343c6e778bf21f7031e00b12"
+  },
+  "configured_key_scan": {
+    "passed": true,
+    "configured_key_count": 2,
+    "files_scanned": 501,
+    "values_or_suffixes_recorded": false
+  },
+  "receipt_redaction_check_passed": true,
+  "tests": [
+    {
+      "suite": "literature",
+      "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+      "environment": {
+        "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+        "BIGBRANE_LIVE": "0",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "command": [
+        "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+        "-m",
+        "pytest",
+        "-c",
+        "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/pyproject.toml",
+        "--confcutdir",
+        "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+        "-q",
+        "--basetemp",
+        "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/retrieval-diagnosis/placement-verification/pytest-literature",
+        "hybrid/tests/literature"
+      ],
+      "started_utc": "2026-10-18T21:18:51.386990+00:00",
+      "exit_code": 0,
+      "log": "literature.log"
+    },
+    {
+      "suite": "diagnostic",
+      "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+      "environment": {
+        "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+        "BIGBRANE_LIVE": "0",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "command": [
+        "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+        "-m",
+        "pytest",
+        "-c",
+        "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/pyproject.toml",
+        "--confcutdir",
+        "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+        "-q",
+        "--basetemp",
+        "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/retrieval-diagnosis/placement-verification/pytest-diagnostic",
+        "results-wt/retrieval-diagnosis/test_diagnose.py"
+      ],
+      "started_utc": "2026-10-18T21:19:00.032704+00:00",
+      "exit_code": 0,
+      "log": "diagnostic.log"
+    }
+  ],
+  "results": {
+    "literature": "190 passed, 1 live-only skipped",
+    "diagnostic": "11 passed",
+    "full_offline_replay_byte_identical": true
+  },
+  "acceptance": "Unchanged PA2 FAIL 2/4; required 3/4; only Sacramento exposed under 35/60/80 bounds",
+  "git_diff_check_passed": true,
+  "network_calls_during_relocation": 0,
+  "commit_push_merge": false
+}

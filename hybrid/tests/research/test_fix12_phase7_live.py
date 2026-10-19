@@ -35,13 +35,15 @@ from hybrid.research.stages.contracts import REPAIR_TYPES, UNRESOLVED_TYPE, repa
 from hybrid.research.stages.s2_prior_art import (ATTEMPTED, UNCHANGED, VALIDATED, eligibility, equation_changes,
                                                  judge_comparisons, render_changes, report_problem)
 from hybrid.research.stages.s3_feasibility import disproof_reason
+from hybrid.tests.research.reference_replays import FIXTURES as REPLAY_FIXTURES, fix12_spec, load as replay_evidence
+from hybrid.tests.research.critic_answers import novelty_fields
 from hybrid.tests.research.test_orchestrator_fakes import (comparison, declared, make_orchestrator, orch_config,
                                                            program)
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "phase7_live_20261014T2051Z"
 FIX10_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "phase7_live_20261014T1752Z"
 LIVE_RUN = "phase7-live-20261014T2051Z"
-CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "radical_enough", "why",
+CRITIC_KEYS = ("reduces_to", "mapping", "confidence", "difference_if_any", "why",
                "textbook_transplant", "textbook_why", "family", "family_why")
 
 
@@ -51,7 +53,7 @@ def load(name, base=FIXTURES):
 
 def recorded_critic(name: str, comparators: list[dict], **changes) -> dict:
     record = load(name)
-    return {key: record[key] for key in CRITIC_KEYS} | {"comparators": comparators} | changes
+    return {key: record[key] for key in CRITIC_KEYS} | novelty_fields(record) | {"comparators": [fix12_spec(c) for c in comparators]} | changes
 
 
 def recorded_program(job: str, marker: str, tail: str, base=FIXTURES) -> str:
@@ -67,7 +69,12 @@ def report_tail(rows: list[tuple], notes: str) -> str:
         f"    {{'declared_id': {d!r}, 'comparator': {c!r}, 'family': {f!r}, 'transformations': {list(t)!r}, "
         f"'limit_only': {lim!r}, 'reference': {c!r}, 'inputs_tested': {n}, 'max_abs_diff': {x}}}"
         for d, f, t, lim, c, n, x in rows)
-    return f"\nprint(json.dumps({{'comparisons': [\n{items}], 'notes': {notes!r}}}))\n"
+    return (f"\n_report = {{'comparisons': [\n{items}], 'notes': {notes!r}}}\n"
+            f"_evidence = json.load(open({str(REPLAY_FIXTURES / ('fix10.json' if notes == 'job-137fb29ee378' else 'fix12.json'))!r}))\n"
+            "for _row in _report['comparisons']:\n"
+            "    if _row['declared_id'] in _evidence:\n"
+            "        _row['reference_samples'] = _evidence[_row['declared_id']]['reference_samples']\n"
+            "print(json.dumps(_report))\n")
 
 
 def run_program(code: str, tmp_path: Path) -> dict:
@@ -115,7 +122,8 @@ BIMAP_HARD = {"id": "hard_bimap", "base_family": "other_known",
               "base_form": "bidirectional map (bimap) insert with inverse uniqueness, as a capped exact-match cache",
               "update": "map[i] := j, delete other keys of j and other values of i; skip when both are owned",
               "read": "p(v) = 1 for the value bound to q, leftover mass over unowned values",
-              "transformations": [], "parameter_mapping": BIMAP_MAP, "limit_only": True}
+              "transformations": [], "parameter_mapping": BIMAP_MAP, "limit_only": True,
+              "components": [{"role": "update", "name": "bimap insert", "origin": "published", "cite": "Guava BiMap"}]}
 BIMAP_WEIGHTED = dict(BIMAP_HARD, id="weighted_bimap", limit_only=False,
                       update="insert with entry weight rho_ij, conflicting entries deleted, min-weight eviction",
                       transformations=[transform("gate", "per-entry confidence weight rho_ij on insert")])
@@ -241,7 +249,7 @@ def test_the_fix10_correction_term_still_cannot_verify_the_hard_bimap(tmp_path):
                         ("hard_bimap", "other_known", (), False, "hard bimap", 300, "bd")], "job-137fb29ee378")
     code = recorded_program("job-137fb29ee378.json", "equiv = maxd < 1e-6", tail, FIX10_FIXTURES)
     printed = run_program(code, tmp_path)
-    hard = dict(BIMAP_HARD, limit_only=False)
+    hard = dict(fix12_spec(BIMAP_HARD), limit_only=False)
     assert judge_comparisons(printed["comparisons"], [hard], "other_known")[0] == "refuted"
     corrected = dict(hard, id="soft_corrected",
                      transformations=[transform("other", "a -rho*x*y term at (i, j) that cancels the difference")])
@@ -276,8 +284,11 @@ def test_the_report_must_repeat_family_and_limit_only():
 
 
 def test_a_limit_only_match_does_not_verify():
-    outcome, reasons, _ = judge_comparisons([comparison("other_known", 0.0, "hard_bimap", limit_only=True)],
-                                            [BIMAP_HARD], "other_known")
+    e = replay_evidence('fix12')['hard_bimap']
+    sample = e['reference_samples'][0]
+    trace = dict(sample, inputs=sample['inputs'][:1], card_outputs=sample['card_outputs'][:1])
+    outcome, reasons, _ = judge_comparisons([dict(comparison("other_known", 0.0, "hard_bimap", limit_only=True), reference_samples=[trace])],
+                                            [fix12_spec(BIMAP_HARD)], "other_known")
     assert outcome == "unverified" and "limit-only" in reasons[0]
 
 

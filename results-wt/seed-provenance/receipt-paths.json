@@ -1,0 +1,428 @@
+[
+  {
+    "lens": "reservoir_computing",
+    "query": "echo state network",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/48c4ad9ab2d68414f3080844bb8a180f94062a400b142b552d9d1631e47f0202.json"
+  },
+  {
+    "lens": "reservoir_computing",
+    "query": "reservoir computing",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/d339566b34a65a8d9a0d596702e16293528630cb114e162aa26a01be2c36856a.json"
+  },
+  {
+    "lens": "vector_symbolic_hyperdimensional",
+    "query": "hyperdimensional computing",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/9acb434b8a8836c32bf45c73f2b00c4e774cd289e38b1afc4ef169b4a7a6854a.json"
+  },
+  {
+    "lens": "vector_symbolic_hyperdimensional",
+    "query": "vector symbolic architectures",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/9c467c42f8435929cf8965a14b9cabc8e6ef86d3408c733098665cb56d8c3770.json"
+  },
+  {
+    "lens": "vector_symbolic_hyperdimensional",
+    "query": "hyperdimensional binding sequence",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/c0aeab7673acaeddace2f9c84caef0a31b1547fa40cda3506d6b1eddaf365ecb.json"
+  },
+  {
+    "lens": "holographic_reduced_representations",
+    "query": "holographic reduced representations",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/0c342098a669f05bb5f20a06ed1c8fec3c47492bab521ba7c032b77bd104e832.json"
+  },
+  {
+    "lens": "holographic_reduced_representations",
+    "query": "circular convolution associative memory",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/845bb43c12b33dbc501b69953aa68e631e416f542dc965e6d6502eb6468c0ee0.json"
+  },
+  {
+    "lens": "modern_hopfield_networks",
+    "query": "dense associative memory",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/32eeb7c7c3c0064f6a8867a2836ce7776bc94e6877a5efa6acb41dd4fb5ce0fb.json"
+  },
+  {
+    "lens": "modern_hopfield_networks",
+    "query": "Hopfield networks transformers attention",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/59f49ac67429f552375218abf29ebfbee76a70e5be36dd518d224ba60ee42af7.json"
+  },
+  {
+    "lens": "modern_hopfield_networks",
+    "query": "Hopfield networks transformers attention",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/12b0b97ec6f6afc2c2ca7c7489c5c1a97b23cbae5e3fe1afb8281ac3e89a92fa.json"
+  },
+  {
+    "lens": "predictive_coding",
+    "query": "predictive coding networks",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/7342e8b8e98118494ccf0da76f62b85ae84a1d3a17d12f20b7ac7eff5d7bf466.json"
+  },
+  {
+    "lens": "predictive_coding",
+    "query": "predictive coding networks",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/d3339626802439625c79d8e7fac42272e9f9abb7794c2df57cedd3b2a41f2131.json"
+  },
+  {
+    "lens": "predictive_coding",
+    "query": "predictive coding learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/3d7151c7441b247243781b3618326cd1bf1e5032acceb2ba98e64855575ea631.json"
+  },
+  {
+    "lens": "active_inference",
+    "query": "active inference",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/38249f7cfe84d3c151535fe3d1c459564ad9dbef899dd7d4011e296705bd0ef1.json"
+  },
+  {
+    "lens": "active_inference",
+    "query": "active inference",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/0461b41981234c0894316c9217270318a4597fd1ed430ac26eadd759c08feb22.json"
+  },
+  {
+    "lens": "active_inference",
+    "query": "free energy principle",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/fb9b1ba692adfd2e9acbb39e03e0c5a0e10fed34fe615dcc72adc012f206c6a0.json"
+  },
+  {
+    "lens": "active_inference",
+    "query": "active inference sequence learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/1b4c9321d4b9bfc0c099e0fb711b74322d3b88b02d2c8181afd6ee99063224ac.json"
+  },
+  {
+    "lens": "dendritic_spiking_computation",
+    "query": "dendritic computation neurons",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/c7a4ec21bd4077d89453c01c7dc23dacb75d7796ccb79cbcf780093173ed7b93.json"
+  },
+  {
+    "lens": "dendritic_spiking_computation",
+    "query": "spiking neural networks sequence",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/63d36eec1acb72f1e1b13e08838290429c060cf22232646040e7fde3fa0d907e.json"
+  },
+  {
+    "lens": "dendritic_spiking_computation",
+    "query": "dendrites learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/55fb3021013efd301f58c636d152ab27fd91f0e90d692600ed198928528945eb.json"
+  },
+  {
+    "lens": "neural_odes_koopman",
+    "query": "neural ODE",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/926cac9ea1e19c7b8b612b316f8c44eec832a5dcf4b233cceffeb92d2f139a36.json"
+  },
+  {
+    "lens": "neural_odes_koopman",
+    "query": "Koopman operator learning",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/7019dc603635d108c13b64859c688bef8c485f130bac7e7ee81aff2ad4df611f.json"
+  },
+  {
+    "lens": "neural_odes_koopman",
+    "query": "Koopman operator learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/a33c273e327bbaf0e9f8c87900b9c90d4752e5f8423e57185708f0163a657fde.json"
+  },
+  {
+    "lens": "neural_odes_koopman",
+    "query": "Koopman sequence model",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/7307df8c2fb2da648f707633492df8f5cb4acccbf34eeea8fc0b68c056bede4c.json"
+  },
+  {
+    "lens": "tensor_networks_language",
+    "query": "matrix product states language modeling",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/2413281a8fdb11d7c9d8906479afee3713b5eaf8d7546eff7628f51382b12e7e.json"
+  },
+  {
+    "lens": "tensor_networks_language",
+    "query": "tensor train sequence",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/52727814b4985b1ea8d17010548d7f389bab33e17825e08202da2ba0124b4caa.json"
+  },
+  {
+    "lens": "renormalization_multiscale",
+    "query": "renormalization group deep learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/37ffe2e4142759d662a55c55d13db6e077f0ae028f66fbbd47ca0cee3df3b9f1.json"
+  },
+  {
+    "lens": "renormalization_multiscale",
+    "query": "multiscale renormalization neural network",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/5b6ea5adbd394b3fd1e104db6efca02747aff9792b17ce2860015cbb50132fde.json"
+  },
+  {
+    "lens": "kernel_gaussian_processes",
+    "query": "Gaussian process sequence model",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/ad46700cf0b619ade61ddcf352f1f19090cc0d392cf18c7d6383e1537cf5903d.json"
+  },
+  {
+    "lens": "kernel_gaussian_processes",
+    "query": "neural tangent kernel",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/d03907375b09a75cf9dc2d7250316518736ea65546db36c146a160d76b71da03.json"
+  },
+  {
+    "lens": "bayesian_program_induction",
+    "query": "Bayesian program learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/1e871f8a42c9b64a1d9870f00ab50786280d8ae3b769bce3f931f4e5268873c7.json"
+  },
+  {
+    "lens": "bayesian_program_induction",
+    "query": "program induction few-shot",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/a670cecdf0c4b9e457eb56eefe70c2c7e57e3f7d2d8538a302d69a92bed7e03a.json"
+  },
+  {
+    "lens": "bayesian_program_induction",
+    "query": "rule induction Bayesian",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/2a1164fe934d4ac280711daba308f69b550cc0eb3d75b1cd368a26a248631c3b.json"
+  },
+  {
+    "lens": "cellular_automata",
+    "query": "neural cellular automata",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/3fc6f0c5adabe79b2ba52cb2fd36e6c66accc2de03d572a144f02331d53918dd.json"
+  },
+  {
+    "lens": "cellular_automata",
+    "query": "neural cellular automata",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/ea30db4593d90fb04f26c488394f655d09e464944bd67eeb5474fcc53a451e23.json"
+  },
+  {
+    "lens": "optimal_transport",
+    "query": "optimal transport sequence",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/a38c1ce006ef27e12963a4ce8c8913ad2979db3fe3ce941eca837519bd0d4db2.json"
+  },
+  {
+    "lens": "optimal_transport",
+    "query": "optimal transport sequence",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/a1872b94e9de276ff50840d7ec3c4475edd58262137b9951a29ffb9da460fc50.json"
+  },
+  {
+    "lens": "optimal_transport",
+    "query": "Sinkhorn optimal transport learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/f48a3977d97dd8178ecaf15c5dccb6f6bd29d8600094873e98e8d30f37dae2be.json"
+  },
+  {
+    "lens": "sheaves_category_models",
+    "query": "sheaf neural network",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/cd8dc706ef55d66b71d79b8d24ae35c47c2d3e4e75ddd7aa8eca6cbc6dba5ceb.json"
+  },
+  {
+    "lens": "sheaves_category_models",
+    "query": "sheaf theory learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/f97a3c6ca609a4521e560e8b8042b6beb1fcfde6ef76053fd4d569bc8e5b33ad.json"
+  },
+  {
+    "lens": "compression_mdl",
+    "query": "minimum description length learning",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/bce58c24dcbb146fad76e17061d9275b1dcf9cfab2890c91a073bc802fe3ebe0.json"
+  },
+  {
+    "lens": "compression_mdl",
+    "query": "minimum description length learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/468bb72afc5a22208cdcb0a27facb6d3350f780f5b704fe6a54d550d9a558ed7.json"
+  },
+  {
+    "lens": "compression_mdl",
+    "query": "compression language modeling",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/a1b8013ff6ad21b49d6f80a14d1aaa5b33524550fa25799349ca33ae1fb663c3.json"
+  },
+  {
+    "lens": "compression_mdl",
+    "query": "minimum description length neural",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/faf02edb6566b562d56a4fb646215ce20646252fadf19d2ab7adf72ba2dfff4a.json"
+  },
+  {
+    "lens": "algorithmic_information",
+    "query": "Kolmogorov complexity learning",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/8467856924edc4c2075f8776a4ccfce45666b9a13b6e84e3ed54f2c7ef8ca9b1.json"
+  },
+  {
+    "lens": "algorithmic_information",
+    "query": "Kolmogorov complexity learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/6ac541db3100767b8e5dcfcb8425e5812eab70ce17123f98690d64b8f9a1f03f.json"
+  },
+  {
+    "lens": "algorithmic_information",
+    "query": "algorithmic probability",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/0315098b2924dbba113b8e6399b50f289acfc4d53fecc836b227addb1ae38b39.json"
+  },
+  {
+    "lens": "sparse_distributed_memory",
+    "query": "sparse distributed memory",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/86ba802bda14f4c2bb40900deda6eb732a781a0d4140b59befeecfdd8a59f682.json"
+  },
+  {
+    "lens": "sparse_distributed_memory",
+    "query": "sparse distributed memory",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/8c74487cf4ed8808f9619baa89e72428b609828c06bf39543ffc8cb2b257ec5f.json"
+  },
+  {
+    "lens": "sparse_distributed_memory",
+    "query": "Kanerva sparse distributed memory",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/1c95816a042d442bf4afc96a0f99ca4a2b1659b36b9227cd2a496e795f04ed7e.json"
+  },
+  {
+    "lens": "sparse_distributed_memory",
+    "query": "sparse distributed memory neural",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/24407776ab09a2fcc6ac6d90f00aba36053ddfc769425b6715354d1cdc4e98fe.json"
+  },
+  {
+    "lens": "sparse_distributed_memory",
+    "query": "sparse distributed memory neural",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/960334c357e2799a796d251102e5fffdcf2920107d20d4d3652eb04a08a69161.json"
+  },
+  {
+    "lens": "complementary_learning_systems",
+    "query": "complementary learning systems",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/eee6f4de9834c85cb6d3207dd2c95c4dc24e7260512ab18704f401f1cfc98eac.json"
+  },
+  {
+    "lens": "hyperbolic_geometry",
+    "query": "hyperbolic neural networks",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/fab9b2ff549d6df2f8bd592d08618db5f2cf89a219a202051ce77f4f7a15342b.json"
+  },
+  {
+    "lens": "hyperbolic_geometry",
+    "query": "hyperbolic neural networks",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/b8730883058cc9c14e77bd4721fdb5524673c3073a81adbc7498243f1d934ad8.json"
+  },
+  {
+    "lens": "hyperbolic_geometry",
+    "query": "hyperbolic embeddings hierarchy",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/19d1ea1b9a90690605315a10dc6a6344242846ee971a10a3bf40bb2758c76f7e.json"
+  },
+  {
+    "lens": "quantum_inspired",
+    "query": "quantum-inspired language model",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/4aed3bd420b5d86ed1ac86678b190ebe19149ab543b3eea01695f709c07afea2.json"
+  },
+  {
+    "lens": "quantum_inspired",
+    "query": "quantum-inspired machine learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/d6a6d7d4d97868e7ff5b4684fc863e535b6f18b8d2d74742b60b30ed9789267f.json"
+  },
+  {
+    "lens": "chemical_reaction_networks",
+    "query": "chemical reaction network computation",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/33ac5c4f06f7b9f34b30442b78619a7eb9d1a66524afbe4abc8a1db508a98cdc.json"
+  },
+  {
+    "lens": "chemical_reaction_networks",
+    "query": "chemical reaction networks learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/2aeac72523d9c9b667b7036f05f6b43e8ff088b57fa0481fcd43cf91f39f99f3.json"
+  },
+  {
+    "lens": "morphogenesis",
+    "query": "reaction diffusion pattern learning",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/427aad3816207eb56970dfea40b0097d70f832ec07cbd584e787e64a29348f60.json"
+  },
+  {
+    "lens": "morphogenesis",
+    "query": "morphogenetic neural network",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/d4a6ca46ed5d29d74162cf63f879de7b53b9962476e178a4cf1fe57793ffac6a.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "linear attention transformers are RNNs",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/7e2e0169eed627a23892aaa7ad3815d78fa465fb1fa06c1a860016d2d9888ed6.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "Mamba selective state spaces",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/f4c6c6c314e4632c09e5dc3a0e639ec1de8da809407b5f9ac1d0e2787397745b.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "RWKV linear time RNN",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/4d81277e46db9c52fadefb7ee2e75cb46a536f973a05fa864130438c3a3b81c8.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "retentive network retention",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/feda804d1c5a8e2730a76d7ea755c1324e87c34dbe577d744e97504087f9db5b.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "Hyena long convolution",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/e66f23602996a1c7e063b8e4ac03a1d84505ab9ec6917b65139f9e7ceacc786d.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "xLSTM extended LSTM",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/33f118f8c11ca237d353c4002492b378599c9cdffb26aa8e78b6c3ee68ff3c3c.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "BitNet 1-bit transformers",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/16f52d321a7348007ae17f054bf2792a1a2a005e9336098240698acd5d27200a.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "large concept models",
+    "source": "openalex",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/openalex/c98dd0012b35174ccba15f57118fcbd75ac7f939d4db00f2230b9692e51fa1c1.json"
+  },
+  {
+    "lens": "known_llm_alternatives_to_avoid_reinventing",
+    "query": "test-time training layers hidden state",
+    "source": "arxiv",
+    "path": "/Volumes/XS1000/acoliver/projects/bigbrane/hybrid/literature/cache/arxiv/aa98b9fe6ad99496202cc297e3bc338a9a68e5748f8565f3170a7bf3257e7cd6.json"
+  }
+]

@@ -1,0 +1,201 @@
+{
+  "scope": "Explicit selected checkpoint paths; excludes this inventory to avoid a self-hash. All listed paths must be tracked.",
+  "base_head": "eeaba07b93a8907cf6b1e4a6bef62b458b01ae5d",
+  "source_tree_sha256": "a62b6e1929f61877024c51962184daeec70494257118ca979d257a94a87c220c",
+  "files": [
+    {
+      "path": "hybrid/literature/client.py",
+      "bytes": 15998,
+      "sha256": "db0504e69ffb9e0766c6d93f09aa277d34084480e4105ba6960c9b448c6b78cc"
+    },
+    {
+      "path": "hybrid/literature/provenance.py",
+      "bytes": 4206,
+      "sha256": "6d2e825eb2996fbdf290491caee74b03be514e03e4d09ccc656535acfed75532"
+    },
+    {
+      "path": "hybrid/literature/transport.py",
+      "bytes": 13718,
+      "sha256": "147e2d890fd4817d5ea59d7f9f799acca2e851a9452a82be6f80f57c1278422e"
+    },
+    {
+      "path": "hybrid/research/schemas/reduction_critic.schema.json",
+      "bytes": 8072,
+      "sha256": "e217be1882ebc07de5a172c122d5ed816b162c7b9e89efa4d167a004d2fdd4d8"
+    },
+    {
+      "path": "hybrid/research/stages/published_references.py",
+      "bytes": 31734,
+      "sha256": "4722f09be165701ae2b1bff991aa502c3005eaf98b8e2c0ca7bf2aa1e706ad27"
+    },
+    {
+      "path": "hybrid/tests/literature/test_transport_provenance.py",
+      "bytes": 18204,
+      "sha256": "d44a065338171d68fdc70ac9b77ec3aa1d19174a4ad22ea2b83b83c0adebea48"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/SHA256SUMS",
+      "bytes": 3294,
+      "sha256": "464ed520c6b8faddb52d025941750f8f695c1abbfc02874c5b97b62e2f1face3"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_dam_diagnostic.json",
+      "bytes": 31251,
+      "sha256": "e3735e6fb10288f7a4ed67e5ff437eec0369e58f31338c96df095bdf15dab8ab"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_declarations.json",
+      "bytes": 503321,
+      "sha256": "20b8bf55ea227803e206233408ab17946cf79f02a1f5aed68bc32d084e9ca857"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_publications.json",
+      "bytes": 1635,
+      "sha256": "19d70a7cff6fac6a29ac988118618b005caf227d17c99aea01fc04d4c080b3ac"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_sources.json",
+      "bytes": 8390,
+      "sha256": "080ab6fbb1ed23bcf6bfada53141311bcf9d2e522ffa72eba6a89c53f63c7939"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/next_specimens.json",
+      "bytes": 5979,
+      "sha256": "f35721b068faee7e6d1abadc45ee0457be08a71fe4e0d7d44ddc22a2041498e4"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-7ec5e5c2.py",
+      "bytes": 5526,
+      "sha256": "3ef8afa81e32b1e5a92366f8e06ac3943926928839ec61cdcd3e0d2cae888a3d"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-bc3935ac.py",
+      "bytes": 5759,
+      "sha256": "800994ee22177f8dd6bed118d02a407bab65fed6484692187e434f0460da13e0"
+    },
+    {
+      "path": "hybrid/tests/research/fixtures/reference_replays/programs/next-card-d1d383d5.py",
+      "bytes": 3878,
+      "sha256": "9dc2c6610bfd006e991ef9ede199ad0e6bdf8bbaaeadc77e621d7c3544590488"
+    },
+    {
+      "path": "hybrid/tests/research/phase7_replay.py",
+      "bytes": 13433,
+      "sha256": "2e5e014d03677ecd6d96e9f6b75012c3ebed3e5cdc251ae6f387098e6f0147b0"
+    },
+    {
+      "path": "hybrid/tests/research/reference_replays.py",
+      "bytes": 8164,
+      "sha256": "be9caa32defd91f909bf2f997f072fb9a022e5de2be915ae61fc771b4a6f6c77"
+    },
+    {
+      "path": "hybrid/tests/research/test_next_historical_references.py",
+      "bytes": 22647,
+      "sha256": "125d1f236b86355096c60ed734c534b7de5ba891a3078d4ecbda584305e0bea4"
+    },
+    {
+      "path": "results-wt/evidence-recovery/NEXT-CHECKPOINT-TESTS.json",
+      "bytes": 23216,
+      "sha256": "55b2b8f57fcd5d9f022d3201a95f692f55c12004dd4a3363bec36bde359984f4"
+    },
+    {
+      "path": "results-wt/evidence-recovery/NEXT-CHECKPOINT.md",
+      "bytes": 5824,
+      "sha256": "500e1f9bece5ba09e9ea5b36a30d20c1d60609babf670dc34db869a20ab89d36"
+    },
+    {
+      "path": "results-wt/evidence-recovery/NEXT.md",
+      "bytes": 7369,
+      "sha256": "2b7100aa5cae086faf50592c80dd510b7a77fa502d13bfcdb5e1ddaeb20c6d16"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next-STATUS.md",
+      "bytes": 1645,
+      "sha256": "637773e0b8764f84a98abfd53ba221da9b5874194e0e5cb0d996e0197e264c7b"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next-capture-invocation.json",
+      "bytes": 712,
+      "sha256": "fdf941f718d7e2e32b21740c32013082b3749d14e51eccfb56986c5c77514467"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next-network-guard/sitecustomize.py",
+      "bytes": 354,
+      "sha256": "f209b8c3fae338d0a717d03c62197d122347f1a4983f942177bf4f26c2aa0a1a"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next-summary.json",
+      "bytes": 2024,
+      "sha256": "f9ed2c348e10da16ebff4cc35bc911ec477fbdbf732e9f691086d1ee18962e6c"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next-tests.json",
+      "bytes": 1213,
+      "sha256": "c33a71343fdd6be01d17dbfde09f06a19266b4e0daccf6eb45da64c8d06f49cc"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next_capture.py",
+      "bytes": 5869,
+      "sha256": "26854cb2e4c9c97fb71f225bcd60c34a2f7376acf7d9e5fabdb0f8202ceb386e"
+    },
+    {
+      "path": "results-wt/evidence-recovery/next_results.py",
+      "bytes": 491,
+      "sha256": "098f85def56dcfc69647852312a1f6828d89f3dff7877c0075592e8888871ffc"
+    },
+    {
+      "path": "results-wt/transport-provenance/REPORT.md",
+      "bytes": 9545,
+      "sha256": "c17eb6a1979409f77a3a2de260409d4e2155e338ec4e240c2aaab9fccc589408"
+    },
+    {
+      "path": "results-wt/transport-provenance/STATUS.md",
+      "bytes": 1434,
+      "sha256": "a4673b57e7e4f1291f88319bb145f55d9841df7fde8449c66c119b044686a1b7"
+    },
+    {
+      "path": "results-wt/transport-provenance/behavior-comparison.json",
+      "bytes": 14851,
+      "sha256": "d94c0129f03bdcf511003b14d576e4ef27073210a313f2fe90d0f962f6c6c564"
+    },
+    {
+      "path": "results-wt/transport-provenance/examples.json",
+      "bytes": 13641,
+      "sha256": "21b407e5a413144476c1324a4dd5d467328dcfa7fe896a4e8a0abe149f0e5806"
+    },
+    {
+      "path": "results-wt/transport-provenance/verification.json",
+      "bytes": 2515,
+      "sha256": "c155c091ce23ad0340ba318729a7982754d6bd5c13e72b3dd07ed4ed517b9d0f"
+    },
+    {
+      "path": "results-wt/transport-provenance/verify_behavior.py",
+      "bytes": 5269,
+      "sha256": "483844838439c9080c802991e6751bc9abad663f087a6a9c5718b9081ce06506"
+    }
+  ],
+  "listed_files": 34,
+  "listed_bytes": 801181,
+  "manifest_sha256": "0e9d6d8f660d4d32e9fb7fa811a933a4bf07d3983e6d235348a8069dcb4c3026",
+  "hash_format": "SHA256 of sorted SHA256, two spaces, workspace-relative path and newline records",
+  "safety": {
+    "fixture_checksum_entries": 36,
+    "all_fixture_checksum_targets_tracked": true,
+    "protected_hashes_checked": 49,
+    "preexisting_test_assertions_unchanged": true,
+    "schema_only_two_enum_additions": true,
+    "preexisting_reference_arithmetic_unchanged": true,
+    "secret_token_and_credential_url_findings": [],
+    "synthetic_credential_url_fixtures": [
+      {
+        "path": "hybrid/tests/literature/test_transport_provenance.py",
+        "kind": "literal user/password redaction fixture"
+      }
+    ],
+    "synthetic_transport_examples_origin_only": true,
+    "main_original_artifacts_unchanged": true,
+    "raw_capture_and_publication_bodies_excluded": true
+  },
+  "excluded": "Raw captures, publication bodies/text, HTTP/network caches, logs, XML and temporary trees remain local.",
+  "isolated_limit": "Unchanged seed-list provenance test requires an ignored historical build log, deliberately excluded."
+}

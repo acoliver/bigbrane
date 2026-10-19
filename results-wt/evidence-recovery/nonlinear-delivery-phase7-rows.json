@@ -1,0 +1,415 @@
+[
+  {
+    "card_id": "card-1184f7a7",
+    "title": "Holographic Displacement Interrogation: in-context rules as coherent correlation peaks",
+    "reduces_to": "linear_attention",
+    "check": "verified",
+    "evidence_status": "executed_card_trace_with_host_reference",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:linear_attention"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "reduces_to_known",
+    "replay_gate": "gate: excluded_family:linear_attention: the update rule reduces to linear_attention (check verified; counted comparator: recorded), which is in the out-of-scope family Linear attention and outer-product memories (families.toml, decision D8); a LEARNING_RULE: difference does not apply: Per token t, s",
+    "replay_codes": [
+      "excluded_family:linear_attention"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "excluded_family:linear_attention"
+    ]
+  },
+  {
+    "card_id": "card-14429dbc",
+    "title": "Episodic Congruence Compiler",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-2c5dd003",
+    "title": "Concept-Market Binding: in-context word-to-concept bindings as stale-bet credit in a prediction market of pretrained latent concepts",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-36725a7c",
+    "title": "Switched Koopman Repertoire: in-context identification of a growing bank of EDMD operators with innovation-gated switching",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-46dbb349",
+    "title": "Unknown-Duration Koopman Flow: in-context rules as one identified operator run for inferred durations, with orbit-transported writes",
+    "reduces_to": "none",
+    "check": "none",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "undetermined:S3"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": []
+  },
+  {
+    "card_id": "card-537e161c",
+    "title": "Koopman Power Readout: in-context EDMD whose operator is iterated by the semigroup law",
+    "reduces_to": "linear_attention",
+    "check": "verified",
+    "evidence_status": "executed_card_trace_with_host_reference",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:linear_attention"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "reduces_to_known",
+    "replay_gate": "gate: excluded_family:delta_rule: the update rule reduces to linear_attention (check verified; counted comparator: recorded), which is in the out-of-scope family Delta rule, fast weights and in-context least squares (DeltaNet, gated DeltaNet, TTT, RLS, MesaNet, Titans) (families.toml, decision D8); ",
+    "replay_codes": [
+      "excluded_family:delta_rule"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "excluded_family:delta_rule"
+    ]
+  },
+  {
+    "card_id": "card-582f8abf",
+    "title": "Gauge-Quotient Constraint Reservoir",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "executed_card_trace_with_host_reference",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "reduces_to_known",
+    "replay_gate": "gate: update rule reduces to other_known: The card is Z2-labeled (parity / weighted) union-find, the standard online solver for XOR-pair equations x_a \u2295 x_b = s. This is the same as online 2-coloring and bipartiteness checking, and it is the labeled union-find of W4411260212 specialized to the group",
+    "replay_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-68612a2a",
+    "title": "Explaining-Away Episodic Store: sparse-pursuit recall with novelty-gated one-shot writes",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-6de11b01",
+    "title": "Residual Episodic Index: a hash-addressed hippocampal store of cortical prediction errors",
+    "reduces_to": "linear_attention",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:linear_attention"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "excluded_family:delta_rule"
+    ]
+  },
+  {
+    "card_id": "card-6fc7efec",
+    "title": "Slice-Identified Tree Algebra Circuits",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": true,
+    "original_codes": [
+      "not_radical:R2"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "not_radical:R2"
+    ]
+  },
+  {
+    "card_id": "card-7ec5e5c2",
+    "title": "Naturality Compiler: One-Anchor Learning of Compositional Transports",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "executed_card_trace_with_host_reference",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "reduces_to_known",
+    "replay_gate": "gate: update rule reduces to other_known: The card is the standard worklist (Hopcroft\u2013Karp-style) closure for extending a homomorphism between two deterministic automata over the alphabet {L,R}. Equivalently, it extends a morphism of finite M-sets for the free monoid M={L,R}*. Symbol by symbol: the ",
+    "replay_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-8dc4db49",
+    "title": "Birch-Point Binding Chemistry: in-context bindings as the mass-action equilibrium of a reversible binding network under conservation laws",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "fail",
+    "replay_gate": "gate: not radical enough: textbook transplant, the source field's construction unmodified: The core object is the textbook detailed-balanced mass-action equilibrium of reversible binding reactions under conservation laws (the Birch point, the Gibbs free-energy minimizer). It is computed by the stand",
+    "replay_codes": [
+      "not_radical:R2"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-a36f1a3a",
+    "title": "Ornstein-Zernike Relation Closure: in-context relations as a fixed-depth Picard solve of a learned correlation-closure equation",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-bc3935ac",
+    "title": "Farey Horizon Labels: one-write in-context hierarchies as nested geodesic half-planes of the Stern-Brocot monoid",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "executed_card_trace_with_host_reference",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "reduces_to_known",
+    "replay_gate": "gate: update rule reduces to other_known: The known form is a path-labeling scheme for ancestor queries from the XML/database literature: Dewey path labels with a prefix test, realized as Tropashko's nested-interval / continued-fraction 2x2 integer matrix encoding (Tropashko, 'Nested intervals tree ",
+    "replay_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-c9615069",
+    "title": "Strand-Exchange Binding Kinetics: in-context bindings as irreversible mass-action binding and displacement pulses under conservation laws",
+    "reduces_to": "none",
+    "check": "none",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "infeasible:disproof"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": []
+  },
+  {
+    "card_id": "card-d1d383d5",
+    "title": "Rule-Repertoire Attractor: in-context rule induction as cubic Dense-Associative-Memory completion driven by an evidence field",
+    "reduces_to": "hopfield_or_kernel_memory",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:hopfield_or_kernel_memory"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "fail",
+    "replay_gate": "gate: not radical enough: textbook transplant, the source field's construction unmodified: The core is the cubic (3-spin) Dense Associative Memory of Krotov\u2013Hopfield, with Hebbian tensor \u03a3 \u03be^{\u22973}, an external field, and its naive mean-field equations \u03c3 = tanh(\u03b3(W(\u03c3,\u03c3)+\u03b2h)). All of these are standard",
+    "replay_codes": [
+      "not_radical:R2"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "reduces_to_known:hopfield_or_kernel_memory"
+    ]
+  },
+  {
+    "card_id": "card-d86dca4b",
+    "title": "Projective-Coset Active Inference",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "executed_card_trace_with_host_reference",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "reduces_to_known",
+    "replay_gate": "gate: update rule reduces to other_known: The card is the candidate-elimination (version-space) algorithm, with the Bayes-optimal posterior predictive, for the hypothesis class G = PGL(2,p) acting on P^1(F_p). It is packaged as a hand-coded finite-state transducer over the token stream.\n\n(1) Hypothe",
+    "replay_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-dc69816b",
+    "title": "Subsumption Consolidation Store: in-context schemas as intersections of sparse cortical codes",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  },
+  {
+    "card_id": "card-ddb071bd",
+    "title": "Self-Growing Holographic Clean-up Memory: in-context rules as margin-confirmed relation fragments",
+    "reduces_to": "other_known",
+    "check": "refuted",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "not_radical:R2"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "not_radical:R2"
+    ]
+  },
+  {
+    "card_id": "card-ff8f801a",
+    "title": "Sparse Rule-Code Predictive Coding: in-context learning as lasso inference over a learned repertoire of transition operators",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": true,
+    "original_codes": [
+      "not_radical:R2"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "fail",
+    "replay_gate": "gate: not radical enough: textbook transplant, the source field's construction unmodified: The core is Olshausen-Field sparse coding / lasso: L1-regularized least squares, ISTA inference, and the local gradient dictionary update r_j * eps * x^T. Its dictionary has the bilinear operator form Phi(x) =",
+    "replay_codes": [
+      "not_radical:R2"
+    ],
+    "replay_terminal": "S2",
+    "expected_codes": [
+      "not_radical:R2"
+    ]
+  },
+  {
+    "card_id": "card-ffdbe331",
+    "title": "Gromov-Shadow Size Principle: few-shot concept extents as closed-form Bayesian posteriors over nested sublevel sets of a learned hyperbolic embedding",
+    "reduces_to": "other_known",
+    "check": "verified",
+    "evidence_status": "historical_self_comparison_only",
+    "learning_rule_prefix": false,
+    "original_codes": [
+      "reduces_to_known:other_known"
+    ],
+    "original_outcome": "dead",
+    "replay_s2": "pass",
+    "replay_gate": "",
+    "replay_codes": [],
+    "replay_terminal": "S6",
+    "expected_codes": [
+      "reduces_to_known:other_known"
+    ]
+  }
+]

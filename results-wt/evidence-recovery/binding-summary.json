@@ -1,0 +1,47 @@
+{
+  "exact_gaps_before": 16,
+  "exact_gaps_after": 14,
+  "exact_gaps_resolved": 2,
+  "required_codes": 19,
+  "matching_required_codes": 5,
+  "source_rows": 21,
+  "resolved": [
+    "card-582f8abf",
+    "card-d86dca4b"
+  ],
+  "remaining": [
+    "card-14429dbc",
+    "card-2c5dd003",
+    "card-36725a7c",
+    "card-68612a2a",
+    "card-6de11b01",
+    "card-6fc7efec",
+    "card-7ec5e5c2",
+    "card-8dc4db49",
+    "card-a36f1a3a",
+    "card-bc3935ac",
+    "card-d1d383d5",
+    "card-dc69816b",
+    "card-ddb071bd",
+    "card-ffdbe331"
+  ],
+  "tests": {
+    "test_historical_binding": {
+      "passed": 18
+    },
+    "test_historical_references": {
+      "passed": 19
+    },
+    "test_reference_replays": {
+      "passed": 6
+    },
+    "test_review_gate_evidence": {
+      "passed": 44
+    },
+    "test_phase7_replay": {
+      "passed": 2,
+      "failed": 2
+    }
+  },
+  "tested_tree_sha256": "82278025dc8176e1ce4cb408b232122a95dffc10b3a42488fe74096fc9de50e3"
+}

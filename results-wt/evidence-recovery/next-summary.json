@@ -1,0 +1,90 @@
+{
+  "required": 19,
+  "matched_before": 5,
+  "matched_after": 7,
+  "misses_before": 14,
+  "misses_after": 12,
+  "resolved": [
+    "card-7ec5e5c2",
+    "card-bc3935ac"
+  ],
+  "remaining": [
+    "card-14429dbc",
+    "card-2c5dd003",
+    "card-36725a7c",
+    "card-68612a2a",
+    "card-6de11b01",
+    "card-6fc7efec",
+    "card-8dc4db49",
+    "card-a36f1a3a",
+    "card-d1d383d5",
+    "card-dc69816b",
+    "card-ddb071bd",
+    "card-ffdbe331"
+  ],
+  "tests": {
+    "current": {
+      "test_next_historical_references": {
+        "passed": 37
+      },
+      "test_historical_binding": {
+        "passed": 18
+      },
+      "test_historical_references": {
+        "passed": 19
+      },
+      "test_reference_replays": {
+        "passed": 6
+      },
+      "test_review_gate_evidence": {
+        "passed": 44
+      },
+      "test_phase7_replay": {
+        "passed": 2,
+        "failed": 2
+      }
+    },
+    "isolated": {
+      "test_next_historical_references": {
+        "passed": 37
+      },
+      "test_historical_binding": {
+        "passed": 18
+      },
+      "test_historical_references": {
+        "passed": 19
+      },
+      "test_reference_replays": {
+        "passed": 6
+      },
+      "test_review_gate_evidence": {
+        "passed": 44
+      },
+      "test_phase7_replay": {
+        "passed": 2,
+        "failed": 2
+      }
+    }
+  },
+  "measurements": {
+    "card-7ec5e5c2": {
+      "episodes": 200,
+      "tokens": 30693,
+      "max_abs_diff": 0.0
+    },
+    "card-bc3935ac": {
+      "episodes": 200,
+      "tokens": 18234,
+      "max_abs_diff": 0.0
+    },
+    "card-d1d383d5": {
+      "episodes": 6,
+      "tokens": 72,
+      "diagnostic_max_abs_diff": 7.190914530497139e-12,
+      "accepted_reference": false,
+      "reason": "Published energy component and specified-recurrence arithmetic do not establish a source-defined complete finite synchronous stream operation."
+    }
+  },
+  "owned_tree_sha256": "845177220c21872a5635f545ad4f2fe14f2f46fc6e5d937372fd303fb81f5906",
+  "all_other_19_rows_keep_codes": true
+}
