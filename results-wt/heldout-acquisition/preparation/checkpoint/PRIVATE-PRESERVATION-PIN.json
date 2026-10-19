@@ -1,0 +1,16 @@
+{
+  "role": "Local retained source construction integrity, not labels or acquisition freeze",
+  "local_snapshot_manifest_sha256": "66383cb7344807e3cc75fb048b9091091e182c3dfdaaab2946262e1185bf0875",
+  "local_snapshot_pin_sha256": "ebbea94a9bf5545ee206283b0d3a8de2b3ac39f7cd3c703e7c6530a83b526e1b",
+  "snapshot_artifact_count": 160,
+  "local_preservation_manifest_sha256": "d61955f53ad496ee1239e589109472e41e593cecc4f66903e9a1394076b63e5e",
+  "preserved_file_count": 170,
+  "source_provenance_sha256": "1b762b61c24790b9a6a82870e199e9d7ac0267c5f6edde09a9c9a4596adfd5be",
+  "selected_units": 11,
+  "labels_or_vault_created": false,
+  "private_bodies_dossiers_identities_published": false,
+  "checks": {
+    "checked": 160,
+    "mismatches": []
+  }
+}

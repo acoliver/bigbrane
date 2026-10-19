@@ -1,0 +1,29 @@
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+.................................F...................................... [ 96%]
+..........                                                               [100%]
+=================================== FAILURES ===================================
+__________ test_named_scopes_validate_but_broader_scope_stays_pending __________
+
+    def test_named_scopes_validate_but_broader_scope_stays_pending():
+>       result = b.validate_stage()
+                 ^^^^^^^^^^^^^^^^^^
+
+results-wt/heldout-acquisition/preparation/inventory/test_inventory.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+results-wt/heldout-acquisition/preparation/inventory/build_inventory.py:651: in validate_stage
+    require(file_sha(p)==h,'frozen base SHA mismatch: '+p)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False
+reason = 'frozen base SHA mismatch: /Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/harness.py'
+
+    def require(ok, reason):
+        if not ok:
+>           raise ValueError(reason)
+E           ValueError: frozen base SHA mismatch: /Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/harness.py
+
+results-wt/heldout-acquisition/preparation/inventory/build_inventory.py:30: ValueError
+=========================== short test summary info ============================
+FAILED results-wt/heldout-acquisition/preparation/inventory/test_inventory.py::test_named_scopes_validate_but_broader_scope_stays_pending

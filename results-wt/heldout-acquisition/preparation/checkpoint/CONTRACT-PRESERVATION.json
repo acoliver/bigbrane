@@ -1,0 +1,19 @@
+{
+  "harness_old_sha256": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867",
+  "harness_new_sha256": "2c1d366af78edd96cb12048b86c4b5656a11f396a91ebb8b2a7094c1c00cc5f0",
+  "exact_two_require_additions": true,
+  "production_tracked_changes": 0,
+  "main_clean": true,
+  "root_44_test_source_unchanged": true,
+  "diagnostic_xfail_decorators_removed_only": 2,
+  "diagnostic_assertions_unchanged": true,
+  "valid_request_parity_cases": 72,
+  "mock_dispatches": 144,
+  "live_dispatches": 0,
+  "local_corpus_source_hashes_and_literal_spans_verified": 11,
+  "local_corpus_validation_bytes_unchanged": true,
+  "labels_or_vault_created": false,
+  "plan_policy_pins_unchanged": true,
+  "issue8": "implementation fixed; issue remains open pending integration",
+  "issue9": "failed construction cohort remains incomplete"
+}

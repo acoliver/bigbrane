@@ -1,0 +1,44 @@
+[
+  {
+    "id": "empty_ascii_tokens",
+    "file": "results-wt/heldout-acquisition/harness.py",
+    "lines": [
+      128,
+      134
+    ],
+    "minimal_call": "search_request('', 'arxiv', 'Q0')",
+    "actual": {
+      "endpoint": "https://export.arxiv.org/api/query",
+      "params": {
+        "search_query": "",
+        "start": "0",
+        "max_results": "6",
+        "sortBy": "relevance"
+      }
+    },
+    "expected": "ValueError, as production arxiv.search_request does; Q1 has the same gap.",
+    "reachability": "queries() lines 109-124 rejects tokenless metadata before replay. Helper is unsafe when called directly.",
+    "action": "Coordinator may delegate helper validation; no frozen or production fix made."
+  },
+  {
+    "id": "unknown_query_policy",
+    "file": "results-wt/heldout-acquisition/harness.py",
+    "lines": [
+      128,
+      139
+    ],
+    "minimal_call": "search_request('alpha', 'arxiv', 'FOREIGN')",
+    "actual": {
+      "endpoint": "https://export.arxiv.org/api/query",
+      "params": {
+        "search_query": "(ti:alpha OR abs:alpha)",
+        "start": "0",
+        "max_results": "6",
+        "sortBy": "relevance"
+      }
+    },
+    "expected": "Reject policy outside Q0/Q1; current arXiv branch treats every non-Q0 value as Q1; OA/S2 ignore it.",
+    "reachability": "replay() validates arm against POLICY before taking arm[:2]; not reachable through a valid arm.",
+    "action": "Coordinator may delegate policy validation; do not silently create fallback policy or source selection."
+  }
+]

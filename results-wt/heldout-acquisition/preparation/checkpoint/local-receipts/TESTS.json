@@ -1,0 +1,59 @@
+{
+  "exit_code": 1,
+  "groups": {
+    "test_harness": {
+      "total": 44,
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0
+    },
+    "preparation.provider-syntax.test_preflight": {
+      "total": 77,
+      "passed": 77,
+      "failed": 0,
+      "skipped": 0
+    },
+    "preparation.provider-syntax.test_helper_fix": {
+      "total": 123,
+      "passed": 123,
+      "failed": 0,
+      "skipped": 0
+    },
+    "preparation.inventory.test_inventory": {
+      "total": 32,
+      "passed": 31,
+      "failed": 1,
+      "skipped": 0
+    },
+    "preparation.inventory.v2.test_delta": {
+      "total": 17,
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    "preparation.corpus-author.v2.validate_corpus.Synthetic": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "args": [
+    "-q",
+    "-q",
+    "-c",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/pytest.ini",
+    "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition",
+    "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/tmp/preparation-checkpoint/local/test-work",
+    "-p",
+    "no:cacheprovider",
+    "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/tmp/preparation-checkpoint/local/tests.xml",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/test_harness.py",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/test_preflight.py",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/test_helper_fix.py",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/inventory/test_inventory.py",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/inventory/v2/test_delta.py",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/corpus-author/v2/validate_corpus.py"
+  ],
+  "full_suite_run": false
+}

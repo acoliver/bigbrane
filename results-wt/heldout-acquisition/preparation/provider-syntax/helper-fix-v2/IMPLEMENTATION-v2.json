@@ -1,0 +1,161 @@
+{
+  "acceptance_change": false,
+  "additional_documentation_fetches": 0,
+  "additional_live_queries": 0,
+  "behavior": "Policy validation precedes source dispatch; arXiv requires at least one ASCII token; valid construction unchanged; OA/S2 raw text unchanged",
+  "changes": {
+    "existing_report_files_appended": 1,
+    "existing_source_files_modified": 3,
+    "generated_workspace_files": "Test-work, temp and pytest-cache files excluded from durable counts",
+    "historical_report_prefix_unchanged": true,
+    "inventory_directory": "Excluded; owned by another worker",
+    "main_tracked_changes": 0,
+    "modified_existing_file_count": 4,
+    "modified_existing_files": [
+      "harness.py",
+      "preparation/provider-syntax/REPORT.md",
+      "preparation/provider-syntax/preflight.py",
+      "preparation/provider-syntax/test_preflight.py"
+    ],
+    "new_durable_file_count": 22,
+    "new_durable_files": [
+      "ARTIFACTS-v2.json",
+      "SOURCE-HASHES-v2.json",
+      "preparation/provider-syntax/ARTIFACTS-v2.json",
+      "preparation/provider-syntax/HELPER-FIX-STATUS.md",
+      "preparation/provider-syntax/INPUT-HASHES-v2.json",
+      "preparation/provider-syntax/helper-fix-v2/BEFORE.json",
+      "preparation/provider-syntax/helper-fix-v2/CHANGES-v2.json",
+      "preparation/provider-syntax/helper-fix-v2/COMMANDS-v2.md",
+      "preparation/provider-syntax/helper-fix-v2/FROZEN-UNCHANGED-v2.json",
+      "preparation/provider-syntax/helper-fix-v2/IMPLEMENTATION-v2.json",
+      "preparation/provider-syntax/helper-fix-v2/REQUEST-PARITY-v2.json",
+      "preparation/provider-syntax/helper-fix-v2/TEST-SUMMARY-v2.json",
+      "preparation/provider-syntax/helper-fix-v2/harness.py.diff",
+      "preparation/provider-syntax/helper-fix-v2/preflight.py.diff",
+      "preparation/provider-syntax/helper-fix-v2/previous/harness.py",
+      "preparation/provider-syntax/helper-fix-v2/previous/preflight.py",
+      "preparation/provider-syntax/helper-fix-v2/previous/test_preflight.py",
+      "preparation/provider-syntax/helper-fix-v2/test_preflight.py.diff",
+      "preparation/provider-syntax/helper-fix-v2/tests-v2.log",
+      "preparation/provider-syntax/helper-fix-v2/tests-v2.xml",
+      "preparation/provider-syntax/run_helper_fix.py",
+      "preparation/provider-syntax/test_helper_fix.py"
+    ],
+    "new_maintained_source_files": 2,
+    "preflight_assertions_unchanged": true,
+    "production_changes": 0,
+    "root_test_harness_unchanged": true,
+    "sibling_tracked_changes": 1,
+    "total_changed_durable_file_count": 26
+  },
+  "current_tests": {
+    "af_unix_allowed": true,
+    "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+    "exit_code": 0,
+    "groups": {
+      "test_harness": {
+        "failed": 0,
+        "passed": 44,
+        "skipped": 0,
+        "total": 44
+      },
+      "test_helper_fix": {
+        "failed": 0,
+        "passed": 123,
+        "skipped": 0,
+        "total": 123
+      },
+      "test_preflight": {
+        "failed": 0,
+        "passed": 77,
+        "skipped": 0,
+        "total": 77
+      }
+    },
+    "network_prohibited": true,
+    "pytest_args": [
+      "-q",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/test_harness.py",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/test_preflight.py",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/test_helper_fix.py",
+      "-c",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/pytest.ini",
+      "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition",
+      "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/helper-fix-v2/test-work",
+      "-o",
+      "cache_dir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/helper-fix-v2/pytest-cache",
+      "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/helper-fix-v2/tests-v2.xml",
+      "-ra",
+      "-q"
+    ],
+    "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv/bin/python",
+    "scope": "held-out harness, provider preflight, helper fix only",
+    "tmpdir": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/helper-fix-v2/temp",
+    "total": 244
+  },
+  "historical_manifests": {
+    "provider_artifacts": "78999fe7df871f35b3c26684dd6046f750587ea360a84c505eafdd23289abff8",
+    "provider_input_hashes": "58d8755f3645ac5ee6d87a761d1d0e130df90d167fb6f2d1031149aab3208a49",
+    "root_artifacts": "d4ffa5669feb2ee9d14b805fdcadef40b8ecfe4b88dc13ec86851c23256f8322",
+    "root_source_hashes": "5706e8fc2de503ce632942575389fd8b64ea7210a7f7e3c4aa324692d2ced572"
+  },
+  "historical_report_before_append_sha256": "d4594c89f76a9b18aa0ae21dc4064a62cfedf39e871239d5f1857fe86496a513",
+  "historical_report_prefix_verified": true,
+  "historical_tests": {
+    "logs_retained": true,
+    "passed": 68,
+    "total": 77,
+    "xfail": 9
+  },
+  "implementation_version": 2,
+  "independent_review": "Not performed per scoped implementation request",
+  "loader": "preflight.check_freeze explicitly selects INPUT-HASHES-v2.json; no compatibility fallback",
+  "new_harness_sha256": "2c1d366af78edd96cb12048b86c4b5656a11f396a91ebb8b2a7094c1c00cc5f0",
+  "old_harness_sha256": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867",
+  "original_neutral_queries": 2,
+  "parity": {
+    "all_equal": true,
+    "live_dispatches": 0,
+    "mock_dispatches": 144,
+    "new_harness_sha256": "2c1d366af78edd96cb12048b86c4b5656a11f396a91ebb8b2a7094c1c00cc5f0",
+    "old_harness_sha256": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867",
+    "valid_cases": 72
+  },
+  "preflight_assertions_unchanged_verified": true,
+  "production_unchanged": true,
+  "promoted_cases": [
+    "test_frozen_empty_tokens_rejected[-Q0]",
+    "test_frozen_empty_tokens_rejected[-Q1]",
+    "test_frozen_empty_tokens_rejected[----Q0]",
+    "test_frozen_empty_tokens_rejected[----Q1]",
+    "test_frozen_empty_tokens_rejected[\\u4e2d\\u6587-Q0]",
+    "test_frozen_empty_tokens_rejected[\\u4e2d\\u6587-Q1]",
+    "test_frozen_unknown_policy_rejected[arxiv]",
+    "test_frozen_unknown_policy_rejected[openalex]",
+    "test_frozen_unknown_policy_rejected[s2]"
+  ],
+  "promotion": "Only the two xfail decorators removed; nine generated cases; all assertions unchanged",
+  "remaining": [
+    "Independent corpus",
+    "Blinded labels",
+    "Broader exclusion inventory",
+    "Study acquisition",
+    "Contrasts and policy decision"
+  ],
+  "retained_original_source": "previous/harness.py",
+  "scope": "Two direct-helper validation contracts only",
+  "study_inputs_unchanged": true,
+  "unchanged_preregistration": {
+    "PLAN.md": "4d8f90f91c7a709bf3530df42573067837ebcb7fce2c965b00990c0500b1c701",
+    "PREREGISTRATION.sha256": "f4790e856188d8d9dafa9977fe72a9c35b8eeebde373da66defb1304e6a61d30",
+    "corpus.json": "a01a205221a236ee2cfbda782cc9005b86a1086ce61e3f27ee6f5d4bcecebbbc",
+    "exclusions.json": "45f3753e8181ef784c77df11529fe9eea405a6c1f1f90b99c411bb2c69d8e433",
+    "exclusions.sha256": "4e86ec45b34b5f135f378d2fb232f85304940620115b47d79242c2ddfac65ae0",
+    "policy.json": "245a9d97b44df9807f1cc4a88b127c6790f7423d7f3c85b62c2124336591047c"
+  },
+  "unchanged_provider_plan": {
+    "PLAN.md": "3dfb76418382d0c8f51816cadc8256a43fd214fdd87771807181a2b7293779c5",
+    "PLAN.sha256": "1488a924e28be3acf2032be74e1cb059c4f67cd820b3cc833d57778f82f1cc45"
+  }
+}

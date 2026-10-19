@@ -1,0 +1,125 @@
+{
+  "artifacts": {
+    "COMMANDS.md": {
+      "bytes": 2754,
+      "sha256": "a4135debe0cdc157043e0a176f6e154b234c94a8025c1e2326cd858ca13838a2"
+    },
+    "HARNESS.md": {
+      "bytes": 10282,
+      "sha256": "526045f84f5d19b5e148cae454d4c2347eb6ec7ee764a7df2328a4433f389989"
+    },
+    "PENDING.json": {
+      "bytes": 1334,
+      "sha256": "6cc4a79506f7f4da2a6dbf9dff4695d43f7f6abe7ecf66e46fcd8a59962198cd"
+    },
+    "PLAN.md": {
+      "bytes": 9455,
+      "sha256": "4d8f90f91c7a709bf3530df42573067837ebcb7fce2c965b00990c0500b1c701"
+    },
+    "PREREGISTRATION.sha256": {
+      "bytes": 152,
+      "sha256": "f4790e856188d8d9dafa9977fe72a9c35b8eeebde373da66defb1304e6a61d30"
+    },
+    "SOURCE-HASHES-v2.json": {
+      "bytes": 4268,
+      "sha256": "3f0534185e205e71773ef6066fb346cbae34b699dbc83fa828264eda1d1dde1c"
+    },
+    "SOURCE-HASHES.json": {
+      "bytes": 3256,
+      "sha256": "5706e8fc2de503ce632942575389fd8b64ea7210a7f7e3c4aa324692d2ced572"
+    },
+    "STATUS.md": {
+      "bytes": 3087,
+      "sha256": "a883a60959d3f38c36c6e40c00a84d6a5ead4b62182145abdc206078770431de"
+    },
+    "VALIDATION.json": {
+      "bytes": 1632,
+      "sha256": "3107639cfa2bba3187ad83f13c12719fcbac7b2941e717bcb810484259e1d9fc"
+    },
+    "build_exclusions.py": {
+      "bytes": 1850,
+      "sha256": "cf4f5c6742b1e3865e40ee89ec7e81dbd8dc1c782290ab6afd878a6d5e8ad4e3"
+    },
+    "corpus.json": {
+      "bytes": 176,
+      "sha256": "a01a205221a236ee2cfbda782cc9005b86a1086ce61e3f27ee6f5d4bcecebbbc"
+    },
+    "exclusion-build.json": {
+      "bytes": 200,
+      "sha256": "8fbb490ad209ec5871d6ebe74803540e71bcce925003118e8525c090f63ec739"
+    },
+    "exclusions.json": {
+      "bytes": 3804,
+      "sha256": "45f3753e8181ef784c77df11529fe9eea405a6c1f1f90b99c411bb2c69d8e433"
+    },
+    "exclusions.sha256": {
+      "bytes": 82,
+      "sha256": "4e86ec45b34b5f135f378d2fb232f85304940620115b47d79242c2ddfac65ae0"
+    },
+    "finalize.py": {
+      "bytes": 3202,
+      "sha256": "a7b300a375724d604132271b4beda47fa889eead3a7dc88f1d9b7f446d956678"
+    },
+    "harness.py": {
+      "bytes": 28278,
+      "sha256": "2c1d366af78edd96cb12048b86c4b5656a11f396a91ebb8b2a7094c1c00cc5f0"
+    },
+    "offline.py": {
+      "bytes": 376,
+      "sha256": "d7250b9622301212baa5dfd1f9057ff16470e47684a35b3b0d380ac2f3171b83"
+    },
+    "policy.json": {
+      "bytes": 957,
+      "sha256": "245a9d97b44df9807f1cc4a88b127c6790f7423d7f3c85b62c2124336591047c"
+    },
+    "preparation/provider-syntax/HELPER-FIX-STATUS.md": {
+      "bytes": 1950,
+      "sha256": "bc74061ccc208e22b3de98a8a66ff0d8ebc22c8e584f75b7e4322b8f2d25bf94"
+    },
+    "preparation/provider-syntax/INPUT-HASHES-v2.json": {
+      "bytes": 3183,
+      "sha256": "87c6534a19b819d4c54d4138d661b48298edaee069a5a8af025302051c261c2d"
+    },
+    "preparation/provider-syntax/helper-fix-v2/FROZEN-UNCHANGED-v2.json": {
+      "bytes": 4201,
+      "sha256": "838cfefc99eb82dec55cb8d45eb86edfbb16f9985ee4b8cd77dd8bbc57da9826"
+    },
+    "preparation/provider-syntax/helper-fix-v2/IMPLEMENTATION-v2.json": {
+      "bytes": 7707,
+      "sha256": "2aa5d58591a494625d3fd6d0f2370ef97279e7b04364819b642bf6c00f206f5e"
+    },
+    "preparation/provider-syntax/helper-fix-v2/TEST-SUMMARY-v2.json": {
+      "bytes": 1880,
+      "sha256": "e5ff50f40a3bf5c6d140437cd6e82d517e68d6c1f1e7d1d98bc968fb0c8adeb8"
+    },
+    "pytest.ini": {
+      "bytes": 22,
+      "sha256": "19004147505c1ec3353bf726aa0bae6705adec2326c164745417d42d03b99067"
+    },
+    "run_tests.py": {
+      "bytes": 474,
+      "sha256": "907f8e255232ff07c96da2ead672307458e6259dbd1a0b815a9cf0038c73431f"
+    },
+    "synthetic.py": {
+      "bytes": 4451,
+      "sha256": "4cd41ff6d5caf96d79f79dc88f661fb67c9cfd4a2d7d2ccdba3f9dee8c4a6463"
+    },
+    "test_harness.py": {
+      "bytes": 13947,
+      "sha256": "38bdc5cb291b59f5cce8bf2a90b7ef8990474a68dd76094e9f4c2d03b094db87"
+    }
+  },
+  "historical_receipts_not_regenerated": [
+    "STATUS.md",
+    "VALIDATION.json",
+    "PENDING.json",
+    "COMMANDS.md",
+    "HARNESS.md"
+  ],
+  "implementation_version": 2,
+  "previous_manifest": {
+    "bytes": 2646,
+    "path": "ARTIFACTS.json",
+    "sha256": "d4ffa5669feb2ee9d14b805fdcadef40b8ecfe4b88dc13ec86851c23256f8322"
+  }
+}

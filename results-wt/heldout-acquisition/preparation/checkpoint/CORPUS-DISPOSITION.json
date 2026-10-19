@@ -1,0 +1,27 @@
+{
+  "acceptance_freeze": false,
+  "body_request_limit_violations": 5,
+  "complete_historical_word_accounting_verified": false,
+  "current_retained_source_hashes_and_literal_spans_verified_locally": true,
+  "expected_units": 12,
+  "family_counts": {
+    "computational geometry": 2,
+    "distributed algorithms": 3,
+    "numerical algorithms": 3,
+    "topological data analysis": 3
+  },
+  "future_acquisition_ready": false,
+  "independent_label_vault_present": false,
+  "initial_false_literal_records_preserved_locally": 4,
+  "initial_hashes_covered_authored_payloads_not_remote_bodies": true,
+  "issue": "https://github.com/acoliver/bigbrane/issues/9",
+  "metadata_shape_checks_pass": true,
+  "missing_slot": "h03",
+  "protocol_compliant": false,
+  "semantic_labels_created": false,
+  "source_identity_dossiers_and_response_bodies": "LOCAL ONLY; no public per-unit source bindings",
+  "status": "INCOMPLETE_NOT_READY",
+  "study_run": false,
+  "synthetic_tests": 5,
+  "units": 11
+}

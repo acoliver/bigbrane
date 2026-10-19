@@ -1,0 +1,45 @@
+{
+  "af_unix_allowed": true,
+  "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+  "exit_code": 0,
+  "groups": {
+    "test_harness": {
+      "failed": 0,
+      "passed": 44,
+      "skipped": 0,
+      "total": 44
+    },
+    "test_helper_fix": {
+      "failed": 0,
+      "passed": 123,
+      "skipped": 0,
+      "total": 123
+    },
+    "test_preflight": {
+      "failed": 0,
+      "passed": 77,
+      "skipped": 0,
+      "total": 77
+    }
+  },
+  "network_prohibited": true,
+  "pytest_args": [
+    "-q",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/test_harness.py",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/test_preflight.py",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/test_helper_fix.py",
+    "-c",
+    "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/pytest.ini",
+    "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition",
+    "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/helper-fix-v2/test-work",
+    "-o",
+    "cache_dir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/helper-fix-v2/pytest-cache",
+    "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/helper-fix-v2/tests-v2.xml",
+    "-ra",
+    "-q"
+  ],
+  "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv/bin/python",
+  "scope": "held-out harness, provider preflight, helper fix only",
+  "tmpdir": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/preparation/provider-syntax/helper-fix-v2/temp",
+  "total": 244
+}

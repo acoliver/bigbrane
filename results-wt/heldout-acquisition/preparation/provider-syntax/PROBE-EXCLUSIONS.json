@@ -1,0 +1,293 @@
+{
+  "kind": "diagnostic_provider_probe_exclusions",
+  "not_a_study": true,
+  "plan_sha256": "3dfb76418382d0c8f51816cadc8256a43fd214fdd87771807181a2b7293779c5",
+  "future_scope": "Exclude all listed identities and resolved aliases from mechanisms and reference works.",
+  "unknown_aliases": "Only returned arXiv identifiers, titles, URLs and any supplied DOI; unresolved links remain.",
+  "papers": [
+    {
+      "source": "arxiv",
+      "source_id": "nucl-ex/0408020",
+      "arxiv_id": "nucl-ex/0408020",
+      "title": "Two-photon exchange and elastic scattering of electrons/positrons on the proton. (Proposal for an experiment at VEPP-3)",
+      "source_urls": [
+        "http://arxiv.org/abs/nucl-ex/0408020v1"
+      ],
+      "body_sha256": [
+        "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+      ]
+    },
+    {
+      "source": "arxiv",
+      "source_id": "1309.4668",
+      "arxiv_id": "1309.4668",
+      "title": "Electron cloud observations at the ISIS Proton Synchrotron",
+      "source_urls": [
+        "http://arxiv.org/abs/1309.4668v1"
+      ],
+      "body_sha256": [
+        "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+      ],
+      "doi": "10.5170/CERN-2013-002.237"
+    },
+    {
+      "source": "arxiv",
+      "source_id": "1606.02159",
+      "arxiv_id": "1606.02159",
+      "title": "Avoiding common pitfalls and misconceptions in extractions of the proton radius",
+      "source_urls": [
+        "http://arxiv.org/abs/1606.02159v1"
+      ],
+      "body_sha256": [
+        "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+      ]
+    },
+    {
+      "source": "arxiv",
+      "source_id": "1610.08734",
+      "arxiv_id": "1610.08734",
+      "title": "High quality electron beam generation in a proton-driven hollow plasma wakefield accelerator",
+      "source_urls": [
+        "http://arxiv.org/abs/1610.08734v3"
+      ],
+      "body_sha256": [
+        "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+      ],
+      "doi": "10.1103/PhysRevAccelBeams.20.101301"
+    },
+    {
+      "source": "arxiv",
+      "source_id": "2102.00018",
+      "arxiv_id": "2102.00018",
+      "title": "Self-consistent determination of proton and nuclear PDFs at the Electron Ion Collider",
+      "source_urls": [
+        "http://arxiv.org/abs/2102.00018v2"
+      ],
+      "body_sha256": [
+        "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+      ],
+      "doi": "10.1103/PhysRevD.103.096005"
+    },
+    {
+      "source": "arxiv",
+      "source_id": "0803.1617",
+      "arxiv_id": "0803.1617",
+      "title": "Jirim kuark - mikroskopi elektron attoskala ke atas proton",
+      "source_urls": [
+        "http://arxiv.org/abs/0803.1617v1"
+      ],
+      "body_sha256": [
+        "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+      ],
+      "doi": "10.1063/1.2940608"
+    },
+    {
+      "source": "arxiv",
+      "source_id": "1401.3666",
+      "arxiv_id": "1401.3666",
+      "title": "Light Sea Fermions in Electron-Proton and Muon-Proton Interactions",
+      "source_urls": [
+        "http://arxiv.org/abs/1401.3666v2"
+      ],
+      "body_sha256": [
+        "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+      ],
+      "doi": "10.1103/PhysRevA.88.062514"
+    },
+    {
+      "source": "arxiv",
+      "source_id": "astro-ph/9612209",
+      "arxiv_id": "astro-ph/9612209",
+      "title": "The Electron-Screening Correction for the Proton-Proton Reaction",
+      "source_urls": [
+        "http://arxiv.org/abs/astro-ph/9612209v2"
+      ],
+      "body_sha256": [
+        "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+      ],
+      "doi": "10.1103/PhysRevC.57.2756"
+    },
+    {
+      "source": "arxiv",
+      "source_id": "hep-ph/9411242",
+      "arxiv_id": "hep-ph/9411242",
+      "title": "Proton-ring and Electron-linac Collider (PRELC) as a (first) TeV-rangeelectron-proton or photon-proton collider",
+      "source_urls": [
+        "http://arxiv.org/abs/hep-ph/9411242v1"
+      ],
+      "body_sha256": [
+        "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+      ]
+    },
+    {
+      "source": "arxiv",
+      "source_id": "2510.03693",
+      "arxiv_id": "2510.03693",
+      "title": "Tracking Electron, Proton, and Solvent Motion in Proton-Coupled Electron Transfer with Ultrafast X-rays",
+      "source_urls": [
+        "http://arxiv.org/abs/2510.03693v1"
+      ],
+      "body_sha256": [
+        "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+      ]
+    },
+    {
+      "source": "arxiv",
+      "source_id": "0711.1224",
+      "arxiv_id": "0711.1224",
+      "title": "Forster mechanism of electron-driven proton pump",
+      "source_urls": [
+        "http://arxiv.org/abs/0711.1224v1"
+      ],
+      "body_sha256": [
+        "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+      ],
+      "doi": "10.1103/PhysRevE.77.011919"
+    },
+    {
+      "source": "arxiv",
+      "source_id": "1201.2572",
+      "arxiv_id": "1201.2572",
+      "title": "Proton electron elastic scattering and the proton charge radius",
+      "source_urls": [
+        "http://arxiv.org/abs/1201.2572v1"
+      ],
+      "body_sha256": [
+        "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+      ],
+      "doi": "10.1134/S1547477113050099"
+    }
+  ],
+  "registry_entries": [
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "nucl-ex/0408020",
+        "arxiv_id": "nucl-ex/0408020",
+        "title": "Two-photon exchange and elastic scattering of electrons/positrons on the proton. (Proposal for an experiment at VEPP-3)"
+      },
+      "origin_sha256": "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "1309.4668",
+        "arxiv_id": "1309.4668",
+        "title": "Electron cloud observations at the ISIS Proton Synchrotron",
+        "doi": "10.5170/CERN-2013-002.237"
+      },
+      "origin_sha256": "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "1606.02159",
+        "arxiv_id": "1606.02159",
+        "title": "Avoiding common pitfalls and misconceptions in extractions of the proton radius"
+      },
+      "origin_sha256": "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "1610.08734",
+        "arxiv_id": "1610.08734",
+        "title": "High quality electron beam generation in a proton-driven hollow plasma wakefield accelerator",
+        "doi": "10.1103/PhysRevAccelBeams.20.101301"
+      },
+      "origin_sha256": "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "2102.00018",
+        "arxiv_id": "2102.00018",
+        "title": "Self-consistent determination of proton and nuclear PDFs at the Electron Ion Collider",
+        "doi": "10.1103/PhysRevD.103.096005"
+      },
+      "origin_sha256": "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "0803.1617",
+        "arxiv_id": "0803.1617",
+        "title": "Jirim kuark - mikroskopi elektron attoskala ke atas proton",
+        "doi": "10.1063/1.2940608"
+      },
+      "origin_sha256": "780dde7976a879b9b2bace89f5264410f81fe36ca17a8d890cee35c55cdc6984"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "1401.3666",
+        "arxiv_id": "1401.3666",
+        "title": "Light Sea Fermions in Electron-Proton and Muon-Proton Interactions",
+        "doi": "10.1103/PhysRevA.88.062514"
+      },
+      "origin_sha256": "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "astro-ph/9612209",
+        "arxiv_id": "astro-ph/9612209",
+        "title": "The Electron-Screening Correction for the Proton-Proton Reaction",
+        "doi": "10.1103/PhysRevC.57.2756"
+      },
+      "origin_sha256": "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "hep-ph/9411242",
+        "arxiv_id": "hep-ph/9411242",
+        "title": "Proton-ring and Electron-linac Collider (PRELC) as a (first) TeV-rangeelectron-proton or photon-proton collider"
+      },
+      "origin_sha256": "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "2510.03693",
+        "arxiv_id": "2510.03693",
+        "title": "Tracking Electron, Proton, and Solvent Motion in Proton-Coupled Electron Transfer with Ultrafast X-rays"
+      },
+      "origin_sha256": "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "0711.1224",
+        "arxiv_id": "0711.1224",
+        "title": "Forster mechanism of electron-driven proton pump",
+        "doi": "10.1103/PhysRevE.77.011919"
+      },
+      "origin_sha256": "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+    },
+    {
+      "scope": "other_used_study_data",
+      "identity": {
+        "source": "arxiv",
+        "source_id": "1201.2572",
+        "arxiv_id": "1201.2572",
+        "title": "Proton electron elastic scattering and the proton charge radius",
+        "doi": "10.1134/S1547477113050099"
+      },
+      "origin_sha256": "435e03c3bc5159eccf72a71a315dd04f47d13c275b84bedb1ee86b739da9e0bb"
+    }
+  ],
+  "normalization": "Versionless arXiv IDs; registry identities pass existing harness.identities. Preserve titles for NFKC/casefold/alphanumeric alias checks.",
+  "handoff_only": "Coordinator inventory input; not automatically inserted in the frozen exclusion registry."
+}

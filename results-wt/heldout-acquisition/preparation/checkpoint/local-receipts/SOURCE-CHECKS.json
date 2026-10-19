@@ -1,0 +1,32 @@
+{
+  "corpus_snapshot": {
+    "checked": 160,
+    "mismatches": []
+  },
+  "private_local_preservation_count": 170,
+  "v2_sources": {
+    "checked": 57604,
+    "mismatches": []
+  },
+  "original_replay": {
+    "checked": 274,
+    "mismatches": []
+  },
+  "original_seeds": {
+    "checked": 75,
+    "mismatches": []
+  },
+  "v1_artifacts": {
+    "checked": 21,
+    "mismatches": []
+  },
+  "frozen_except_authorized_harness": {
+    "checked": 8,
+    "mismatches": []
+  },
+  "harness": {
+    "historical": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867",
+    "current": "2c1d366af78edd96cb12048b86c4b5656a11f396a91ebb8b2a7094c1c00cc5f0",
+    "retained_original": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867"
+  }
+}
