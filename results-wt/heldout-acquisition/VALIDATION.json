@@ -1,0 +1,25 @@
+{
+  "checkpoint_receipt": "../evidence-recovery/NONLINEAR-CHECKPOINT-TESTS.json",
+  "maintained_lines": 1147,
+  "network": "Audit hook active in CLI/tests; no live acquisition executed.",
+  "offline_guard_packaging_correction": "AF_UNIX construction only; all connections/DNS/datagrams and Internet socket construction prohibited",
+  "policy_and_exclusion_pins_valid": true,
+  "preservation_scope": "Main clean and HEAD unchanged; pinned sources unchanged across finalization. No full original-run rehash claimed.",
+  "prose_dash_and_literal_checks": true,
+  "python_ast_valid": true,
+  "repositories": {
+    "main": {
+      "branch": "p4-diagnosis",
+      "head": "8347c7ff845618c558b49e7c2fba1cd8848824c9",
+      "status": ""
+    },
+    "sibling": {
+      "branch": "r2-bar",
+      "head": "4dd48646c0c6652ad21b508322883efe69ee5d66",
+      "status": "?? hybrid/tests/research/fixtures/reference_replays/nonlinear_evidence.json\n?? hybrid/tests/research/fixtures/reference_replays/nonlinear_protected.json\n?? hybrid/tests/research/fixtures/reference_replays/nonlinear_publications.json\n?? hybrid/tests/research/fixtures/reference_replays/nonlinear_sources.json\n?? hybrid/tests/research/fixtures/reference_replays/nonlinear_specimens.json\n?? hybrid/tests/research/fixtures/reference_replays/programs/nonlinear-card-a36f1a3a.py\n?? hybrid/tests/research/fixtures/reference_replays/programs/nonlinear-card-ddb071bd.py\n?? hybrid/tests/research/nonlinear_replays.py\n?? hybrid/tests/research/test_nonlinear_historical_evidence.py"
+    }
+  },
+  "source_hashes_rechecked": true,
+  "study_status": "PENDING",
+  "tests": "44 passed"
+}

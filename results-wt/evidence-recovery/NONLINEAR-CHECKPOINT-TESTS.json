@@ -1,0 +1,639 @@
+{
+  "base": "4dd48646c0c6652ad21b508322883efe69ee5d66",
+  "results": {
+    "combined": {
+      "exit": 1,
+      "testcase_counts": {
+        "passed": 1975,
+        "skipped": 3,
+        "failed": 2
+      },
+      "testcase_elements": 1980,
+      "additional_passing_subtests": 14,
+      "suite_attributes": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "2",
+          "skipped": "3",
+          "tests": "1994",
+          "time": "687.576",
+          "timestamp": "2026-10-18T21:16:15.059992-03:00",
+          "hostname": "Andrews-MacBook-Pro.local"
+        }
+      ],
+      "failures": [
+        {
+          "classname": "hybrid.tests.research.test_phase7_replay",
+          "name": "test_every_s2_death_gets_its_expected_phase7_code"
+        },
+        {
+          "classname": "hybrid.tests.research.test_phase7_replay",
+          "name": "test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+        }
+      ],
+      "subsets": {
+        "hybrid.tests.research.test_budgets": {
+          "passed": 63
+        },
+        "hybrid.tests.research.test_calibration": {
+          "passed": 26,
+          "skipped": 1
+        },
+        "hybrid.tests.research.test_calibration_live_fixes": {
+          "passed": 16
+        },
+        "hybrid.tests.research.test_cli_routing": {
+          "passed": 4
+        },
+        "hybrid.tests.research.test_composites_historical_evidence": {
+          "passed": 31
+        },
+        "hybrid.tests.research.test_concurrency": {
+          "passed": 9
+        },
+        "hybrid.tests.research.test_difference": {
+          "passed": 23
+        },
+        "hybrid.tests.research.test_diskguard_wiring": {
+          "passed": 3
+        },
+        "hybrid.tests.research.test_escape": {
+          "passed": 22
+        },
+        "hybrid.tests.research.test_escape_reserve": {
+          "passed": 13
+        },
+        "hybrid.tests.research.test_escape_similarity": {
+          "passed": 5
+        },
+        "hybrid.tests.research.test_falsifier_gates": {
+          "passed": 23
+        },
+        "hybrid.tests.research.test_falsifiers": {
+          "passed": 14
+        },
+        "hybrid.tests.research.test_fix10_phase7_live": {
+          "passed": 25
+        },
+        "hybrid.tests.research.test_fix12_phase7_live": {
+          "passed": 33
+        },
+        "hybrid.tests.research.test_fix13_materiality": {
+          "passed": 22
+        },
+        "hybrid.tests.research.test_fix15_precision": {
+          "passed": 26
+        },
+        "hybrid.tests.research.test_fix16_card_completeness": {
+          "passed": 37
+        },
+        "hybrid.tests.research.test_fix17_stage": {
+          "passed": 19
+        },
+        "hybrid.tests.research.test_fix18_card_limits": {
+          "passed": 27
+        },
+        "hybrid.tests.research.test_fix19_prefreeze": {
+          "passed": 20
+        },
+        "hybrid.tests.research.test_fix20_precision_policy": {
+          "passed": 37
+        },
+        "hybrid.tests.research.test_fix21_measurement": {
+          "passed": 38
+        },
+        "hybrid.tests.research.test_fix22_invalid_runs": {
+          "passed": 24
+        },
+        "hybrid.tests.research.test_fix2_learnability_budget": {
+          "passed": 22
+        },
+        "hybrid.tests.research.test_fix3_contracts": {
+          "passed": 45
+        },
+        "hybrid.tests.research.test_fix4_challenge": {
+          "passed": 26
+        },
+        "hybrid.tests.research.test_fix5_p5_cards": {
+          "passed": 4
+        },
+        "hybrid.tests.research.test_fix5_prover": {
+          "passed": 13
+        },
+        "hybrid.tests.research.test_fix6_settlement": {
+          "passed": 26
+        },
+        "hybrid.tests.research.test_fix7_match": {
+          "passed": 25
+        },
+        "hybrid.tests.research.test_fix7_unread": {
+          "passed": 9
+        },
+        "hybrid.tests.research.test_fix9_settled_premises": {
+          "passed": 13
+        },
+        "hybrid.tests.research.test_fixct_hang_guard": {
+          "passed": 5
+        },
+        "hybrid.tests.research.test_generation_arms": {
+          "passed": 36
+        },
+        "hybrid.tests.research.test_historical_binding": {
+          "passed": 18
+        },
+        "hybrid.tests.research.test_historical_references": {
+          "passed": 19
+        },
+        "hybrid.tests.research.test_inspect": {
+          "passed": 14
+        },
+        "hybrid.tests.research.test_kd2_table_limit": {
+          "passed": 18
+        },
+        "hybrid.tests.research.test_kd4_counted_family": {
+          "passed": 19
+        },
+        "hybrid.tests.research.test_kd5_s0_family_flag": {
+          "passed": 10
+        },
+        "hybrid.tests.research.test_kd6_stage_errors": {
+          "passed": 4
+        },
+        "hybrid.tests.research.test_kd7_prior_art_evidence": {
+          "passed": 5
+        },
+        "hybrid.tests.research.test_kd8_restatement": {
+          "passed": 27
+        },
+        "hybrid.tests.research.test_known_work": {
+          "passed": 15
+        },
+        "hybrid.tests.research.test_ledger": {
+          "passed": 13
+        },
+        "hybrid.tests.research.test_live_check": {
+          "passed": 3
+        },
+        "hybrid.tests.research.test_local_index": {
+          "passed": 9
+        },
+        "hybrid.tests.research.test_localmodels": {
+          "passed": 12
+        },
+        "hybrid.tests.research.test_math_premises": {
+          "passed": 17
+        },
+        "hybrid.tests.research.test_math_stages": {
+          "passed": 25
+        },
+        "hybrid.tests.research.test_math_wiring": {
+          "passed": 12
+        },
+        "hybrid.tests.research.test_next_historical_references": {
+          "passed": 37
+        },
+        "hybrid.tests.research.test_nonlinear_historical_evidence": {
+          "passed": 38
+        },
+        "hybrid.tests.research.test_obligation_checks": {
+          "passed": 24
+        },
+        "hybrid.tests.research.test_orchestrator": {
+          "passed": 62
+        },
+        "hybrid.tests.research.test_orchestrator_units": {
+          "passed": 29
+        },
+        "hybrid.tests.research.test_outcome_backfill": {
+          "passed": 7
+        },
+        "hybrid.tests.research.test_outcome_store": {
+          "passed": 10
+        },
+        "hybrid.tests.research.test_outcomes_wiring": {
+          "passed": 7
+        },
+        "hybrid.tests.research.test_p4p_protocols": {
+          "passed": 50,
+          "skipped": 1
+        },
+        "hybrid.tests.research.test_phase6_regressions": {
+          "passed": 18
+        },
+        "hybrid.tests.research.test_phase7_replay": {
+          "passed": 2,
+          "failed": 2
+        },
+        "hybrid.tests.research.test_planted": {
+          "passed": 33
+        },
+        "hybrid.tests.research.test_planted_metrics": {
+          "passed": 31
+        },
+        "hybrid.tests.research.test_planted_target_kills": {
+          "passed": 25
+        },
+        "hybrid.tests.research.test_plumb": {
+          "passed": 20
+        },
+        "hybrid.tests.research.test_profile_stage": {
+          "passed": 23
+        },
+        "hybrid.tests.research.test_reference_replays": {
+          "passed": 6
+        },
+        "hybrid.tests.research.test_refine": {
+          "passed": 18
+        },
+        "hybrid.tests.research.test_remaining_historical_evidence": {
+          "passed": 24
+        },
+        "hybrid.tests.research.test_review_coverage_wiring": {
+          "passed": 4
+        },
+        "hybrid.tests.research.test_review_gate_evidence": {
+          "passed": 44
+        },
+        "hybrid.tests.research.test_run_discovery_config": {
+          "passed": 8
+        },
+        "hybrid.tests.research.test_s6_labels": {
+          "passed": 9
+        },
+        "hybrid.tests.research.test_s6_rule_override": {
+          "passed": 11
+        },
+        "hybrid.tests.research.test_schemas": {
+          "passed": 35
+        },
+        "hybrid.tests.research.test_signature": {
+          "passed": 20
+        },
+        "hybrid.tests.research.test_store": {
+          "passed": 18
+        },
+        "hybrid.tests.literature.test_api_keys": {
+          "passed": 38
+        },
+        "hybrid.tests.literature.test_arxiv_https": {
+          "passed": 3
+        },
+        "hybrid.tests.literature.test_arxiv_local": {
+          "passed": 26
+        },
+        "hybrid.tests.literature.test_client": {
+          "passed": 19
+        },
+        "hybrid.tests.literature.test_dedupe": {
+          "passed": 4
+        },
+        "hybrid.tests.literature.test_harvest": {
+          "passed": 20
+        },
+        "hybrid.tests.literature.test_live": {
+          "skipped": 1
+        },
+        "hybrid.tests.literature.test_oai": {
+          "passed": 7
+        },
+        "hybrid.tests.literature.test_pacing": {
+          "passed": 12
+        },
+        "hybrid.tests.literature.test_parsing": {
+          "passed": 17
+        },
+        "hybrid.tests.literature.test_prior_art": {
+          "passed": 10
+        },
+        "hybrid.tests.literature.test_prior_art_cross_field": {
+          "passed": 6
+        },
+        "hybrid.tests.literature.test_prior_art_receipts": {
+          "passed": 15
+        },
+        "hybrid.tests.literature.test_sampling": {
+          "passed": 9
+        },
+        "hybrid.tests.literature.test_seed": {
+          "passed": 7
+        },
+        "hybrid.tests.literature.test_seed_provenance": {
+          "passed": 29
+        },
+        "hybrid.tests.literature.test_semantic_scholar_empty": {
+          "passed": 2
+        },
+        "hybrid.tests.literature.test_transport_provenance": {
+          "passed": 22
+        },
+        "results-wt.kd8.tools.tests.test_evidence_tools": {
+          "passed": 11
+        },
+        "results-wt.retrieval-diagnosis.test_diagnose": {
+          "passed": 12
+        },
+        "results-wt.transport-measurement.test_measure.MeasurementTests": {
+          "passed": 7
+        },
+        "results-wt.acquisition-windows.test_extract_windows.WindowTests": {
+          "passed": 18
+        },
+        "results-wt.heldout-acquisition.test_harness": {
+          "passed": 44
+        }
+      },
+      "nonlinear_cases_passed": 38,
+      "heldout_synthetic_cases_passed": 44,
+      "junit_local_path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/combined-junit.xml",
+      "junit_sha256": "aed6814825a9525e6f83368da637acb1ba9027702d8c50ab7320b4c23b48d394",
+      "all_21_rows_unchanged": true,
+      "phase7_rows_sha256": "259ec1b33cfaed911dfdd2f7034159bee4351eaf9a0f58b5cdd06bf8f025f72b",
+      "exact_codes": "7/19",
+      "required_gaps": 12,
+      "invocation": {
+        "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+        "command": [
+          "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+          "-m",
+          "pytest",
+          "-c",
+          "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/pyproject.toml",
+          "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2",
+          "-q",
+          "-p",
+          "next_results",
+          "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/combined-pytest",
+          "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/combined-junit.xml",
+          "hybrid/tests/research",
+          "hybrid/tests/literature",
+          "results-wt/kd8/tools/tests/test_evidence_tools.py",
+          "results-wt/retrieval-diagnosis/test_diagnose.py",
+          "results-wt/transport-measurement/test_measure.py",
+          "results-wt/acquisition-windows/test_extract_windows.py",
+          "results-wt/heldout-acquisition/test_harness.py"
+        ],
+        "environment": {
+          "BIGBRANE_LIVE": "0",
+          "PYTHONHASHSEED": "0",
+          "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-network-guard:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/transport-measurement:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/acquisition-windows:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition",
+          "TMPDIR": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/tmp",
+          "NEXT_ROWS_OUTPUT": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/combined-phase7-rows.json"
+        }
+      }
+    },
+    "isolated": {
+      "exit": 1,
+      "testcase_counts": {
+        "passed": 557,
+        "skipped": 1,
+        "failed": 2
+      },
+      "testcase_elements": 560,
+      "additional_passing_subtests": 14,
+      "suite_attributes": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "2",
+          "skipped": "1",
+          "tests": "574",
+          "time": "64.867",
+          "timestamp": "2026-10-18T21:28:16.459160-03:00",
+          "hostname": "Andrews-MacBook-Pro.local"
+        }
+      ],
+      "failures": [
+        {
+          "classname": "hybrid.tests.research.test_phase7_replay",
+          "name": "test_every_s2_death_gets_its_expected_phase7_code"
+        },
+        {
+          "classname": "hybrid.tests.research.test_phase7_replay",
+          "name": "test_the_linear_attention_and_delta_rule_reductions_are_excluded_as_families"
+        }
+      ],
+      "subsets": {
+        "hybrid.tests.literature.test_api_keys": {
+          "passed": 38
+        },
+        "hybrid.tests.literature.test_arxiv_https": {
+          "passed": 3
+        },
+        "hybrid.tests.literature.test_arxiv_local": {
+          "passed": 26
+        },
+        "hybrid.tests.literature.test_client": {
+          "passed": 19
+        },
+        "hybrid.tests.literature.test_dedupe": {
+          "passed": 4
+        },
+        "hybrid.tests.literature.test_harvest": {
+          "passed": 20
+        },
+        "hybrid.tests.literature.test_live": {
+          "skipped": 1
+        },
+        "hybrid.tests.literature.test_oai": {
+          "passed": 7
+        },
+        "hybrid.tests.literature.test_pacing": {
+          "passed": 12
+        },
+        "hybrid.tests.literature.test_parsing": {
+          "passed": 17
+        },
+        "hybrid.tests.literature.test_prior_art": {
+          "passed": 10
+        },
+        "hybrid.tests.literature.test_prior_art_cross_field": {
+          "passed": 6
+        },
+        "hybrid.tests.literature.test_prior_art_receipts": {
+          "passed": 15
+        },
+        "hybrid.tests.literature.test_sampling": {
+          "passed": 9
+        },
+        "hybrid.tests.literature.test_seed": {
+          "passed": 7
+        },
+        "hybrid.tests.literature.test_seed_provenance": {
+          "passed": 29
+        },
+        "hybrid.tests.literature.test_semantic_scholar_empty": {
+          "passed": 2
+        },
+        "hybrid.tests.literature.test_transport_provenance": {
+          "passed": 22
+        },
+        "hybrid.tests.research.test_nonlinear_historical_evidence": {
+          "passed": 38
+        },
+        "hybrid.tests.research.test_composites_historical_evidence": {
+          "passed": 31
+        },
+        "hybrid.tests.research.test_remaining_historical_evidence": {
+          "passed": 24
+        },
+        "hybrid.tests.research.test_next_historical_references": {
+          "passed": 37
+        },
+        "hybrid.tests.research.test_historical_binding": {
+          "passed": 18
+        },
+        "hybrid.tests.research.test_historical_references": {
+          "passed": 19
+        },
+        "hybrid.tests.research.test_reference_replays": {
+          "passed": 6
+        },
+        "hybrid.tests.research.test_review_gate_evidence": {
+          "passed": 44
+        },
+        "hybrid.tests.research.test_phase7_replay": {
+          "passed": 2,
+          "failed": 2
+        },
+        "results-wt.kd8.tools.tests.test_evidence_tools": {
+          "passed": 11
+        },
+        "results-wt.retrieval-diagnosis.test_diagnose": {
+          "passed": 12
+        },
+        "results-wt.transport-measurement.test_measure.MeasurementTests": {
+          "passed": 7
+        },
+        "results-wt.acquisition-windows.test_extract_windows.WindowTests": {
+          "passed": 18
+        },
+        "results-wt.heldout-acquisition.test_harness": {
+          "passed": 44
+        }
+      },
+      "nonlinear_cases_passed": 38,
+      "heldout_synthetic_cases_passed": 44,
+      "junit_local_path": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/isolated-junit.xml",
+      "junit_sha256": "d11afc85d3b4a62c2f140a724a2ee4aa1bb8a6209718faf4a0662fdf26e706af",
+      "all_21_rows_unchanged": true,
+      "phase7_rows_sha256": "259ec1b33cfaed911dfdd2f7034159bee4351eaf9a0f58b5cdd06bf8f025f72b",
+      "exact_codes": "7/19",
+      "required_gaps": 12,
+      "invocation": {
+        "cwd": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package",
+        "command": [
+          "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+          "-m",
+          "pytest",
+          "-c",
+          "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package/pyproject.toml",
+          "--confcutdir=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package",
+          "-q",
+          "-p",
+          "next_results",
+          "--basetemp=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/isolated-pytest",
+          "--junitxml=/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/isolated-junit.xml",
+          "hybrid/tests/literature",
+          "hybrid/tests/research/test_nonlinear_historical_evidence.py",
+          "hybrid/tests/research/test_composites_historical_evidence.py",
+          "hybrid/tests/research/test_remaining_historical_evidence.py",
+          "hybrid/tests/research/test_next_historical_references.py",
+          "hybrid/tests/research/test_historical_binding.py",
+          "hybrid/tests/research/test_historical_references.py",
+          "hybrid/tests/research/test_reference_replays.py",
+          "hybrid/tests/research/test_review_gate_evidence.py",
+          "hybrid/tests/research/test_phase7_replay.py",
+          "results-wt/kd8/tools/tests/test_evidence_tools.py",
+          "results-wt/retrieval-diagnosis/test_diagnose.py",
+          "results-wt/transport-measurement/test_measure.py",
+          "results-wt/acquisition-windows/test_extract_windows.py",
+          "results-wt/heldout-acquisition/test_harness.py"
+        ],
+        "environment": {
+          "BIGBRANE_LIVE": "0",
+          "PYTHONHASHSEED": "0",
+          "PYTHONPATH": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package/results-wt/evidence-recovery/nonlinear-checkpoint-network-guard:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package/results-wt/evidence-recovery:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package/results-wt/transport-measurement:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package/results-wt/acquisition-windows:/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/package/results-wt/heldout-acquisition",
+          "TMPDIR": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/tmp",
+          "NEXT_ROWS_OUTPUT": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-verification/isolated-phase7-rows.json"
+        }
+      }
+    }
+  },
+  "checks": {
+    "original_sha256_unchanged": 274,
+    "supplemental_sha256_unchanged": 39,
+    "seed_raw_unchanged": 75,
+    "main_measurement_unchanged": 44,
+    "previous_full_captures_unchanged": 3,
+    "nonlinear_local_capture_and_publications_unchanged": true,
+    "original_nonlinear_new_files": 24,
+    "protected_tracked_files_unchanged": 1030,
+    "tested_files_unchanged": 1077,
+    "tested_manifest_sha256": "3ed657dd63ccee42edbc0933a78eef6a240cdf744e7dc21e8dfcde989f2283fa",
+    "default_cli_pending_verified": true,
+    "dependency_isolation": {
+      "imports_resolve_in_package": {
+        "hybrid.literature.client": "hybrid/literature/client.py",
+        "hybrid.literature.seed": "hybrid/literature/seed.py",
+        "hybrid.tests.research.reference_replays": "hybrid/tests/research/reference_replays.py",
+        "hybrid.tests.research.nonlinear_replays": "hybrid/tests/research/nonlinear_replays.py",
+        "nonlinear_capture": "results-wt/evidence-recovery/nonlinear_capture.py",
+        "harness": "results-wt/heldout-acquisition/harness.py",
+        "synthetic": "results-wt/heldout-acquisition/synthetic.py",
+        "offline": "results-wt/heldout-acquisition/offline.py"
+      },
+      "numpy_version": "2.5.3",
+      "pytest_version": "9.1.1",
+      "python": "/Volumes/XS1000/acoliver/projects/bigbrane/.venv-hybrid/bin/python",
+      "original_run_masked_and_open_prohibited": true
+    },
+    "credential_scan": {
+      "configured_credentials_absent": true,
+      "values_printed": false,
+      "selected_files_scanned": 48,
+      "secret_patterns_absent": true
+    },
+    "network": "BIGBRANE_LIVE=0; inherited connect, DNS and sendto denial. Held-out guard also blocks Internet socket construction; AF_UNIX construction alone permits asyncio self-pipes.",
+    "source_only_package": "No runs, raw captures, publication bodies, provider caches or acquisition histories. Original-run existence masked absent and opens prohibited. Complete nonlinear traces reconstructed in memory from hash-bound programs/observer.",
+    "scope": "Research/literature/four prior tools/held-out synthetic, not math or benchmark full suites.",
+    "new_work_unreviewed": true,
+    "no_new_independent_review": true,
+    "acceptance_unchanged": true,
+    "heartbeat_seconds": 30,
+    "supervisor_limit_seconds": 1800,
+    "supervisor_source_sha256": "29cddcbbc45b287ab754c7a471962ca06221f67535d0ff544d16ee674fd6eac5",
+    "packaging_correction": {
+      "initial_run_exit": 2,
+      "initial_run_interrupted": true,
+      "initial_log": "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/evidence-recovery/nonlinear-checkpoint-interrupted/combined.log",
+      "confirmed_cause": "heldout offline.py blocked asyncio AF_UNIX socketpair construction during unrelated research tests",
+      "change": "Permit only socket.__new__ for AF_UNIX; all connect, DNS, sendto and other socket events remain prohibited. Internet socket construction still prohibited. No assertions or collection disabled.",
+      "plan_policy_unchanged": true
+    }
+  },
+  "heldout_default_cli": {
+    "acceptance_improvement": false,
+    "corpus": {
+      "disjointness": "No global disjointness claim; aliases remain uncertain.",
+      "incomplete_exclusions": [
+        "historical_recovery_19",
+        "original_pa2_11",
+        "other_used_study_data",
+        "seen_seed_109"
+      ],
+      "reason": "Independent corpus, blinded label vault and full exclusion inventories have not been assembled.",
+      "status": "PENDING"
+    },
+    "input_sha256": {
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/PLAN.md": "4d8f90f91c7a709bf3530df42573067837ebcb7fce2c965b00990c0500b1c701",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/corpus.json": "a01a205221a236ee2cfbda782cc9005b86a1086ce61e3f27ee6f5d4bcecebbbc",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/exclusions.json": "45f3753e8181ef784c77df11529fe9eea405a6c1f1f90b99c411bb2c69d8e433",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/harness.py": "1546667435c4206f384ded06862da66cfcc2b8105bf0828423f1a2bcaf73b867",
+      "/Volumes/XS1000/acoliver/projects/bigbrane-wt-r2/results-wt/heldout-acquisition/policy.json": "245a9d97b44df9807f1cc4a88b127c6790f7423d7f3c85b62c2124336591047c"
+    },
+    "query_effect": "unmeasured",
+    "status": "PENDING"
+  },
+  "counting": "Separate actual completed JUnit testcase records per scope. Additional subtests retained separately. Interrupted packaging invocation is not combined with these counts."
+}

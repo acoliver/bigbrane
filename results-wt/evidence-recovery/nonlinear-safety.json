@@ -1,0 +1,14 @@
+{
+  "main_branch": "p4-diagnosis",
+  "main_head": "8347c7ff845618c558b49e7c2fba1cd8848824c9",
+  "main_clean": true,
+  "sibling_branch": "r2-bar",
+  "sibling_head": "4dd48646c0c6652ad21b508322883efe69ee5d66",
+  "preexisting_tracked_files_unchanged": 1030,
+  "tracked_diff": [],
+  "staged_diff": [],
+  "raw_capture_tracked": false,
+  "no_new_operation_or_schema_or_acceptance_edits": true,
+  "source_receipts_checked": true,
+  "checked_utc": "2026-10-18T23:59:45.356695+00:00"
+}

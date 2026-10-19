@@ -1,0 +1,90 @@
+[
+  {
+    "name": "ppgn",
+    "url": "https://arxiv.org/pdf/1905.11136",
+    "final_url": "https://arxiv.org/pdf/1905.11136",
+    "retrieved_utc": "2026-10-18T23:47:40.806965+00:00",
+    "file": "results-wt/evidence-recovery/nonlinear-sources/ppgn.pdf",
+    "sha256": "30f0923967ef7cd852f87bd3eaf9ae4e6c31fae13dd5d225b2b184ffa22a5f29",
+    "text_file": "results-wt/evidence-recovery/nonlinear-sources/ppgn.txt",
+    "text_sha256": "c117d2d2b6a370934b8f379906c9cd5ff798195e542f09a5daec661dff775118",
+    "title": "Maron et al., Provably Powerful Graph Networks (2019)",
+    "section": "Section 6, equation 6 and block definition; section 7 implementation and readouts",
+    "equations": [
+      "W_ijc = sum_k m1(X)_ikc m2(X)_kjc; B(X)=concat(m3(X),W)",
+      "F=m o h o Bd o ... o B1 with invariant h",
+      "Section 7 adds m4(concat(X,W)); its skip is current X, not original X0"
+    ],
+    "excerpt": "\n6   A simple network with 3-WL discrimination power\nIn this section we describe a simple GNN model that has 3-WL\ndiscrimination power. The model has the form\n              F = m \u25e6 h \u25e6 Bd \u25e6 Bd\u22121 \u00b7 \u00b7 \u00b7 \u25e6 B1 ,                               (6)\nwhere as in k-order networks (see Section 3.1) h is an in-\nvariant layer and m is an MLP. B1 , . . . , Bd are blocks with\nthe following structure (see figure 2 for an illustration). Let\nX \u2208 Rn\u00d7n\u00d7a denote the input tensor to the block. First, we\n                                                                0\napply three MLPs m1 , m2 : Ra \u2192 Rb , m3 : Ra \u2192 Rb to\nthe input tensor, ml (X), l \u2208 [3]. This means applying the\nMLP to each feature of the input tensor independently, i.e.,               Figure 2: Block structure.\nml (X)i1 ,i2 ,: := ml (Xi1 ,i2 ,: ), l \u2208 [3]. Second, matrix multiplication is performed between match-\ning features, i.e., W:,:,j := m1 (X):,:,j \u00b7 m2 (X):,:,j , j \u2208 [b]. The output of the block is the tensor\n(m3 (X), W).\nWe start with showing our basic requirement from GNN, namely invariance:\n\n\n7    Experiments\nImplementation details. We implemented the GNN model as described in Section 6 (see Equa-\ntion 6) using the TensorFlow framework (Abadi et al., 2016). We used three identical blocks\n                                           2           2\nB1 , B2 , B3 , where in each block Bi : Rn \u00d7a \u2192 Rn \u00d7b we took m3 (x) = x to be the identity (i.e.,\nm3 acts as a skip connection, similar to its role in the proof of Theorem 2); m1 , m2 : Ra \u2192 Rb are\nchosen as d layer MLP with hidden layers of b features. After each block Bi we also added a single\nlayer MLP m4 : Rb+a \u2192 Rb . Note that although this fourth MLP is not described in the model\nin Section 6 it clearly does not decrease (nor increase) the theoretical expressiveness of the model;\nwe found it efficient for coding as it reduces the parameters of the model. For the first block, B1 ,\na = e + 1, where for the other blocks b = a. The MLPs are implemented with 1 \u00d7 1 convolutions.\n\n\nParameter search was conducted on learning rate and                                                 Table 2: Regression, the QM9 dataset.\nlearning rate decay, as detailed below. We have                                                   Target       DTNN         MPNN        123-gnn     Ours 1       Ours 2\nexperimented with two network suffixes adopted                                                    \u00b5               0.244        0.358       0.476       0.231        0.0934\nfrom previous papers: (i) The suffix used in Maron                                                \u03b1                0.95         0.89        0.27       0.382         0.318\n                                                                                                  \u000fhomo        0.00388      0.00541     0.00337     0.00276       0.00174\net al. (2019a) that consists of an invariant max pool-                                            \u000flumo        0.00512      0.00623     0.00351     0.00287         0.0021\ning (diagonal and off-diagonal) followed by a three                                               \u2206\u000f            0.0112       0.0066      0.0048     0.00406         0.0029\n                                                                                                  hR2 i              17         28.5        22.9       16.07           3.78\nFully Connected (FC) with hidden units\u2019 sizes of                                                  ZP V E       0.00172      0.00216     0.00019     0.00064      0.000399\n(512, 256, #classes); (ii) the suffix used in Xu et al.                                           U0                  -            -     0.0427       0.234          0.022\n                                                                                                  U                   -            -       0.111      0.234        0.0504\n(2019) adapted to our network: we apply the invariant                                             H                   -            -     0.0419       0.229        0.0294\n                                                                                                  G                   -            -     0.0469       0.238          0.024\nmax layer from Maron et al. (2019a) to the output                                                 Cv               0.27         0.42     0.0944        0.184         0.144\nof every block followed by a single fully connected\nlayer to #classes. These outputs are then summed\ntogether and used as the network output on which the\nloss function is defined.",
+    "excerpt_text_lines": [
+      [
+        325,
+        341
+      ],
+      [
+        425,
+        437
+      ],
+      [
+        475,
+        492
+      ]
+    ],
+    "scope": "Independent publication snapshot; no claim that it defines the CARD-specific full composition."
+  },
+  {
+    "name": "dpmeans",
+    "url": "https://arxiv.org/pdf/1111.0352",
+    "final_url": "https://arxiv.org/pdf/1111.0352",
+    "retrieved_utc": "2026-10-18T23:47:52.285261+00:00",
+    "file": "results-wt/evidence-recovery/nonlinear-sources/dpmeans.pdf",
+    "sha256": "e725700a6fb4e32cc27b194f2714c0868fd6a14c5a055df331fe62a5da677ba3",
+    "text_file": "results-wt/evidence-recovery/nonlinear-sources/dpmeans.txt",
+    "text_sha256": "67a736ff0c105c68106ccd2577a83dc4ce8d13d95138f75997f63d3394d00f86",
+    "title": "Kulis and Jordan, Revisiting k-means: New Algorithms via Bayesian Nonparametrics (2011)",
+    "section": "Section 3.1, Algorithm 1; section 3.2, equation 1",
+    "equations": [
+      "Initialize one global-mean cluster; repeatedly assign nearest Euclidean centroid or recruit when squared distance > lambda",
+      "Recompute each centroid as the arithmetic mean of its assigned points until convergence",
+      "Objective=sum_c sum_x_in_c ||x-mu_c||^2 + lambda*k"
+    ],
+    "excerpt": "centroid. We choose to initialize the algorithm with a single cluster whose mean is simply the global centroid;\nthe resulting algorithm is specified as Algorithm 1, which we denote as the DP-means algorithm. Note that,\nunlike standard k-means, which depends on the initial clustering of the data, the DP-means algorithm depends\non the order in which data points are processed. One area of future work would consider adaptive methods\nfor choosing an ordering.\n\n\n                                                       5\n\fAlgorithm 1 DP-means\nInput: x1 , ..., xn : input data, \u03bb : cluster penalty parameter\nOutput: Clustering `1 , ..., `k and number of clusters k\n  1. Init. k = 1, `1 = {x1 , ..., xn } and \u00b51 the global mean.\n  2. Init. cluster indicators zi = 1 for all i = 1, ..., n.\n  3. Repeat until convergence\n       \u2022 For each point xi\n              \u2013 Compute dic = kxi \u2212 \u00b5c k2 for c = 1, ..., k\n              \u2013 If minc dic > \u03bb, set k = k + 1, zi = k, and \u00b5k = xi .\n              \u2013 Otherwise, set zi = argminc dic .\n       \u2022 Generate clusters `1 , ..., `k based on z1 , ..., zk : `j = {xi | zi = j}.\n       \u2022 For each cluster `j , compute \u00b5j = |`1j | x\u2208`j x.\n                                                     P\n\n\n\n\n3.2    Underlying Objective and the AIC\nWith the procedure from the previous section in hand, we can now analyze its properties. A natural question\nto ask is whether there exists an underlying objective function corresponding to this k-means-like algorithm.\nIn this section, we show that the algorithm monotonically decreases the following objective at each iteration,\nwhere an iteration is defined as a complete loop through all data points to update all cluster assignments and\nmeans:\n                                           Pk P                     2\n                                    min       c=1    x\u2208`c kx \u2212 \u00b5c k + \u03bbk\n                                       {`c }k\n                                            c=1\n\n                                                         \u00b5c = |`1c |\n                                                                       P\n                                       where                            x\u2208`c x.                             (1)",
+    "excerpt_text_lines": [
+      [
+        270,
+        308
+      ]
+    ],
+    "scope": "Independent publication snapshot; no claim that it defines the CARD-specific full composition."
+  },
+  {
+    "name": "art-survey",
+    "url": "https://arxiv.org/pdf/1905.11437",
+    "final_url": "https://arxiv.org/pdf/1905.11437",
+    "retrieved_utc": "2026-10-18T23:47:52.902949+00:00",
+    "file": "results-wt/evidence-recovery/nonlinear-sources/art-survey.pdf",
+    "sha256": "ca361cf69752575b84f8243bfbda0bc77c75802b7bf8dbf5ce1116db52b1ca37",
+    "text_file": "results-wt/evidence-recovery/nonlinear-sources/art-survey.txt",
+    "text_sha256": "b628683167fc1d905fd10add4798e6234b673fdf5f80abe637b9eadb207181b2",
+    "title": "Brito da Silva, Elnabarawy and Wunsch, A Survey of Adaptive Resonance Theory Neural Network Models for Engineering Applications (2019)",
+    "section": "Algorithm 1; section 2.1.3 equations 15,16,19,22",
+    "equations": [
+      "Complement code x=[raw,1-raw]",
+      "T_j=||min(x,w_j)||_1/(choice+||w_j||_1); M_j=||min(x,w_j)||_1/||x||_1",
+      "Reject failed category and search others; recruit if none pass; output selected category even on recruitment",
+      "w_new=(1-rate)*w_old+rate*min(x,w_old)"
+    ],
+    "excerpt": "\f Algorithm 1: Elementary ART algorithm.\n     Input : x, {\u03b1, \u03b2, \u03b3, \u03c1, \u03bb} (parameters).\n     Output: y (F2 ) .\n\n     /* Notation\n     C: set of ART nodes.\n     \u039b: subset of highly active nodes (\u039b \u2286 C).\n     \u03b8: LTM unit.\n     \u03b1: activation function parameter(s).\n     \u03b2: learning function parameter(s).\n     \u03b3: match function parameter(s).\n     \u03c1: vigilance parameter(s).\n     \u03bb: initialization parameter(s).\n     fT (\u00b7): activation function.\n     fM (\u00b7): match function.\n     fL (\u00b7): learning function.\n     fV (\u00b7): vigilance function (e.g., fV = 1kV RJ (x)).\n                                           V\n                                                   k\n   fN (\u00b7): initialization function.                                                                     */\n 1 Present input sample: x \u2208 X.\n 2 Compute activation function(s): Tj = fT (x, \u03b8j , \u03b1), \u2200j \u2208 C.\n 3 Perform WTA competition: J = arg max (Tj ).\n                                         j\u2208\u039b\n                                           k\n 4 Compute match function(s): MJk = fM       (x, \u03b8J , \u03b3), \u2200k, k \u2265 1.\n                                           1              k\n 5 Perform vigilance test(s): VJ = fV (1V RJ (x), ..., 1V RJ (x)).\n 6 if VJ is TRUE then\n 7     Update category J: \u03b8Jnew = fL (x, \u03b8Jold , \u03b2).\n 8 else\n 9     Deactivate category J: \u039b \u2190 \u039b \u2212 {J}.\n10     if \u039b 6= {\u2205} then\n11         Go to step 3.\n12     else\n13         Set J = |C| + 1.\n14         Create new category: C \u2190 C \u222a {J}.\n15         Initialize new category: \u03b8Jnew = fN (x, \u03bb).\n                          (\n                  (F2 )    1, if j = J\n16 Set output: yj       =                .\n                           0, otherwise\n17 Go to step 1.\n\n2.1.3. Fuzzy ART\n    Fuzzy ART (FA) (Carpenter et al., 1991c) is arguably the most widely used ART model. It extends the\ncapabilities of ART 1 (Sec. 2.1.1) to process real-valued data by incorporating fuzzy set theoretic opera-\ntors (Zadeh, 1965). Typically, samples are pre-processed by applying complement coding (Carpenter et al.,\n1992, 1991a). This transformation doubles the original input dimension while imposing a constant norm\n(x \u2190 [x, ~1 \u2212 x]):\n                                         2d\n                                         X       X d       d\n                                                           X\n                                 kxk1 =     xi =      xi +   (1 \u2212 xi ) = d.                           (15)\n                                           i=1          i=1       i=1\n\n   This process encodes the degree of presence and absence of each data feature. The augmented input\nvector prevents a category proliferation type due to weight erosion (Carpenter, 1997).\n   LTM. Each category LTM unit is a weight vector \u03b8 = {w}. If complement coding is employed, then\nw = [u, v c ], and the geometric interpretation of a category is a hyperrectangle (or hyperbox), in the data\nspace, with lower left corner u and upper right corner v c representing features ranges (minimum and maxi-\nmum data statistics).\n   Activation. The activation function of a category j is defined as (Weber law)\n\n                                                        kx \u2227 wj k1\n                                                 Tj =              ,                                        (16)\n                                                        \u03b1 + kwj k1\n\nwhere \u2227 is a component-wise fuzzy AND/intersection (minimum), \u03b1 > 0 is the choice parameter which is\nrelated to the system\u2019s complexity (it can be seen as a regularization parameter that penalizes large weights).\nIts role has been thoroughly investigated in (Georgiopoulos et al., 1996). The activation function measures\nthe degree to which x is a fuzzy subset of wj and is biased towards smaller categories. The F1 activity is\ndefined as                                    (\n                                      (F1 )    x,         if F2 is inactive\n                                    y       =                               .                             (17)\n                                               x \u2227 wJ , otherwise\n   Match and resonance. When the winner node J is selected, the F2 activity is\n                                           (\n                                   (F2 )     1, if j = J\n                                  yj     =                .                                                 (18)\n                                             0, otherwise\n\nand a hypothesis testing cycle is conducted using\n\n                                                 ky (F1 ) k1   kx \u2227 wJ k1\n                                        MJ =                 =            ,                                 (19)\n                                                  kxk1           kxk1\n\n                                                              8\n\fwhere V RJ = {x : MJ (x) \u2265 \u03c1} and \u03c1 \u2208 [0, 1] is the vigilance parameter. The vigilance criterion checks if\n1V RJ (x) is true, and, in the affirmative case, the category is allowed to learn. An uncommitted category\nwill always satisfy the match criterion. Fuzzy ART vigilance regions are hyperoctagons and thoroughly\ndiscussed in (Anagnostopoulos & Georgiopoulos, 2002; Meng et al., 2016; Verzi et al., 2006). The match\nfunction ensures that if learning takes place, the updated category will not exceed the maximum allowed\nsize. Specifically, category j\u2019s size is measured as\n                                               d\n                                               X\n                          Rj = kvj \u2212 uj k1 =         [(1 \u2212 wj,d+i ) \u2212 wj,i ] = d \u2212 kwj k1 ,                 (20)\n                                               i=1\n\nwhere, considering the complement coded inputs, \u2212d \u2264 Rj \u2264 d (for an uncommitted category: Rj = \u2212d).\nParticularly, the match function measures the size of the category if it is allowed to learn the presented\nsample. Thus, the vigilance criterion imposes an upper bound to the category size defined by the vigilance\nparameter (\u03c1)\n                                    RJ \u2295 x = d \u2212 kx \u2227 wj k1 \u2264 d(1 \u2212 \u03c1),                               (21)\nwhere RJ \u2295 x represents the smallest hyperrectangle capable of enclosing both RJ and the presented sample\nx.\n   Learning. If the vigilance test fails, then the winner category is inhibited, and the search continues until\nanother one is found or created. When the vigilance criterion in met by category J, it adapts using\n\n                                wJ (new) = (1 \u2212 \u03b2)wJ (old) + \u03b2(x \u2227 wJ (old)),                               (22)\n\nwhere \u03b2 \u2208 (0, 1] is the learning parameter. If an uncommitted node is recruited to learn sample x, then\nanother one is created and initialized as w = ~1. According to Eq. (22), the norm of a weight vector is\nmonotonically non-increasing during learning since categories can only expand (Vigdor & Lerner, 2007).",
+    "excerpt_text_lines": [
+      [
+        284,
+        326
+      ],
+      [
+        431,
+        501
+      ]
+    ],
+    "scope": "Independent publication snapshot; no claim that it defines the CARD-specific full composition."
+  }
+]
